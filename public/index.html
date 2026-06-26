@@ -1405,6 +1405,13 @@
         </div>
 
         <div class="module-grid">
+          <div class="module-card" onclick="showView('signaler')" style="border:2px solid var(--navy);box-shadow:0 2px 8px rgba(10,61,98,.15);">
+            <div class="module-icon" style="background:var(--navy-light);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3 data-i18n="signaler.titre">Signaler un problème</h3>
+            <p data-i18n="signaler.sous_titre" style="font-size:11px;">Choisissez le type de problème à signaler</p>
+          </div>
           <div class="module-card" onclick="showView('civisignal')">
             <div class="module-icon" style="background:#E8EEF3;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A3D62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
@@ -1446,6 +1453,106 @@
             </div>
             <h3 data-i18n="home.patrimoine_titre">PatriLocal</h3>
             <p data-i18n="home.patrimoine_desc">Patrimoine immobilier communal</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SIGNALER — DOUBLE CHEMIN UNIFIÉ ══ -->
+      <div id="view-signaler" class="view">
+        <div class="page-header">
+          <h2 data-i18n="signaler.titre">Signaler un problème</h2>
+          <p data-i18n="signaler.sous_titre">Choisissez le type de problème à signaler</p>
+        </div>
+
+        <!-- ÉTAPE 0 : choix du chemin (guidé vs direct) -->
+        <div id="sig-step-choix">
+          <div style="display:flex;gap:10px;margin-bottom:18px;">
+            <button class="btn btn-primary" style="flex:1;" onclick="sigShowFamilles()" data-i18n="signaler.chemin_guide">Par nature du problème</button>
+            <button class="btn btn-outline" style="flex:1;" onclick="sigShowEpics()" data-i18n="signaler.chemin_direct">Par service (EPIC)</button>
+          </div>
+        </div>
+
+        <!-- ÉTAPE 1a : familles (chemin guidé) -->
+        <div id="sig-step-familles" class="hidden">
+          <button class="btn-link" onclick="sigBackToChoix()" data-i18n="signaler.retour_choix" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour au choix</button>
+          <div id="sig-familles-grid" class="module-grid"></div>
+        </div>
+
+        <!-- ÉTAPE 1b : sous-cas (après sélection famille) -->
+        <div id="sig-step-souscas" class="hidden">
+          <button class="btn-link" onclick="sigBackToFamilles()" data-i18n="signaler.retour_familles" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour aux familles</button>
+          <p style="font-weight:600;margin-bottom:10px;" data-i18n="signaler.choisir_sous_cas">Précisez le problème :</p>
+          <div id="sig-souscas-list"></div>
+        </div>
+
+        <!-- ÉTAPE 1c : choix EPIC direct -->
+        <div id="sig-step-epics" class="hidden">
+          <button class="btn-link" onclick="sigBackToChoix()" data-i18n="signaler.retour_choix" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour au choix</button>
+          <div id="sig-epics-list"></div>
+        </div>
+
+        <!-- ÉTAPE 2 : formulaire commun -->
+        <div id="sig-step-form" class="hidden">
+          <button class="btn-link" onclick="sigBackToChoix()" data-i18n="signaler.retour_choix" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour au choix</button>
+          <div class="card">
+            <h3 data-i18n="signaler.formulaire_titre" style="margin-bottom:12px;">Détails du signalement</h3>
+            <div id="sig-error" class="alert alert-error hidden"></div>
+            <div id="sig-success" class="alert alert-success hidden"></div>
+
+            <form id="sig-form" onsubmit="handleUnifiedSignalement(event)">
+              <!-- Catégorie (pré-remplie, en lecture seule) -->
+              <div class="form-group">
+                <label data-i18n="signaler.categorie_label">Type de problème</label>
+                <input type="text" id="sig-categorie-display" readonly style="background:var(--gray-50);font-weight:600;" />
+                <input type="hidden" id="sig-categorie-id" />
+              </div>
+
+              <!-- Commune -->
+              <div class="form-group">
+                <label data-i18n="signaler.commune_label">Commune</label>
+                <select id="sig-commune">
+                  <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="form-group">
+                <label data-i18n="signaler.description_label">Description</label>
+                <textarea id="sig-description" rows="3" data-i18n-placeholder="signaler.description_placeholder" placeholder="Décrivez le problème constaté…"></textarea>
+              </div>
+
+              <!-- Géolocalisation -->
+              <div class="form-group">
+                <label data-i18n="signaler.geo_label">Localisation</label>
+                <p class="mini-map-hint" data-i18n="signaler.geo_hint" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Cliquez sur la carte ou utilisez le bouton GPS</p>
+                <div id="sig-minimap" class="mini-map-picker"></div>
+                <div id="sig-adresse-geo" style="font-size:12px;color:var(--gray-600);margin-top:4px;min-height:16px;"></div>
+                <button type="button" class="geo-btn" onclick="centerMiniMap('sig')" style="margin-top:6px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                  <span data-i18n="signaler.geo_btn">Ma position GPS</span>
+                </button>
+                <div class="geo-coords hidden" id="sig-coords"></div>
+                <input type="hidden" id="sig-lat" />
+                <input type="hidden" id="sig-lng" />
+              </div>
+
+              <!-- Photo -->
+              <div class="form-group">
+                <label><span data-i18n="signaler.photo_label">Photo</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnel</span>)</span></label>
+                <div class="photo-upload-area">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <p data-i18n="cs.photo_click">Cliquez pour ajouter une photo</p>
+                  <input type="file" id="sig-photo" accept="image/*" />
+                </div>
+                <div id="sig-photo-name" class="geo-coords hidden"></div>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn btn-primary" id="sig-submit-btn" style="width:100%;">
+                <span id="sig-submit-text" data-i18n="signaler.envoyer">Envoyer le signalement</span>
+                <span id="sig-submit-spinner" class="spinner hidden"></span>
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -2512,6 +2619,7 @@ function showView(name) {
   });
 
   // Load data for specific views
+  if (name === 'signaler') initSignaler();
   if (name === 'civisignal') initCivisignal();
   if (name === 'watersignal') initWatersignal();
   if (name === 'civiadmin') { initCiviadmin(); initRdvAdminPanel(); }
@@ -3346,6 +3454,308 @@ async function exportCSV(domaine) {
   } catch(e) { showToast(t('toast.erreur_export'), 'error'); }
 }
 
+// ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────
+let sigFamillesData = null;
+let sigMapInitialized = false;
+let sigMap = null;
+let sigMarker = null;
+
+const SIG_FAMILLE_META = {
+  eau:            { icon: 'droplets',        color: '#2563eb' },
+  espaces_verts:  { icon: 'tree-deciduous',  color: '#16a34a' },
+  eclairage:      { icon: 'lightbulb',       color: '#eab308' },
+  voirie:         { icon: 'road',            color: '#64748b' },
+  proprete:       { icon: 'trash-2',         color: '#0A3D62' },
+  stationnement:  { icon: 'parking-meter',   color: '#8b5cf6' },
+  autre:          { icon: 'help-circle',     color: '#9ca3af' },
+};
+
+const SIG_FAMILLE_ORDER = ['eau','espaces_verts','eclairage','voirie','proprete','stationnement','autre'];
+
+async function initSignaler() {
+  // Charger les familles depuis l'API
+  if (!sigFamillesData) {
+    try {
+      const res = await fetch('/api/signaler/familles');
+      sigFamillesData = await res.json();
+    } catch (e) { sigFamillesData = {}; }
+  }
+  // Peupler les communes
+  const sel = document.getElementById('sig-commune');
+  if (sel && sel.options.length <= 1) {
+    communes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.nom + (c.circonscription ? ` (${c.circonscription})` : '');
+      sel.appendChild(opt);
+    });
+  }
+  // Photo handler
+  const photoInput = document.getElementById('sig-photo');
+  if (photoInput && !photoInput._sigBound) {
+    photoInput._sigBound = true;
+    photoInput.addEventListener('change', function() {
+      const nameEl = document.getElementById('sig-photo-name');
+      if (this.files && this.files[0]) {
+        nameEl.textContent = '📎 ' + this.files[0].name;
+        nameEl.classList.remove('hidden');
+      }
+    });
+  }
+  // Reset à l'étape choix
+  sigShowStep('choix');
+}
+
+function sigShowStep(step) {
+  ['choix','familles','souscas','epics','form'].forEach(s => {
+    const el = document.getElementById('sig-step-' + s);
+    if (el) el.classList.toggle('hidden', s !== step);
+  });
+}
+
+function sigBackToChoix() {
+  document.getElementById('sig-error').classList.add('hidden');
+  document.getElementById('sig-success').classList.add('hidden');
+  sigShowStep('choix');
+}
+
+// ── PORTE 1 : chemin guidé par familles ──
+function sigShowFamilles() {
+  const grid = document.getElementById('sig-familles-grid');
+  grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
+    const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
+    const label = t('signaler.fam_' + fam);
+    return `
+      <div class="module-card" onclick="sigShowSousCas('${fam}')" style="cursor:pointer;">
+        <div class="module-icon" style="background:${meta.color}15;">
+          <i data-lucide="${meta.icon}" style="color:${meta.color};width:28px;height:28px;"></i>
+        </div>
+        <h3 style="font-size:14px;">${escHtml(label)}</h3>
+      </div>`;
+  }).join('');
+  if (window.lucide) lucide.createIcons();
+  sigShowStep('familles');
+}
+
+function sigBackToFamilles() { sigShowStep('familles'); }
+
+function sigShowSousCas(famille) {
+  const cats = sigFamillesData[famille] || [];
+  if (!cats.length) {
+    // Famille sans sous-cas → formulaire direct avec "Autre"
+    sigSelectCategorie(null, famille);
+    return;
+  }
+  const list = document.getElementById('sig-souscas-list');
+  list.innerHTML = cats.map(c => `
+    <div class="card" style="margin-bottom:8px;padding:12px 16px;cursor:pointer;transition:background .15s;"
+         onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
+         onclick="sigSelectCategorie(${c.id}, '${famille}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:14px;font-weight:500;">${escHtml(c.libelle)}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
+      </div>
+    </div>
+  `).join('');
+  sigShowStep('souscas');
+}
+
+// ── PORTE 2 : chemin direct par EPIC ──
+async function sigShowEpics() {
+  const list = document.getElementById('sig-epics-list');
+  list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('global.chargement') + '</div>';
+  sigShowStep('epics');
+  try {
+    const res = await fetch('/api/signaler/epics');
+    const epics = await res.json();
+    list.innerHTML = epics.map(ep => `
+      <div class="card" style="margin-bottom:8px;padding:14px 16px;cursor:pointer;transition:background .15s;"
+           onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
+           onclick="sigSelectEpic(${ep.id}, '${escHtml(ep.sigle)}')">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:40px;height:40px;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:var(--navy);">${escHtml(ep.sigle.substring(0,4))}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--navy);">${escHtml(ep.sigle)}</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.3;">${escHtml(ep.nom)}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    list.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>';
+  }
+}
+
+function sigSelectEpic(epicId, sigle) {
+  // Trouver les catégories liées à cet EPIC
+  const allCats = [];
+  for (const fam of Object.values(sigFamillesData || {})) {
+    for (const c of fam) {
+      if (c.epic_id === epicId) allCats.push(c);
+    }
+  }
+  if (allCats.length === 1) {
+    sigSelectCategorie(allCats[0].id, allCats[0].famille);
+  } else if (allCats.length > 1) {
+    // Montrer les sous-cas de cet EPIC
+    const list = document.getElementById('sig-souscas-list');
+    list.innerHTML = allCats.map(c => `
+      <div class="card" style="margin-bottom:8px;padding:12px 16px;cursor:pointer;transition:background .15s;"
+           onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
+           onclick="sigSelectCategorie(${c.id}, '${c.famille}')">
+        <span style="font-size:14px;font-weight:500;">${escHtml(c.libelle)}</span>
+      </div>
+    `).join('');
+    sigShowStep('souscas');
+  } else {
+    // EPIC sans catégories directes (ex: NETCOM/EXTRANET → propreté)
+    // Montrer les catégories propreté
+    const propCats = sigFamillesData['proprete'] || [];
+    if (propCats.length) {
+      const list = document.getElementById('sig-souscas-list');
+      list.innerHTML = propCats.map(c => `
+        <div class="card" style="margin-bottom:8px;padding:12px 16px;cursor:pointer;transition:background .15s;"
+             onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
+             onclick="sigSelectCategorie(${c.id}, 'proprete')">
+          <span style="font-size:14px;font-weight:500;">${escHtml(c.libelle)}</span>
+        </div>
+      `).join('');
+      sigShowStep('souscas');
+    }
+  }
+}
+
+// ── Sélection catégorie → formulaire ──
+function sigSelectCategorie(catId, famille) {
+  const display = document.getElementById('sig-categorie-display');
+  const hidden = document.getElementById('sig-categorie-id');
+
+  if (catId) {
+    // Trouver le libellé dans les données
+    for (const fam of Object.values(sigFamillesData || {})) {
+      const found = fam.find(c => c.id === catId);
+      if (found) {
+        display.value = found.libelle;
+        hidden.value = catId;
+        break;
+      }
+    }
+  } else {
+    // Famille "autre" sans sous-cas précis
+    display.value = t('signaler.fam_' + famille);
+    // Trouver la catégorie "Autre" de cette famille
+    const cats = sigFamillesData[famille] || [];
+    const autreCat = cats.find(c => c.libelle.toLowerCase().startsWith('autre'));
+    hidden.value = autreCat ? autreCat.id : '';
+  }
+
+  // Init mini-map
+  if (!sigMapInitialized) {
+    setTimeout(() => {
+      const mapEl = document.getElementById('sig-minimap');
+      if (mapEl && !sigMap) {
+        sigMap = L.map('sig-minimap').setView([36.7538, 3.0588], 11);
+        createTileLayer(sigMap);
+        sigMap.on('click', async function(e) {
+          const lat = e.latlng.lat.toFixed(6);
+          const lng = e.latlng.lng.toFixed(6);
+          document.getElementById('sig-lat').value = lat;
+          document.getElementById('sig-lng').value = lng;
+          const coordsEl = document.getElementById('sig-coords');
+          coordsEl.textContent = t('geo.position_selectionnee') + ' ' + lat + ', ' + lng;
+          coordsEl.classList.remove('hidden');
+          if (sigMarker) sigMap.removeLayer(sigMarker);
+          sigMarker = L.marker([lat, lng]).addTo(sigMap);
+          const adresseEl = document.getElementById('sig-adresse-geo');
+          if (adresseEl) {
+            adresseEl.textContent = t('geo.geocodage');
+            const adresse = await reverseGeocode(lat, lng);
+            adresseEl.textContent = adresse ? '📍 ' + adresse : '';
+          }
+        });
+        sigMapInitialized = true;
+      }
+    }, 200);
+  } else if (sigMap) {
+    setTimeout(() => sigMap.invalidateSize(), 200);
+  }
+
+  document.getElementById('sig-error').classList.add('hidden');
+  document.getElementById('sig-success').classList.add('hidden');
+  sigShowStep('form');
+  applyTranslations();
+}
+
+// ── Soumission du formulaire unifié ──
+async function handleUnifiedSignalement(e) {
+  e.preventDefault();
+  const errId = 'sig-error';
+  const sucId = 'sig-success';
+  hideError(errId);
+  document.getElementById(sucId).classList.add('hidden');
+
+  const categorieId = document.getElementById('sig-categorie-id').value;
+  if (!categorieId) { showError(errId, t('signaler.erreur_categorie')); return; }
+
+  const communeId   = document.getElementById('sig-commune').value;
+  const description = document.getElementById('sig-description').value.trim();
+  const lat         = document.getElementById('sig-lat').value;
+  const lng         = document.getElementById('sig-lng').value;
+  const photoInput  = document.getElementById('sig-photo');
+
+  setLoading('sig-submit-btn', 'sig-submit-text', 'sig-submit-spinner', true);
+
+  try {
+    const fd = new FormData();
+    fd.append('categorieId', categorieId);
+    if (communeId) fd.append('communeId', communeId);
+    if (description) fd.append('description', description);
+    if (lat) fd.append('lat', lat);
+    if (lng) fd.append('lng', lng);
+    if (photoInput.files && photoInput.files[0]) fd.append('photo', photoInput.files[0]);
+
+    const res = await apiFetch('/api/signaler/signalements', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: fd
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || data.erreur || t('sig.erreur_envoi'));
+
+    showSuccess(sucId, `${t('signaler.succes')} #${(data.signalement && data.signalement.reference) || 'N/A'}`);
+
+    // Sauvegarder dans localStorage pour "Mes signalements"
+    try {
+      const commune = communes.find(c => String(c.id) === String(communeId));
+      const mesSignals = JSON.parse(localStorage.getItem('civismart_mes_signalements') || '[]');
+      mesSignals.unshift({
+        id: data.signalement?.id || Date.now(),
+        reference: data.signalement?.reference || 'N/A',
+        domaine: data.signalement?.domaine || 'general',
+        categorie: document.getElementById('sig-categorie-display').value,
+        commune: commune ? commune.nom : '',
+        description: description,
+        etat: 'recu',
+        cree_le: new Date().toISOString(),
+        lat: lat || null, lng: lng || null
+      });
+      localStorage.setItem('civismart_mes_signalements', JSON.stringify(mesSignals));
+    } catch(_) {}
+
+    // Reset form
+    document.getElementById('sig-form').reset();
+    document.getElementById('sig-lat').value = '';
+    document.getElementById('sig-lng').value = '';
+    document.getElementById('sig-coords').classList.add('hidden');
+    document.getElementById('sig-photo-name').classList.add('hidden');
+    document.getElementById('sig-adresse-geo').textContent = '';
+  } catch (err) {
+    showError(errId, err.message);
+  } finally {
+    setLoading('sig-submit-btn', 'sig-submit-text', 'sig-submit-spinner', false);
+  }
+}
+
 // ─── CARTE MAP ───────────────────────────────────────────────
 // ── Configuration tuiles centralisée ──────────────────────────
 // Principal = CARTO (gratuit, sans clé, pas de Referer requis, CDN mondial).
@@ -3606,21 +4016,20 @@ function centerMiniMap(prefix) {
     pos => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      const map = prefix === 'cs' ? csMap : wsMap;
+      const map = prefix === 'cs' ? csMap : prefix === 'ws' ? wsMap : prefix === 'sig' ? sigMap : null;
       if (map) {
         map.setView([lat, lng], 15);
-        // Auto-place marker
-        const fakeEvent = { latlng: { lat, lng: lng } };
         document.getElementById(prefix + '-lat').value = lat.toFixed(6);
         document.getElementById(prefix + '-lng').value = lng.toFixed(6);
         const coordsEl = document.getElementById(prefix + '-coords');
         coordsEl.textContent = t('geo.position_gps') + ' ' + lat.toFixed(6) + ', ' + lng.toFixed(6);
         coordsEl.classList.remove('hidden');
-        const existingMarker = prefix === 'cs' ? csMarker : wsMarker;
+        const existingMarker = prefix === 'cs' ? csMarker : prefix === 'ws' ? wsMarker : prefix === 'sig' ? sigMarker : null;
         if (existingMarker) map.removeLayer(existingMarker);
         const newMarker = L.marker([lat, lng]).addTo(map);
         if (prefix === 'cs') csMarker = newMarker;
-        else wsMarker = newMarker;
+        else if (prefix === 'ws') wsMarker = newMarker;
+        else if (prefix === 'sig') sigMarker = newMarker;
       }
     },
     () => alert(t('geo.impossible'))

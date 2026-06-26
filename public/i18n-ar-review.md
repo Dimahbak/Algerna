@@ -321,8 +321,39 @@
 |-----|-----|----------------|
 | `op.aucun` | Aucun signalement assigné. | لا توجد بلاغات مسندة. |
 
+## 22. SIGNALER — Double chemin unifié
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `signaler.titre` | Signaler un problème | الإبلاغ عن مشكلة |
+| `signaler.sous_titre` | Choisissez le type de problème à signaler | اختر نوع المشكلة للإبلاغ عنها |
+| `signaler.chemin_guide` | Par nature du problème | حسب طبيعة المشكلة |
+| `signaler.chemin_direct` | Par service (EPIC) | حسب المؤسسة (EPIC) |
+| `signaler.retour_familles` | ← Retour aux familles | → العودة إلى العائلات |
+| `signaler.retour_choix` | ← Retour au choix | → العودة للاختيار |
+| `signaler.choisir_sous_cas` | Précisez le problème : | حدد المشكلة: |
+| `signaler.formulaire_titre` | Détails du signalement | تفاصيل البلاغ |
+| `signaler.fam_eau` | Eau | المياه |
+| `signaler.fam_espaces_verts` | Espaces verts | المساحات الخضراء |
+| `signaler.fam_eclairage` | Éclairage | الإنارة |
+| `signaler.fam_voirie` | Voirie | الطرقات |
+| `signaler.fam_proprete` | Propreté / Déchets | النظافة / النفايات |
+| `signaler.fam_stationnement` | Stationnement | مواقف السيارات |
+| `signaler.fam_autre` | Autre | أخرى |
+| `signaler.categorie_label` | Type de problème | نوع المشكلة |
+| `signaler.commune_label` | Commune | البلدية |
+| `signaler.description_label` | Description | الوصف |
+| `signaler.description_placeholder` | Décrivez le problème constaté… | صف المشكلة الملاحظة… |
+| `signaler.geo_label` | Localisation | الموقع |
+| `signaler.geo_hint` | Cliquez sur la carte ou utilisez le bouton GPS | انقر على الخريطة أو استخدم زر GPS |
+| `signaler.geo_btn` | Ma position GPS | موقعي GPS |
+| `signaler.photo_label` | Photo | صورة |
+| `signaler.envoyer` | Envoyer le signalement | إرسال البلاغ |
+| `signaler.envoi_en_cours` | Envoi… | جاري الإرسال… |
+| `signaler.succes` | Signalement envoyé ! Réf : | !تم إرسال البلاغ بنجاح المرجع: |
+| `signaler.erreur_categorie` | Veuillez sélectionner un type de problème. | يرجى اختيار نوع المشكلة. |
+
 ---
 
-**Total : ~260 clés i18n**
+**Total : ~377 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**
