@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#006233"/>
+  <text x="96" y="70" font-family="Arial,sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">C</text>
+  <text x="96" y="130" font-family="Arial,sans-serif" font-size="26" font-weight="600" fill="#ffffff" text-anchor="middle" opacity="0.9">CiviSmart</text>
+  <rect x="30" y="145" width="132" height="4" rx="2" fill="#D21034"/>
+</svg>

@@ -1,0 +1,93 @@
+/**
+ * Fabrique de routeur de signalements.
+ * Propreté et Eau instancient le même routeur avec leur domaine.
+ * Démontre concrètement la réutilisation du socle commun.
+ */
+const express = require('express');
+const multer = require('multer');
+const { z } = require('zod');
+const svc = require('../proprete/signalementService');
+const { validate } = require('../../middleware/validation');
+const { authenticate, requireRole } = require('../../middleware/auth');
+const { asyncH } = require('../../utils/http');
+const config = require('../../config');
+
+const upload = multer({
+  dest: config.upload.dir,
+  limits: { fileSize: config.upload.maxBytes },
+});
+
+const creerSchema = z.object({
+  categorieId: z.coerce.number().int(),
+  lat: z.coerce.number(),
+  lng: z.coerce.number(),
+  communeId: z.coerce.number().int().optional(),
+  description: z.string().max(1000).optional(),
+});
+
+const etatSchema = z.object({
+  etat: z.enum(['recu','transmis','en_intervention','resolu','rejete']),
+});
+
+function makeSignalementRouter(domaine) {
+  const router = express.Router();
+
+  // GET /categories
+  router.get('/categories', asyncH(async (req, res) => {
+    res.json(await svc.listCategories(domaine));
+  }));
+
+  // POST /signalements (citoyen, avec photo optionnelle)
+  router.post('/signalements',
+    authenticate,
+    upload.single('photo'),
+    validate(creerSchema),
+    asyncH(async (req, res) => {
+      const result = await svc.creer(domaine, {
+        ...req.body,
+        photoPath: req.file ? req.file.path : null,
+        citoyenId: req.user.id,
+      });
+      res.status(201).json(result);
+    }));
+
+  // GET /signalements (agent/opérateur/wilaya) — filtres en query
+  router.get('/signalements',
+    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    asyncH(async (req, res) => {
+      const { communeId, etat, operateurId } = req.query;
+      res.json(await svc.lister(domaine, {
+        communeId: communeId ? Number(communeId) : undefined,
+        etat,
+        operateurId: operateurId ? Number(operateurId) : undefined,
+      }));
+    }));
+
+  // PATCH /signalements/:id/etat (agent/opérateur, preuve photo possible)
+  router.patch('/signalements/:id/etat',
+    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    upload.single('preuve'),
+    validate(etatSchema),
+    asyncH(async (req, res) => {
+      const maj = await svc.changerEtat(
+        domaine, req.params.id, req.body.etat, req.user.id,
+        req.file ? req.file.path : null);
+      res.json(maj);
+    }));
+
+  // GET /dashboard — vue consolidée (scores, points noirs, délai moyen)
+  router.get('/dashboard',
+    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    asyncH(async (req, res) => {
+      const [scores, noirs, delai] = await Promise.all([
+        svc.scoresParCommune(domaine),
+        svc.pointsNoirs(domaine),
+        svc.delaiMoyenHeures(domaine),
+      ]);
+      res.json({ domaine, scores, pointsNoirs: noirs, delaiMoyenReparationHeures: delai });
+    }));
+
+  return router;
+}
+
+module.exports = { makeSignalementRouter };
