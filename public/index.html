@@ -1380,6 +1380,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard Admin
       </button>
+      <button class="nav-item" onclick="showView('edeval')" data-view="edeval" data-i18n="edeval.titre">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34"/><path d="M21 3v7h-7"/><path d="M21 3l-9 9"/></svg>
+        EDEVAL
+      </button>
       <button class="nav-item hidden" onclick="showView('patrimoine')" data-view="patrimoine" id="nav-patrimoine" data-i18n="sidebar.patrimoine">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         PatriLocal
@@ -1446,6 +1450,13 @@
             </div>
             <h3 data-i18n="home.dashboard_titre">Dashboard Admin</h3>
             <p data-i18n="home.dashboard_desc">Indicateurs ICUA et statistiques</p>
+          </div>
+          <div class="module-card" onclick="showView('edeval')">
+            <div class="module-icon" style="background:#f0fdf4;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34"/><path d="M21 3v7h-7"/><path d="M21 3l-9 9"/></svg>
+            </div>
+            <h3 data-i18n="edeval.titre">EDEVAL — Espaces Verts</h3>
+            <p data-i18n="edeval.iqep_long" style="font-size:11px;">Indice Qualité des Espaces Publics</p>
           </div>
           <div class="module-card hidden" id="home-patrimoine-card" onclick="showView('patrimoine')">
             <div class="module-icon" style="background:var(--gold-light);">
@@ -2018,6 +2029,22 @@
       </div>
 
 
+
+      <!-- ══ EDEVAL SMART GREEN VIEW ══ -->
+      <div id="view-edeval" class="view">
+        <div class="page-header">
+          <h2 data-i18n="edeval.titre">EDEVAL — Espaces Verts</h2>
+          <p data-i18n="edeval.sous_titre">Qualité des espaces publics — Wilaya d'Alger</p>
+        </div>
+
+        <!-- Liste des parcs avec IQEP -->
+        <div id="edeval-parcs-list"></div>
+
+        <!-- Détail/ajustement IQEP (agent/admin) -->
+        <div id="edeval-detail" class="hidden" style="margin-top:20px;">
+          <div class="card" id="edeval-detail-card"></div>
+        </div>
+      </div>
 
       <!-- ══ PATRIMOINE VIEW ══ -->
       <div id="view-patrimoine" class="view">
@@ -2627,6 +2654,7 @@ function showView(name) {
   if (name === 'dashboard') initDashboard();
   if (name === 'mes-signalements') initMesSignalements();
   if (name === 'carte') initCarte();
+  if (name === 'edeval') initEdeval();
   if (name === 'patrimoine') initPatrimoine();
   if (name === 'operateur') initOperateur();
 
@@ -3452,6 +3480,148 @@ async function exportCSV(domaine) {
     a.href = url; a.download = `signalements-${domaine}.csv`; a.click();
     URL.revokeObjectURL(url);
   } catch(e) { showToast(t('toast.erreur_export'), 'error'); }
+}
+
+// ─── EDEVAL SMART GREEN ──────────────────────────────────────
+function iqepColor(note) {
+  if (note >= 75) return 'var(--green)';
+  if (note >= 50) return 'var(--gold)';
+  return 'var(--red)';
+}
+function iqepLabel(note) {
+  if (note >= 75) return t('edeval.qualite_excellente');
+  if (note >= 50) return t('edeval.qualite_bonne');
+  if (note >= 25) return t('edeval.qualite_moyenne');
+  return t('edeval.qualite_mauvaise');
+}
+
+async function initEdeval() {
+  const el = document.getElementById('edeval-parcs-list');
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + t('edeval.chargement') + '</div>';
+  document.getElementById('edeval-detail').classList.add('hidden');
+  try {
+    const res = await fetch('/api/edeval/iqep');
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const parcs = await res.json();
+    if (!parcs.length) { el.innerHTML = '<div class="empty-state"><p>' + t('edeval.aucun_parc') + '</p></div>'; return; }
+    el.innerHTML = parcs.map(p => {
+      const note = p.note_finale ?? 100;
+      const color = iqepColor(note);
+      return `
+        <div class="card" style="margin-bottom:10px;padding:14px;cursor:pointer;" onclick="showIqepDetail(${p.id})">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div style="flex:1;min-width:180px;">
+              <div style="font-weight:700;font-size:14px;color:var(--navy);">${escHtml(p.nom)}</div>
+              <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(p.commune_nom || '—')}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="text-align:center;">
+                <div style="font-size:24px;font-weight:800;color:${color};">${note}</div>
+                <div style="font-size:10px;color:${color};font-weight:600;">${iqepLabel(note)}</div>
+              </div>
+              <div style="width:48px;height:48px;border-radius:50%;border:3px solid ${color};display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;font-weight:700;color:${color};">${t('edeval.iqep')}</span>
+              </div>
+            </div>
+          </div>
+          ${p.note_manuelle !== null ? '<div style="font-size:11px;color:var(--gold);margin-top:4px;">⚙ ' + t('edeval.note_manuelle') + ' : ' + p.note_manuelle + '</div>' : ''}
+        </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>';
+  }
+}
+
+async function showIqepDetail(parcId) {
+  const card = document.getElementById('edeval-detail-card');
+  const wrap = document.getElementById('edeval-detail');
+  wrap.classList.remove('hidden');
+  card.innerHTML = '<div style="text-align:center;padding:20px;">' + t('global.chargement') + '</div>';
+  try {
+    const res = await fetch('/api/edeval/iqep/' + parcId);
+    const d = await res.json();
+    const note = d.note_finale ?? d.note_auto ?? 100;
+    const color = iqepColor(note);
+    const isAdmin = isSuperAdmin() || isAgent();
+    const scFields = ['sc_espaces_verts','sc_equipements','sc_proprete','sc_eclairage','sc_securite','sc_satisfaction'];
+
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+          <h3 style="margin:0;color:var(--navy);">${escHtml(d.nom)}</h3>
+          <p style="margin:2px 0;font-size:12px;color:var(--muted);">📍 ${escHtml(d.commune_nom || '—')}</p>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:36px;font-weight:800;color:${color};">${note}<span style="font-size:14px;">/100</span></div>
+          <div style="font-size:11px;font-weight:600;color:${color};">${iqepLabel(note)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div style="padding:8px;background:var(--gray-50);border-radius:var(--radius-sm);font-size:13px;">
+          <span style="color:var(--muted);">${t('edeval.note_auto')} :</span> <strong>${d.note_auto ?? '—'}</strong>
+        </div>
+        <div style="padding:8px;background:var(--gray-50);border-radius:var(--radius-sm);font-size:13px;">
+          <span style="color:var(--muted);">${t('edeval.note_manuelle')} :</span> <strong>${d.note_manuelle ?? '—'}</strong>
+        </div>
+      </div>
+      ${isAdmin ? `
+        <h4 style="margin:12px 0 8px;font-size:13px;color:var(--navy);">${t('edeval.ajuster')}</h4>
+        <form onsubmit="saveIqep(event, ${parcId})" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin:0;">
+            <label style="font-size:11px;">${t('edeval.note_manuelle')}</label>
+            <input type="number" id="iqep-note" min="0" max="100" value="${d.note_manuelle ?? ''}" placeholder="0–100" style="font-size:13px;padding:6px;">
+          </div>
+          ${scFields.map(sc => `
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:11px;">${t('edeval.' + sc)}</label>
+              <input type="number" name="${sc}" min="0" max="100" value="${d[sc] ?? ''}" placeholder="0–100" style="font-size:13px;padding:6px;">
+            </div>`).join('')}
+          <div style="grid-column:1/-1;margin-top:6px;">
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">${t('edeval.enregistrer')}</button>
+          </div>
+        </form>
+      ` : `
+        <h4 style="margin:12px 0 8px;font-size:13px;color:var(--navy);">${t('edeval.sous_criteres')}</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          ${scFields.map(sc => `
+            <div style="padding:6px 8px;background:var(--gray-50);border-radius:var(--radius-sm);font-size:12px;">
+              ${t('edeval.' + sc)} : <strong>${d[sc] ?? '—'}</strong>
+            </div>`).join('')}
+        </div>
+      `}
+    `;
+    wrap.scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    card.innerHTML = '<p style="color:var(--red);">' + t('global.erreur_reseau') + '</p>';
+  }
+}
+
+async function saveIqep(e, parcId) {
+  e.preventDefault();
+  const form = e.target;
+  const body = {};
+  const noteVal = document.getElementById('iqep-note').value;
+  if (noteVal !== '') body.note_manuelle = Number(noteVal);
+  ['sc_espaces_verts','sc_equipements','sc_proprete','sc_eclairage','sc_securite','sc_satisfaction'].forEach(sc => {
+    const inp = form.querySelector('[name="' + sc + '"]');
+    if (inp && inp.value !== '') body[sc] = Number(inp.value);
+  });
+  try {
+    const res = await apiFetch('/api/edeval/iqep/' + parcId, {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      showToast(t('edeval.note_sauvee'));
+      await initEdeval();
+      showIqepDetail(parcId);
+    } else {
+      showToast(t('edeval.erreur_sauvegarde'), 'error');
+    }
+  } catch (e) {
+    showToast(t('global.erreur_reseau'), 'error');
+  }
 }
 
 // ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────

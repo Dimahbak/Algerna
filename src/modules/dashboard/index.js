@@ -6,6 +6,7 @@
 const express = require('express');
 const { query } = require('../../db/pool');
 const svc = require('../proprete/signalementService');
+const { moyenneIqep } = require('../edeval');
 const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH } = require('../../utils/http');
 
@@ -58,7 +59,10 @@ router.get('/icua',
   asyncH(async (req, res) => {
     const proprete = await sousIndiceProprete();
     const reactivite = await sousIndiceReactivite();
-    const vivre = 70;            // partiel au pilote (placeholder calibrable)
+    // Vivre-ensemble : alimenté par la moyenne IQEP (qualité des parcs).
+    // Fallback 70 si aucun parc n'est encore évalué.
+    const iqepMoy = await moyenneIqep();
+    const vivre = iqepMoy !== null ? iqepMoy : 70;
     const fluidite = await sousIndiceFluidite();
     const engagement = await sousIndiceEngagement();
 

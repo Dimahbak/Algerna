@@ -352,8 +352,39 @@
 | `signaler.succes` | Signalement envoyé ! Réf : | !تم إرسال البلاغ بنجاح المرجع: |
 | `signaler.erreur_categorie` | Veuillez sélectionner un type de problème. | يرجى اختيار نوع المشكلة. |
 
+## 23. EDEVAL SMART GREEN — IQEP
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `edeval.titre` | EDEVAL — Espaces Verts | EDEVAL — المساحات الخضراء |
+| `edeval.sous_titre` | Qualité des espaces publics — Wilaya d'Alger | جودة الفضاءات العمومية — ولاية الجزائر |
+| `edeval.iqep` | IQEP | IQEP |
+| `edeval.iqep_long` | Indice Qualité des Espaces Publics | مؤشر جودة الفضاءات العمومية |
+| `edeval.parcs_titre` | Parcs et jardins | الحدائق والمتنزهات |
+| `edeval.note_auto` | Note automatique | التقييم التلقائي |
+| `edeval.note_manuelle` | Note manuelle | التقييم اليدوي |
+| `edeval.note_finale` | Note finale | التقييم النهائي |
+| `edeval.sous_criteres` | Sous-critères | المعايير الفرعية |
+| `edeval.sc_espaces_verts` | État espaces verts | حالة المساحات الخضراء |
+| `edeval.sc_equipements` | Équipements | التجهيزات |
+| `edeval.sc_proprete` | Propreté | النظافة |
+| `edeval.sc_eclairage` | Éclairage | الإنارة |
+| `edeval.sc_securite` | Sécurité | الأمن |
+| `edeval.sc_satisfaction` | Satisfaction | الرضا |
+| `edeval.ajuster` | Ajuster la note | تعديل التقييم |
+| `edeval.enregistrer` | Enregistrer | حفظ |
+| `edeval.superficie` | Superficie | المساحة |
+| `edeval.hectares` | ha | هكتار |
+| `edeval.aucun_parc` | Aucun parc enregistré. | لا توجد حدائق مسجلة. |
+| `edeval.chargement` | Chargement des parcs… | جاري تحميل الحدائق… |
+| `edeval.note_sauvee` | Note IQEP mise à jour. | تم تحديث تقييم IQEP. |
+| `edeval.erreur_sauvegarde` | Erreur de sauvegarde. | خطأ في الحفظ. |
+| `edeval.qualite_excellente` | Excellent | ممتاز |
+| `edeval.qualite_bonne` | Bon | جيد |
+| `edeval.qualite_moyenne` | Moyen | متوسط |
+| `edeval.qualite_mauvaise` | Dégradé | متدهور |
+
 ---
 
-**Total : ~377 clés i18n**
+**Total : ~404 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**
