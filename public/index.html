@@ -3348,35 +3348,29 @@ async function exportCSV(domaine) {
 
 // ─── CARTE MAP ───────────────────────────────────────────────
 // ── Configuration tuiles centralisée ──────────────────────────
-// Les tuiles publiques OSM conviennent au pilote/démo mais sont soumises
-// à la politique d'usage (https://operations.osmfoundation.org/policies/tiles/).
-// Pour la montée en charge : remplacer TILE_URL par un fournisseur avec clé
-// (ex. MapTiler gratuit 100k tuiles/mois, Stadia, Thunderforest).
-const TILE_URL      = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_URL_ALT  = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-const TILE_ATTR     = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const TILE_ATTR_ALT = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/">CARTO</a>';
+// Principal = CARTO (gratuit, sans clé, pas de Referer requis, CDN mondial).
+// Fallback = OSM standard (requiert Referer valide — peut être strippé par
+// certains reverse proxies comme OpenLiteSpeed).
+// Montée en charge : remplacer TILE_URL par un fournisseur avec clé
+// (MapTiler gratuit 100k/mois, Stadia, Thunderforest) sans refactor.
+const TILE_URL      = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+const TILE_OPTS     = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' };
+const TILE_URL_ALT  = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_OPTS_ALT = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19 };
 
 /**
  * Crée une couche de tuiles avec fallback automatique.
  * Si le fournisseur principal échoue (tileerror), bascule sur le secondaire.
  */
 function createTileLayer(map) {
-  const primary = L.tileLayer(TILE_URL, {
-    attribution: TILE_ATTR,
-    maxZoom: 19
-  });
-  let hasFailed = false;
+  const primary = L.tileLayer(TILE_URL, TILE_OPTS);
+  let switched = false;
   primary.on('tileerror', function() {
-    if (hasFailed) return;
-    hasFailed = true;
-    console.warn('[CiviSmart] Tuiles OSM indisponibles — bascule sur CARTO');
+    if (switched) return;
+    switched = true;
+    console.warn('[CiviSmart] Tuiles CARTO indisponibles — bascule sur OSM');
     map.removeLayer(primary);
-    L.tileLayer(TILE_URL_ALT, {
-      attribution: TILE_ATTR_ALT,
-      maxZoom: 19,
-      subdomains: 'abcd'
-    }).addTo(map);
+    L.tileLayer(TILE_URL_ALT, TILE_OPTS_ALT).addTo(map);
   });
   primary.addTo(map);
 }
