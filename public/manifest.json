@@ -36,40 +36,32 @@
   "screenshots": [],
   "shortcuts": [
     {
-      "name": "Signaler propreté",
-      "short_name": "CiviSignal",
-      "description": "Signaler un problème de propreté",
-      "url": "/#civisignal",
-      "icons": [
-        {
-          "src": "/icons/icon-192.svg",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Signaler eau",
-      "short_name": "WaterSignal",
-      "description": "Signaler un problème d'eau",
-      "url": "/#watersignal",
-      "icons": [
-        {
-          "src": "/icons/icon-192.svg",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Prendre RDV",
-      "short_name": "RDV",
-      "description": "Réserver un rendez-vous APC",
+      "name": "Mes démarches",
+      "short_name": "Démarches",
+      "description": "RDV et suivi administratif",
       "url": "/#civiadmin",
-      "icons": [
-        {
-          "src": "/icons/icon-192.svg",
-          "sizes": "192x192"
-        }
-      ]
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Je signale",
+      "short_name": "Signaler",
+      "description": "Signaler un problème",
+      "url": "/#signaler",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mon quartier",
+      "short_name": "Quartier",
+      "description": "Carte et qualité du quartier",
+      "url": "/#carte",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Je suis",
+      "short_name": "Suivi",
+      "description": "Suivi de mes signalements et RDV",
+      "url": "/#mes-signalements",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
     }
   ]
 }

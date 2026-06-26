@@ -481,8 +481,33 @@
 | `civipark.filtre_plaque` | Filtrer par plaque | تصفية حسب اللوحة |
 | `civipark.filtre_ticket` | Filtrer par N° ticket | تصفية حسب رقم التذكرة |
 
+## 26. Navigation — 6 Univers
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `univers.demarches` | Mes démarches | إجراءاتي |
+| `univers.demarches_desc` | RDV, file virtuelle, suivi administratif | المواعيد، الطابور الافتراضي، المتابعة الإدارية |
+| `univers.demarches_court` | Démarches | إجراءات |
+| `univers.signale` | Je signale | أبلّغ |
+| `univers.signale_desc` | Signaler un problème (propreté, eau, voirie…) | الإبلاغ عن مشكلة (نظافة، مياه، طرق…) |
+| `univers.signale_court` | Signaler | إبلاغ |
+| `univers.nouveau_signalement` | Nouveau signalement | بلاغ جديد |
+| `univers.quartier` | Mon quartier | حيّي |
+| `univers.quartier_desc` | Carte, scores, IQEP parcs | الخريطة، التقييمات، IQEP الحدائق |
+| `univers.quartier_court` | Quartier | الحي |
+| `univers.iqep_parcs` | IQEP Parcs | IQEP الحدائق |
+| `univers.participe` | Je participe | أشارك |
+| `univers.participe_desc` | Engagement citoyen et participation locale | المشاركة المواطنية والمحلية |
+| `univers.bientot` | Bientôt disponible | قريبا |
+| `univers.participe_soon` | Consultations citoyennes… | الاستشارات المواطنية… |
+| `univers.suivi` | Je suis | أتابع |
+| `univers.suivi_desc` | Suivi de mes signalements et RDV | متابعة بلاغاتي ومواعيدي |
+| `univers.suivi_court` | Suivi | متابعة |
+| `univers.profil` | Mon profil | ملفي |
+| `univers.profil_desc` | Points civiques, classement, badges | النقاط المدنية، الترتيب، الشارات |
+| `univers.profil_court` | Profil | ملفي |
+
 ---
 
-**Total : ~504 clés i18n**
+**Total : ~525 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**
