@@ -1,6 +1,6 @@
 # CiviSmart — Revue des traductions arabes (AR)
 
-> **Généré automatiquement le 26/06/2026**
+> **Généré automatiquement le 26/06/2026 — mis à jour le 26/06/2026 (passe 2 : textes dynamiques JS)**
 > Toutes les traductions arabes ci-dessous ont été générées par IA (arabe standard moderne, registre administratif algérien).
 > **Chaque clé doit être relue et validée par un humain arabophone.**
 > Les noms propres et acronymes (CiviSmart, NETCOM, EDEVAL, ERMA, EGCTU, CET, ICUA, APC, Wilaya, SEAAL, CNIEC) sont conservés tels quels.
@@ -27,6 +27,11 @@
 | `global.tous_etats` | Tous les états | جميع الحالات |
 | `global.points` | points | نقاط |
 | `global.acces_reserve` | Accès réservé aux administrateurs. | الوصول مخصص للمسؤولين فقط. |
+| `global.erreur` | Erreur | خطأ |
+| `global.erreur_avec_details` | Erreur : {details} | خطأ: {details} |
+| `global.erreur_reseau_details` | Erreur réseau : {details} | خطأ في الشبكة: {details} |
+| `global.statut_code` | Statut {code} | الحالة {code} |
+| `global.inconnue` | Inconnue | غير معروف |
 
 ## 2. AUTHENTIFICATION
 | Clé | FR | AR (à relire) |
@@ -42,6 +47,8 @@
 | `auth.commune` | Commune | البلدية |
 | `auth.creer_compte` | Créer mon compte | إنشاء حسابي |
 | `auth.session_expiree` | Session expirée... | انتهت الجلسة، يرجى إعادة تسجيل الدخول. |
+| `auth.identifiants_incorrects` | Identifiants incorrects | بيانات الدخول غير صحيحة |
+| `auth.erreur_inscription` | Erreur lors de l'inscription | خطأ أثناء التسجيل |
 
 ## 3. NAVIGATION (sidebar + bottom)
 | Clé | FR | AR (à relire) |
@@ -65,7 +72,7 @@
 ## 4. ACCUEIL
 | Clé | FR | AR (à relire) |
 |-----|-----|----------------|
-| `home.bienvenue` | Bienvenue, | مرحباً، |
+| `home.bienvenue` | Bienvenue, {name} ! | !{name} ،مرحباً |
 | `home.citoyen` | Citoyen | مواطن |
 | `home.civisignal_desc` | Signaler un problème de propreté | الإبلاغ عن مشكلة نظافة |
 | `home.watersignal_desc` | Signaler un problème d'eau | الإبلاغ عن مشكلة مياه |
@@ -108,6 +115,13 @@
 | `sig.transmettre` | Transmettre | إحالة |
 | `sig.rejeter` | Rejeter | رفض |
 | `sig.historique` | Historique | السجل |
+| `sig.envoi_succes` | Signalement envoyé avec succès ! Réf : | تم إرسال البلاغ بنجاح! المرجع: |
+| `sig.erreur_envoi` | Erreur lors de l'envoi | خطأ أثناء الإرسال |
+| `sig.erreur_etat` | Erreur lors du changement d'état | خطأ أثناء تغيير الحالة |
+| `sig.aucun_trouve` | Aucun signalement trouvé | لم يتم العثور على أي بلاغ |
+| `sig.sans_description` | Sans description | بدون وصف |
+| `sig.aucun_historique` | Aucun historique disponible. | لا يوجد سجل متاح. |
+| `sig.systeme` | Système | النظام |
 
 ## 8. CIVIADMIN — RDV
 | Clé | FR | AR (à relire) |
@@ -125,6 +139,11 @@
 | `rdv.confirmation_desc` | Votre RDV a été enregistré avec succès. | تم تسجيل موعدك بنجاح. |
 | `rdv.autre_rdv` | Prendre un autre rendez-vous | حجز موعد آخر |
 | `rdv.mes_rdv` | Mes rendez-vous | مواعيدي |
+| `rdv.portail_msg` | Ce service relève du portail national... | هذه الخدمة تتبع البوابة الوطنية للحالة المدنية (CNIEC)... |
+| `rdv.erreur_reservation` | Erreur lors de la réservation | خطأ أثناء الحجز |
+| `rdv.impossible_charger` | Impossible de charger vos rendez-vous. | تعذر تحميل مواعيدك. |
+| `rdv.aucun_rdv` | Aucun rendez-vous pour le moment | لا توجد مواعيد حاليًا |
+| `rdv.chargement_rdv` | Chargement de vos RDV... | جاري تحميل مواعيدك... |
 
 ## 9. GESTION CRÉNEAUX (admin)
 | Clé | FR | AR (à relire) |
@@ -134,6 +153,13 @@
 | `rdv_admin.capacite` | Capacité (personnes / créneau) | السعة (أشخاص / فترة) |
 | `rdv_admin.repetitions` | Nombre de créneaux consécutifs | عدد الفترات المتتالية |
 | `rdv_admin.btn_creer` | Créer les créneaux | إنشاء الفترات |
+| `rdv_admin.aucun_creneau` | Aucun créneau à venir | لا توجد فترات قادمة |
+| `rdv_admin.cap` | Cap. | السعة |
+| `rdv_admin.reserve` | réservé | محجوز |
+| `rdv_admin.reserves` | réservés | محجوزة |
+| `rdv_admin.dispo` | dispo | متاح |
+| `rdv_admin.creation_en_cours` | Création... | جاري الإنشاء... |
+| `rdv_admin.succes` | créneau(x) créé(s) avec succès. | فترة(ات) زمنية تم إنشاؤها بنجاح. |
 
 ## 10. SENTINELLE (points civiques)
 | Clé | FR | AR (à relire) |
@@ -145,6 +171,10 @@
 | `sent.journal` | Journal des points | سجل النقاط |
 | `sent.classement` | Classement — Top 20 | التصنيف — أفضل 20 |
 | `sent.col_motif` | Motif | السبب |
+| `sent.aucun_point` | Aucun point enregistré pour le moment | لم يتم تسجيل أي نقاط حتى الآن |
+| `sent.impossible_charger` | Impossible de charger vos points. | تعذر تحميل نقاطك. |
+| `sent.classement_indisponible` | Classement indisponible. | التصنيف غير متاح. |
+| `sent.classement_vide` | Classement vide pour le moment | التصنيف فارغ حاليًا |
 
 ## 11. DASHBOARD ADMINISTRATIF
 | Clé | FR | AR (à relire) |
@@ -165,6 +195,11 @@
 | `dash.dim_vivre_ensemble` | Vivre ensemble | العيش المشترك |
 | `dash.dim_fluidite` | Fluidité | السلاسة |
 | `dash.dim_engagement` | Engagement citoyen | المشاركة المدنية |
+| `dash.eau` | Eau | المياه |
+| `dash.proprete` | Propreté | النظافة |
+| `dash.signalements` | signalements | بلاغات |
+| `dash.erreur_icua` | Erreur chargement ICUA | خطأ في تحميل ICUA |
+| `dash.aucune_dimension` | Aucune donnée de dimension. | لا توجد بيانات أبعاد. |
 
 ## 12. MES SIGNALEMENTS
 | Clé | FR | AR (à relire) |
@@ -172,6 +207,7 @@
 | `mes_sig.titre` | Mes Signalements | بلاغاتي |
 | `mes_sig.sous_titre` | Historique de vos signalements soumis | سجل بلاغاتك المقدمة |
 | `mes_sig.aucun` | Vous n'avez pas encore soumis de signalement. | لم تقدم أي بلاغ بعد. |
+| `mes_sig.ref` | Réf : | المرجع: |
 
 ## 13. CARTE
 | Clé | FR | AR (à relire) |
@@ -244,9 +280,49 @@
 | `geo.permission_refusee` | Permission refusée... | تم رفض الإذن. يرجى السماح... |
 | `geo.position_indisponible` | Position indisponible. | الموقع غير متاح. |
 | `geo.impossible` | Impossible d'obtenir votre position. | تعذر الحصول على موقعك. |
+| `geo.delai_depasse` | Délai dépassé. Réessayez. | انتهت المهلة. أعد المحاولة. |
+| `geo.position` | Position : | الموقع: |
+| `geo.position_capturee` | Position capturée ✓ | تم التقاط الموقع ✓ |
+| `geo.position_gps` | Position GPS : | موقع GPS: |
+| `geo.position_selectionnee` | Position sélectionnée : | الموقع المحدد: |
+| `geo.reessayer` | Réessayer la géolocalisation | إعادة محاولة تحديد الموقع |
+| `geo.geocodage` | Géocodage en cours… | جاري تحديد العنوان… |
+
+## 19. PATRILOCAL — Clés dynamiques JS
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `patri.aucun_bien` | Aucun bien trouvé. | لم يتم العثور على أي عقار. |
+| `patri.occupant` | Occupant : | الشاغل: |
+| `patri.gratuit` | (gratuit) | (مجاني) |
+| `patri.changer_statut` | Changer statut… | تغيير الحالة… |
+| `patri.contrat_btn` | + Contrat | + عقد |
+| `patri.loyer_btn` | + Loyer | + إيجار |
+| `patri.type_equipement` | Équipement | تجهيز |
+| `patri.type_immeuble` | Immeuble | عمارة |
+| `patri.type_terrain` | Terrain | أرض |
+| `patri.aucun_expirant` | Aucun contrat expirant dans 30 jours. | لا توجد عقود تنتهي خلال 30 يومًا. |
+| `patri.jours_restants` | j restants | يوم متبقي |
+| `patri.expire_le` | expire le | تنتهي في |
+| `paiement.loyer_pour` | Loyer pour : | الإيجار لـ: |
+
+## 20. TOASTS & NOTIFICATIONS JS
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `toast.bien_cree` | créé avec succès. | تم الإنشاء بنجاح. |
+| `toast.contrat_enregistre` | Contrat enregistré pour | تم تسجيل العقد لـ |
+| `toast.erreur_export` | Erreur export CSV | خطأ في تصدير CSV |
+| `toast.erreur_maj` | Erreur mise à jour. | خطأ في التحديث. |
+| `toast.etat_maj` | État mis à jour. | تم تحديث الحالة. |
+| `toast.paiement_enregistre` | DA enregistré. | دج تم تسجيله. |
+| `toast.statut_maj` | Statut mis à jour : | تم تحديث الحالة: |
+
+## 21. OPÉRATEUR — Clés dynamiques JS
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `op.aucun` | Aucun signalement assigné. | لا توجد بلاغات مسندة. |
 
 ---
 
-**Total : ~200 clés i18n**
+**Total : ~260 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**

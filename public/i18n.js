@@ -33,6 +33,11 @@ const I18N = {
     "global.point": "point",
     "global.pts": "pts",
     "global.acces_reserve": "Accès réservé aux administrateurs.",
+    "global.erreur": "Erreur",
+    "global.erreur_avec_details": "Erreur : {details}",
+    "global.erreur_reseau_details": "Erreur réseau : {details}",
+    "global.statut_code": "Statut {code}",
+    "global.inconnue": "Inconnue",
 
     // ─── AUTH ───
     "auth.connexion": "Connexion",
@@ -83,7 +88,7 @@ const I18N = {
     "bottomnav.carte": "Carte",
 
     // ─── HOME ───
-    "home.bienvenue": "Bienvenue,",
+    "home.bienvenue": "Bienvenue, {name} !",
     "home.citoyen": "Citoyen",
     "home.civisignal_titre": "CiviSignal",
     "home.civisignal_desc": "Signaler un problème de propreté",
@@ -136,6 +141,7 @@ const I18N = {
     "sig.resolu": "Résolu",
     "sig.rejeter": "Rejeter",
     "sig.erreur_etat": "Erreur lors du changement d'état",
+    "sig.systeme": "Système",
 
     // ─── ÉTATS ───
     "etat.recu": "Reçu",
@@ -427,6 +433,11 @@ const I18N = {
     "global.point": "نقطة",
     "global.pts": "نقطة",
     "global.acces_reserve": "الوصول مخصص للمسؤولين فقط.",
+    "global.erreur": "خطأ", // À RELIRE
+    "global.erreur_avec_details": "خطأ: {details}", // À RELIRE
+    "global.erreur_reseau_details": "خطأ في الشبكة: {details}", // À RELIRE
+    "global.statut_code": "الحالة {code}", // À RELIRE
+    "global.inconnue": "غير معروف", // À RELIRE
 
     // ─── AUTH ─── // À RELIRE
     "auth.connexion": "تسجيل الدخول",
@@ -477,7 +488,7 @@ const I18N = {
     "bottomnav.carte": "الخريطة",
 
     // ─── HOME ─── // À RELIRE
-    "home.bienvenue": "مرحباً،",
+    "home.bienvenue": "مرحباً، {name}!",
     "home.citoyen": "مواطن",
     "home.civisignal_titre": "CiviSignal",
     "home.civisignal_desc": "الإبلاغ عن مشكلة نظافة",
@@ -530,6 +541,7 @@ const I18N = {
     "sig.resolu": "تم الحل",
     "sig.rejeter": "رفض",
     "sig.erreur_etat": "خطأ أثناء تغيير الحالة",
+    "sig.systeme": "النظام",
 
     // ─── ÉTATS ─── // À RELIRE
     "etat.recu": "مستلم",
@@ -803,9 +815,15 @@ let currentLang = localStorage.getItem(LANG_KEY) || 'fr';
 /**
  * Retourne la traduction pour une clé donnée
  */
-function t(key, fallback) {
+function t(key, fallback, params) {
   const dict = I18N[currentLang] || I18N.fr;
-  return dict[key] || (I18N.fr[key]) || fallback || key;
+  let val = dict[key] || (I18N.fr[key]) || fallback || key;
+  if (params) {
+    Object.keys(params).forEach(k => {
+      val = val.replace('{' + k + '}', params[k]);
+    });
+  }
+  return val;
 }
 
 /**
