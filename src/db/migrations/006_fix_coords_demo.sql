@@ -1,0 +1,21 @@
+-- Migration 006 : Fix coordonnées GPS des signalements de démo
+-- Appliquée le 2026-06-26
+--
+-- Cause : les signalements de démo avaient des coordonnées tirées
+-- dans un rectangle global [36.72-36.82, 2.97-3.34] qui débordait
+-- sur la mer (baie d'Alger). Recalés sur le centroïde de la commune
+-- rattachée ± 0.008° (~800m).
+--
+-- ═══ UP ═══
+-- Déjà appliqué en live (UPDATE 66 signalements).
+-- Script de garde pour les futurs re-seeds :
+--
+-- UPDATE signalement s
+-- SET lat = c.centre_lat + (random() - 0.5) * 0.016,
+--     lng = c.centre_lng + (random() - 0.5) * 0.016
+-- FROM commune c
+-- WHERE c.id = s.commune_id
+--   AND SQRT(POWER(s.lat - c.centre_lat, 2) + POWER(s.lng - c.centre_lng, 2)) > 0.03;
+--
+-- ═══ DOWN ═══
+-- Pas de rollback (les anciennes coords aléatoires n'avaient pas de valeur).
