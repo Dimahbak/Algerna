@@ -10,7 +10,7 @@ const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH, badRequest, notFound, makeReference } = require('../../utils/http');
 
 const router = express.Router();
-const AGENTS = ['agent', 'operateur', 'admin_apc', 'admin_wilaya'];
+const AGENTS = ['admin_apc', 'admin_wilaya'];
 const ADMINS = ['admin_apc', 'admin_wilaya'];
 
 // ─── GET /api/patrimoine/dashboard ───────────────────────

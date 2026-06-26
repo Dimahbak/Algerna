@@ -27,6 +27,7 @@ const I18N = {
     "global.selectionner": "-- Sélectionner --",
     "global.selectionner_commune": "-- Sélectionner une commune --",
     "global.toutes_communes": "Toutes les communes",
+    "global.acces_refuse": "Accès réservé aux agents.",
     "global.tous_etats": "Tous les états",
     "global.export_csv": "⬇ Export CSV",
     "global.points": "points",
@@ -103,6 +104,8 @@ const I18N = {
     "univers.profil": "Mon profil",
     "univers.profil_desc": "Points civiques, classement, badges",
     "univers.profil_court": "Profil",
+    "univers.stationnement": "Stationnement",
+    "univers.stationnement_desc": "Zones de stationnement et tarifs",
 
     // ─── BOTTOM NAV ───
     "bottomnav.accueil": "Accueil",
@@ -646,6 +649,7 @@ const I18N = {
     "global.selectionner": "-- اختيار --",
     "global.selectionner_commune": "-- اختيار بلدية --",
     "global.toutes_communes": "جميع البلديات",
+    "global.acces_refuse": "الوصول مخصص للأعوان.",
     "global.tous_etats": "جميع الحالات",
     "global.export_csv": "⬇ تصدير CSV",
     "global.points": "نقاط",
@@ -722,6 +726,8 @@ const I18N = {
     "univers.profil": "ملفي",
     "univers.profil_desc": "النقاط المدنية، الترتيب، الشارات",
     "univers.profil_court": "ملفي",
+    "univers.stationnement": "المواقف",
+    "univers.stationnement_desc": "مناطق الركن والتعريفات",
 
     // ─── BOTTOM NAV ─── // À RELIRE
     "bottomnav.accueil": "الرئيسية",

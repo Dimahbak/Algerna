@@ -2060,6 +2060,7 @@
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-primary" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
           <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
         <div class="carte-filters">
           <button class="carte-filter-btn active" onclick="filterCarte('tous', this)" data-i18n="carte.tous">Tous</button>
@@ -2094,6 +2095,7 @@
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
           <button class="btn btn-sm btn-primary" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
 
         <!-- Liste des parcs avec IQEP -->
@@ -2272,6 +2274,20 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ══ PARKZONES — CiviPark citoyen (lecture seule) ══ -->
+      <div id="view-parkzones" class="view">
+        <div class="page-header">
+          <h2 data-i18n="univers.quartier">Mon quartier</h2>
+          <p data-i18n="univers.stationnement_desc">Zones de stationnement et tarifs</p>
+        </div>
+        <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
+          <button class="btn btn-sm btn-primary" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
+        </div>
+        <div id="parkzones-list"></div>
       </div>
 
       <!-- ══ JE PARTICIPE (placeholder) ══ -->
@@ -2792,10 +2808,12 @@ async function initApp() {
     document.getElementById('admin-nav-label').classList.remove('hidden');
     document.getElementById('admin-divider').style.display = '';
     document.getElementById('home-admin-card').classList.remove('hidden');
-  }
-  if (isAdmin()) {
+    // PatriLocal : strictement admin_apc / admin_wilaya
     document.getElementById('nav-patrimoine').classList.remove('hidden');
     document.getElementById('home-patrimoine-card').classList.remove('hidden');
+  }
+  if (isAdmin()) {
+    // CAP + CiviPark gestion : agent + admin
     document.getElementById('nav-cap').classList.remove('hidden');
     document.getElementById('home-cap-card').classList.remove('hidden');
     document.getElementById('nav-civipark').classList.remove('hidden');
@@ -3002,13 +3020,27 @@ function initAssistant(questions) {
 const UNIVERS_MAP = {
   civiadmin: 'demarches',
   signaler: 'signale', civisignal: 'signale', watersignal: 'signale',
-  carte: 'quartier', edeval: 'quartier',
+  carte: 'quartier', edeval: 'quartier', parkzones: 'quartier',
   participe: 'participe',
   'mes-signalements': 'suivi',
   sentinelle: 'profil'
 };
 
 function showView(name) {
+  // Gating par rôle — empêche citoyen d'accéder aux vues admin
+  const adminViews = ['dashboard', 'cap', 'civipark', 'operateur'];
+  const wilayaViews = ['patrimoine'];
+  if (currentUser && currentUser.role === 'citoyen') {
+    if (adminViews.includes(name) || wilayaViews.includes(name)) {
+      showToast(t('global.acces_refuse') || 'Accès réservé aux agents.', 'error');
+      return;
+    }
+  }
+  if (currentUser && wilayaViews.includes(name) && !isSuperAdmin()) {
+    showToast(t('global.acces_refuse') || 'Accès réservé.', 'error');
+    return;
+  }
+
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById('view-' + name);
   if (target) target.classList.add('active');
@@ -3035,6 +3067,7 @@ function showView(name) {
   if (name === 'mes-signalements') initMesSignalements();
   if (name === 'carte') initCarte();
   if (name === 'edeval') initEdeval();
+  if (name === 'parkzones') initParkzones();
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
@@ -3313,13 +3346,19 @@ async function loadCreneaux() {
       return;
     }
 
-    grid.innerHTML = creneaux.map(cr => `
-      <div class="creneau-card" onclick="selectCreneau('${escHtml(cr.id)}', this)" data-id="${escHtml(cr.id)}">
-        <div class="creneau-date">${fmtDate(cr.date || cr.dateHeure)}</div>
-        <div class="creneau-time">${cr.heure || (cr.dateHeure ? new Date(cr.dateHeure).toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' }) : '—')}</div>
-        <div class="creneau-lieu">${escHtml(cr.lieu || cr.salle || '')}</div>
-      </div>
-    `).join('');
+    grid.innerHTML = creneaux.map(cr => {
+      const dt = new Date(cr.debut);
+      const dateStr = dt.toLocaleDateString('fr-DZ', { weekday: 'short', day: 'numeric', month: 'short' });
+      const timeStr = dt.toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' });
+      const restants = Number(cr.restants);
+      const capacite = Number(cr.capacite);
+      return `
+      <div class="creneau-card" onclick="selectCreneau(${cr.id}, this)" data-id="${cr.id}">
+        <div class="creneau-date">${dateStr}</div>
+        <div class="creneau-time" style="font-size:18px;font-weight:700;">${timeStr}</div>
+        <div style="font-size:11px;color:${restants <= 2 ? 'var(--red)' : 'var(--green)'};">${restants}/${capacite} ${t('rdv_admin.dispo')}</div>
+      </div>`;
+    }).join('');
     grid.classList.remove('hidden');
     // Montrer le sélecteur prioritaire
     document.getElementById('rdv-priorite-group').classList.remove('hidden');
@@ -3333,7 +3372,7 @@ async function loadCreneaux() {
 function selectCreneau(id, el) {
   document.querySelectorAll('.creneau-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  selectedCreneauId = id;
+  selectedCreneauId = Number(id);
   document.getElementById('rdv-confirm-btn').classList.remove('hidden');
 }
 
@@ -4454,6 +4493,35 @@ async function cpCreateEncaissement(e) {
   } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
+// ─── PARKZONES — CiviPark citoyen (lecture seule) ────────────
+async function initParkzones() {
+  const el = document.getElementById('parkzones-list');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+  try {
+    const res = await fetch('/api/civipark/zones');
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const zones = await res.json();
+    if (!zones.length) { el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>'; return; }
+    const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge:'#ef4444' };
+    el.innerHTML = zones.map(z => {
+      const color = ZONE_COLORS[z.type] || '#94a3b8';
+      return `<div class="card" style="margin-bottom:8px;padding:12px;border-left:4px solid ${color};">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <div style="flex:1;min-width:180px;">
+            <div style="font-weight:700;color:var(--navy);">${escHtml(z.nom)}</div>
+            <div style="font-size:12px;color:var(--muted);">${escHtml(z.commune_nom||'—')}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${color}22;color:${color};font-weight:600;">${t('civipark.zone_'+z.type)}</span>
+            ${z.places_total ? `<span style="font-size:11px;color:var(--muted);">${z.places_total} ${t('civipark.places')}</span>` : ''}
+            ${z.tarif_horaire ? `<span style="font-size:11px;font-weight:600;color:var(--navy);">${z.tarif_horaire} ${t('civipark.da_h')}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
 // ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────
 let sigFamillesData = null;
 let sigMapInitialized = false;
@@ -4567,7 +4635,9 @@ async function sigShowEpics() {
   sigShowStep('epics');
   try {
     const res = await fetch('/api/signaler/epics');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const epics = await res.json();
+    if (!Array.isArray(epics) || !epics.length) { list.innerHTML = '<p style="color:var(--muted);padding:16px;">' + t('global.aucun') + '</p>'; return; }
     list.innerHTML = epics.map(ep => `
       <div class="card" style="margin-bottom:8px;padding:14px 16px;cursor:pointer;transition:background .15s;"
            onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
