@@ -1,4 +1,4 @@
-# Référence API — CiviSmart 2030
+# Référence API — Alger CiviSmart
 
 Base URL : `/api` · Format : JSON · Auth : `Authorization: Bearer <token>`
 

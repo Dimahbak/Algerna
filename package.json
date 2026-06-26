@@ -1,7 +1,7 @@
 {
-  "name": "alger-civismart-2030",
+  "name": "alger-civismart",
   "version": "0.1.0",
-  "description": "Alger Pass CiviSmart 2030 — plateforme citoyenne de gouvernance territoriale (Wilaya d'Alger)",
+  "description": "Alger CiviSmart — plateforme citoyenne de gouvernance territoriale (Wilaya d'Alger)",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

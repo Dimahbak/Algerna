@@ -1,4 +1,4 @@
-# Alger Pass — CiviSmart 2030 · Code de départ (backend)
+# Alger CiviSmart · Code de départ (backend)
 
 Plateforme citoyenne de gouvernance territoriale pour la Wilaya d'Alger.
 Ce dépôt est le **squelette applicatif prêt à coder** : architecture, base de

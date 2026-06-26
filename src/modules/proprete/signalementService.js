@@ -14,10 +14,13 @@ const SEUIL_POINT_NOIR = 3;        // signalements convergents
 const RAYON_DEG = 0.0005;          // ~50 m
 const POINTS_CREATION = 10;        // points Citoyen Sentinelle
 
-// Liste les catégories d'un domaine
+// Liste les catégories d'un domaine (avec EPIC associé si applicable)
 async function listCategories(domaine) {
   const { rows } = await query(
-    'SELECT id, libelle, criticite FROM categorie_signal WHERE domaine=$1 ORDER BY id',
+    `SELECT cs.id, cs.libelle, cs.criticite, cs.epic_id, e.sigle AS epic_sigle
+       FROM categorie_signal cs
+       LEFT JOIN epic e ON e.id = cs.epic_id AND e.actif = TRUE
+      WHERE cs.domaine=$1 ORDER BY cs.id`,
     [domaine]);
   return rows;
 }
@@ -38,20 +41,22 @@ async function creer(domaine, data) {
   const { categorieId, lat, lng, communeId, description, photoPath, citoyenId } = data;
 
   const cat = await query(
-    'SELECT id FROM categorie_signal WHERE id=$1 AND domaine=$2', [categorieId, domaine]);
+    'SELECT id, epic_id FROM categorie_signal WHERE id=$1 AND domaine=$2', [categorieId, domaine]);
   if (!cat.rowCount) throw badRequest('Catégorie inconnue pour ce domaine.');
 
-  const operateurId = await resoudreOperateur(communeId, domaine);
+  // Si la catégorie est liée à un EPIC spécifique, on l'utilise ; sinon routage par commune/opérateur
+  const epicId = cat.rows[0].epic_id || null;
+  const operateurId = epicId ? null : await resoudreOperateur(communeId, domaine);
   const reference = makeReference(PREFIX[domaine]);
 
   return withTransaction(async (c) => {
     const { rows } = await c.query(
       `INSERT INTO signalement
-         (reference,domaine,categorie_id,citoyen_id,commune_id,operateur_id,lat,lng,description,photo_path,etat)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'recu')
+         (reference,domaine,categorie_id,citoyen_id,commune_id,operateur_id,epic_id,lat,lng,description,photo_path,etat)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu')
        RETURNING *`,
       [reference, domaine, categorieId, citoyenId || null, communeId || null,
-       operateurId, lat, lng, description || null, photoPath || null]);
+       operateurId, epicId, lat, lng, description || null, photoPath || null]);
     const sig = rows[0];
 
     await c.query(

@@ -1,5 +1,5 @@
 -- ============================================================
--- Alger Pass CiviSmart 2030 — Schéma PostgreSQL (v1)
+-- Alger CiviSmart — Schéma PostgreSQL (v1)
 -- Couvre : référentiel territorial, utilisateurs/auth,
 --          CiviAdmin (RDV), CiviSignal (propreté), WaterSignal (eau),
 --          points Citoyen Sentinelle.
