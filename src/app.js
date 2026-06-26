@@ -9,7 +9,12 @@ const { errorHandler } = require('./middleware/validation');
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  // Permettre l'envoi du Referer vers les serveurs de tuiles OSM
+  // (OSM bloque les requêtes sans Referer valide — HTTP 418/403)
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
 app.use(cors({ origin: config.corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));

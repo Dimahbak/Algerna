@@ -3347,6 +3347,40 @@ async function exportCSV(domaine) {
 }
 
 // ─── CARTE MAP ───────────────────────────────────────────────
+// ── Configuration tuiles centralisée ──────────────────────────
+// Les tuiles publiques OSM conviennent au pilote/démo mais sont soumises
+// à la politique d'usage (https://operations.osmfoundation.org/policies/tiles/).
+// Pour la montée en charge : remplacer TILE_URL par un fournisseur avec clé
+// (ex. MapTiler gratuit 100k tuiles/mois, Stadia, Thunderforest).
+const TILE_URL      = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_URL_ALT  = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+const TILE_ATTR     = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const TILE_ATTR_ALT = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/">CARTO</a>';
+
+/**
+ * Crée une couche de tuiles avec fallback automatique.
+ * Si le fournisseur principal échoue (tileerror), bascule sur le secondaire.
+ */
+function createTileLayer(map) {
+  const primary = L.tileLayer(TILE_URL, {
+    attribution: TILE_ATTR,
+    maxZoom: 19
+  });
+  let hasFailed = false;
+  primary.on('tileerror', function() {
+    if (hasFailed) return;
+    hasFailed = true;
+    console.warn('[CiviSmart] Tuiles OSM indisponibles — bascule sur CARTO');
+    map.removeLayer(primary);
+    L.tileLayer(TILE_URL_ALT, {
+      attribution: TILE_ATTR_ALT,
+      maxZoom: 19,
+      subdomains: 'abcd'
+    }).addTo(map);
+  });
+  primary.addTo(map);
+}
+
 let carteMap = null;
 let carteMarkers = [];
 let carteAllSignals = [];
@@ -3356,10 +3390,7 @@ let carteActiveFilter = 'tous';
 async function initCarte() {
   if (!carteInitialized) {
     carteMap = L.map('carte-map').setView([36.7538, 3.0588], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19
-    }).addTo(carteMap);
+    createTileLayer(carteMap);
     carteInitialized = true;
   }
 
@@ -3523,7 +3554,11 @@ let wsMarker = null;
 
 async function reverseGeocode(lat, lng) {
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`);
+    const lang = currentLang === 'ar' ? 'ar' : 'fr';
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=${lang}`,
+      { headers: { 'User-Agent': 'CiviSmart/1.0 (civismart.pylcom.app)' } }
+    );
     const d = await r.json();
     return d.display_name || null;
   } catch { return null; }
@@ -3541,10 +3576,7 @@ function initMiniMap(prefix) {
   if (prefix === 'ws' && wsMapInitialized) { setTimeout(() => wsMap && wsMap.invalidateSize(), 100); return; }
 
   const map = L.map(mapId).setView([36.7538, 3.0588], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 19
-  }).addTo(map);
+  createTileLayer(map);
 
   let marker = null;
 
