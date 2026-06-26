@@ -383,8 +383,106 @@
 | `edeval.qualite_moyenne` | Moyen | متوسط |
 | `edeval.qualite_mauvaise` | Dégradé | متدهور |
 
+## 24. CAP — Agents de Proximité
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `cap.titre` | CAP — Agents de Proximité | CAP — أعوان القرب |
+| `cap.sous_titre` | Corps des Agents de Proximité — Wilaya d'Alger | سلك أعوان القرب — ولاية الجزائر |
+| `cap.agents` | Agents CAP | أعوان CAP |
+| `cap.interventions` | Interventions | التدخلات |
+| `cap.alertes` | Alertes superviseur | تنبيهات المشرف |
+| `cap.nouvel_agent` | Nouvel agent CAP | عون CAP جديد |
+| `cap.nouvelle_intervention` | Nouvelle intervention | تدخل جديد |
+| `cap.specialisation` | Spécialisation | التخصص |
+| `cap.spec_general` | Général | عام |
+| `cap.spec_stationnement` | Stationnement | مواقف |
+| `cap.spec_jeunesse` | Jeunesse | شباب |
+| `cap.spec_sport` | Sport | رياضة |
+| `cap.secteur` | Secteur | القطاع |
+| `cap.type_intervention` | Type | النوع |
+| `cap.type_orientation` | Orientation | توجيه |
+| `cap.type_mediation` | Médiation | وساطة |
+| `cap.type_constat` | Constat | معاينة |
+| `cap.type_accompagnement` | Accompagnement | مرافقة |
+| `cap.type_autre` | Autre | أخرى |
+| `cap.priorite` | Priorité | الأولوية |
+| `cap.pri_basse` | Basse | منخفضة |
+| `cap.pri_normale` | Normale | عادية |
+| `cap.pri_haute` | Haute | عالية |
+| `cap.pri_urgente` | Urgente | عاجلة |
+| `cap.description` | Description | الوصف |
+| `cap.etat_en_cours` | En cours | جاري |
+| `cap.etat_termine` | Terminé | منتهي |
+| `cap.etat_annule` | Annulé | ملغى |
+| `cap.alerte_superviseur` | Alerte superviseur | تنبيه المشرف |
+| `cap.motif_alerte` | Motif de l'alerte | سبب التنبيه |
+| `cap.enregistrer` | Enregistrer | حفظ |
+| `cap.terminer` | Terminer | إنهاء |
+| `cap.succes_intervention` | Intervention enregistrée. | تم تسجيل التدخل. |
+| `cap.succes_agent` | Agent CAP créé. | تم إنشاء عون CAP. |
+| `cap.succes_modif` | Modification enregistrée. | تم حفظ التعديل. |
+| `cap.erreur` | Erreur lors de l'opération. | خطأ أثناء العملية. |
+| `cap.aucune_intervention` | Aucune intervention enregistrée. | لا توجد تدخلات مسجلة. |
+| `cap.aucun_agent` | Aucun agent CAP enregistré. | لا يوجد أعوان CAP مسجلين. |
+| `cap.chargement` | Chargement… | جاري التحميل… |
+| `cap.notes` | Notes | ملاحظات |
+| `cap.agent` | Agent | العون |
+| `cap.citoyen` | Citoyen concerné | المواطن المعني |
+
+## 25. CiviPark — Stationnement
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `civipark.titre` | CiviPark — Stationnement | CiviPark — المواقف |
+| `civipark.sous_titre` | Stationnement intelligent et traçable — Wilaya d'Alger | مواقف ذكية وقابلة للتتبع — ولاية الجزائر |
+| `civipark.zones` | Zones de stationnement | مناطق الركن |
+| `civipark.cartes` | Cartes résident | بطاقات المقيمين |
+| `civipark.encaissements` | Registre des encaissements | سجل التحصيلات |
+| `civipark.zone_blanche` | Libre | حرة |
+| `civipark.zone_bleue` | Payant (durée limitée) | مدفوعة (مدة محدودة) |
+| `civipark.zone_jaune` | Livraison horodatée | تسليم بالساعة |
+| `civipark.zone_rouge` | Interdit | ممنوعة |
+| `civipark.places` | Places | أماكن |
+| `civipark.places_pmr` | PMR | ذوي الاحتياجات |
+| `civipark.places_livraison` | Livraison | تسليم |
+| `civipark.places_transit` | Transit | عبور |
+| `civipark.places_resident` | Résidents | مقيمين |
+| `civipark.tarif` | Tarif horaire | التعريفة بالساعة |
+| `civipark.da_h` | DA/h | دج/سا |
+| `civipark.nouvelle_zone` | Nouvelle zone | منطقة جديدة |
+| `civipark.encaisser` | Enregistrer un encaissement | تسجيل تحصيل |
+| `civipark.montant` | Montant (DA) | المبلغ (دج) |
+| `civipark.duree` | Durée (min) | المدة (دقيقة) |
+| `civipark.plaque` | Plaque | لوحة الترقيم |
+| `civipark.type_encaisseur` | Dispositif | الجهاز |
+| `civipark.enc_kiosque` | Kiosque | كشك |
+| `civipark.enc_buraliste` | Buraliste | بائع تبغ |
+| `civipark.enc_agent_tpe` | Agent TPE | عون TPE |
+| `civipark.enc_mobile` | Mobile | هاتف |
+| `civipark.enc_autre` | Autre | أخرى |
+| `civipark.justificatif` | Justificatif | الإيصال |
+| `civipark.just_ticket` | Ticket | تذكرة |
+| `civipark.just_bon` | Bon | وصل |
+| `civipark.just_facture` | Facture | فاتورة |
+| `civipark.just_recu_mobile` | Reçu mobile | إيصال هاتفي |
+| `civipark.numero_ticket` | N° ticket | رقم التذكرة |
+| `civipark.enregistrer` | Enregistrer | حفظ |
+| `civipark.succes_encaissement` | Encaissement enregistré. | تم تسجيل التحصيل. |
+| `civipark.succes_zone` | Zone créée. | تم إنشاء المنطقة. |
+| `civipark.erreur` | Erreur lors de l'opération. | خطأ أثناء العملية. |
+| `civipark.aucune_zone` | Aucune zone enregistrée. | لا توجد مناطق مسجلة. |
+| `civipark.aucun_encaissement` | Aucun encaissement enregistré. | لا توجد تحصيلات مسجلة. |
+| `civipark.chargement` | Chargement… | جاري التحميل… |
+| `civipark.carte_resident` | Carte résident | بطاقة المقيم |
+| `civipark.valide_jusqua` | Valide jusqu'au | صالحة حتى |
+| `civipark.statut_active` | Active | نشطة |
+| `civipark.statut_expiree` | Expirée | منتهية |
+| `civipark.statut_revoquee` | Révoquée | ملغاة |
+| `civipark.rechercher` | Rechercher | بحث |
+| `civipark.filtre_plaque` | Filtrer par plaque | تصفية حسب اللوحة |
+| `civipark.filtre_ticket` | Filtrer par N° ticket | تصفية حسب رقم التذكرة |
+
 ---
 
-**Total : ~404 clés i18n**
+**Total : ~504 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**

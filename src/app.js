@@ -36,6 +36,8 @@ app.use('/api/dashboard',   require('./modules/dashboard'));
 app.use('/api/patrimoine', require('./modules/patrimoine'));
 app.use('/api/signaler',   require('./modules/signaler'));
 app.use('/api/edeval',     require('./modules/edeval'));
+app.use('/api/cap',        require('./modules/cap'));
+app.use('/api/civipark',   require('./modules/civipark'));
 
 // SPA fallback — toutes les routes non-API renvoient index.html
 app.get('*', (req, res, next) => {

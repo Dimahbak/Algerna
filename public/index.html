@@ -1384,6 +1384,14 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21.34"/><path d="M21 3v7h-7"/><path d="M21 3l-9 9"/></svg>
         EDEVAL
       </button>
+      <button class="nav-item hidden" onclick="showView('cap')" data-view="cap" id="nav-cap" data-i18n="sidebar.cap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        CAP
+      </button>
+      <button class="nav-item" onclick="showView('civipark')" data-view="civipark" data-i18n="sidebar.civipark">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        CiviPark
+      </button>
       <button class="nav-item hidden" onclick="showView('patrimoine')" data-view="patrimoine" id="nav-patrimoine" data-i18n="sidebar.patrimoine">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         PatriLocal
@@ -1457,6 +1465,20 @@
             </div>
             <h3 data-i18n="edeval.titre">EDEVAL — Espaces Verts</h3>
             <p data-i18n="edeval.iqep_long" style="font-size:11px;">Indice Qualité des Espaces Publics</p>
+          </div>
+          <div class="module-card hidden" id="home-cap-card" onclick="showView('cap')">
+            <div class="module-icon" style="background:#eff6ff;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3 data-i18n="home.cap_titre">CAP — Agents de Proximité</h3>
+            <p data-i18n="home.cap_desc" style="font-size:11px;">Corps des Agents de Proximité</p>
+          </div>
+          <div class="module-card" onclick="showView('civipark')">
+            <div class="module-icon" style="background:#fef3c7;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <h3 data-i18n="home.civipark_titre">CiviPark</h3>
+            <p data-i18n="home.civipark_desc" style="font-size:11px;">Stationnement intelligent et traçable</p>
           </div>
           <div class="module-card hidden" id="home-patrimoine-card" onclick="showView('patrimoine')">
             <div class="module-icon" style="background:var(--gold-light);">
@@ -2046,6 +2068,175 @@
         </div>
       </div>
 
+      <!-- ══ CAP VIEW ══ -->
+      <div id="view-cap" class="view">
+        <div class="page-header">
+          <h2 data-i18n="cap.titre">CAP — Agents de Proximité</h2>
+          <p data-i18n="cap.sous_titre">Corps des Agents de Proximité — Wilaya d'Alger</p>
+        </div>
+
+        <!-- Onglets CAP -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="capShowTab('agents')" id="cap-tab-agents" data-i18n="cap.agents">Agents CAP</button>
+          <button class="btn btn-sm btn-outline" onclick="capShowTab('interventions')" id="cap-tab-interventions" data-i18n="cap.interventions">Interventions</button>
+          <button class="btn btn-sm btn-outline" onclick="capShowTab('alertes')" id="cap-tab-alertes" data-i18n="cap.alertes">Alertes</button>
+        </div>
+
+        <!-- Tab agents -->
+        <div id="cap-panel-agents"></div>
+        <!-- Tab interventions -->
+        <div id="cap-panel-interventions" class="hidden"></div>
+        <!-- Tab alertes -->
+        <div id="cap-panel-alertes" class="hidden"></div>
+
+        <!-- Formulaire nouvel agent (admin) -->
+        <div id="cap-form-agent" class="hidden" style="margin-top:16px;">
+          <div class="card" style="padding:16px;">
+            <h4 data-i18n="cap.nouvel_agent">Nouvel agent CAP</h4>
+            <form onsubmit="capCreateAgent(event)">
+              <div class="form-group"><label data-i18n="cap.specialisation">Spécialisation</label>
+                <select id="cap-spec">
+                  <option value="general" data-i18n="cap.spec_general">Général</option>
+                  <option value="stationnement" data-i18n="cap.spec_stationnement">Stationnement</option>
+                  <option value="jeunesse" data-i18n="cap.spec_jeunesse">Jeunesse</option>
+                  <option value="sport" data-i18n="cap.spec_sport">Sport</option>
+                </select>
+              </div>
+              <div class="form-group"><label data-i18n="cap.secteur">Secteur</label>
+                <input type="text" id="cap-secteur" placeholder="Ex: Quartier Belouizdad">
+              </div>
+              <div class="form-group"><label>Commune</label>
+                <select id="cap-commune"></select>
+              </div>
+              <div class="form-group"><label>Utilisateur (ID)</label>
+                <input type="text" id="cap-user-id" required placeholder="UUID de l'utilisateur">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="width:100%;" data-i18n="cap.enregistrer">Enregistrer</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Formulaire nouvelle intervention -->
+        <div id="cap-form-intervention" class="hidden" style="margin-top:16px;">
+          <div class="card" style="padding:16px;">
+            <h4 data-i18n="cap.nouvelle_intervention">Nouvelle intervention</h4>
+            <form onsubmit="capCreateIntervention(event)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div class="form-group" style="margin:0;"><label data-i18n="cap.agent">Agent</label>
+                  <select id="cap-int-agent" required></select>
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="cap.type_intervention">Type</label>
+                  <select id="cap-int-type" required>
+                    <option value="orientation" data-i18n="cap.type_orientation">Orientation</option>
+                    <option value="mediation" data-i18n="cap.type_mediation">Médiation</option>
+                    <option value="constat" data-i18n="cap.type_constat">Constat</option>
+                    <option value="accompagnement" data-i18n="cap.type_accompagnement">Accompagnement</option>
+                    <option value="autre" data-i18n="cap.type_autre">Autre</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="cap.priorite">Priorité</label>
+                  <select id="cap-int-prio">
+                    <option value="basse" data-i18n="cap.pri_basse">Basse</option>
+                    <option value="normale" selected data-i18n="cap.pri_normale">Normale</option>
+                    <option value="haute" data-i18n="cap.pri_haute">Haute</option>
+                    <option value="urgente" data-i18n="cap.pri_urgente">Urgente</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Commune</label>
+                  <select id="cap-int-commune"></select>
+                </div>
+              </div>
+              <div class="form-group"><label data-i18n="cap.description">Description</label>
+                <textarea id="cap-int-desc" required rows="3"></textarea>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" id="cap-int-alerte"> <span data-i18n="cap.alerte_superviseur">Alerte superviseur</span>
+                </label>
+              </div>
+              <div class="form-group hidden" id="cap-int-motif-wrap"><label data-i18n="cap.motif_alerte">Motif</label>
+                <input type="text" id="cap-int-motif">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="width:100%;" data-i18n="cap.enregistrer">Enregistrer</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CIVIPARK VIEW ══ -->
+      <div id="view-civipark" class="view">
+        <div class="page-header">
+          <h2 data-i18n="civipark.titre">CiviPark — Stationnement</h2>
+          <p data-i18n="civipark.sous_titre">Stationnement intelligent et traçable — Wilaya d'Alger</p>
+        </div>
+
+        <!-- Onglets CiviPark -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="cpShowTab('zones')" id="cp-tab-zones" data-i18n="civipark.zones">Zones</button>
+          <button class="btn btn-sm btn-outline" onclick="cpShowTab('cartes')" id="cp-tab-cartes" data-i18n="civipark.cartes">Cartes résident</button>
+          <button class="btn btn-sm btn-outline" onclick="cpShowTab('encaissements')" id="cp-tab-encaissements" data-i18n="civipark.encaissements">Encaissements</button>
+        </div>
+
+        <!-- Tab zones -->
+        <div id="cp-panel-zones"></div>
+        <!-- Tab cartes -->
+        <div id="cp-panel-cartes" class="hidden"></div>
+        <!-- Tab encaissements -->
+        <div id="cp-panel-encaissements" class="hidden"></div>
+
+        <!-- Formulaire encaissement (admin/agent) -->
+        <div id="cp-form-encaissement" class="hidden" style="margin-top:16px;">
+          <div class="card" style="padding:16px;">
+            <h4 data-i18n="civipark.encaisser">Enregistrer un encaissement</h4>
+            <form onsubmit="cpCreateEncaissement(event)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.zones">Zone</label>
+                  <select id="cp-enc-zone" required></select>
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.montant">Montant (DA)</label>
+                  <input type="number" id="cp-enc-montant" required min="0" step="10">
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.duree">Durée (min)</label>
+                  <input type="number" id="cp-enc-duree" min="0">
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.plaque">Plaque</label>
+                  <input type="text" id="cp-enc-plaque" placeholder="Ex: 16-12345-01">
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.type_encaisseur">Dispositif</label>
+                  <select id="cp-enc-type">
+                    <option value="kiosque" data-i18n="civipark.enc_kiosque">Kiosque</option>
+                    <option value="buraliste" data-i18n="civipark.enc_buraliste">Buraliste</option>
+                    <option value="agent_tpe" data-i18n="civipark.enc_agent_tpe">Agent TPE</option>
+                    <option value="mobile" data-i18n="civipark.enc_mobile">Mobile</option>
+                    <option value="autre" data-i18n="civipark.enc_autre">Autre</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label data-i18n="civipark.justificatif">Justificatif</label>
+                  <select id="cp-enc-justif">
+                    <option value="ticket" data-i18n="civipark.just_ticket">Ticket</option>
+                    <option value="bon" data-i18n="civipark.just_bon">Bon</option>
+                    <option value="facture" data-i18n="civipark.just_facture">Facture</option>
+                    <option value="recu_mobile" data-i18n="civipark.just_recu_mobile">Reçu mobile</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;" data-i18n="civipark.enregistrer">Enregistrer</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Recherche encaissements -->
+        <div id="cp-search-encaissements" class="hidden" style="margin-top:12px;">
+          <div class="card" style="padding:12px;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="cp-search-plaque" placeholder="" data-i18n-placeholder="civipark.filtre_plaque" style="flex:1;min-width:120px;padding:6px;font-size:13px;">
+              <input type="text" id="cp-search-ticket" placeholder="" data-i18n-placeholder="civipark.filtre_ticket" style="flex:1;min-width:120px;padding:6px;font-size:13px;">
+              <button class="btn btn-sm btn-primary" onclick="cpLoadEncaissements()" data-i18n="civipark.rechercher">Rechercher</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ PATRIMOINE VIEW ══ -->
       <div id="view-patrimoine" class="view">
         <div class="page-header">
@@ -2558,6 +2749,8 @@ async function initApp() {
   if (isAdmin()) {
     document.getElementById('nav-patrimoine').classList.remove('hidden');
     document.getElementById('home-patrimoine-card').classList.remove('hidden');
+    document.getElementById('nav-cap').classList.remove('hidden');
+    document.getElementById('home-cap-card').classList.remove('hidden');
   }
 
   // Load communes globally
@@ -2595,7 +2788,7 @@ async function loadCommunes() {
 }
 
 function populateCommuneSelects() {
-  const selects = ['reg-commune', 'cs-commune', 'ws-commune', 'rdv-commune'];
+  const selects = ['reg-commune', 'cs-commune', 'ws-commune', 'rdv-commune', 'cap-commune', 'cap-int-commune'];
   selects.forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
@@ -2655,6 +2848,8 @@ function showView(name) {
   if (name === 'mes-signalements') initMesSignalements();
   if (name === 'carte') initCarte();
   if (name === 'edeval') initEdeval();
+  if (name === 'cap') initCap();
+  if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
   if (name === 'operateur') initOperateur();
 
@@ -3622,6 +3817,371 @@ async function saveIqep(e, parcId) {
   } catch (e) {
     showToast(t('global.erreur_reseau'), 'error');
   }
+}
+
+// ─── CAP — AGENTS DE PROXIMITÉ ───────────────────────────────
+let capAgents = [];
+
+function capShowTab(tab) {
+  ['agents','interventions','alertes'].forEach(t => {
+    const panel = document.getElementById('cap-panel-' + t);
+    const btn = document.getElementById('cap-tab-' + t);
+    if (panel) panel.classList.toggle('hidden', t !== tab);
+    if (btn) { btn.className = t === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline'; }
+  });
+  document.getElementById('cap-form-agent').classList.add('hidden');
+  document.getElementById('cap-form-intervention').classList.add('hidden');
+  if (tab === 'agents') capLoadAgents();
+  if (tab === 'interventions') capLoadInterventions();
+  if (tab === 'alertes') capLoadAlertes();
+}
+
+async function initCap() {
+  capShowTab('agents');
+}
+
+async function capLoadAgents() {
+  const el = document.getElementById('cap-panel-agents');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('cap.chargement') + '</div>';
+  try {
+    const res = await apiFetch('/api/cap/agents', { headers: authHeaders() });
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    capAgents = await res.json();
+    if (!capAgents.length) {
+      el.innerHTML = '<div class="empty-state"><p>' + t('cap.aucun_agent') + '</p></div>';
+    } else {
+      el.innerHTML = capAgents.map(a => {
+        const specLabel = t('cap.spec_' + a.specialisation);
+        return `<div class="card" style="margin-bottom:8px;padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <div>
+              <div style="font-weight:700;color:var(--navy);">${escHtml((a.prenom||'')+' '+(a.nom||''))}</div>
+              <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(a.commune_nom||'—')} · ${escHtml(a.secteur||'—')}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${a.actif?'#dcfce7':'#fee2e2'};color:${a.actif?'#16a34a':'#ef4444'};">${a.actif?'Actif':'Inactif'}</span>
+              <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:#eff6ff;color:#2563eb;">${specLabel}</span>
+              ${isSuperAdmin() ? `<button class="btn btn-sm btn-outline" onclick="capEditAgent(${a.id})" style="font-size:11px;padding:2px 8px;">✏</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // Bouton créer (admin)
+    if (isSuperAdmin()) {
+      el.innerHTML += `<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="document.getElementById('cap-form-agent').classList.toggle('hidden')" data-i18n="cap.nouvel_agent">+ Nouvel agent CAP</button>`;
+    }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function capCreateAgent(e) {
+  e.preventDefault();
+  try {
+    const res = await apiFetch('/api/cap/agents', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        utilisateur_id: document.getElementById('cap-user-id').value,
+        specialisation: document.getElementById('cap-spec').value,
+        commune_id: document.getElementById('cap-commune').value || null,
+        secteur: document.getElementById('cap-secteur').value || null,
+      })
+    });
+    if (res.ok) { showToast(t('cap.succes_agent')); capLoadAgents(); document.getElementById('cap-form-agent').classList.add('hidden'); }
+    else showToast(t('cap.erreur'), 'error');
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+}
+
+async function capEditAgent(id) {
+  const agent = capAgents.find(a => a.id === id);
+  if (!agent) return;
+  const newSpec = prompt(t('cap.specialisation') + ' (general/stationnement/jeunesse/sport):', agent.specialisation);
+  if (!newSpec || newSpec === agent.specialisation) return;
+  try {
+    const res = await apiFetch('/api/cap/agents/' + id, {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ specialisation: newSpec })
+    });
+    if (res.ok) { showToast(t('cap.succes_modif')); capLoadAgents(); }
+    else showToast(t('cap.erreur'), 'error');
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+}
+
+async function capLoadInterventions() {
+  const el = document.getElementById('cap-panel-interventions');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('cap.chargement') + '</div>';
+  try {
+    const res = await apiFetch('/api/cap/interventions', { headers: authHeaders() });
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><p>' + t('cap.aucune_intervention') + '</p></div>';
+    } else {
+      el.innerHTML = list.map(i => {
+        const prioColor = {basse:'#94a3b8',normale:'#3b82f6',haute:'#f59e0b',urgente:'#ef4444'}[i.priorite]||'#94a3b8';
+        return `<div class="card" style="margin-bottom:8px;padding:12px;${i.alerte_superviseur?'border-left:3px solid #ef4444;':''}">
+          <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:6px;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:11px;color:var(--muted);">${escHtml(i.reference)} · ${fmtDateTime(i.cree_le)}</div>
+              <div style="font-weight:600;color:var(--navy);margin:2px 0;">${escHtml(i.description?.substring(0,120))}</div>
+              <div style="font-size:12px;color:var(--muted);">${t('cap.agent')}: ${escHtml((i.agent_prenom||'')+' '+(i.agent_nom||''))} · ${escHtml(i.commune_nom||'—')}</div>
+            </div>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span style="font-size:10px;padding:2px 6px;border-radius:10px;background:${prioColor}22;color:${prioColor};font-weight:600;">${t('cap.pri_'+i.priorite)}</span>
+              <span style="font-size:10px;padding:2px 6px;border-radius:10px;background:${i.etat==='termine'?'#dcfce7':'#fef3c7'};color:${i.etat==='termine'?'#16a34a':'#92400e'};">${t('cap.etat_'+i.etat)}</span>
+              ${i.alerte_superviseur?'<span style="font-size:10px;padding:2px 6px;border-radius:10px;background:#fee2e2;color:#ef4444;">⚠</span>':''}
+              ${i.etat==='en_cours' && isAdmin() ? `<button class="btn btn-sm btn-outline" onclick="capTerminer(${i.id})" style="font-size:10px;padding:1px 6px;" data-i18n="cap.terminer">✓</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // Bouton créer
+    if (isAdmin()) {
+      el.innerHTML += `<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="capShowInterventionForm()" data-i18n="cap.nouvelle_intervention">+ Nouvelle intervention</button>`;
+    }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function capShowInterventionForm() {
+  document.getElementById('cap-form-intervention').classList.remove('hidden');
+  // Charger agents dans le select
+  const sel = document.getElementById('cap-int-agent');
+  if (sel.options.length <= 1) {
+    try {
+      const res = await apiFetch('/api/cap/agents', { headers: authHeaders() });
+      if (res.ok) {
+        const agents = await res.json();
+        sel.innerHTML = agents.map(a => `<option value="${a.id}">${escHtml((a.prenom||'')+' '+(a.nom||''))}</option>`).join('');
+      }
+    } catch(e) {}
+  }
+  // Toggle alerte motif
+  document.getElementById('cap-int-alerte').addEventListener('change', function() {
+    document.getElementById('cap-int-motif-wrap').classList.toggle('hidden', !this.checked);
+  });
+}
+
+async function capCreateIntervention(e) {
+  e.preventDefault();
+  try {
+    const res = await apiFetch('/api/cap/interventions', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent_id: Number(document.getElementById('cap-int-agent').value),
+        type: document.getElementById('cap-int-type').value,
+        priorite: document.getElementById('cap-int-prio').value,
+        description: document.getElementById('cap-int-desc').value,
+        commune_id: document.getElementById('cap-int-commune').value || null,
+        alerte_superviseur: document.getElementById('cap-int-alerte').checked,
+        motif_alerte: document.getElementById('cap-int-motif').value || null,
+      })
+    });
+    if (res.ok) {
+      showToast(t('cap.succes_intervention'));
+      document.getElementById('cap-form-intervention').classList.add('hidden');
+      capLoadInterventions();
+    } else showToast(t('cap.erreur'), 'error');
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+}
+
+async function capTerminer(id) {
+  try {
+    const res = await apiFetch('/api/cap/interventions/' + id, {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ etat: 'termine' })
+    });
+    if (res.ok) { showToast(t('cap.succes_modif')); capLoadInterventions(); }
+    else showToast(t('cap.erreur'), 'error');
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+}
+
+async function capLoadAlertes() {
+  const el = document.getElementById('cap-panel-alertes');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('cap.chargement') + '</div>';
+  try {
+    const res = await apiFetch('/api/cap/interventions/alertes', { headers: authHeaders() });
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><p>' + t('cap.aucune_intervention') + '</p></div>';
+    } else {
+      el.innerHTML = list.map(i => `
+        <div class="card" style="margin-bottom:8px;padding:12px;border-left:3px solid #ef4444;">
+          <div style="font-size:11px;color:var(--muted);">${escHtml(i.reference)} · ${fmtDateTime(i.cree_le)}</div>
+          <div style="font-weight:600;color:#ef4444;margin:2px 0;">⚠ ${escHtml(i.motif_alerte||i.description?.substring(0,100))}</div>
+          <div style="font-size:12px;color:var(--muted);">${t('cap.agent')}: ${escHtml((i.agent_prenom||'')+' '+(i.agent_nom||''))} · ${escHtml(i.commune_nom||'—')}</div>
+        </div>`).join('');
+    }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+// ─── CIVIPARK — STATIONNEMENT ────────────────────────────────
+const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge:'#ef4444' };
+let cpZones = [];
+
+function cpShowTab(tab) {
+  ['zones','cartes','encaissements'].forEach(t => {
+    const panel = document.getElementById('cp-panel-' + t);
+    const btn = document.getElementById('cp-tab-' + t);
+    if (panel) panel.classList.toggle('hidden', t !== tab);
+    if (btn) { btn.className = t === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline'; }
+  });
+  document.getElementById('cp-form-encaissement').classList.add('hidden');
+  document.getElementById('cp-search-encaissements').classList.toggle('hidden', tab !== 'encaissements');
+  if (tab === 'zones') cpLoadZones();
+  if (tab === 'cartes') cpLoadCartes();
+  if (tab === 'encaissements') cpLoadEncaissements();
+}
+
+async function initCivipark() {
+  cpShowTab('zones');
+}
+
+async function cpLoadZones() {
+  const el = document.getElementById('cp-panel-zones');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+  try {
+    const res = await fetch('/api/civipark/zones');
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    cpZones = await res.json();
+    if (!cpZones.length) {
+      el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>';
+      return;
+    }
+    el.innerHTML = cpZones.map(z => {
+      const color = ZONE_COLORS[z.type] || '#94a3b8';
+      const typeLabel = t('civipark.zone_' + z.type);
+      return `<div class="card" style="margin-bottom:8px;padding:12px;border-left:4px solid ${color};">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <div style="flex:1;min-width:180px;">
+            <div style="font-weight:700;color:var(--navy);">${escHtml(z.nom)}</div>
+            <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(z.commune_nom||'—')}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${color}22;color:${color};font-weight:600;">${typeLabel}</span>
+            ${z.places_total ? `<span style="font-size:11px;color:var(--muted);">${z.places_total} ${t('civipark.places')}</span>` : ''}
+            ${z.tarif_horaire ? `<span style="font-size:11px;font-weight:600;color:var(--navy);">${z.tarif_horaire} ${t('civipark.da_h')}</span>` : ''}
+            ${z.places_pmr ? `<span style="font-size:10px;color:#7c3aed;">♿ ${z.places_pmr}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function cpLoadCartes() {
+  const el = document.getElementById('cp-panel-cartes');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+  try {
+    const res = await apiFetch('/api/civipark/cartes', { headers: authHeaders() });
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const cartes = await res.json();
+    if (!cartes.length) {
+      el.innerHTML = '<div class="empty-state"><p>—</p></div>';
+      return;
+    }
+    el.innerHTML = cartes.map(c => {
+      const statutColor = {active:'#16a34a',expiree:'#94a3b8',revoquee:'#ef4444'}[c.statut]||'#94a3b8';
+      return `<div class="card" style="margin-bottom:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+          <div>
+            <div style="font-weight:600;color:var(--navy);">${t('civipark.carte_resident')} #${c.id}</div>
+            ${c.nom ? `<div style="font-size:12px;color:var(--muted);">${escHtml((c.prenom||'')+' '+(c.nom||''))}</div>` : ''}
+            <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(c.commune_nom||'—')} ${c.plaque?'· 🚗 '+escHtml(c.plaque):''}</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${statutColor}22;color:${statutColor};font-weight:600;">${t('civipark.statut_'+c.statut)}</span>
+            <span style="font-size:11px;color:var(--muted);">${t('civipark.valide_jusqua')}: ${fmtDate(c.valide_jusqu_a)}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function cpLoadEncaissements() {
+  const el = document.getElementById('cp-panel-encaissements');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+  try {
+    let url = '/api/civipark/encaissements';
+    const params = [];
+    const plaque = document.getElementById('cp-search-plaque')?.value;
+    const ticket = document.getElementById('cp-search-ticket')?.value;
+    if (plaque) params.push('plaque=' + encodeURIComponent(plaque));
+    if (ticket) params.push('ticket=' + encodeURIComponent(ticket));
+    if (params.length) url += '?' + params.join('&');
+    const res = await apiFetch(url, { headers: authHeaders() });
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucun_encaissement') + '</p></div>';
+    } else {
+      el.innerHTML = list.map(e => {
+        const color = ZONE_COLORS[e.zone_type] || '#94a3b8';
+        return `<div class="card" style="margin-bottom:6px;padding:10px;border-left:3px solid ${color};">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+            <div style="flex:1;min-width:160px;">
+              <div style="font-size:11px;color:var(--muted);">${fmtDateTime(e.date_heure)} · ${escHtml(e.zone_nom)}</div>
+              <div style="font-weight:600;color:var(--navy);">${e.montant} DA ${e.duree_minutes ? '· '+e.duree_minutes+' min' : ''}</div>
+              ${e.plaque ? `<div style="font-size:11px;color:var(--muted);">🚗 ${escHtml(e.plaque)}</div>` : ''}
+            </div>
+            <div style="text-align:right;font-size:11px;">
+              <div style="font-weight:600;color:var(--navy);">🎫 ${escHtml(e.justificatif_numero)}</div>
+              <div style="color:var(--muted);">${t('civipark.enc_'+e.type_encaisseur)} · ${t('civipark.just_'+e.justificatif_type)}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // Bouton encaisser (admin/agent)
+    if (isAdmin()) {
+      el.innerHTML += `<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="cpShowEncForm()" data-i18n="civipark.encaisser">+ Encaisser</button>`;
+    }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function cpShowEncForm() {
+  const wrap = document.getElementById('cp-form-encaissement');
+  wrap.classList.remove('hidden');
+  // Charger zones dans le select
+  const sel = document.getElementById('cp-enc-zone');
+  if (sel.options.length <= 1) {
+    try {
+      const res = await fetch('/api/civipark/zones');
+      if (res.ok) {
+        const zones = await res.json();
+        sel.innerHTML = zones.filter(z => z.type === 'bleue' || z.type === 'jaune')
+          .map(z => `<option value="${z.id}">${escHtml(z.nom)} (${z.tarif_horaire||'—'} DA/h)</option>`).join('');
+      }
+    } catch(e) {}
+  }
+}
+
+async function cpCreateEncaissement(e) {
+  e.preventDefault();
+  try {
+    const res = await apiFetch('/api/civipark/encaissements', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parking_zone_id: Number(document.getElementById('cp-enc-zone').value),
+        montant: Number(document.getElementById('cp-enc-montant').value),
+        duree_minutes: Number(document.getElementById('cp-enc-duree').value) || null,
+        plaque: document.getElementById('cp-enc-plaque').value || null,
+        type_encaisseur: document.getElementById('cp-enc-type').value,
+        justificatif_type: document.getElementById('cp-enc-justif').value,
+      })
+    });
+    if (res.ok) {
+      showToast(t('civipark.succes_encaissement'));
+      document.getElementById('cp-form-encaissement').classList.add('hidden');
+      cpLoadEncaissements();
+    } else showToast(t('civipark.erreur'), 'error');
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 // ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────

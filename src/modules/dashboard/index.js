@@ -7,6 +7,7 @@ const express = require('express');
 const { query } = require('../../db/pool');
 const svc = require('../proprete/signalementService');
 const { moyenneIqep } = require('../edeval');
+const { scoreMobilite } = require('../civipark');
 const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH } = require('../../utils/http');
 
@@ -63,7 +64,13 @@ router.get('/icua',
     // Fallback 70 si aucun parc n'est encore évalué.
     const iqepMoy = await moyenneIqep();
     const vivre = iqepMoy !== null ? iqepMoy : 70;
-    const fluidite = await sousIndiceFluidite();
+    // Fluidité : composite RDV + mobilité CiviPark (si disponible)
+    const fluiditeRdv = await sousIndiceFluidite();
+    const mobilitePark = await scoreMobilite();
+    // Si CiviPark a des données, on compose 60% RDV + 40% mobilité
+    const fluidite = mobilitePark !== null
+      ? Math.round(0.6 * fluiditeRdv + 0.4 * mobilitePark)
+      : fluiditeRdv;
     const engagement = await sousIndiceEngagement();
 
     const icua = Math.round(
