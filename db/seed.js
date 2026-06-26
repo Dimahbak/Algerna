@@ -117,11 +117,10 @@ async function seed() {
       seaal:    (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('SEAAL','eau','1594') RETURNING id")).rows[0].id,
     };
 
-    // périmètres : Netcom = hypercentre, Extranet = couronne ; SEAAL = tout
-    const communes = (await c.query('SELECT id,nom FROM commune')).rows;
-    const hyper = new Set(['Alger-Centre','Sidi M\'Hamed','Bab El Oued']);
+    // périmètres : Netcom = circ 1,2,3 (centre) ; Extranet = circ 4-13 (périphérie) ; SEAAL = toutes
+    const communes = (await c.query('SELECT id,nom,circonscription_id FROM commune')).rows;
     for (const cm of communes) {
-      const prop = hyper.has(cm.nom) ? ops.netcom : ops.extranet;
+      const prop = cm.circonscription_id <= 3 ? ops.netcom : ops.extranet;
       await c.query('INSERT INTO operateur_perimetre(operateur_id,commune_id) VALUES ($1,$2)',[prop,cm.id]);
       await c.query('INSERT INTO operateur_perimetre(operateur_id,commune_id) VALUES ($1,$2)',[ops.seaal,cm.id]);
     }
