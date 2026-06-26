@@ -1,0 +1,19 @@
+-- Migration 007 : Créneaux RDV pour les 9 nouveaux services Famille B
+-- Appliquée le 2026-06-26
+--
+-- Les 9 services B ajoutés en migration 005 (urbanisme, logement,
+-- certificats, biométrique) n'avaient aucun créneau. Génération :
+--
+-- Phase 1 : 13 communes principales × 9 services × 3 semaines
+--           × 3 créneaux/jour (08h, 10h, 13h) × cap 8 = 5265 créneaux
+--
+-- Phase 2 : 44 communes restantes × 9 services × 2 semaines
+--           × 2 créneaux/jour (09h, 14h) × cap 8 = 7920 créneaux
+--
+-- Total : ~13 185 créneaux ajoutés, 0 pour Famille A.
+--
+-- ═══ UP ═══
+-- Appliqué en live (DO $$ ... $$), pas de SQL statique.
+--
+-- ═══ DOWN ═══
+-- DELETE FROM creneau WHERE service_id IN (17,18,19,20,21,22,23,24,25);
