@@ -8,6 +8,7 @@ const { query } = require('../../db/pool');
 const svc = require('../proprete/signalementService');
 const { moyenneIqep } = require('../edeval');
 const { scoreMobilite } = require('../civipark');
+const { scoreSatisfactionRDV } = require('../rdv');
 const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH } = require('../../utils/http');
 
@@ -64,13 +65,17 @@ router.get('/icua',
     // Fallback 70 si aucun parc n'est encore évalué.
     const iqepMoy = await moyenneIqep();
     const vivre = iqepMoy !== null ? iqepMoy : 70;
-    // Fluidité : composite RDV + mobilité CiviPark (si disponible)
+    // Fluidité : composite RDV présence + satisfaction post-RDV + mobilité CiviPark
     const fluiditeRdv = await sousIndiceFluidite();
+    const satisfRdv = await scoreSatisfactionRDV();
     const mobilitePark = await scoreMobilite();
-    // Si CiviPark a des données, on compose 60% RDV + 40% mobilité
-    const fluidite = mobilitePark !== null
-      ? Math.round(0.6 * fluiditeRdv + 0.4 * mobilitePark)
-      : fluiditeRdv;
+    // Composite : présence RDV (base) + satisfaction si disponible + mobilité si dispo
+    let fluidite = fluiditeRdv;
+    const composants = [{ w: 0.5, v: fluiditeRdv }];
+    if (satisfRdv !== null) composants.push({ w: 0.3, v: satisfRdv });
+    if (mobilitePark !== null) composants.push({ w: 0.2, v: mobilitePark });
+    const totalW = composants.reduce((s, c) => s + c.w, 0);
+    fluidite = Math.round(composants.reduce((s, c) => s + (c.w / totalW) * c.v, 0));
     const engagement = await sousIndiceEngagement();
 
     const icua = Math.round(

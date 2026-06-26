@@ -1822,6 +1822,11 @@
           </button>
         </div>
 
+        <!-- Détail démarche + Assistant + Checklist (entre step 1 et step 2) -->
+        <div class="card hidden" id="rdv-demarche-detail" style="margin-top:12px;">
+          <div id="rdv-demarche-content"></div>
+        </div>
+
         <!-- Famille A info -->
         <div class="alert alert-info hidden" id="rdv-famille-a">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1844,6 +1849,16 @@
           </div>
           <div class="creneaux-grid hidden" id="rdv-creneaux-grid"></div>
           <div class="divider"></div>
+          <!-- Public prioritaire -->
+          <div class="form-group hidden" id="rdv-priorite-group" style="margin-bottom:12px;">
+            <label data-i18n="rdv.priorite_label" style="font-size:13px;font-weight:600;">Accès prioritaire (déclaratif)</label>
+            <select id="rdv-priorite" style="font-size:13px;">
+              <option value="" data-i18n="rdv.priorite_aucun">Aucun (standard)</option>
+              <option value="age" data-i18n="rdv.priorite_age">Personne âgée (65+)</option>
+              <option value="handicap" data-i18n="rdv.priorite_handicap">Personne en situation de handicap</option>
+              <option value="femme_enceinte" data-i18n="rdv.priorite_enceinte">Femme enceinte</option>
+            </select>
+          </div>
           <button class="btn btn-primary hidden" id="rdv-confirm-btn" onclick="confirmRDV()">
             <span data-i18n="rdv.confirmer_creneau">Confirmer ce créneau</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -2847,14 +2862,139 @@ async function loadRdvServices() {
     const sel = document.getElementById('rdv-service');
     if (!sel) return;
     sel.innerHTML = '<option value="">' + t('rdv.sel_service') + '</option>';
+    // Grouper par catégorie
+    const cats = {};
     rdvServices.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.nom + (s.famille ? ` [${s.famille}]` : '');
-      opt.dataset.famille = s.famille || '';
-      sel.appendChild(opt);
+      const cat = s.categorie || 'autre';
+      if (!cats[cat]) cats[cat] = [];
+      cats[cat].push(s);
     });
+    const catLabels = { urbanisme: t('rdv.cat_urbanisme'), logement: t('rdv.cat_logement'), certificats: t('rdv.cat_certificats'), biometrique: t('rdv.cat_biometrique'), etat_civil: t('rdv.cat_etat_civil'), identite: t('rdv.cat_identite'), autre: t('rdv.cat_autre') };
+    for (const [cat, svcs] of Object.entries(cats)) {
+      const grp = document.createElement('optgroup');
+      grp.label = (catLabels[cat] || cat) + (svcs[0]?.famille === 'A' ? ' [A — en ligne]' : ' [B — présentiel]');
+      svcs.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.nom;
+        opt.dataset.famille = s.famille || '';
+        grp.appendChild(opt);
+      });
+      sel.appendChild(grp);
+    }
+    // Listener pour afficher détail démarche
+    sel.addEventListener('change', showDemarcheDetail);
   } catch (e) { console.warn('rdv services load error', e); }
+}
+
+function showDemarcheDetail() {
+  const sel = document.getElementById('rdv-service');
+  const svc = rdvServices.find(s => s.id === Number(sel.value));
+  const panel = document.getElementById('rdv-demarche-detail');
+  if (!svc || !sel.value) { panel.classList.add('hidden'); return; }
+  if (svc.famille === 'A') { panel.classList.add('hidden'); return; }
+
+  const pieces = svc.pieces_requises || [];
+  const questions = svc.assistant_questions || [];
+  const hasAssistant = questions.length > 0;
+
+  let html = `<div style="margin-bottom:12px;">
+    <h4 style="color:var(--navy);margin:0 0 4px;">${escHtml(svc.nom)}</h4>
+    ${svc.description ? `<p style="font-size:12px;color:var(--muted);margin:0 0 8px;">${escHtml(svc.description)}</p>` : ''}
+  </div>`;
+
+  // Délai + frais
+  html += `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+    ${svc.delai_reel ? `<div style="padding:6px 10px;background:#fef3c7;border-radius:8px;font-size:12px;"><strong>${t('rdv.delai')} :</strong> ${escHtml(svc.delai_reel)}</div>` : ''}
+    ${svc.frais ? `<div style="padding:6px 10px;background:#f0fdf4;border-radius:8px;font-size:12px;"><strong>${t('rdv.frais')} :</strong> ${escHtml(svc.frais)}</div>` : ''}
+  </div>`;
+
+  // Mini-assistant (qualification)
+  if (hasAssistant) {
+    html += `<div style="margin-bottom:12px;padding:10px;background:#eff6ff;border-radius:8px;">
+      <h5 style="margin:0 0 8px;font-size:13px;color:#2563eb;">${t('rdv.assistant_titre')}</h5>
+      <div id="rdv-assistant-flow"></div>
+    </div>`;
+  }
+
+  // Checklist pièces requises
+  if (pieces.length) {
+    html += `<div style="margin-bottom:12px;">
+      <h5 style="margin:0 0 6px;font-size:13px;">${t('rdv.pieces_titre')}</h5>
+      <div id="rdv-checklist">
+        ${pieces.map((p, i) => `
+          <label style="display:flex;align-items:start;gap:6px;margin-bottom:4px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" class="rdv-piece-check" data-idx="${i}" style="margin-top:2px;">
+            <span>${escHtml(p)}</span>
+          </label>`).join('')}
+      </div>
+      <div id="rdv-checklist-status" style="font-size:11px;margin-top:4px;color:var(--muted);"></div>
+    </div>`;
+  }
+
+  // Formulaires
+  if (svc.formulaires && svc.formulaires.length) {
+    html += `<div style="margin-bottom:8px;">
+      <h5 style="margin:0 0 4px;font-size:13px;">${t('rdv.formulaires_titre')}</h5>
+      ${svc.formulaires.map(f => `<div style="font-size:12px;color:var(--muted);">📄 ${escHtml(f)}</div>`).join('')}
+    </div>`;
+  }
+
+  panel.classList.remove('hidden');
+  document.getElementById('rdv-demarche-content').innerHTML = html;
+
+  // Init assistant
+  if (hasAssistant) initAssistant(questions);
+
+  // Init checklist listeners
+  document.querySelectorAll('.rdv-piece-check').forEach(cb => {
+    cb.addEventListener('change', updateChecklistStatus);
+  });
+  updateChecklistStatus();
+}
+
+function updateChecklistStatus() {
+  const checks = document.querySelectorAll('.rdv-piece-check');
+  if (!checks.length) return;
+  const total = checks.length;
+  const done = [...checks].filter(c => c.checked).length;
+  const el = document.getElementById('rdv-checklist-status');
+  if (el) {
+    if (done === total) el.innerHTML = `<span style="color:var(--green);font-weight:600;">${t('rdv.checklist_complet')}</span>`;
+    else el.textContent = `${done}/${total} ${t('rdv.checklist_progression')}`;
+  }
+}
+
+function initAssistant(questions) {
+  const flow = document.getElementById('rdv-assistant-flow');
+  if (!flow) return;
+  let step = 0;
+  function renderStep() {
+    if (step >= questions.length) {
+      flow.innerHTML = `<div style="color:var(--green);font-weight:600;font-size:13px;">${t('rdv.assistant_ok')}</div>`;
+      return;
+    }
+    const q = questions[step];
+    flow.innerHTML = `
+      <div style="font-size:13px;margin-bottom:6px;font-weight:500;">${escHtml(q.q)}</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-primary" onclick="rdvAssistantAnswer(true)">${t('global.oui')}</button>
+        <button class="btn btn-sm btn-outline" onclick="rdvAssistantAnswer(false)">${t('global.non')}</button>
+      </div>`;
+  }
+  window._rdvAssistantQuestions = questions;
+  window._rdvAssistantStep = step;
+  window.rdvAssistantAnswer = function(isOui) {
+    const q = window._rdvAssistantQuestions[window._rdvAssistantStep];
+    if (isOui) {
+      if (q.oui === 'next') { window._rdvAssistantStep++; renderStep(); }
+      else { flow.innerHTML = `<div style="color:var(--gold);font-size:12px;">${escHtml(q.oui)}</div>`; }
+    } else {
+      if (q.non === 'next') { window._rdvAssistantStep++; renderStep(); }
+      else { flow.innerHTML = `<div style="color:var(--red);font-size:12px;">${escHtml(q.non)}</div>`; }
+    }
+  };
+  renderStep();
 }
 
 // ─── VIEW SWITCHING ───────────────────────────────────────
@@ -3181,6 +3321,8 @@ async function loadCreneaux() {
       </div>
     `).join('');
     grid.classList.remove('hidden');
+    // Montrer le sélecteur prioritaire
+    document.getElementById('rdv-priorite-group').classList.remove('hidden');
   } catch (e) {
     document.getElementById('rdv-creneaux-loading').classList.add('hidden');
     showError('rdv-error', e.message);
@@ -3200,11 +3342,12 @@ async function confirmRDV() {
   const btn = document.getElementById('rdv-confirm-btn');
   btn.disabled = true;
   btn.textContent = t('rdv.confirmation_en_cours');
+  const priorite = document.getElementById('rdv-priorite')?.value || null;
   try {
     const res = await apiFetch('/api/rdv', {
       method: 'POST',
       headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ creneauId: selectedCreneauId })
+      body: JSON.stringify({ creneauId: selectedCreneauId, public_prioritaire: priorite || null })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || t('rdv.erreur_reservation'));
@@ -3232,6 +3375,8 @@ function resetRDV() {
   document.getElementById('rdv-step-2').classList.add('hidden');
   document.getElementById('rdv-step-3').classList.add('hidden');
   document.getElementById('rdv-famille-a').classList.add('hidden');
+  document.getElementById('rdv-demarche-detail').classList.add('hidden');
+  document.getElementById('rdv-priorite-group').classList.add('hidden');
   document.getElementById('rdv-creneaux-grid').innerHTML = '';
   document.getElementById('rdv-confirm-btn').classList.add('hidden');
   selectedCreneauId = null;
@@ -3263,19 +3408,28 @@ async function loadMesRDV() {
       container.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>' + t('rdv.aucun_rdv') + '</p></div>';
       return;
     }
-    container.innerHTML = list.map(r => `
-      <div class="rdv-item">
+    container.innerHTML = list.map(r => {
+      const canEval = (r.statut === 'traite' || r.statut === 'present') && !r.evalue_le;
+      const hasEval = !!r.evalue_le;
+      const prioLabel = r.public_prioritaire ? t('rdv.priorite_' + r.public_prioritaire) : '';
+      return `
+      <div class="rdv-item" style="flex-wrap:wrap;">
         <div class="rdv-icon-box">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
-        <div class="rdv-info">
+        <div class="rdv-info" style="flex:1;min-width:160px;">
           <strong>${escHtml(r.service || r.service_nom || t('rdv.step_service'))}</strong>
-          <p>${fmtDateTime(r.date || r.dateHeure || r.creneau_date)}</p>
+          <p>${fmtDateTime(r.debut || r.date || r.dateHeure || r.creneau_date)}</p>
           <p>${escHtml(r.commune || r.commune_nom || '')}${r.lieu ? ' — ' + r.lieu : ''}</p>
+          ${prioLabel ? `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#eff6ff;color:#2563eb;">${prioLabel}</span>` : ''}
         </div>
-        <span class="badge ${rdvStatusBadge(r.statut)}">${escHtml(r.statut || 'confirmé')}</span>
-      </div>
-    `).join('');
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="badge ${rdvStatusBadge(r.statut)}">${escHtml(r.statut || 'confirmé')}</span>
+          ${canEval ? `<button class="btn btn-sm btn-outline" onclick="showEvalRDV('${r.id}')" style="font-size:10px;">${t('rdv.evaluer')}</button>` : ''}
+          ${hasEval ? `<span style="font-size:10px;color:var(--gold);">★ ${r.note_satisfaction}/5</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
   } catch (e) {
     container.innerHTML = `<p style="padding:16px;color:var(--red)">${escHtml(e.message)}</p>`;
   }
@@ -3286,6 +3440,75 @@ function rdvStatusBadge(s) {
   if (s === 'annulé' || s === 'annule') return 'badge-red';
   if (s === 'en attente') return 'badge-orange';
   return 'badge-gray';
+}
+
+// ─── ÉVALUATION POST-RDV ─────────────────────────────────
+function showEvalRDV(rdvId) {
+  const container = document.getElementById('mes-rdv-container');
+  // Ajouter le formulaire d'évaluation en bas
+  let evalForm = document.getElementById('eval-rdv-form');
+  if (evalForm) evalForm.remove();
+  container.insertAdjacentHTML('afterend', `
+    <div id="eval-rdv-form" class="card" style="margin-top:12px;padding:16px;">
+      <h4 style="margin:0 0 10px;color:var(--navy);">${t('rdv.eval_titre')}</h4>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:13px;">${t('rdv.eval_note')} <span style="color:var(--gold);">★</span></label>
+        <div style="display:flex;gap:6px;" id="eval-stars">
+          ${[1,2,3,4,5].map(n => `<button type="button" class="btn btn-sm btn-outline eval-star" data-note="${n}" onclick="selectEvalStar(${n})" style="font-size:16px;">★</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="eval-honore"> ${t('rdv.eval_honore')}
+        </label>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="eval-delai"> ${t('rdv.eval_delai')}
+        </label>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:13px;">${t('rdv.eval_commentaire')}</label>
+        <textarea id="eval-commentaire" rows="2" style="font-size:13px;"></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="submitEvalRDV('${rdvId}')" style="width:100%;">${t('rdv.eval_envoyer')}</button>
+    </div>
+  `);
+  window._evalNote = 0;
+  document.getElementById('eval-rdv-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectEvalStar(n) {
+  window._evalNote = n;
+  document.querySelectorAll('.eval-star').forEach(btn => {
+    btn.style.color = Number(btn.dataset.note) <= n ? '#eab308' : 'var(--muted)';
+    btn.style.background = Number(btn.dataset.note) <= n ? '#fef3c7' : '';
+  });
+}
+
+async function submitEvalRDV(rdvId) {
+  if (!window._evalNote) { showToast(t('rdv.eval_note_requis'), 'error'); return; }
+  try {
+    const res = await apiFetch('/api/rdv/' + rdvId + '/evaluer', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        note_satisfaction: window._evalNote,
+        rdv_honore: document.getElementById('eval-honore').checked,
+        delai_respecte: document.getElementById('eval-delai').checked,
+        commentaire_eval: document.getElementById('eval-commentaire').value || null,
+      })
+    });
+    if (res.ok) {
+      showToast(t('rdv.eval_succes'));
+      const form = document.getElementById('eval-rdv-form');
+      if (form) form.remove();
+      loadMesRDV();
+    } else {
+      const data = await res.json();
+      showToast(data.message || t('rdv.eval_erreur'), 'error');
+    }
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 // ─── SENTINELLE ───────────────────────────────────────────

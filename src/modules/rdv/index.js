@@ -11,10 +11,21 @@ const { asyncH, badRequest, notFound } = require('../../utils/http');
 
 const router = express.Router();
 
-// GET /api/rdv/services
+// GET /api/rdv/services (enrichi)
 router.get('/services', asyncH(async (req, res) => {
-  const { rows } = await query('SELECT id,nom,famille,duree_min FROM service ORDER BY nom');
+  const { rows } = await query(
+    `SELECT id, nom, famille, duree_min, categorie, description,
+            pieces_requises, formulaires, frais, delai_reel, assistant_questions
+       FROM service ORDER BY famille, categorie, nom`);
   res.json(rows);
+}));
+
+// GET /api/rdv/services/:id — détail démarche
+router.get('/services/:id', asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT * FROM service WHERE id = $1`, [req.params.id]);
+  if (!rows.length) throw notFound('Démarche introuvable.');
+  res.json(rows[0]);
 }));
 
 // GET /api/rdv/creneaux?communeId=&serviceId=
@@ -39,11 +50,14 @@ router.get('/creneaux', asyncH(async (req, res) => {
   res.json({ familleA: false, creneaux: rows });
 }));
 
-const reserverSchema = z.object({ creneauId: z.number().int() });
+const reserverSchema = z.object({
+  creneauId: z.number().int(),
+  public_prioritaire: z.enum(['age', 'handicap', 'femme_enceinte']).optional().nullable(),
+});
 
-// POST /api/rdv — réserver un créneau
+// POST /api/rdv — réserver un créneau (avec option prioritaire)
 router.post('/', authenticate, validate(reserverSchema), asyncH(async (req, res) => {
-  const { creneauId } = req.body;
+  const { creneauId, public_prioritaire } = req.body;
   const result = await withTransaction(async (c) => {
     const cr = await c.query('SELECT * FROM creneau WHERE id=$1 FOR UPDATE', [creneauId]);
     if (!cr.rowCount) throw notFound('Créneau introuvable.');
@@ -53,8 +67,9 @@ router.post('/', authenticate, validate(reserverSchema), asyncH(async (req, res)
     if (Number(pris.rows[0].n) >= cr.rows[0].capacite) throw badRequest('Créneau complet.');
     const numero = Number(pris.rows[0].n) + 1;
     const { rows } = await c.query(
-      `INSERT INTO rdv(creneau_id,citoyen_id,numero_ticket,statut) VALUES ($1,$2,$3,'reserve') RETURNING *`,
-      [creneauId, req.user.id, numero]);
+      `INSERT INTO rdv(creneau_id,citoyen_id,numero_ticket,statut,public_prioritaire)
+       VALUES ($1,$2,$3,'reserve',$4) RETURNING *`,
+      [creneauId, req.user.id, numero, public_prioritaire || null]);
     return rows[0];
   });
   res.status(201).json(result);
@@ -160,4 +175,39 @@ router.delete('/admin/creneaux/:id',
     res.json({ deleted: rows[0].id });
   }));
 
+// ═══════════════════════════════════════════════════
+// ÉVALUATION POST-RDV (boucle de redevabilité)
+// ═══════════════════════════════════════════════════
+
+// PATCH /api/rdv/:id/evaluer — citoyen évalue après le RDV
+router.patch('/:id/evaluer', authenticate, asyncH(async (req, res) => {
+  const { note_satisfaction, rdv_honore, delai_respecte, commentaire_eval } = req.body;
+  if (!note_satisfaction || note_satisfaction < 1 || note_satisfaction > 5)
+    throw badRequest('note_satisfaction requis (1-5)');
+  // Vérifier que c'est bien le RDV du citoyen et qu'il est traité/présent
+  const { rows } = await query(
+    `UPDATE rdv SET note_satisfaction=$1, rdv_honore=$2, delai_respecte=$3,
+                    commentaire_eval=$4, evalue_le=NOW(), maj_le=NOW()
+      WHERE id=$5 AND citoyen_id=$6 AND statut IN ('traite','present')
+      RETURNING *`,
+    [note_satisfaction, rdv_honore ?? null, delai_respecte ?? null,
+     commentaire_eval || null, req.params.id, req.user.id]);
+  if (!rows.length) throw badRequest('RDV introuvable ou non éligible à l\'évaluation');
+  res.json(rows[0]);
+}));
+
+// Score satisfaction RDV pour l'ICUA (dimension Fluidité)
+async function scoreSatisfactionRDV() {
+  const { rows } = await query(
+    `SELECT AVG(note_satisfaction)::numeric(3,1) AS moy,
+            COUNT(*)::int AS total_eval,
+            COUNT(*) FILTER (WHERE rdv_honore = TRUE)::int AS honores,
+            COUNT(*) FILTER (WHERE rdv_honore IS NOT NULL)::int AS total_honore
+       FROM rdv WHERE note_satisfaction IS NOT NULL`);
+  if (!rows[0].total_eval) return null;
+  // Score 0-100 basé sur la satisfaction moyenne (1-5 → 0-100)
+  return Math.round(((Number(rows[0].moy) - 1) / 4) * 100);
+}
+
 module.exports = router;
+module.exports.scoreSatisfactionRDV = scoreSatisfactionRDV;

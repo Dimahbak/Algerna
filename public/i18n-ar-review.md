@@ -506,8 +506,41 @@
 | `univers.profil_desc` | Points civiques, classement, badges | النقاط المدنية، الترتيب، الشارات |
 | `univers.profil_court` | Profil | ملفي |
 
+## 27. CiviAdmin enrichi — Démarches, assistant, prioritaire, évaluation
+| Clé | FR | AR (à relire) |
+|-----|-----|----------------|
+| `rdv.cat_urbanisme` | Urbanisme / Foncier | التعمير / العقار |
+| `rdv.cat_logement` | Logement / AADL | السكن / AADL |
+| `rdv.cat_certificats` | Certificats communaux | الشهادات البلدية |
+| `rdv.cat_biometrique` | Enrôlement biométrique | التسجيل البيومتري |
+| `rdv.cat_etat_civil` | État civil | الحالة المدنية |
+| `rdv.cat_identite` | Identité | الهوية |
+| `rdv.delai` | Délai réel | الأجل الفعلي |
+| `rdv.frais` | Frais | الرسوم |
+| `rdv.pieces_titre` | Pièces à fournir | الوثائق المطلوبة |
+| `rdv.formulaires_titre` | Formulaires | الاستمارات |
+| `rdv.checklist_complet` | Dossier complet ! | الملف مكتمل! |
+| `rdv.checklist_progression` | pièces cochées | وثائق محققة |
+| `rdv.assistant_titre` | Vérification rapide | فحص سريع |
+| `rdv.assistant_ok` | Vous êtes éligible… | أنت مؤهل… |
+| `rdv.priorite_label` | Accès prioritaire (déclaratif) | أولوية الوصول (تصريحي) |
+| `rdv.priorite_aucun` | Aucun (standard) | لا شيء (عادي) |
+| `rdv.priorite_age` | Personne âgée (65+) | شخص مسن (65+) |
+| `rdv.priorite_handicap` | Personne en situation de handicap | شخص ذو إعاقة |
+| `rdv.priorite_enceinte` | Femme enceinte | امرأة حامل |
+| `rdv.evaluer` | Évaluer ce RDV | تقييم هذا الموعد |
+| `rdv.eval_titre` | Évaluez votre rendez-vous | قيّم موعدك |
+| `rdv.eval_note` | Satisfaction (1 à 5) | الرضا (1 إلى 5) |
+| `rdv.eval_honore` | Le RDV a été honoré | تم الوفاء بالموعد |
+| `rdv.eval_delai` | Le délai annoncé a été respecté | تم احترام الأجل المعلن |
+| `rdv.eval_commentaire` | Commentaire (optionnel) | تعليق (اختياري) |
+| `rdv.eval_envoyer` | Envoyer mon évaluation | إرسال تقييمي |
+| `rdv.eval_succes` | Évaluation enregistrée. Merci ! | تم تسجيل التقييم. شكرا! |
+| `rdv.eval_erreur` | Erreur lors de l'évaluation. | خطأ أثناء التقييم. |
+| `rdv.eval_note_requis` | Veuillez donner une note. | يرجى إعطاء تقييم. |
+
 ---
 
-**Total : ~525 clés i18n**
+**Total : ~555 clés i18n**
 **Fichier dictionnaire : `/public/i18n.js`**
 **Toutes les clés AR sont marquées `// À RELIRE` dans le fichier source.**
