@@ -13,7 +13,8 @@
   <title>Alger CiviSmart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="/i18n.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1111,11 +1112,123 @@
     .btn-delete { background:transparent; border:1px solid var(--red); color:var(--red); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; white-space:nowrap; }
     .btn-delete:hover { background:var(--red); color:white; }
     .btn-secondary { background:white; color:var(--navy); border:1px solid var(--navy); padding:10px 20px; border-radius:10px; font-size:14px; font-weight:500; cursor:pointer; }
+
+    /* ─── LANGUAGE SELECTOR ─── */
+    .lang-selector {
+      display: flex;
+      gap: 0;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .lang-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      transition: all .2s;
+    }
+    .lang-btn.active {
+      background: rgba(255,255,255,0.25);
+      color: white;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ─── RTL SUPPORT ─── */
+    [dir="rtl"] body {
+      font-family: 'Noto Sans Arabic', 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    [dir="rtl"] .sidebar {
+      border-right: none;
+      border-left: 1px solid var(--gray-200);
+    }
+
+    [dir="rtl"] .nav-item {
+      text-align: right;
+    }
+
+    [dir="rtl"] th {
+      text-align: right;
+    }
+
+    [dir="rtl"] .auth-header { direction: rtl; }
+
+    [dir="rtl"] .signal-header,
+    [dir="rtl"] .mes-sig-header,
+    [dir="rtl"] .agent-signal-card-header {
+      flex-direction: row-reverse;
+    }
+
+    [dir="rtl"] .navbar-brand,
+    [dir="rtl"] .navbar-right,
+    [dir="rtl"] .nav-item,
+    [dir="rtl"] .user-badge,
+    [dir="rtl"] .auth-logo,
+    [dir="rtl"] .geo-btn,
+    [dir="rtl"] .alert,
+    [dir="rtl"] .rdv-item,
+    [dir="rtl"] .leaderboard-item,
+    [dir="rtl"] .creneau-row,
+    [dir="rtl"] .steps {
+      direction: rtl;
+    }
+
+    [dir="rtl"] .bottom-nav-inner {
+      direction: rtl;
+    }
+
+    [dir="rtl"] .welcome-card::before {
+      right: auto;
+      left: -40px;
+    }
+
+    [dir="rtl"] .welcome-card::after {
+      right: auto;
+      left: 40px;
+    }
+
+    /* Leaflet fix for RTL */
+    [dir="rtl"] .leaflet-control-zoom,
+    [dir="rtl"] .leaflet-control-attribution {
+      direction: ltr;
+    }
+
+    /* Chart.js fix for RTL */
+    [dir="rtl"] canvas {
+      direction: ltr;
+    }
+
+    /* Form inputs RTL */
+    [dir="rtl"] input,
+    [dir="rtl"] select,
+    [dir="rtl"] textarea {
+      text-align: right;
+    }
+
+    [dir="rtl"] input[type="tel"],
+    [dir="rtl"] input[type="email"],
+    [dir="rtl"] input[type="number"],
+    [dir="rtl"] input[type="date"],
+    [dir="rtl"] input[type="datetime-local"],
+    [dir="rtl"] input[type="month"] {
+      text-align: left;
+      direction: ltr;
+    }
+
+    /* Modal close button RTL */
+    [dir="rtl"] #pwa-update-toast {
+      right: auto;
+      left: 16px;
+    }
   </style>
 </head>
 <body>
-  <div id="pwa-banner" class="hidden"><div class="bi">&#x1F4F1;</div><div class="bt"><strong>Installer CiviSmart</strong><span>Acc&#232;s rapide depuis votre &#233;cran d'accueil</span></div><div class="ba"><button class="btn-install" onclick="pwaInstall()">Installer</button><button class="btn-dismiss" onclick="pwaDismiss()">&#x2715;</button></div></div>
-  <div id="pwa-update-toast" class="hidden"><span>&#x1F504; Nouvelle version disponible</span><button onclick="pwaUpdate()">Mettre &#224; jour</button></div>
+  <div id="pwa-banner" class="hidden"><div class="bi">&#x1F4F1;</div><div class="bt"><strong data-i18n="pwa.installer_titre">Installer CiviSmart</strong><span data-i18n="pwa.installer_desc">Acc&#232;s rapide depuis votre &#233;cran d'accueil</span></div><div class="ba"><button class="btn-install" onclick="pwaInstall()" data-i18n="pwa.installer_btn">Installer</button><button class="btn-dismiss" onclick="pwaDismiss()">&#x2715;</button></div></div>
+  <div id="pwa-update-toast" class="hidden"><span data-i18n="pwa.maj_dispo">&#x1F504; Nouvelle version disponible</span><button onclick="pwaUpdate()" data-i18n="pwa.maj_btn">Mettre &#224; jour</button></div>
 
 <!-- ═══════════════════════════════════════════════════════
      AUTH PAGE
@@ -1123,17 +1236,23 @@
 <div id="auth-page">
   <div class="auth-card">
     <div class="auth-header">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+          <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">AR</button>
+        </div>
+      </div>
       <div class="auth-logo">
         <div class="auth-logo-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </div>
-        <h1>Alger CiviSmart</h1>
+        <h1 data-i18n="app.title">Alger CiviSmart</h1>
       </div>
-      <p>Plateforme de gouvernance civique</p>
+      <p data-i18n="app.subtitle">Plateforme de gouvernance civique</p>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Connexion</button>
-      <button class="auth-tab" onclick="switchTab('register')">Inscription</button>
+      <button class="auth-tab active" onclick="switchTab('login')" data-i18n="auth.connexion">Connexion</button>
+      <button class="auth-tab" onclick="switchTab('register')" data-i18n="auth.inscription">Inscription</button>
     </div>
     <div class="auth-body">
       <div id="auth-error" class="alert alert-error hidden"></div>
@@ -1141,15 +1260,15 @@
       <!-- LOGIN FORM -->
       <form id="login-form" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label>Numéro de téléphone</label>
-          <input type="tel" id="login-tel" placeholder="0770 000 000" required />
+          <label data-i18n="auth.telephone">Numéro de téléphone</label>
+          <input type="tel" id="login-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
         </div>
         <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="login-mdp" placeholder="••••••••" required />
+          <label data-i18n="auth.mdp">Mot de passe</label>
+          <input type="password" id="login-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
         </div>
         <button type="submit" class="btn btn-primary" id="login-btn">
-          <span id="login-btn-text">Se connecter</span>
+          <span id="login-btn-text" data-i18n="auth.se_connecter">Se connecter</span>
           <span id="login-btn-spinner" class="spinner hidden"></span>
         </button>
       </form>
@@ -1158,34 +1277,34 @@
       <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
         <div class="form-row">
           <div class="form-group">
-            <label>Prénom</label>
-            <input type="text" id="reg-prenom" placeholder="Amina" required />
+            <label data-i18n="auth.prenom">Prénom</label>
+            <input type="text" id="reg-prenom" placeholder="Amina" data-i18n-placeholder="auth.prenom_placeholder" required />
           </div>
           <div class="form-group">
-            <label>Nom</label>
-            <input type="text" id="reg-nom" placeholder="Benamara" required />
+            <label data-i18n="auth.nom">Nom</label>
+            <input type="text" id="reg-nom" placeholder="Benamara" data-i18n-placeholder="auth.nom_placeholder" required />
           </div>
         </div>
         <div class="form-group">
-          <label>Téléphone</label>
-          <input type="tel" id="reg-tel" placeholder="0770 000 000" required />
+          <label data-i18n="auth.telephone">Téléphone</label>
+          <input type="tel" id="reg-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
         </div>
         <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="reg-mdp" placeholder="••••••••" required />
+          <label data-i18n="auth.mdp">Mot de passe</label>
+          <input type="password" id="reg-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
         </div>
         <div class="form-group">
-          <label>Email <span style="color:var(--gray-400)">(optionnel)</span></label>
-          <input type="email" id="reg-email" placeholder="exemple@gmail.com" />
+          <label><span data-i18n="auth.email">Email</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnel</span>)</span></label>
+          <input type="email" id="reg-email" placeholder="exemple@gmail.com" data-i18n-placeholder="auth.email_placeholder" />
         </div>
         <div class="form-group">
-          <label>Commune</label>
+          <label data-i18n="auth.commune">Commune</label>
           <select id="reg-commune">
-            <option value="">-- Sélectionner une commune --</option>
+            <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
           </select>
         </div>
         <button type="submit" class="btn btn-primary" id="reg-btn">
-          <span id="reg-btn-text">Créer mon compte</span>
+          <span id="reg-btn-text" data-i18n="auth.creer_compte">Créer mon compte</span>
           <span id="reg-btn-spinner" class="spinner hidden"></span>
         </button>
       </form>
@@ -1203,14 +1322,18 @@
       <div class="navbar-brand-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </div>
-      <span>Alger CiviSmart</span>
+      <span data-i18n="app.title">Alger CiviSmart</span>
     </div>
     <div class="navbar-right">
+      <div class="lang-selector">
+        <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+        <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">AR</button>
+      </div>
       <div class="user-badge">
         <div class="user-avatar" id="nav-avatar">?</div>
-        <span id="nav-username">Utilisateur</span>
+        <span id="nav-username" data-i18n="nav.utilisateur">Utilisateur</span>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="handleLogout()" title="Déconnexion">
+      <button class="btn btn-secondary btn-sm" onclick="handleLogout()" data-i18n-title="nav.deconnexion" title="Déconnexion">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span class="hidden" id="logout-label">Déconnexion</span>
       </button>
@@ -1220,48 +1343,48 @@
   <div class="app-body">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
-      <div class="nav-label">Principal</div>
-      <button class="nav-item active" onclick="showView('home')" data-view="home">
+      <div class="nav-label" data-i18n="sidebar.principal">Principal</div>
+      <button class="nav-item active" onclick="showView('home')" data-view="home" data-i18n="sidebar.accueil">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Accueil
       </button>
       <div class="nav-divider"></div>
-      <div class="nav-label">Modules</div>
-      <button class="nav-item" onclick="showView('civisignal')" data-view="civisignal">
+      <div class="nav-label" data-i18n="sidebar.modules">Modules</div>
+      <button class="nav-item" onclick="showView('civisignal')" data-view="civisignal" data-i18n="sidebar.civisignal">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
         CiviSignal
       </button>
-      <button class="nav-item" onclick="showView('watersignal')" data-view="watersignal">
+      <button class="nav-item" onclick="showView('watersignal')" data-view="watersignal" data-i18n="sidebar.watersignal">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
         WaterSignal
       </button>
-      <button class="nav-item" onclick="showView('civiadmin')" data-view="civiadmin">
+      <button class="nav-item" onclick="showView('civiadmin')" data-view="civiadmin" data-i18n="sidebar.civiadmin">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         CiviAdmin RDV
       </button>
-      <button class="nav-item" onclick="showView('sentinelle')" data-view="sentinelle">
+      <button class="nav-item" onclick="showView('sentinelle')" data-view="sentinelle" data-i18n="sidebar.sentinelle">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Citoyen Sentinelle
       </button>
-      <button class="nav-item" onclick="showView('mes-signalements')" data-view="mes-signalements">
+      <button class="nav-item" onclick="showView('mes-signalements')" data-view="mes-signalements" data-i18n="sidebar.mes_signalements">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Mes Signalements
       </button>
-      <button class="nav-item" onclick="showView('carte')" data-view="carte">
+      <button class="nav-item" onclick="showView('carte')" data-view="carte" data-i18n="sidebar.carte">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
         Carte
       </button>
             <div class="nav-divider" id="admin-divider" style="display:none"></div>
-      <div class="nav-label hidden" id="admin-nav-label">Administration</div>
-      <button class="nav-item hidden" onclick="showView('dashboard')" data-view="dashboard" id="nav-dashboard">
+      <div class="nav-label hidden" id="admin-nav-label" data-i18n="sidebar.administration">Administration</div>
+      <button class="nav-item hidden" onclick="showView('dashboard')" data-view="dashboard" id="nav-dashboard" data-i18n="sidebar.dashboard">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard Admin
       </button>
-      <button class="nav-item hidden" onclick="showView('patrimoine')" data-view="patrimoine" id="nav-patrimoine">
+      <button class="nav-item hidden" onclick="showView('patrimoine')" data-view="patrimoine" id="nav-patrimoine" data-i18n="sidebar.patrimoine">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         PatriLocal
       </button>
-      <button class="nav-item hidden" onclick="showView('operateur')" data-view="operateur" id="nav-operateur">
+      <button class="nav-item hidden" onclick="showView('operateur')" data-view="operateur" id="nav-operateur" data-i18n="sidebar.operateur">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         Espace Opérateur
       </button>
@@ -1274,7 +1397,7 @@
       <div id="view-home" class="view active">
         <div class="welcome-card">
           <h2 id="welcome-name">Bienvenue, Citoyen !</h2>
-          <p>Wilaya d'Alger — Gouvernance civique numérique</p>
+          <p data-i18n="app.wilaya">Wilaya d'Alger — Gouvernance civique numérique</p>
           <div class="points-badge-home">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span id="home-points">0 points</span>
@@ -1286,43 +1409,43 @@
             <div class="module-icon" style="background:#E8EEF3;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0A3D62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
             </div>
-            <h3>CiviSignal</h3>
-            <p>Signaler un problème de propreté</p>
+            <h3 data-i18n="home.civisignal_titre">CiviSignal</h3>
+            <p data-i18n="home.civisignal_desc">Signaler un problème de propreté</p>
           </div>
           <div class="module-card" onclick="showView('watersignal')">
             <div class="module-icon" style="background:#eff6ff;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
             </div>
-            <h3>WaterSignal</h3>
-            <p>Signaler un problème d'eau</p>
+            <h3 data-i18n="home.watersignal_titre">WaterSignal</h3>
+            <p data-i18n="home.watersignal_desc">Signaler un problème d'eau</p>
           </div>
           <div class="module-card" onclick="showView('civiadmin')">
             <div class="module-icon" style="background:#fff7ed;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
-            <h3>CiviAdmin</h3>
-            <p>Prendre un rendez-vous administratif</p>
+            <h3 data-i18n="home.civiadmin_titre">CiviAdmin</h3>
+            <p data-i18n="home.civiadmin_desc">Prendre un rendez-vous administratif</p>
           </div>
           <div class="module-card" onclick="showView('sentinelle')">
             <div class="module-icon" style="background:#fef3c7;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
-            <h3>Sentinelle</h3>
-            <p>Points civiques et classement</p>
+            <h3 data-i18n="home.sentinelle_titre">Sentinelle</h3>
+            <p data-i18n="home.sentinelle_desc">Points civiques et classement</p>
           </div>
           <div class="module-card hidden" id="home-admin-card" onclick="showView('dashboard')">
             <div class="module-icon" style="background:#fce8ec;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </div>
-            <h3>Dashboard Admin</h3>
-            <p>Indicateurs ICUA et statistiques</p>
+            <h3 data-i18n="home.dashboard_titre">Dashboard Admin</h3>
+            <p data-i18n="home.dashboard_desc">Indicateurs ICUA et statistiques</p>
           </div>
           <div class="module-card hidden" id="home-patrimoine-card" onclick="showView('patrimoine')">
             <div class="module-icon" style="background:var(--gold-light);">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
             </div>
-            <h3>PatriLocal</h3>
-            <p>Patrimoine immobilier communal</p>
+            <h3 data-i18n="home.patrimoine_titre">PatriLocal</h3>
+            <p data-i18n="home.patrimoine_desc">Patrimoine immobilier communal</p>
           </div>
         </div>
       </div>
@@ -1330,53 +1453,53 @@
       <!-- ══ CIVISIGNAL VIEW ══ -->
       <div id="view-civisignal" class="view">
         <div class="page-header">
-          <h2>CiviSignal — Propreté</h2>
-          <p>Signalez un problème de propreté dans votre commune</p>
+          <h2 data-i18n="cs.titre">CiviSignal — Propreté</h2>
+          <p data-i18n="cs.sous_titre">Signalez un problème de propreté dans votre commune</p>
         </div>
         <div class="card">
           <div id="civisignal-error" class="alert alert-error hidden"></div>
           <div id="civisignal-success" class="alert alert-success hidden"></div>
           <form id="civisignal-form" onsubmit="handleSignalement(event, 'proprete')">
             <div class="form-group">
-              <label>Catégorie *</label>
+              <label data-i18n="cs.categorie">Catégorie *</label>
               <select id="cs-categorie" required>
-                <option value="">-- Chargement... --</option>
+                <option value="" data-i18n="cs.chargement_cat">-- Chargement... --</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Commune</label>
+              <label data-i18n="cs.commune">Commune</label>
               <select id="cs-commune">
-                <option value="">-- Sélectionner une commune --</option>
+                <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Description</label>
-              <textarea id="cs-description" placeholder="Décrivez le problème constaté..."></textarea>
+              <label data-i18n="cs.description">Description</label>
+              <textarea id="cs-description" placeholder="Décrivez le problème constaté..." data-i18n-placeholder="cs.description_placeholder"></textarea>
             </div>
             <div class="form-group">
-              <label>Géolocalisation</label>
-              <p class="mini-map-hint">Cliquez sur la carte pour placer votre signalement, ou utilisez le bouton GPS</p>
+              <label data-i18n="cs.geolocalisation">Géolocalisation</label>
+              <p class="mini-map-hint" data-i18n="cs.geo_hint">Cliquez sur la carte pour placer votre signalement, ou utilisez le bouton GPS</p>
               <div id="cs-minimap" class="mini-map-picker"></div>
               <div id="cs-adresse-geo" style="font-size:12px;color:var(--gray-600);margin-top:4px;min-height:16px;"></div>
               <button type="button" class="geo-btn" onclick="centerMiniMap('cs')" style="margin-top:6px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-                Centrer sur ma position GPS
+                <span data-i18n="cs.geo_btn">Centrer sur ma position GPS</span>
               </button>
               <div class="geo-coords hidden" id="cs-coords"></div>
               <input type="hidden" id="cs-lat" />
               <input type="hidden" id="cs-lng" />
             </div>
             <div class="form-group">
-              <label>Photo <span style="color:var(--gray-400)">(optionnelle)</span></label>
+              <label><span data-i18n="cs.photo">Photo</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnelle</span>)</span></label>
               <div class="photo-upload-area">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <p>Cliquez pour ajouter une photo</p>
+                <p data-i18n="cs.photo_click">Cliquez pour ajouter une photo</p>
                 <input type="file" id="cs-photo" accept="image/*" />
               </div>
               <div id="cs-photo-name" class="geo-coords hidden"></div>
             </div>
             <button type="submit" class="btn btn-primary" id="cs-submit-btn">
-              <span id="cs-submit-text">Envoyer le signalement</span>
+              <span id="cs-submit-text" data-i18n="cs.envoyer">Envoyer le signalement</span>
               <span id="cs-submit-spinner" class="spinner hidden"></span>
             </button>
           </form>
@@ -1386,23 +1509,23 @@
         <div id="cs-signals-admin" class="hidden" style="margin-top:24px;">
           <div class="section-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Gestion des signalements — Propreté
+            <span data-i18n="cs.gestion_titre">Gestion des signalements — Propreté</span>
           </div>
           <div class="agent-filter-bar">
             <select id="cs-filter-commune">
-              <option value="">Toutes les communes</option>
+              <option value="" data-i18n="global.toutes_communes">Toutes les communes</option>
             </select>
             <select id="cs-filter-etat">
-              <option value="">Tous les états</option>
-              <option value="recu">Reçu</option>
-              <option value="transmis">Transmis</option>
-              <option value="en_intervention">En intervention</option>
+              <option value="" data-i18n="global.tous_etats">Tous les états</option>
+              <option value="recu" data-i18n="etat.recu">Reçu</option>
+              <option value="transmis" data-i18n="etat.transmis">Transmis</option>
+              <option value="en_intervention" data-i18n="etat.en_intervention">En intervention</option>
               <option value="resolu">Résolu</option>
-              <option value="rejete">Rejeté</option>
+              <option value="rejete" data-i18n="etat.rejete">Rejeté</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="loadAgentSignals('proprete')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Filtrer
+              <span data-i18n="global.filtrer">Filtrer</span>
             </button>
             <button class="btn btn-outline btn-sm" onclick="exportCSV('proprete')" id="cs-export-csv-btn" style="display:none;">
               ⬇ Export CSV
@@ -1415,53 +1538,53 @@
       <!-- ══ WATERSIGNAL VIEW ══ -->
       <div id="view-watersignal" class="view">
         <div class="page-header">
-          <h2>WaterSignal — Eau</h2>
-          <p>Signalez un problème d'eau potable ou d'assainissement</p>
+          <h2 data-i18n="ws.titre">WaterSignal — Eau</h2>
+          <p data-i18n="ws.sous_titre">Signalez un problème d'eau potable ou d'assainissement</p>
         </div>
         <div class="card">
           <div id="watersignal-error" class="alert alert-error hidden"></div>
           <div id="watersignal-success" class="alert alert-success hidden"></div>
           <form id="watersignal-form" onsubmit="handleSignalement(event, 'eau')">
             <div class="form-group">
-              <label>Catégorie *</label>
+              <label data-i18n="cs.categorie">Catégorie *</label>
               <select id="ws-categorie" required>
-                <option value="">-- Chargement... --</option>
+                <option value="" data-i18n="cs.chargement_cat">-- Chargement... --</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Commune</label>
+              <label data-i18n="cs.commune">Commune</label>
               <select id="ws-commune">
-                <option value="">-- Sélectionner une commune --</option>
+                <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Description</label>
-              <textarea id="ws-description" placeholder="Décrivez le problème d'eau constaté..."></textarea>
+              <label data-i18n="cs.description">Description</label>
+              <textarea id="ws-description" placeholder="Décrivez le problème d'eau constaté..." data-i18n-placeholder="ws.description_placeholder"></textarea>
             </div>
             <div class="form-group">
-              <label>Géolocalisation</label>
-              <p class="mini-map-hint">Cliquez sur la carte pour placer votre signalement, ou utilisez le bouton GPS</p>
+              <label data-i18n="cs.geolocalisation">Géolocalisation</label>
+              <p class="mini-map-hint" data-i18n="cs.geo_hint">Cliquez sur la carte pour placer votre signalement, ou utilisez le bouton GPS</p>
               <div id="ws-minimap" class="mini-map-picker"></div>
               <div id="ws-adresse-geo" style="font-size:12px;color:var(--gray-600);margin-top:4px;min-height:16px;"></div>
               <button type="button" class="geo-btn" onclick="centerMiniMap('ws')" style="margin-top:6px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-                Centrer sur ma position GPS
+                <span data-i18n="cs.geo_btn">Centrer sur ma position GPS</span>
               </button>
               <div class="geo-coords hidden" id="ws-coords"></div>
               <input type="hidden" id="ws-lat" />
               <input type="hidden" id="ws-lng" />
             </div>
             <div class="form-group">
-              <label>Photo <span style="color:var(--gray-400)">(optionnelle)</span></label>
+              <label><span data-i18n="cs.photo">Photo</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnelle</span>)</span></label>
               <div class="photo-upload-area">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <p>Cliquez pour ajouter une photo</p>
+                <p data-i18n="cs.photo_click">Cliquez pour ajouter une photo</p>
                 <input type="file" id="ws-photo" accept="image/*" />
               </div>
               <div id="ws-photo-name" class="geo-coords hidden"></div>
             </div>
             <button type="submit" class="btn btn-primary" id="ws-submit-btn">
-              <span id="ws-submit-text">Envoyer le signalement</span>
+              <span id="ws-submit-text" data-i18n="cs.envoyer">Envoyer le signalement</span>
               <span id="ws-submit-spinner" class="spinner hidden"></span>
             </button>
           </form>
@@ -1471,23 +1594,23 @@
         <div id="ws-signals-admin" class="hidden" style="margin-top:24px;">
           <div class="section-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Gestion des signalements — Eau
+            <span data-i18n="ws.gestion_titre">Gestion des signalements — Eau</span>
           </div>
           <div class="agent-filter-bar">
             <select id="ws-filter-commune">
-              <option value="">Toutes les communes</option>
+              <option value="" data-i18n="global.toutes_communes">Toutes les communes</option>
             </select>
             <select id="ws-filter-etat">
-              <option value="">Tous les états</option>
-              <option value="recu">Reçu</option>
-              <option value="transmis">Transmis</option>
-              <option value="en_intervention">En intervention</option>
+              <option value="" data-i18n="global.tous_etats">Tous les états</option>
+              <option value="recu" data-i18n="etat.recu">Reçu</option>
+              <option value="transmis" data-i18n="etat.transmis">Transmis</option>
+              <option value="en_intervention" data-i18n="etat.en_intervention">En intervention</option>
               <option value="resolu">Résolu</option>
-              <option value="rejete">Rejeté</option>
+              <option value="rejete" data-i18n="etat.rejete">Rejeté</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="loadAgentSignals('eau')">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Filtrer
+              <span data-i18n="global.filtrer">Filtrer</span>
             </button>
             <button class="btn btn-outline btn-sm" onclick="exportCSV('eau')" id="ws-export-csv-btn" style="display:none;">
               ⬇ Export CSV
@@ -1500,47 +1623,47 @@
       <!-- ══ CIVIADMIN VIEW ══ -->
       <div id="view-civiadmin" class="view">
         <div class="page-header">
-          <h2>CiviAdmin — Rendez-vous</h2>
-          <p>Prenez un rendez-vous dans votre mairie ou daïra</p>
+          <h2 data-i18n="rdv.titre">CiviAdmin — Rendez-vous</h2>
+          <p data-i18n="rdv.sous_titre">Prenez un rendez-vous dans votre mairie ou daïra</p>
         </div>
 
         <!-- Steps -->
         <div class="steps" id="rdv-steps">
           <div class="step active" id="step-1">
             <div class="step-num">1</div>
-            <span>Service</span>
+            <span data-i18n="rdv.step_service">Service</span>
           </div>
           <div class="step-line" id="step-line-1"></div>
           <div class="step" id="step-2">
             <div class="step-num">2</div>
-            <span>Créneau</span>
+            <span data-i18n="rdv.step_creneau">Créneau</span>
           </div>
           <div class="step-line" id="step-line-2"></div>
           <div class="step" id="step-3">
             <div class="step-num">3</div>
-            <span>Confirmation</span>
+            <span data-i18n="rdv.step_confirmation">Confirmation</span>
           </div>
         </div>
 
         <!-- Step 1: Select commune + service -->
         <div class="card" id="rdv-step-1">
-          <div class="card-title">Sélectionner un service</div>
-          <div class="card-subtitle">Choisissez votre commune et le service administratif</div>
+          <div class="card-title" data-i18n="rdv.sel_service_titre">Sélectionner un service</div>
+          <div class="card-subtitle" data-i18n="rdv.sel_service_desc">Choisissez votre commune et le service administratif</div>
           <div id="rdv-error" class="alert alert-error hidden"></div>
           <div class="form-group">
-            <label>Commune *</label>
+            <label data-i18n="rdv.commune">Commune *</label>
             <select id="rdv-commune" required>
-              <option value="">-- Sélectionner une commune --</option>
+              <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Service *</label>
+            <label data-i18n="rdv.service">Service *</label>
             <select id="rdv-service" required>
-              <option value="">-- Sélectionner un service --</option>
+              <option value="" data-i18n="rdv.sel_service">-- Sélectionner un service --</option>
             </select>
           </div>
           <button class="btn btn-primary" onclick="loadCreneaux()">
-            Voir les créneaux disponibles
+            <span data-i18n="rdv.voir_creneaux">Voir les créneaux disponibles</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
@@ -1549,26 +1672,26 @@
         <div class="alert alert-info hidden" id="rdv-famille-a">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <div>
-            <strong>Portail national requis</strong>
+            <strong data-i18n="rdv.portail_requis">Portail national requis</strong>
             <p style="margin-top:4px;font-size:12px;" id="rdv-famille-a-msg"></p>
             <a href="https://www.interieur.gov.dz" target="_blank" class="btn btn-outline btn-sm" style="margin-top:10px;display:inline-flex;">
-              Accéder au portail national →
+              <span data-i18n="rdv.acceder_portail">Accéder au portail national →</span>
             </a>
           </div>
         </div>
 
         <!-- Step 2: Creneaux -->
         <div class="card hidden" id="rdv-step-2">
-          <div class="card-title">Choisir un créneau</div>
-          <div class="card-subtitle" id="rdv-step2-subtitle">Sélectionnez une date et heure disponibles</div>
+          <div class="card-title" data-i18n="rdv.choisir_creneau">Choisir un créneau</div>
+          <div class="card-subtitle" id="rdv-step2-subtitle" data-i18n="rdv.sel_date_heure">Sélectionnez une date et heure disponibles</div>
           <div id="rdv-creneaux-loading" class="loading-overlay">
             <div class="spinner spinner-dark"></div>
-            <span>Chargement des créneaux...</span>
+            <span data-i18n="rdv.chargement_creneaux">Chargement des créneaux...</span>
           </div>
           <div class="creneaux-grid hidden" id="rdv-creneaux-grid"></div>
           <div class="divider"></div>
           <button class="btn btn-primary hidden" id="rdv-confirm-btn" onclick="confirmRDV()">
-            Confirmer ce créneau
+            <span data-i18n="rdv.confirmer_creneau">Confirmer ce créneau</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           </button>
         </div>
@@ -1579,9 +1702,9 @@
             <div style="width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
-            <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--green)">Rendez-vous confirmé !</h3>
-            <p style="color:var(--gray-500);margin-bottom:20px;" id="rdv-confirmed-details">Votre RDV a été enregistré avec succès.</p>
-            <button class="btn btn-outline" onclick="resetRDV()">Prendre un autre rendez-vous</button>
+            <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--green)" data-i18n="rdv.confirmation_titre">Rendez-vous confirmé !</h3>
+            <p style="color:var(--gray-500);margin-bottom:20px;" id="rdv-confirmed-details" data-i18n="rdv.confirmation_desc">Votre RDV a été enregistré avec succès.</p>
+            <button class="btn btn-outline" onclick="resetRDV()" data-i18n="rdv.autre_rdv">Prendre un autre rendez-vous</button>
           </div>
         </div>
 
@@ -1589,7 +1712,7 @@
         <div style="margin-top:28px;">
           <div class="section-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Mes rendez-vous
+            <span data-i18n="rdv.mes_rdv">Mes rendez-vous</span>
           </div>
           <div class="card" id="mes-rdv-container">
             <div class="loading-overlay">
@@ -1603,43 +1726,43 @@
         <div id="rdv-admin-panel" class="hidden" style="margin-top:28px;">
           <div class="section-title">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Gestion des créneaux
+            <span data-i18n="rdv_admin.gestion_creneaux">Gestion des créneaux</span>
           </div>
 
           <!-- Formulaire création -->
           <div class="card" style="margin-bottom:16px;">
-            <div class="card-title">Créer des créneaux</div>
-            <div class="card-subtitle">Les créneaux consécutifs sont espacés automatiquement selon la durée du service</div>
+            <div class="card-title" data-i18n="rdv_admin.creer_creneaux">Créer des créneaux</div>
+            <div class="card-subtitle" data-i18n="rdv_admin.creer_desc">Les créneaux consécutifs sont espacés automatiquement selon la durée du service</div>
             <div id="rdv-admin-error" class="alert alert-error hidden" style="margin-bottom:12px;"></div>
             <div id="rdv-admin-success" class="alert alert-success hidden" style="margin-bottom:12px;"></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div class="form-group" style="margin-bottom:0;">
-                <label>Commune *</label>
+                <label data-i18n="rdv_admin.commune">Commune *</label>
                 <select id="admin-rdv-commune">
-                  <option value="">-- Sélectionner --</option>
+                  <option value="" data-i18n="global.selectionner">-- Sélectionner --</option>
                 </select>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label>Service *</label>
+                <label data-i18n="rdv_admin.service">Service *</label>
                 <select id="admin-rdv-service">
-                  <option value="">-- Sélectionner --</option>
+                  <option value="" data-i18n="global.selectionner">-- Sélectionner --</option>
                 </select>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label>Date et heure de début *</label>
+                <label data-i18n="rdv_admin.date_debut">Date et heure de début *</label>
                 <input type="datetime-local" id="admin-rdv-debut" style="width:100%;padding:10px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;"/>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label>Capacité (personnes / créneau)</label>
+                <label data-i18n="rdv_admin.capacite">Capacité (personnes / créneau)</label>
                 <input type="number" id="admin-rdv-capacite" value="10" min="1" max="200" style="width:100%;padding:10px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;"/>
               </div>
               <div class="form-group" style="margin-bottom:0;">
-                <label>Nombre de créneaux consécutifs</label>
+                <label data-i18n="rdv_admin.repetitions">Nombre de créneaux consécutifs</label>
                 <input type="number" id="admin-rdv-repetitions" value="1" min="1" max="60" style="width:100%;padding:10px;border:1px solid var(--gray-200);border-radius:8px;font-size:14px;"/>
               </div>
               <div class="form-group" style="margin-bottom:0;display:flex;align-items:flex-end;">
                 <button class="btn btn-primary" onclick="adminCreerCreneaux()" id="admin-rdv-btn" style="width:100%;">
-                  <span id="admin-rdv-btn-text">Créer les créneaux</span>
+                  <span id="admin-rdv-btn-text" data-i18n="rdv_admin.btn_creer">Créer les créneaux</span>
                   <span id="admin-rdv-btn-spinner" class="spinner hidden"></span>
                 </button>
               </div>
@@ -1648,15 +1771,15 @@
 
           <!-- Filtres + liste -->
           <div class="card">
-            <div class="card-title">Créneaux à venir</div>
+            <div class="card-title" data-i18n="rdv_admin.creneaux_avenir">Créneaux à venir</div>
             <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
               <select id="admin-filter-commune" style="flex:1;min-width:140px;padding:8px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;">
-                <option value="">Toutes les communes</option>
+                <option value="" data-i18n="global.toutes_communes">Toutes les communes</option>
               </select>
               <select id="admin-filter-service" style="flex:1;min-width:140px;padding:8px;border:1px solid var(--gray-200);border-radius:8px;font-size:13px;">
-                <option value="">Tous les services</option>
+                <option value="" data-i18n="rdv_admin.tous_services">Tous les services</option>
               </select>
-              <button class="btn btn-secondary" onclick="adminLoadCreneaux()" style="padding:8px 16px;">Filtrer</button>
+              <button class="btn btn-secondary" onclick="adminLoadCreneaux()" style="padding:8px 16px;" data-i18n="global.filtrer">Filtrer</button>
             </div>
             <div id="admin-creneaux-list">
               <div class="loading-overlay"><div class="spinner spinner-dark"></div><span>Chargement...</span></div>
@@ -1668,21 +1791,21 @@
       <!-- ══ SENTINELLE VIEW ══ -->
       <div id="view-sentinelle" class="view">
         <div class="page-header">
-          <h2>Citoyen Sentinelle</h2>
-          <p>Vos points civiques et le classement communautaire</p>
+          <h2 data-i18n="sent.titre">Citoyen Sentinelle</h2>
+          <p data-i18n="sent.sous_titre">Vos points civiques et le classement communautaire</p>
         </div>
 
         <!-- Points card -->
         <div class="card" style="margin-bottom:20px;text-align:center;padding:32px;">
-          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;">MES POINTS CIVIQUES</p>
+          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;" data-i18n="sent.mes_points">MES POINTS CIVIQUES</p>
           <div class="points-big" id="sentinelle-points">—</div>
-          <p style="color:var(--gray-400);margin-top:8px;font-size:13px;">points accumulés</p>
+          <p style="color:var(--gray-400);margin-top:8px;font-size:13px;" data-i18n="sent.points_accumules">points accumulés</p>
         </div>
 
         <!-- Journal -->
         <div class="section-title">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Journal des points
+          <span data-i18n="sent.journal">Journal des points</span>
         </div>
         <div class="card" id="sentinelle-journal">
           <div class="loading-overlay">
@@ -1694,7 +1817,7 @@
         <!-- Leaderboard -->
         <div class="section-title" style="margin-top:24px;">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Classement — Top 20
+          <span data-i18n="sent.classement">Classement — Top 20</span>
         </div>
         <div class="card" id="sentinelle-leaderboard">
           <div class="loading-overlay">
@@ -1707,8 +1830,8 @@
       <!-- ══ DASHBOARD VIEW ══ -->
       <div id="view-dashboard" class="view">
         <div class="page-header">
-          <h2>Dashboard Administratif</h2>
-          <p>Indicateurs de gouvernance civique — Wilaya d'Alger</p>
+          <h2 data-i18n="dash.titre">Dashboard Administratif</h2>
+          <p data-i18n="dash.sous_titre">Indicateurs de gouvernance civique — Wilaya d'Alger</p>
         </div>
 
         <!-- ICUA Card -->
@@ -1721,8 +1844,8 @@
 
         <!-- Dimensions -->
         <div class="card" id="icua-dimensions" style="margin-bottom:20px;">
-          <div class="card-title">Dimensions de l'ICUA</div>
-          <div class="card-subtitle">Scores par axe d'évaluation</div>
+          <div class="card-title" data-i18n="dash.dimensions">Dimensions de l'ICUA</div>
+          <div class="card-subtitle" data-i18n="dash.dimensions_desc">Scores par axe d'évaluation</div>
           <canvas id="icua-radar" width="300" height="300" style="max-width:300px;margin:16px auto;display:block;"></canvas>
           <div id="icua-dims-content">
             <div class="loading-overlay">
@@ -1734,8 +1857,8 @@
 
         <!-- Synthese -->
         <div class="card" id="dashboard-synthese">
-          <div class="card-title">Synthèse des signalements</div>
-          <div class="card-subtitle">Propreté et eau</div>
+          <div class="card-title" data-i18n="dash.synthese">Synthèse des signalements</div>
+          <div class="card-subtitle" data-i18n="dash.synthese_desc">Propreté et eau</div>
           <div id="synthese-content">
             <div class="loading-overlay">
               <div class="spinner spinner-dark"></div>
@@ -1748,8 +1871,8 @@
       <!-- ══ MES SIGNALEMENTS VIEW ══ -->
       <div id="view-mes-signalements" class="view">
         <div class="page-header">
-          <h2>Mes Signalements</h2>
-          <p>Historique de vos signalements soumis</p>
+          <h2 data-i18n="mes_sig.titre">Mes Signalements</h2>
+          <p data-i18n="mes_sig.sous_titre">Historique de vos signalements soumis</p>
         </div>
         <div id="mes-signalements-container">
           <div class="loading-overlay">
@@ -1762,28 +1885,28 @@
       <!-- ══ CARTE VIEW ══ -->
       <div id="view-carte" class="view">
         <div class="page-header">
-          <h2>Carte des signalements</h2>
-          <p>Visualisez les signalements sur la carte</p>
+          <h2 data-i18n="carte.titre">Carte des signalements</h2>
+          <p data-i18n="carte.sous_titre">Visualisez les signalements sur la carte</p>
         </div>
         <div class="carte-filters">
-          <button class="carte-filter-btn active" onclick="filterCarte('tous', this)">Tous</button>
-          <button class="carte-filter-btn" onclick="filterCarte('proprete', this)">🌿 Propreté</button>
-          <button class="carte-filter-btn" onclick="filterCarte('eau', this)">💧 Eau</button>
-          <button class="carte-filter-btn" onclick="filterCarte('en_cours', this)">En cours</button>
-          <button class="carte-filter-btn" onclick="filterCarte('resolus', this)">Résolus</button>
+          <button class="carte-filter-btn active" onclick="filterCarte('tous', this)" data-i18n="carte.tous">Tous</button>
+          <button class="carte-filter-btn" onclick="filterCarte('proprete', this)" data-i18n="carte.proprete">🌿 Propreté</button>
+          <button class="carte-filter-btn" onclick="filterCarte('eau', this)" data-i18n="carte.eau">💧 Eau</button>
+          <button class="carte-filter-btn" onclick="filterCarte('en_cours', this)" data-i18n="carte.en_cours">En cours</button>
+          <button class="carte-filter-btn" onclick="filterCarte('resolus', this)" data-i18n="carte.resolus">Résolus</button>
           <button class="btn btn-outline btn-sm" onclick="centerOnUser()" style="margin-left:auto;">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-            Ma position
+            <span data-i18n="carte.ma_position">Ma position</span>
           </button>
         </div>
         <div id="carte-map"></div>
         <div class="carte-legend">
-          <div class="carte-legend-item"><div class="legend-dot" style="background:#9ca3af"></div> Reçu</div>
-          <div class="carte-legend-item"><div class="legend-dot" style="background:#2563eb"></div> Transmis</div>
-          <div class="carte-legend-item"><div class="legend-dot" style="background:#f97316"></div> En intervention</div>
-          <div class="carte-legend-item"><div class="legend-dot" style="background:#16a34a"></div> Résolu</div>
-          <div class="carte-legend-item"><div class="legend-dot" style="background:#EF4444"></div> Rejeté</div>
-          <div class="carte-legend-item" style="margin-left:12px;">⬤ Propreté &nbsp; ◆ Eau</div>
+          <div class="carte-legend-item"><div class="legend-dot" style="background:#9ca3af"></div> <span data-i18n="carte.legende_recu">Reçu</span></div>
+          <div class="carte-legend-item"><div class="legend-dot" style="background:#2563eb"></div> <span data-i18n="carte.legende_transmis">Transmis</span></div>
+          <div class="carte-legend-item"><div class="legend-dot" style="background:#f97316"></div> <span data-i18n="carte.legende_intervention">En intervention</span></div>
+          <div class="carte-legend-item"><div class="legend-dot" style="background:#16a34a"></div> <span data-i18n="carte.legende_resolu">Résolu</span></div>
+          <div class="carte-legend-item"><div class="legend-dot" style="background:#EF4444"></div> <span data-i18n="carte.legende_rejete">Rejeté</span></div>
+          <div class="carte-legend-item" style="margin-left:12px;" data-i18n="carte.legende_formes">⬤ Propreté &nbsp; ◆ Eau</div>
         </div>
       </div>
 
@@ -1792,31 +1915,31 @@
       <!-- ══ PATRIMOINE VIEW ══ -->
       <div id="view-patrimoine" class="view">
         <div class="page-header">
-          <h2>PatriLocal — Patrimoine Immobilier</h2>
-          <p>Gestion du patrimoine communal de la Wilaya d'Alger</p>
+          <h2 data-i18n="patri.titre">PatriLocal — Patrimoine Immobilier</h2>
+          <p data-i18n="patri.sous_titre">Gestion du patrimoine communal de la Wilaya d'Alger</p>
         </div>
 
         <!-- KPIs Dashboard -->
         <div class="module-grid" id="patri-kpis" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px;">
           <div class="card" style="text-align:center;padding:16px 12px;">
             <div style="font-size:28px;font-weight:800;color:var(--navy);" id="patri-total">—</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Total biens</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="patri.total_biens">Total biens</div>
           </div>
           <div class="card" style="text-align:center;padding:16px 12px;">
             <div style="font-size:28px;font-weight:800;color:var(--green);" id="patri-libres">—</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Libres</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="patri.libres">Libres</div>
           </div>
           <div class="card" style="text-align:center;padding:16px 12px;">
             <div style="font-size:28px;font-weight:800;color:var(--gold);" id="patri-taux">—%</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Taux occupation</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="patri.taux_occupation">Taux occupation</div>
           </div>
           <div class="card" style="text-align:center;padding:16px 12px;">
             <div style="font-size:22px;font-weight:800;color:var(--navy);" id="patri-loyers">—</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Loyers/mois (DA)</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="patri.loyers_mois">Loyers/mois (DA)</div>
           </div>
           <div class="card" style="text-align:center;padding:16px 12px;cursor:pointer;" onclick="loadAlertesContrats()">
             <div style="font-size:28px;font-weight:800;color:var(--red);" id="patri-alertes">—</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Contrats expirant ↗</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;" data-i18n="patri.contrats_expirant">Contrats expirant ↗</div>
           </div>
         </div>
 
@@ -2041,8 +2164,8 @@
     <!-- ══ OPERATEUR VIEW ══ -->
       <div id="view-operateur" class="view">
         <div class="page-header">
-          <h2>Espace Opérateur</h2>
-          <p>Signalements assignés à votre périmètre</p>
+          <h2 data-i18n="op.titre">Espace Opérateur</h2>
+          <p data-i18n="op.sous_titre">Signalements assignés à votre périmètre</p>
         </div>
         <div id="operateur-list">
           <div style="text-align:center;padding:40px;color:var(--muted);">Chargement…</div>
@@ -2054,31 +2177,31 @@
   <!-- BOTTOM NAV (mobile) -->
   <nav class="bottom-nav">
     <div class="bottom-nav-inner">
-      <button class="bottom-nav-item active" onclick="showView('home')" data-view="home">
+      <button class="bottom-nav-item active" onclick="showView('home')" data-view="home" data-i18n="bottomnav.accueil">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Accueil
       </button>
-      <button class="bottom-nav-item" onclick="showView('civisignal')" data-view="civisignal">
+      <button class="bottom-nav-item" onclick="showView('civisignal')" data-view="civisignal" data-i18n="bottomnav.civisignal">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
         CiviSignal
       </button>
-      <button class="bottom-nav-item" onclick="showView('watersignal')" data-view="watersignal">
+      <button class="bottom-nav-item" onclick="showView('watersignal')" data-view="watersignal" data-i18n="bottomnav.eau">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
         Eau
       </button>
-      <button class="bottom-nav-item" onclick="showView('civiadmin')" data-view="civiadmin">
+      <button class="bottom-nav-item" onclick="showView('civiadmin')" data-view="civiadmin" data-i18n="bottomnav.rdv">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         RDV
       </button>
-      <button class="bottom-nav-item" onclick="showView('sentinelle')" data-view="sentinelle">
+      <button class="bottom-nav-item" onclick="showView('sentinelle')" data-view="sentinelle" data-i18n="bottomnav.points">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Points
       </button>
-      <button class="bottom-nav-item" onclick="showView('mes-signalements')" data-view="mes-signalements">
+      <button class="bottom-nav-item" onclick="showView('mes-signalements')" data-view="mes-signalements" data-i18n="bottomnav.signalements">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <span>Signalements</span>
       </button>
-      <button class="bottom-nav-item" onclick="showView('carte')" data-view="carte">
+      <button class="bottom-nav-item" onclick="showView('carte')" data-view="carte" data-i18n="bottomnav.carte">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
         <span>Carte</span>
       </button>
@@ -2124,7 +2247,7 @@ async function apiFetch(path, options = {}) {
   const res = await fetch(path, options);
   if (res.status === 401) {
     handleLogout();
-    throw new Error('Session expirée, veuillez vous reconnecter.');
+    throw new Error(t('auth.session_expiree'));
   }
   return res;
 }
@@ -2286,8 +2409,10 @@ async function initApp() {
   const u = currentUser;
   const initials = ((u.prenom || '')[0] || '') + ((u.nom || '')[0] || '');
   document.getElementById('nav-avatar').textContent = initials.toUpperCase() || '?';
-  document.getElementById('nav-username').textContent = (u.prenom || u.nom || 'Utilisateur');
-  document.getElementById('welcome-name').textContent = `Bienvenue, ${u.prenom || u.nom || 'Citoyen'} !`;
+  const navUsername = document.getElementById('nav-username');
+  navUsername.textContent = (u.prenom || u.nom || t('nav.utilisateur'));
+  navUsername.removeAttribute('data-i18n'); // Don't override real name with i18n
+  document.getElementById('welcome-name').textContent = `${t('home.bienvenue')} ${u.prenom || u.nom || t('home.citoyen')} !`;
 
   // Admin elements
   if (isSuperAdmin()) {
@@ -2322,6 +2447,7 @@ async function initApp() {
 
   showView('home');
   loadHomePoints();
+  applyTranslations();
 }
 
 // ─── COMMUNES ─────────────────────────────────────────────
@@ -2340,7 +2466,7 @@ function populateCommuneSelects() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const current = sel.value;
-    sel.innerHTML = '<option value="">-- Sélectionner une commune --</option>';
+    sel.innerHTML = '<option value="">' + t('global.selectionner_commune') + '</option>';
     communes.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
@@ -2359,7 +2485,7 @@ async function loadRdvServices() {
     rdvServices = await res.json();
     const sel = document.getElementById('rdv-service');
     if (!sel) return;
-    sel.innerHTML = '<option value="">-- Sélectionner un service --</option>';
+    sel.innerHTML = '<option value="">' + t('rdv.sel_service') + '</option>';
     rdvServices.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id;
@@ -2397,6 +2523,7 @@ function showView(name) {
   if (name === 'operateur') initOperateur();
 
   window.scrollTo(0, 0);
+  applyTranslations();
 }
 
 // ─── HOME POINTS ──────────────────────────────────────────
@@ -2406,7 +2533,7 @@ async function loadHomePoints() {
     if (!res.ok) return;
     const data = await res.json();
     const pts = data.points ?? 0;
-    document.getElementById('home-points').textContent = `${pts} point${pts !== 1 ? 's' : ''}`;
+    document.getElementById('home-points').textContent = `${pts} ${pts !== 1 ? t('global.points') : t('global.point')}`;
   } catch (e) { console.warn('points load error', e); }
 }
 
@@ -2416,7 +2543,7 @@ async function loadPropreteCategories() {
     const res = await fetch('/api/proprete/categories');
     const cats = await res.json();
     const sel = document.getElementById('cs-categorie');
-    sel.innerHTML = '<option value="">-- Sélectionner une catégorie --</option>';
+    sel.innerHTML = '<option value="">' + t('cs.sel_categorie') + '</option>';
     cats.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
@@ -2424,7 +2551,7 @@ async function loadPropreteCategories() {
       sel.appendChild(opt);
     });
   } catch (e) {
-    document.getElementById('cs-categorie').innerHTML = '<option value="">-- Erreur de chargement --</option>';
+    document.getElementById('cs-categorie').innerHTML = '<option value="">' + t('cs.erreur_cat') + '</option>';
   }
 }
 
@@ -2433,7 +2560,7 @@ async function loadEauCategories() {
     const res = await fetch('/api/eau/categories');
     const cats = await res.json();
     const sel = document.getElementById('ws-categorie');
-    sel.innerHTML = '<option value="">-- Sélectionner une catégorie --</option>';
+    sel.innerHTML = '<option value="">' + t('cs.sel_categorie') + '</option>';
     cats.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
@@ -2441,7 +2568,7 @@ async function loadEauCategories() {
       sel.appendChild(opt);
     });
   } catch (e) {
-    document.getElementById('ws-categorie').innerHTML = '<option value="">-- Erreur de chargement --</option>';
+    document.getElementById('ws-categorie').innerHTML = '<option value="">' + t('cs.erreur_cat') + '</option>';
   }
 }
 
@@ -2493,11 +2620,11 @@ async function initWatersignal() {
 // ─── GEOLOCATION ──────────────────────────────────────────
 function getGeolocation(prefix, btn) {
   if (!navigator.geolocation) {
-    alert("La géolocalisation n'est pas supportée par votre navigateur.");
+    alert(t('geo.non_supporte'));
     return;
   }
   const iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>';
-  if (btn) { btn.disabled = true; btn.innerHTML = iconSvg + ' Localisation en cours...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = iconSvg + ' ' + t('geo.localisation_en_cours'); }
 
   navigator.geolocation.getCurrentPosition(
     pos => {
@@ -2540,7 +2667,7 @@ async function handleSignalement(e, domain) {
   const lng          = document.getElementById(`${prefix}-lng`).value;
   const photoInput   = document.getElementById(`${prefix}-photo`);
 
-  if (!categorieId) { showError(errId, 'Veuillez sélectionner une catégorie.'); return; }
+  if (!categorieId) { showError(errId, t('cs.sel_categorie_requis')); return; }
 
   setLoading(`${prefix}-submit-btn`, `${prefix}-submit-text`, `${prefix}-submit-spinner`, true);
 
@@ -2561,7 +2688,7 @@ async function handleSignalement(e, domain) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || data.error || 'Erreur lors de l\'envoi');
 
-    showSuccess(sucId, `Signalement envoyé avec succès ! Référence : #${(data.signalement && data.signalement.reference) || data.reference || data.id || 'N/A'}`);
+    showSuccess(sucId, `${t('sig.envoi_succes')} #${(data.signalement && data.signalement.reference) || data.reference || data.id || 'N/A'}`);
     // Save to localStorage for citizen "Mes Signalements"
     try {
       const commune = communes.find(c => String(c.id) === String(communeId));
@@ -2622,8 +2749,8 @@ async function loadCreneaux() {
   const serviceId = document.getElementById('rdv-service').value;
   hideError('rdv-error');
 
-  if (!communeId) { showError('rdv-error', 'Veuillez sélectionner une commune.'); return; }
-  if (!serviceId) { showError('rdv-error', 'Veuillez sélectionner un service.'); return; }
+  if (!communeId) { showError('rdv-error', t('rdv.sel_commune_requis')); return; }
+  if (!serviceId) { showError('rdv-error', t('rdv.sel_service_requis')); return; }
 
   // Check famille
   const serviceOpt = document.querySelector(`#rdv-service option[value="${serviceId}"]`);
@@ -2664,7 +2791,7 @@ async function loadCreneaux() {
     const grid = document.getElementById('rdv-creneaux-grid');
 
     if (!creneaux.length) {
-      grid.innerHTML = '<p style="color:var(--gray-400);padding:8px;">Aucun créneau disponible pour le moment.</p>';
+      grid.innerHTML = '<p style="color:var(--gray-400);padding:8px;">' + t('rdv.aucun_creneau') + '</p>';
       grid.classList.remove('hidden');
       return;
     }
@@ -2692,10 +2819,10 @@ function selectCreneau(id, el) {
 }
 
 async function confirmRDV() {
-  if (!selectedCreneauId) { showError('rdv-error', 'Veuillez sélectionner un créneau.'); return; }
+  if (!selectedCreneauId) { showError('rdv-error', t('rdv.sel_creneau_requis')); return; }
   const btn = document.getElementById('rdv-confirm-btn');
   btn.disabled = true;
-  btn.textContent = 'Confirmation en cours...';
+  btn.textContent = t('rdv.confirmation_en_cours');
   try {
     const res = await apiFetch('/api/rdv', {
       method: 'POST',
@@ -2710,16 +2837,16 @@ async function confirmRDV() {
     document.getElementById('rdv-step-3').classList.remove('hidden');
 
     const rdv = data;
-    let details = 'Votre rendez-vous a été enregistré avec succès.';
-    if (rdv.date || rdv.dateHeure) details += ` Date : ${fmtDateTime(rdv.date || rdv.dateHeure)}.`;
-    if (rdv.service) details += ` Service : ${rdv.service}.`;
+    let details = t('rdv.confirmation_desc');
+    if (rdv.date || rdv.dateHeure) details += ` ${t('rdv.date')} ${fmtDateTime(rdv.date || rdv.dateHeure)}.`;
+    if (rdv.service) details += ` ${t('rdv.service_label')} ${rdv.service}.`;
     document.getElementById('rdv-confirmed-details').textContent = details;
 
     await loadMesRDV();
   } catch (e) {
     showError('rdv-error', e.message);
     btn.disabled = false;
-    btn.textContent = 'Confirmer ce créneau';
+    btn.textContent = t('rdv.confirmer_creneau');
   }
 }
 
@@ -2749,7 +2876,7 @@ function setStep(n) {
 
 async function loadMesRDV() {
   const container = document.getElementById('mes-rdv-container');
-  container.innerHTML = '<div class="loading-overlay"><div class="spinner spinner-dark"></div><span>Chargement de vos RDV...</span></div>';
+  container.innerHTML = '<div class="loading-overlay"><div class="spinner spinner-dark"></div><span>' + t('rdv.chargement_rdv') + '</span></div>';
   try {
     const res = await apiFetch('/api/rdv/mes', { headers: authHeaders() });
     if (!res.ok) { container.innerHTML = '<p style="padding:16px;color:var(--gray-400)">Impossible de charger vos rendez-vous.</p>'; return; }
@@ -2807,7 +2934,7 @@ async function loadSentinellePoints() {
     journalEl.innerHTML = `
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>Motif</th><th>Points</th><th>Date</th></tr></thead>
+          <thead><tr><th>${t('sent.col_motif')}</th><th>${t('sent.col_points')}</th><th>${t('sent.col_date')}</th></tr></thead>
           <tbody>
             ${journal.map(j => `
               <tr>
@@ -2872,9 +2999,9 @@ async function loadIcua() {
     const score = Math.round(data.icua ?? 0);
     const color = scoreColor(score);
     let label, sublabel;
-    if (score >= 75) { label = 'Ville civique'; sublabel = 'Excellente gouvernance civique'; }
-    else if (score >= 50) { label = 'À surveiller'; sublabel = 'Des axes d\'amélioration identifiés'; }
-    else { label = 'Prioritaire'; sublabel = 'Intervention urgente recommandée'; }
+    if (score >= 75) { label = t('dash.ville_civique'); sublabel = t('dash.ville_civique_desc'); }
+    else if (score >= 50) { label = t('dash.a_surveiller'); sublabel = t('dash.a_surveiller_desc'); }
+    else { label = t('dash.prioritaire'); sublabel = t('dash.prioritaire_desc'); }
 
     card.innerHTML = `
       <div class="icua-score" style="color:${color}">${score}</div>
@@ -2885,11 +3012,11 @@ async function loadIcua() {
 
     const dims = data.dimensions || {};
     const dimLabels = {
-      proprete: 'Propreté',
-      reactivite: 'Réactivité',
-      vivre_ensemble: 'Vivre ensemble',
-      fluidite: 'Fluidité',
-      engagement: 'Engagement citoyen'
+      proprete: t('dash.dim_proprete'),
+      reactivite: t('dash.dim_reactivite'),
+      vivre_ensemble: t('dash.dim_vivre_ensemble'),
+      fluidite: t('dash.dim_fluidite'),
+      engagement: t('dash.dim_engagement')
     };
     let dimsHtml = '';
     for (const [key, lbl] of Object.entries(dimLabels)) {
@@ -2900,7 +3027,7 @@ async function loadIcua() {
 
     // Radar chart ICUA
     const radarData = {
-      labels: ['Propreté', 'Réactivité', 'Vivre ensemble', 'Fluidité', 'Engagement'],
+      labels: [t('dash.dim_proprete'), t('dash.dim_reactivite'), t('dash.dim_vivre_ensemble'), t('dash.dim_fluidite'), t('dash.dim_engagement')],
       datasets: [{
         label: 'ICUA',
         data: [dims.proprete??0, dims.reactivite??0, dims.vivre_ensemble??0, dims.fluidite??0, dims.engagement??0],
@@ -2963,19 +3090,19 @@ async function loadSynthese() {
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
             <div style="background:var(--gray-50);border-radius:8px;padding:10px;text-align:center;">
               <div style="font-size:22px;font-weight:800;color:${color}">${scoreMoyen}</div>
-              <div style="font-size:11px;color:var(--muted);">Score moyen</div>
+              <div style="font-size:11px;color:var(--muted);">${t('dash.score_moyen')}</div>
             </div>
             <div style="background:var(--gray-50);border-radius:8px;padding:10px;text-align:center;">
               <div style="font-size:22px;font-weight:800;color:var(--orange)">${totalOuverts}</div>
-              <div style="font-size:11px;color:var(--muted);">En cours</div>
+              <div style="font-size:11px;color:var(--muted);">${t('dash.en_cours')}</div>
             </div>
             <div style="background:var(--gray-50);border-radius:8px;padding:10px;text-align:center;">
               <div style="font-size:22px;font-weight:800;color:var(--green)">${totalResolus}</div>
-              <div style="font-size:11px;color:var(--muted);">Résolus</div>
+              <div style="font-size:11px;color:var(--muted);">${t('dash.resolus')}</div>
             </div>
           </div>
           ${scores.length ? `<div style="margin-bottom:8px;">${scoresHtml}</div>` : ''}
-          ${noirs.length ? `<div style="margin-top:8px;"><span style="font-size:12px;font-weight:600;color:var(--red);">Points noirs (${noirs.length}) :</span> ${topNoirs}</div>` : `<div style="font-size:12px;color:var(--green);margin-top:6px;">✓ Aucun point noir détecté</div>`}
+          ${noirs.length ? `<div style="margin-top:8px;"><span style="font-size:12px;font-weight:600;color:var(--red);">${t('dash.points_noirs')} (${noirs.length}) :</span> ${topNoirs}</div>` : `<div style="font-size:12px;color:var(--green);margin-top:6px;">${t('dash.aucun_point_noir')}</div>`}
         </div>`;
     }
 
@@ -3008,11 +3135,11 @@ function etatBadgeClass(etat) {
 
 function etatLabel(etat) {
   const map = {
-    recu: 'Reçu',
-    transmis: 'Transmis',
-    en_intervention: 'En intervention',
-    resolu: 'Résolu ✓',
-    rejete: 'Rejeté'
+    recu: t('etat.recu'),
+    transmis: t('etat.transmis'),
+    en_intervention: t('etat.en_intervention'),
+    resolu: t('etat.resolu'),
+    rejete: t('etat.rejete')
   };
   return map[etat] || etat || '—';
 }
@@ -3033,8 +3160,8 @@ function initMesSignalements() {
     container.innerHTML = `
       <div class="empty-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <p>Vous n'avez pas encore soumis de signalement.</p>
-        <p style="margin-top:8px;font-size:13px;">Utilisez CiviSignal ou WaterSignal pour signaler un problème.</p>
+        <p>${t('mes_sig.aucun')}</p>
+        <p style="margin-top:8px;font-size:13px;">${t('mes_sig.aucun_desc')}</p>
       </div>`;
     return;
   }
@@ -3096,16 +3223,16 @@ async function loadAgentSignals(domain) {
       const sigId = s.id;
       let actionBtns = '';
       if (etatActuel === 'recu') {
-        actionBtns += `<button class="btn-action btn-action-blue" onclick="changeEtat('${domain}', ${sigId}, 'transmis')">Transmettre</button>`;
+        actionBtns += `<button class="btn-action btn-action-blue" onclick="changeEtat('${domain}', ${sigId}, 'transmis')">${t('sig.transmettre')}</button>`;
       }
       if (etatActuel === 'transmis') {
-        actionBtns += `<button class="btn-action btn-action-orange" onclick="changeEtat('${domain}', ${sigId}, 'en_intervention')">En intervention</button>`;
+        actionBtns += `<button class="btn-action btn-action-orange" onclick="changeEtat('${domain}', ${sigId}, 'en_intervention')">${t('sig.en_intervention')}</button>`;
       }
       if (etatActuel === 'en_intervention') {
-        actionBtns += `<button class="btn-action btn-action-green" onclick="changeEtat('${domain}', ${sigId}, 'resolu')">Résolu</button>`;
+        actionBtns += `<button class="btn-action btn-action-green" onclick="changeEtat('${domain}', ${sigId}, 'resolu')">${t('sig.resolu')}</button>`;
       }
       if (etatActuel !== 'rejete' && etatActuel !== 'resolu') {
-        actionBtns += `<button class="btn-action btn-action-red" onclick="changeEtat('${domain}', ${sigId}, 'rejete')">Rejeter</button>`;
+        actionBtns += `<button class="btn-action btn-action-red" onclick="changeEtat('${domain}', ${sigId}, 'rejete')">${t('sig.rejeter')}</button>`;
       }
 
       return `
@@ -3126,7 +3253,7 @@ async function loadAgentSignals(domain) {
             ${s.lat && s.lng ? ` | ${parseFloat(s.lat).toFixed(4)}, ${parseFloat(s.lng).toFixed(4)}` : ''}
             | ${fmtDateTime(s.created_at || s.createdAt || s.cree_le)}
           </div>
-          <div class="agent-actions">${actionBtns}<button class="btn-action" style="background:var(--gray-100);color:var(--navy);" onclick="showHistorique('${domain}',${sigId})">Historique</button></div>
+          <div class="agent-actions">${actionBtns}<button class="btn-action" style="background:var(--gray-100);color:var(--navy);" onclick="showHistorique('${domain}',${sigId})">${t('sig.historique')}</button></div>
         </div>`;
     }).join('');
   } catch (e) {
@@ -3166,7 +3293,7 @@ async function showHistorique(domain, sigId) {
 
   const title = document.createElement('h3');
   title.style.cssText = 'margin:0;font-size:16px;color:var(--navy);';
-  title.textContent = 'Historique du signalement';
+  title.textContent = t('sig.historique_titre');
 
   const closeBtn = document.createElement('button');
   closeBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-500);';
@@ -3482,7 +3609,7 @@ function populateAgentFilters() {
     const sel = document.getElementById(id);
     if (!sel) return;
     const current = sel.value;
-    sel.innerHTML = '<option value="">Toutes les communes</option>';
+    sel.innerHTML = '<option value="">' + t('global.toutes_communes') + '</option>';
     communes.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
@@ -3495,6 +3622,7 @@ function populateAgentFilters() {
 
 // ─── BOOTSTRAP ────────────────────────────────────────────
 (function bootstrap() {
+  initI18n(); // Initialize language on page load
   const token = getToken();
   const savedUser = localStorage.getItem(USER_KEY);
   if (token && savedUser) {
@@ -3630,7 +3758,7 @@ async function adminCreerCreneaux() {
   sucEl.classList.add('hidden');
 
   if (!communeId || !serviceId || !debut) {
-    errEl.textContent = 'Commune, service et date de début sont obligatoires.';
+    errEl.textContent = t('rdv_admin.obligatoire_msg');
     errEl.classList.remove('hidden'); return;
   }
 
@@ -3656,7 +3784,7 @@ async function adminCreerCreneaux() {
 }
 
 async function adminSupprimerCreneau(id, btn) {
-  if (!confirm('Supprimer ce créneau ?')) return;
+  if (!confirm(t('rdv_admin.supprimer_confirm'))) return;
   btn.disabled = true; btn.textContent = '...';
   try {
     const r = await apiFetch('/api/rdv/admin/creneaux/' + id, {
@@ -3683,6 +3811,12 @@ window.addEventListener("appinstalled",()=>{document.getElementById("pwa-banner"
 // ══════════════════════════════════════════════════════════
 // PATRILOCAL — Patrimoine Immobilier
 // ══════════════════════════════════════════════════════════
+function getStatutPatriLabel() {
+  return {
+    libre: t('patri.statut_libre'), loue: t('patri.statut_loue'), affecte: t('patri.statut_affecte'),
+    occupe_sans_titre: t('patri.statut_occupe_sans_titre'), en_travaux: t('patri.statut_en_travaux'), contentieux: t('patri.statut_contentieux')
+  };
+}
 const STATUT_PATRI_LABEL = {
   libre: 'Libre', loue: 'Loué', affecte: 'Affecté',
   occupe_sans_titre: 'Occupé sans titre', en_travaux: 'En travaux', contentieux: 'Contentieux'
