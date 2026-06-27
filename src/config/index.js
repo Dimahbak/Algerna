@@ -26,6 +26,22 @@ const config = {
   },
 
   corsOrigin: process.env.CORS_ORIGIN || '*',
+
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.SMTP_FROM || 'noreply@civismart.pylcom.app',
+    enabled: !!(process.env.SMTP_HOST && process.env.SMTP_USER),
+  },
+
+  sms: {
+    provider: process.env.SMS_PROVIDER || '',
+    apiKey: process.env.SMS_API_KEY || '',
+    from: process.env.SMS_FROM || '',
+    enabled: !!(process.env.SMS_PROVIDER && process.env.SMS_API_KEY),
+  },
 };
 
 if (config.env === 'production' && config.jwt.secret === 'dev_secret_a_changer') {

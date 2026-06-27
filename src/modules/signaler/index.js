@@ -199,6 +199,28 @@ router.post('/signalements',
     try { const { checkAndAwardBadges } = require('../points'); checkAndAwardBadges(req.user.id); }
     catch(e) { console.warn('[badges]', e.message); }
 
+    // Email de confirmation (fire-and-forget, ne bloque jamais)
+    try {
+      const { notify, emailCreation } = require('../../services/notifier');
+      const { rows: uRows } = await query('SELECT email, telephone FROM utilisateur WHERE id=$1', [req.user.id]);
+      const { rows: catRows } = await query('SELECT libelle FROM categorie_signal WHERE id=$1', [categorieId]);
+      const { rows: comRows } = await query('SELECT nom FROM commune WHERE id=$1', [communeId || 0]);
+      const sig = result.signalement;
+      notify({
+        email: uRows[0]?.email,
+        phone: uRows[0]?.telephone,
+        subject: `Signalement #${sig.reference} transmis — CiviSmart`,
+        html: emailCreation({
+          reference: sig.reference,
+          categorie: catRows[0]?.libelle || '—',
+          commune: comRows[0]?.nom || '—',
+          date: new Date().toLocaleDateString('fr-DZ'),
+          lat: lat, lng: lng
+        }),
+        smsBody: `CiviSmart: votre signalement #${sig.reference} a été enregistré. Vous serez notifié de son traitement.`
+      });
+    } catch(e) { console.warn('[notifier]', e.message); }
+
     res.status(201).json(result);
   }));
 
