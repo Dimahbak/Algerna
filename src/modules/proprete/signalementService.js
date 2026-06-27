@@ -152,6 +152,21 @@ async function changerEtat(domaine, id, etat, parUtilisateur, preuvePath) {
         // Points Citoyens : +20 pour validation après intervention (le plus valorisé)
         const { awardPoints } = require('../../utils/points');
         await awardPoints(sig.citoyen_id, 'validation_resolution', 'signalement', sig.id);
+
+        // Email de résolution (fire-and-forget, même hook, pas de duplication)
+        const { notify, emailResolution } = require('../../services/notifier');
+        const { rows: uFull } = await c.query('SELECT email, telephone FROM utilisateur WHERE id=$1', [sig.citoyen_id]);
+        notify({
+          email: uFull[0]?.email,
+          phone: uFull[0]?.telephone,
+          subject: `Problème résolu — #${sig.reference} — CiviSmart`,
+          html: emailResolution({
+            reference: sig.reference,
+            message: msg,
+            preuvePath: sig.preuve_path
+          }),
+          smsBody: `CiviSmart: votre signalement #${sig.reference} est résolu. Merci ${prenom} !`
+        });
       } catch (e) { console.warn('[impact]', e.message); }
     }
 
