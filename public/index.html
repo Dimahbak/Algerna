@@ -1998,6 +1998,9 @@
           <p style="color:var(--gray-400);margin-top:4px;font-size:13px;" data-i18n="sent.points_accumules">Points Citoyens accumulés</p>
         </div>
 
+        <!-- Stats personnelles (CV civique) -->
+        <div id="sentinelle-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
         <!-- Mon impact -->
         <div class="section-title">
           <span style="font-size:18px;">✅</span>
@@ -3664,9 +3667,7 @@ async function loadBadges() {
 async function loadSentinellePoints() {
   const journalEl = document.getElementById('sentinelle-journal');
   try {
-    const res = await apiFetch('/api/points/moi', { headers: authHeaders() });
-    if (!res.ok) { journalEl.innerHTML = '<p style="padding:16px;color:var(--gray-400)">' + t('sent.impossible_charger') + '</p>'; return; }
-    const data = await res.json();
+    const data = await safeFetchJSON('/api/points/profil', {}, true);
     document.getElementById('sentinelle-points').textContent = data.points ?? '0';
 
     // Afficher le niveau
@@ -3685,6 +3686,22 @@ async function loadSentinellePoints() {
         </div>`;
       }
       niveauEl.innerHTML = html;
+    }
+
+    // Stats personnelles (CV civique — strictement personnel, pas de comparaison)
+    const statsEl = document.getElementById('sentinelle-stats');
+    if (statsEl && data.stats) {
+      const s = data.stats;
+      const pct = s.total > 0 ? Math.round(s.resolus / s.total * 100) : 0;
+      statsEl.innerHTML = [
+        { v: s.total, l: t('sent.stat_signales'), c: '#0A3D62' },
+        { v: s.resolus, l: t('sent.stat_resolus'), c: '#1FA463' },
+        { v: pct + '%', l: t('sent.stat_pertinence'), c: '#2563eb' },
+        { v: s.communes, l: t('sent.stat_communes'), c: '#E1A730' },
+      ].map(i => `<div style="flex:1;min-width:70px;padding:8px;background:${i.c}10;border-radius:8px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:${i.c};">${i.v}</div>
+        <div style="font-size:10px;color:var(--muted);">${i.l}</div>
+      </div>`).join('');
     }
 
     const journal = data.journal || [];

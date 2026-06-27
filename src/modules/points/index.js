@@ -33,6 +33,37 @@ router.get('/moi', authenticate, asyncH(async (req, res) => {
   });
 }));
 
+// GET /api/points/profil — CV civique complet (strictement personnel)
+router.get('/profil', authenticate, asyncH(async (req, res) => {
+  const uid = req.user.id;
+  const [solde, impact, badges, stats] = await Promise.all([
+    query(`SELECT u.points, n.code AS niveau_code, n.nom AS niveau_nom
+             FROM utilisateur u LEFT JOIN niveau n ON n.id = u.niveau_id
+            WHERE u.id = $1`, [uid]),
+    query('SELECT message, cree_le FROM impact_message WHERE citoyen_id = $1 ORDER BY cree_le DESC LIMIT 20', [uid]),
+    query(`SELECT b.code, b.nom, b.icone, ub.obtenu_le
+             FROM utilisateur_badge ub JOIN badge b ON b.id = ub.badge_id
+            WHERE ub.utilisateur_id = $1 ORDER BY ub.obtenu_le`, [uid]),
+    query(`SELECT COUNT(*)::int AS total,
+                  COUNT(*) FILTER (WHERE etat = 'resolu')::int AS resolus,
+                  COUNT(DISTINCT commune_id)::int AS communes
+             FROM signalement WHERE citoyen_id = $1`, [uid]),
+  ]);
+  const { rows: niveaux } = await query('SELECT * FROM niveau ORDER BY seuil_points');
+  const pts = solde.rows[0]?.points || 0;
+  const nextNiv = niveaux.find(n => n.seuil_points > pts);
+  res.json({
+    points: pts,
+    niveau: solde.rows[0]?.niveau_nom || 'Citoyen',
+    niveau_code: solde.rows[0]?.niveau_code || 'citoyen',
+    prochain_niveau: nextNiv ? { nom: nextNiv.nom, seuil: nextNiv.seuil_points } : null,
+    impact: impact.rows,
+    badges: badges.rows,
+    stats: stats.rows[0],
+    // Pas de score comparable, pas de rang individuel
+  });
+}));
+
 // GET /api/points/impact — messages d'impact du citoyen
 router.get('/impact', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
