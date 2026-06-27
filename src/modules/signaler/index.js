@@ -192,6 +192,10 @@ router.post('/signalements',
       return { signalement: sig, pointsGagnes: POINTS_CREATION, epicId, triHumain };
     });
 
+    // Vérifier et attribuer les badges (async, non bloquant)
+    try { const { checkAndAwardBadges } = require('../points'); checkAndAwardBadges(req.user.id); }
+    catch(e) { console.warn('[badges]', e.message); }
+
     res.status(201).json(result);
   }));
 
