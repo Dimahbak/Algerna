@@ -64,6 +64,19 @@ router.get('/profil', authenticate, asyncH(async (req, res) => {
   });
 }));
 
+// GET /api/points/avantages — avantages symboliques (débloqués + à venir)
+router.get('/avantages', authenticate, asyncH(async (req, res) => {
+  const { rows: user } = await query('SELECT niveau_id FROM utilisateur WHERE id = $1', [req.user.id]);
+  const niveauId = user[0]?.niveau_id || 1;
+  const { rows } = await query(
+    `SELECT a.code, a.nom, a.description, a.icone, n.nom AS niveau_requis,
+            a.niveau_requis_id, ($1 >= a.niveau_requis_id) AS debloque
+       FROM avantage_symbolique a
+       JOIN niveau n ON n.id = a.niveau_requis_id
+      ORDER BY a.niveau_requis_id`, [niveauId]);
+  res.json(rows);
+}));
+
 // GET /api/points/impact — messages d'impact du citoyen
 router.get('/impact', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
