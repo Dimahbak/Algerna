@@ -3735,22 +3735,24 @@ async function loadSentinellePoints() {
 async function loadLeaderboard() {
   const el = document.getElementById('sentinelle-leaderboard');
   try {
-    const res = await fetch('/api/points/classement');
-    if (!res.ok) { el.innerHTML = '<p style="padding:16px;color:var(--gray-400)">' + t('sent.classement_indisponible') + '</p>'; return; }
-    const data = await res.json();
-    const list = Array.isArray(data) ? data : (data.classement || []);
+    const list = await safeFetchJSON('/api/points/classement-quartiers');
     if (!list.length) {
       el.innerHTML = '<div class="empty-state"><p>' + t('sent.classement_vide') + '</p></div>';
       return;
     }
+    const userCommune = currentUser?.commune_id;
     el.innerHTML = list.slice(0, 20).map((item, idx) => {
       const rank = idx + 1;
+      const isMyCommune = item.commune_id === userCommune;
       const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
       return `
-        <div class="leaderboard-item">
+        <div class="leaderboard-item" style="${isMyCommune ? 'background:var(--navy-light);border-radius:8px;padding:6px 8px;' : ''}">
           <div class="rank-badge ${rankClass}">${rank}</div>
-          <div style="flex:1;font-weight:${rank <= 3 ? '700' : '500'}">${escHtml(item.prenom || item.nom || t('home.citoyen'))}</div>
-          <div style="font-weight:700;color:var(--green)">${item.points} pts</div>
+          <div style="flex:1;">
+            <div style="font-weight:${rank <= 3 ? '700' : '500'}">${escHtml(item.commune)}${isMyCommune ? ' ★' : ''}</div>
+            <div style="font-size:11px;color:var(--muted);">${item.citoyens_actifs} ${t('sent.classement_citoyens')} · ${item.resolus} ${t('sent.stat_resolus')}</div>
+          </div>
+          <div style="font-weight:700;color:var(--green)">${item.points_collectifs} pts</div>
         </div>`;
     }).join('');
   } catch (e) {

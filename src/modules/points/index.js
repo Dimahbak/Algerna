@@ -72,12 +72,34 @@ router.get('/impact', authenticate, asyncH(async (req, res) => {
   res.json(rows);
 }));
 
-// GET /api/points/classement — top citoyens (anonymisable)
+// GET /api/points/classement-quartiers — émulation collective uniquement
+// Jamais de classement d'individus en public
+router.get('/classement-quartiers', asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT c.id AS commune_id, c.nom AS commune,
+            COUNT(DISTINCT u.id)::int AS citoyens_actifs,
+            COALESCE(SUM(u.points), 0)::int AS points_collectifs,
+            COUNT(DISTINCT s.id) FILTER (WHERE s.etat = 'resolu')::int AS resolus,
+            COUNT(DISTINCT s.id)::int AS total_signalements
+       FROM commune c
+       LEFT JOIN utilisateur u ON u.commune_id = c.id AND u.role = 'citoyen' AND u.points > 0
+       LEFT JOIN signalement s ON s.commune_id = c.id
+      GROUP BY c.id, c.nom
+      HAVING COUNT(DISTINCT u.id) > 0
+      ORDER BY points_collectifs DESC
+      LIMIT 20`);
+  res.json(rows);
+}));
+
+// GET /api/points/classement — DÉPRECIÉ, redirige vers quartiers
+// Conservé pour compatibilité mais ne retourne plus d'individus en public
 router.get('/classement', asyncH(async (req, res) => {
   const { rows } = await query(
-    `SELECT prenom, points FROM utilisateur
-      WHERE role='citoyen' AND points > 0
-      ORDER BY points DESC LIMIT 20`);
+    `SELECT c.nom AS commune, COUNT(DISTINCT u.id)::int AS citoyens,
+            SUM(u.points)::int AS points
+       FROM utilisateur u JOIN commune c ON c.id = u.commune_id
+      WHERE u.role = 'citoyen' AND u.points > 0
+      GROUP BY c.nom ORDER BY points DESC LIMIT 20`);
   res.json(rows);
 }));
 
