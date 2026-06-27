@@ -1585,6 +1585,28 @@
                 <textarea id="sig-description" rows="3" data-i18n-placeholder="signaler.description_placeholder" placeholder="Que constatez-vous ? Depuis quand ?"></textarea>
               </div>
 
+              <!-- 4. Gravité / danger -->
+              <div class="form-group">
+                <label data-i18n="signaler.gravite_label" style="font-weight:600;">Ce problème représente-t-il un danger ?</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;" class="gravite-option" onclick="selectGravite(this,'danger_immediat')">
+                    <input type="radio" name="sig-gravite" value="danger_immediat" style="display:none;">
+                    <span style="font-size:18px;">🔴</span>
+                    <span data-i18n="signaler.gravite_danger">Danger immédiat</span>
+                  </label>
+                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;" class="gravite-option" onclick="selectGravite(this,'risque_blessure')">
+                    <input type="radio" name="sig-gravite" value="risque_blessure" style="display:none;">
+                    <span style="font-size:18px;">🟠</span>
+                    <span data-i18n="signaler.gravite_risque">Risque de blessure</span>
+                  </label>
+                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--navy);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;background:var(--navy-light);" class="gravite-option" onclick="selectGravite(this,'degradation')">
+                    <input type="radio" name="sig-gravite" value="degradation" style="display:none;" checked>
+                    <span style="font-size:18px;">🟢</span>
+                    <span data-i18n="signaler.gravite_degradation">Simple dégradation</span>
+                  </label>
+                </div>
+              </div>
+
               <!-- Submit -->
               <button type="submit" class="btn btn-primary" id="sig-submit-btn" style="width:100%;">
                 <span id="sig-submit-text" data-i18n="signaler.envoyer">Envoyer mon signalement</span>
@@ -4803,6 +4825,16 @@ function sigSelectCategorie(catId, famille) {
   applyTranslations();
 }
 
+function selectGravite(el, value) {
+  document.querySelectorAll('.gravite-option').forEach(o => {
+    o.style.borderColor = 'var(--gray-200)';
+    o.style.background = '';
+  });
+  el.style.borderColor = value === 'danger_immediat' ? '#ef4444' : value === 'risque_blessure' ? '#f59e0b' : 'var(--navy)';
+  el.style.background = value === 'danger_immediat' ? '#fef2f2' : value === 'risque_blessure' ? '#fffbeb' : 'var(--navy-light)';
+  el.querySelector('input').checked = true;
+}
+
 // ── Soumission du formulaire unifié ──
 async function handleUnifiedSignalement(e) {
   e.preventDefault();
@@ -4830,6 +4862,8 @@ async function handleUnifiedSignalement(e) {
     if (lat) fd.append('lat', lat);
     if (lng) fd.append('lng', lng);
     if (photoInput.files && photoInput.files[0]) fd.append('photo', photoInput.files[0]);
+    const graviteRadio = document.querySelector('input[name="sig-gravite"]:checked');
+    if (graviteRadio) fd.append('gravite', graviteRadio.value);
 
     const res = await apiFetch('/api/signaler/signalements', {
       method: 'POST',

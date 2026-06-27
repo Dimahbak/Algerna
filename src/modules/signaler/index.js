@@ -130,6 +130,7 @@ const creerSchema = z.object({
   lng: z.coerce.number().optional(),
   communeId: z.coerce.number().int().optional(),
   description: z.string().max(1000).optional(),
+  gravite: z.enum(['danger_immediat', 'risque_blessure', 'degradation']).optional(),
 });
 
 router.post('/signalements',
@@ -137,7 +138,7 @@ router.post('/signalements',
   upload.single('photo'),
   validate(creerSchema),
   asyncH(async (req, res) => {
-    const { categorieId, lat, lng, communeId, description } = req.body;
+    const { categorieId, lat, lng, communeId, description, gravite } = req.body;
     const citoyenId = req.user.id;
     const photoPath = req.file ? req.file.path : null;
 
@@ -167,11 +168,12 @@ router.post('/signalements',
     const result = await withTransaction(async (c) => {
       const { rows } = await c.query(
         `INSERT INTO signalement
-           (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu')
+           (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, gravite)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',$12)
          RETURNING *`,
         [reference, domaine, categorieId, citoyenId, communeId || null,
-         operateurId, epicId, lat || 0, lng || 0, description || null, photoPath]);
+         operateurId, epicId, lat || 0, lng || 0, description || null, photoPath,
+         gravite || 'degradation']);
       const sig = rows[0];
 
       await c.query(
