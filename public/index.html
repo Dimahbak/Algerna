@@ -1618,6 +1618,20 @@
             </form>
           </div>
         </div>
+
+        <!-- ÉTAPE : Confirmation post-envoi -->
+        <div id="sig-step-confirmation" class="hidden">
+          <div class="card" style="text-align:center;padding:32px 20px;">
+            <div style="width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <h3 style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px;" data-i18n="signaler.conf_titre">Signalement transmis. Merci !</h3>
+            <p style="color:var(--gray-500);margin-bottom:12px;" data-i18n="signaler.conf_msg">Vous recevrez une notification dès que le problème sera traité.</p>
+            <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;" id="sig-conf-ref">#—</div>
+            <div style="font-size:13px;color:var(--green);margin-bottom:20px;" id="sig-conf-points"></div>
+            <button class="btn btn-outline" onclick="sigBackToChoix()" data-i18n="signaler.autre_signalement">Signaler un autre problème</button>
+          </div>
+        </div>
       </div>
 
       <!-- ══ CIVISIGNAL VIEW ══ -->
@@ -4763,7 +4777,7 @@ async function initSignaler() {
 }
 
 function sigShowStep(step) {
-  ['choix','familles','souscas','epics','form'].forEach(s => {
+  ['choix','familles','souscas','epics','form','confirmation'].forEach(s => {
     const el = document.getElementById('sig-step-' + s);
     if (el) el.classList.toggle('hidden', s !== step);
   });
@@ -5052,7 +5066,7 @@ async function handleUnifiedSignalement(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || data.error || data.erreur || t('sig.erreur_envoi'));
 
-    showSuccess(sucId, `${t('signaler.succes')} #${(data.signalement && data.signalement.reference) || 'N/A'}`);
+    const ref = data.signalement?.reference || 'N/A';
 
     // Sauvegarder dans localStorage pour "Mes signalements"
     try {
@@ -5060,7 +5074,7 @@ async function handleUnifiedSignalement(e) {
       const mesSignals = JSON.parse(localStorage.getItem('civismart_mes_signalements') || '[]');
       mesSignals.unshift({
         id: data.signalement?.id || Date.now(),
-        reference: data.signalement?.reference || 'N/A',
+        reference: ref,
         domaine: data.signalement?.domaine || 'general',
         categorie: document.getElementById('sig-categorie-display').value,
         commune: commune ? commune.nom : '',
@@ -5072,7 +5086,13 @@ async function handleUnifiedSignalement(e) {
       localStorage.setItem('civismart_mes_signalements', JSON.stringify(mesSignals));
     } catch(_) {}
 
-    // Reset form
+    // Afficher l'écran de confirmation (remplace le formulaire)
+    sigShowStep('confirmation');
+    document.getElementById('sig-conf-ref').textContent = '#' + ref;
+    const ptsEl = document.getElementById('sig-conf-points');
+    if (ptsEl && data.pointsGagnes) ptsEl.textContent = '+' + data.pointsGagnes + ' ' + t('sent.points_accumules');
+
+    // Reset le formulaire en arrière-plan
     document.getElementById('sig-form').reset();
     document.getElementById('sig-lat').value = '';
     document.getElementById('sig-lng').value = '';
