@@ -106,4 +106,33 @@ router.get('/synthese',
     });
   }));
 
+// GET /api/dashboard/quartier?communeId= — tableau de bord citoyen (public)
+router.get('/quartier', asyncH(async (req, res) => {
+  const { communeId } = req.query;
+  if (!communeId) return res.json({});
+
+  const [ouverts, resolus, delai, iqep] = await Promise.all([
+    query(`SELECT COUNT(*)::int AS n FROM signalement WHERE commune_id = $1 AND etat NOT IN ('resolu','rejete')`, [communeId]),
+    query(`SELECT COUNT(*)::int AS total,
+                  COUNT(*) FILTER (WHERE etat = 'resolu' AND resolu_le >= NOW() - INTERVAL '30 days')::int AS ce_mois
+             FROM signalement WHERE commune_id = $1 AND etat = 'resolu'`, [communeId]),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (resolu_le - cree_le)) / 3600))::int AS heures
+             FROM signalement WHERE commune_id = $1 AND etat = 'resolu' AND resolu_le IS NOT NULL`, [communeId]),
+    query(`SELECT AVG(COALESCE(i.note_manuelle, i.note_auto))::int AS moy
+             FROM iqep i JOIN parc p ON p.id = i.parc_id
+            WHERE p.commune_id = $1 AND p.actif = TRUE`, [communeId]),
+  ]);
+
+  const totalSig = (ouverts.rows[0]?.n || 0) + (resolus.rows[0]?.total || 0);
+  const pctResolus = totalSig > 0 ? Math.round((resolus.rows[0]?.total || 0) / totalSig * 100) : null;
+
+  res.json({
+    ouverts: ouverts.rows[0]?.n || 0,
+    resolus_ce_mois: resolus.rows[0]?.ce_mois || 0,
+    pct_resolus: pctResolus,
+    delai_moyen_heures: delai.rows[0]?.heures || null,
+    iqep_moyen: iqep.rows[0]?.moy || null,
+  });
+}));
+
 module.exports = router;

@@ -2097,6 +2097,9 @@
           <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
+        <!-- Dashboard quartier citoyen -->
+        <div id="quartier-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+
         <div class="carte-filters">
           <button class="carte-filter-btn active" onclick="filterCarte('tous', this)" data-i18n="carte.tous">Tous</button>
           <button class="carte-filter-btn" onclick="filterCarte('proprete', this)" data-i18n="carte.proprete">🌿 Propreté</button>
@@ -5027,6 +5030,30 @@ async function initCarte() {
   setTimeout(() => { if (carteMap) carteMap.invalidateSize(); }, 200);
   await loadCarteSignals();
   await loadCarteBiens();
+  loadQuartierDashboard();
+}
+
+async function loadQuartierDashboard() {
+  const el = document.getElementById('quartier-dashboard');
+  if (!el) return;
+  // Utiliser la commune du citoyen s'il en a une
+  const communeId = currentUser?.commune_id;
+  if (!communeId) { el.innerHTML = ''; return; }
+  try {
+    const d = await safeFetchJSON('/api/dashboard/quartier?communeId=' + communeId);
+    const items = [];
+    if (d.ouverts !== undefined) items.push({ label: t('quartier.ouverts'), value: d.ouverts, color: '#ef4444' });
+    if (d.resolus_ce_mois !== undefined) items.push({ label: t('quartier.resolus_mois'), value: d.resolus_ce_mois, color: '#16a34a' });
+    if (d.pct_resolus !== null) items.push({ label: t('quartier.pct_resolus'), value: d.pct_resolus + '%', color: '#2563eb' });
+    if (d.delai_moyen_heures) items.push({ label: t('quartier.delai_moyen'), value: d.delai_moyen_heures + 'h', color: '#f59e0b' });
+    if (d.iqep_moyen) items.push({ label: 'IQEP', value: d.iqep_moyen + '/100', color: '#16a34a' });
+    if (!items.length) { el.innerHTML = ''; return; }
+    el.innerHTML = items.map(i =>
+      `<div style="flex:1;min-width:80px;padding:8px 10px;background:${i.color}10;border-radius:8px;text-align:center;">
+        <div style="font-size:18px;font-weight:800;color:${i.color};">${i.value}</div>
+        <div style="font-size:10px;color:var(--muted);">${i.label}</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = ''; }
 }
 
 async function loadCarteBiens() {

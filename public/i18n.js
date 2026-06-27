@@ -106,6 +106,11 @@ const I18N = {
     "univers.profil_court": "Profil",
     "univers.stationnement": "Stationnement",
     "univers.stationnement_desc": "Zones de stationnement et tarifs",
+    // Dashboard quartier citoyen
+    "quartier.ouverts": "Signalements ouverts",
+    "quartier.resolus_mois": "Résolus ce mois",
+    "quartier.pct_resolus": "Taux résolution",
+    "quartier.delai_moyen": "Délai moyen",
 
     // ─── BOTTOM NAV ───
     "bottomnav.accueil": "Accueil",
@@ -739,6 +744,10 @@ const I18N = {
     "univers.profil_court": "ملفي",
     "univers.stationnement": "المواقف",
     "univers.stationnement_desc": "مناطق الركن والتعريفات",
+    "quartier.ouverts": "بلاغات مفتوحة",
+    "quartier.resolus_mois": "محلولة هذا الشهر",
+    "quartier.pct_resolus": "نسبة الحل",
+    "quartier.delai_moyen": "متوسط الأجل",
 
     // ─── BOTTOM NAV ─── // À RELIRE
     "bottomnav.accueil": "الرئيسية",
