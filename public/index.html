@@ -5267,11 +5267,13 @@ async function handleUnifiedSignalement(e) {
 // Montée en charge : remplacer TILE_URL par un fournisseur avec clé
 // (MapTiler gratuit 100k/mois, Stadia, Thunderforest) sans refactor.
 // Fournisseurs de tuiles avec cascade de fallback
+// Fournisseurs de tuiles testés et fonctionnels (sans clé API)
+// Stadia retiré : requiert une API key depuis 2023 (401 Unauthorized)
 const TILE_PROVIDERS = [
   { name: 'CARTO', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' }},
-  { name: 'Stadia', url: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png',
-    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://stadiamaps.com/">Stadia</a>', maxZoom: 19 }},
+  { name: 'CARTO-Voyager', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © CARTO', maxZoom: 19, subdomains: 'abcd' }},
   { name: 'OSM', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a>', maxZoom: 19 }},
 ];
@@ -5792,7 +5794,7 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v12';
+const APP_CACHE_VERSION = 'v13';
 (function purgeStaleSW() {
   const stored = localStorage.getItem('civismart_sw_ver');
   if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
