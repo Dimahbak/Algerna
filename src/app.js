@@ -22,22 +22,33 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 // Fichiers statiques (front-end)
 app.use(express.static(path.join(__dirname, '../public')));
 
+// CyberPanel/OLS proxy context strips the /api prefix before
+// forwarding to Express. Routes are dual-mounted below (/api/* + /*)
+// so they work in both local dev and production behind OLS.
+
 // Santé
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'civismart', env: config.env }));
+app.get('/health', (req, res) => res.json({ ok: true, service: 'civismart', env: config.env }));
 
-// Modules
-app.use('/api/auth',        require('./modules/auth'));
-app.use('/api/referentiel', require('./modules/referentiel'));
-app.use('/api/rdv',         require('./modules/rdv'));
-app.use('/api/proprete',    require('./modules/proprete'));
-app.use('/api/eau',         require('./modules/eau'));
-app.use('/api/points',      require('./modules/points'));
-app.use('/api/dashboard',   require('./modules/dashboard'));
-app.use('/api/patrimoine', require('./modules/patrimoine'));
-app.use('/api/signaler',   require('./modules/signaler'));
-app.use('/api/edeval',     require('./modules/edeval'));
-app.use('/api/cap',        require('./modules/cap'));
-app.use('/api/civipark',   require('./modules/civipark'));
+// Modules — montés sur /api/* ET /* (OLS proxy strip le préfixe /api)
+const moduleMap = {
+  auth:        require('./modules/auth'),
+  referentiel: require('./modules/referentiel'),
+  rdv:         require('./modules/rdv'),
+  proprete:    require('./modules/proprete'),
+  eau:         require('./modules/eau'),
+  points:      require('./modules/points'),
+  dashboard:   require('./modules/dashboard'),
+  patrimoine:  require('./modules/patrimoine'),
+  signaler:    require('./modules/signaler'),
+  edeval:      require('./modules/edeval'),
+  cap:         require('./modules/cap'),
+  civipark:    require('./modules/civipark'),
+};
+for (const [name, handler] of Object.entries(moduleMap)) {
+  app.use(`/api/${name}`, handler);  // Normal path (localhost)
+  app.use(`/${name}`, handler);      // Stripped path (OLS proxy)
+}
 
 // SPA fallback — toutes les routes non-API renvoient index.html
 app.get('*', (req, res, next) => {
