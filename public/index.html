@@ -1770,7 +1770,9 @@
             <h3 style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px;" data-i18n="signaler.conf_titre">Signalement transmis. Merci !</h3>
             <p style="color:var(--gray-500);margin-bottom:12px;" data-i18n="signaler.conf_msg">Vous recevrez une notification dès que le problème sera traité.</p>
             <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;" id="sig-conf-ref">#—</div>
-            <div style="font-size:13px;color:var(--green);margin-bottom:20px;" id="sig-conf-points"></div>
+            <div style="font-size:13px;color:var(--green);margin-bottom:8px;" id="sig-conf-points"></div>
+            <div id="sig-conf-email" style="font-size:12px;color:var(--muted);margin-bottom:4px;"></div>
+            <div id="sig-conf-sms" style="font-size:12px;color:var(--muted);margin-bottom:16px;"></div>
             <button class="btn btn-outline" onclick="sigBackToChoix()" data-i18n="signaler.autre_signalement">Signaler un autre problème</button>
           </div>
         </div>
@@ -2054,7 +2056,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
             <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--green)" data-i18n="rdv.confirmation_titre">Rendez-vous confirmé !</h3>
-            <p style="color:var(--gray-500);margin-bottom:20px;" id="rdv-confirmed-details" data-i18n="rdv.confirmation_desc">Votre RDV a été enregistré avec succès.</p>
+            <p style="color:var(--gray-500);margin-bottom:8px;" id="rdv-confirmed-details" data-i18n="rdv.confirmation_desc">Votre RDV a été enregistré avec succès.</p>
+            <div id="rdv-conf-email" style="font-size:12px;color:var(--muted);margin-bottom:4px;"></div>
+            <p style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:16px;padding:8px;background:var(--gold-light);border-radius:6px;" data-i18n="rdv.conf_formulaire">Munissez-vous du formulaire de confirmation de votre RDV le jour J.</p>
             <button class="btn btn-outline" onclick="resetRDV()" data-i18n="rdv.autre_rdv">Prendre un autre rendez-vous</button>
           </div>
         </div>
@@ -2994,7 +2998,7 @@ async function handleRegister(e) {
     nom: document.getElementById('reg-nom').value.trim(),
     prenom: document.getElementById('reg-prenom').value.trim(),
     email: document.getElementById('reg-email').value.trim() || undefined,
-    communeId: document.getElementById('reg-commune').value || undefined
+    communeId: document.getElementById('reg-commune').value ? Number(document.getElementById('reg-commune').value) : undefined
   };
   setLoading('reg-btn', 'reg-btn-text', 'reg-btn-spinner', true);
   try {
@@ -3631,6 +3635,8 @@ async function confirmRDV() {
     if (rdv.date || rdv.dateHeure) details += ` ${t('rdv.date')} ${fmtDateTime(rdv.date || rdv.dateHeure)}.`;
     if (rdv.service) details += ` ${t('rdv.service_label')} ${rdv.service}.`;
     document.getElementById('rdv-confirmed-details').textContent = details;
+    const rdvEmailEl = document.getElementById('rdv-conf-email');
+    if (rdvEmailEl && currentUser?.email) rdvEmailEl.textContent = t('signaler.conf_email') + ' ' + currentUser.email;
 
     await loadMesRDV();
   } catch (e) {
@@ -4371,8 +4377,7 @@ async function showIqepDetail(parcId) {
   wrap.classList.remove('hidden');
   card.innerHTML = '<div style="text-align:center;padding:20px;">' + t('global.chargement') + '</div>';
   try {
-    const res = await fetch('/api/edeval/iqep/' + parcId);
-    const d = await res.json();
+    const d = await safeFetchJSON('/api/edeval/iqep/' + parcId);
     const note = d.note_finale ?? d.note_auto ?? 100;
     const color = iqepColor(note);
     const isAdmin = isSuperAdmin() || isAgent();
@@ -4683,9 +4688,7 @@ async function cpLoadZones() {
   const el = document.getElementById('cp-panel-zones');
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
   try {
-    const res = await fetch('/api/civipark/zones');
-    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
-    cpZones = await res.json();
+    cpZones = await safeFetchJSON('/api/civipark/zones');
     if (!cpZones.length) {
       el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>';
       return;
@@ -5001,8 +5004,11 @@ async function sigShowEpics() {
            onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
            onclick="sigSelectEpic(${ep.id}, '${escHtml(sigle)}')">
         <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:40px;height:40px;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:var(--navy);">${escHtml(sigle.substring(0,4))}</div>
-          <div>
+          <div style="width:40px;height:40px;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:var(--navy);position:relative;">
+            ${escHtml(sigle.substring(0,4))}
+            <span style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid white;" title="${t('epic.en_ligne')}"></span>
+          </div>
+          <div style="flex:1;">
             <div style="font-weight:600;font-size:14px;color:var(--navy);">${escHtml(sigle)}</div>
             <div style="font-size:12px;color:var(--muted);line-height:1.3;">${escHtml(nom)}</div>
             ${ep.description ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${escHtml(ep.description.substring(0,80))}…</div>` : ''}
@@ -5233,6 +5239,11 @@ async function handleUnifiedSignalement(e) {
     document.getElementById('sig-conf-ref').textContent = '#' + ref;
     const ptsEl = document.getElementById('sig-conf-points');
     if (ptsEl && data.pointsGagnes) ptsEl.textContent = '+' + data.pointsGagnes + ' ' + t('sent.points_accumules');
+    // Afficher info email/SMS
+    const emailEl = document.getElementById('sig-conf-email');
+    const smsEl = document.getElementById('sig-conf-sms');
+    if (emailEl && currentUser?.email) emailEl.textContent = t('signaler.conf_email') + ' ' + currentUser.email;
+    if (smsEl && currentUser?.telephone) smsEl.textContent = t('signaler.conf_sms') + ' ' + currentUser.telephone;
 
     // Reset le formulaire en arrière-plan
     document.getElementById('sig-form').reset();
@@ -5255,26 +5266,37 @@ async function handleUnifiedSignalement(e) {
 // certains reverse proxies comme OpenLiteSpeed).
 // Montée en charge : remplacer TILE_URL par un fournisseur avec clé
 // (MapTiler gratuit 100k/mois, Stadia, Thunderforest) sans refactor.
-const TILE_URL      = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-const TILE_OPTS     = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' };
-const TILE_URL_ALT  = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_OPTS_ALT = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19 };
+// Fournisseurs de tuiles avec cascade de fallback
+const TILE_PROVIDERS = [
+  { name: 'CARTO', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' }},
+  { name: 'Stadia', url: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png',
+    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://stadiamaps.com/">Stadia</a>', maxZoom: 19 }},
+  { name: 'OSM', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a>', maxZoom: 19 }},
+];
 
 /**
- * Crée une couche de tuiles avec fallback automatique.
- * Si le fournisseur principal échoue (tileerror), bascule sur le secondaire.
+ * Crée une couche de tuiles avec cascade de fallback automatique.
+ * CARTO → Stadia → OSM. Chaque échec bascule vers le suivant.
  */
 function createTileLayer(map) {
-  const primary = L.tileLayer(TILE_URL, TILE_OPTS);
-  let switched = false;
-  primary.on('tileerror', function() {
-    if (switched) return;
-    switched = true;
-    console.warn('[ALGERNA] Tuiles CARTO indisponibles — bascule sur OSM');
-    map.removeLayer(primary);
-    L.tileLayer(TILE_URL_ALT, TILE_OPTS_ALT).addTo(map);
-  });
-  primary.addTo(map);
+  let idx = 0;
+  function tryProvider(i) {
+    if (i >= TILE_PROVIDERS.length) { console.error('[carte] Aucun fournisseur de tuiles disponible'); return; }
+    const p = TILE_PROVIDERS[i];
+    const layer = L.tileLayer(p.url, p.opts);
+    let switched = false;
+    layer.on('tileerror', function() {
+      if (switched) return;
+      switched = true;
+      console.warn('[carte]', p.name, 'indisponible — bascule vers', TILE_PROVIDERS[i+1]?.name || 'aucun');
+      map.removeLayer(layer);
+      tryProvider(i + 1);
+    });
+    layer.addTo(map);
+  }
+  tryProvider(0);
 }
 
 let carteMap = null;
@@ -5770,7 +5792,7 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v11';
+const APP_CACHE_VERSION = 'v12';
 (function purgeStaleSW() {
   const stored = localStorage.getItem('civismart_sw_ver');
   if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {

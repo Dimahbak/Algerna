@@ -90,6 +90,7 @@ const I18N = {
     "sidebar.cap": "CAP — Agents",
     "sidebar.civipark": "CiviPark",
     "sidebar.operateur": "Espace Opérateur",
+    "epic.en_ligne": "Service en ligne",
     "sidebar.univers": "Mes services",
 
     // ─── 6 UNIVERS ───
@@ -312,6 +313,8 @@ const I18N = {
     "signaler.gravite_degradation": "Simple dégradation",
     "signaler.conf_titre": "Signalement transmis. Merci !",
     "signaler.conf_msg": "Vous recevrez une notification dès que le problème sera traité.",
+    "signaler.conf_email": "Un email de confirmation a été envoyé à",
+    "signaler.conf_sms": "Un SMS de suivi sera envoyé au",
     "signaler.autre_signalement": "Signaler un autre problème",
     "signaler.envoyer": "Envoyer mon signalement",
     "signaler.envoi_en_cours": "Envoi…",
@@ -387,6 +390,7 @@ const I18N = {
     "rdv.confirmer_creneau": "Confirmer ce créneau",
     "rdv.confirmation_titre": "Rendez-vous confirmé !",
     "rdv.confirmation_desc": "Votre RDV a été enregistré avec succès.",
+    "rdv.conf_formulaire": "Munissez-vous du formulaire de confirmation de votre RDV le jour J.",
     "rdv.autre_rdv": "Prendre un autre rendez-vous",
     "rdv.mes_rdv": "Mes rendez-vous",
     "rdv.chargement_rdv": "Chargement de vos RDV...",
@@ -751,6 +755,7 @@ const I18N = {
     "sidebar.cap": "CAP — الأعوان",
     "sidebar.civipark": "CiviPark",
     "sidebar.operateur": "فضاء المتعامل",
+    "epic.en_ligne": "خدمة متصلة",
     "sidebar.univers": "خدماتي",
 
     // ─── 6 UNIVERS ─── // À RELIRE
@@ -970,6 +975,8 @@ const I18N = {
     "signaler.gravite_degradation": "تدهور بسيط",
     "signaler.conf_titre": "تم إرسال البلاغ. شكرا!",
     "signaler.conf_msg": "ستتلقى إشعارا بمجرد معالجة المشكلة.",
+    "signaler.conf_email": "تم إرسال بريد تأكيد إلى",
+    "signaler.conf_sms": "سيتم إرسال رسالة متابعة إلى",
     "signaler.autre_signalement": "الإبلاغ عن مشكلة أخرى",
     "signaler.envoyer": "إرسال بلاغي",
     "signaler.envoi_en_cours": "جاري الإرسال…",
@@ -1045,6 +1052,7 @@ const I18N = {
     "rdv.confirmer_creneau": "تأكيد هذه الفترة",
     "rdv.confirmation_titre": "تم تأكيد الموعد!",
     "rdv.confirmation_desc": "تم تسجيل موعدك بنجاح.",
+    "rdv.conf_formulaire": "أحضر معك نموذج تأكيد موعدك يوم الموعد.",
     "rdv.autre_rdv": "حجز موعد آخر",
     "rdv.mes_rdv": "مواعيدي",
     "rdv.chargement_rdv": "جاري تحميل مواعيدك...",
