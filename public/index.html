@@ -1585,6 +1585,9 @@
                 <textarea id="sig-description" rows="3" data-i18n-placeholder="signaler.description_placeholder" placeholder="Que constatez-vous ? Depuis quand ?"></textarea>
               </div>
 
+              <!-- Signalements proches (rempli dynamiquement) -->
+              <div id="sig-proches" class="hidden" style="margin-bottom:12px;"></div>
+
               <!-- 4. Gravité / danger -->
               <div class="form-group">
                 <label data-i18n="signaler.gravite_label" style="font-weight:600;">Ce problème représente-t-il un danger ?</label>
@@ -4811,6 +4814,8 @@ function sigSelectCategorie(catId, famille) {
           }
           // Auto-détecter la commune la plus proche
           autoDetectCommune(parseFloat(lat), parseFloat(lng));
+          // Chercher les signalements proches
+          checkProches(lat, lng);
         });
         sigMapInitialized = true;
       }
@@ -4823,6 +4828,46 @@ function sigSelectCategorie(catId, famille) {
   document.getElementById('sig-success').classList.add('hidden');
   sigShowStep('form');
   applyTranslations();
+}
+
+async function checkProches(lat, lng) {
+  const panel = document.getElementById('sig-proches');
+  try {
+    const proches = await safeFetchJSON(`/api/signaler/proches?lat=${lat}&lng=${lng}`);
+    if (!proches.length) { panel.classList.add('hidden'); return; }
+    panel.classList.remove('hidden');
+    panel.innerHTML = `
+      <div style="padding:10px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;">
+        <div style="font-weight:600;font-size:13px;color:#1d4ed8;margin-bottom:6px;">
+          ${proches.length} ${t('signaler.proches_titre')}
+        </div>
+        ${proches.map(p => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid #e0e7ff;">
+            <span>${escHtml(p.categorie)} — ${escHtml((p.description||'').substring(0,50))}${p.nb_confirmations?` (+${p.nb_confirmations})`:''}</span>
+            <button type="button" class="btn btn-sm btn-outline" onclick="confirmerProche('${p.id}')" style="font-size:10px;padding:2px 6px;">
+              ${t('signaler.proches_confirmer')}
+            </button>
+          </div>
+        `).join('')}
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">${t('signaler.proches_hint')}</div>
+      </div>`;
+  } catch(e) { panel.classList.add('hidden'); }
+}
+
+async function confirmerProche(id) {
+  try {
+    const res = await apiFetch('/api/signaler/' + id + '/confirmer', {
+      method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }
+    });
+    if (res.ok) {
+      const d = await res.json();
+      showToast(t('signaler.proches_confirme') + ' (+' + d.nb_confirmations + ')');
+      // Recharger les proches
+      const lat = document.getElementById('sig-lat').value;
+      const lng = document.getElementById('sig-lng').value;
+      if (lat && lng) checkProches(lat, lng);
+    }
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 function selectGravite(el, value) {

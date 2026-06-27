@@ -195,4 +195,33 @@ router.post('/signalements',
     res.status(201).json(result);
   }));
 
+// ── GET /proches — signalements actifs à proximité d'un point ──
+router.get('/proches', asyncH(async (req, res) => {
+  const { lat, lng, famille } = req.query;
+  if (!lat || !lng) throw badRequest('lat et lng requis');
+  const rayon = 0.001; // ~100m
+  let sql = `SELECT s.id, s.reference, s.lat, s.lng, s.description, s.nb_confirmations,
+                    cs.libelle AS categorie, cs.famille, s.cree_le
+               FROM signalement s
+               JOIN categorie_signal cs ON cs.id = s.categorie_id
+              WHERE s.etat NOT IN ('resolu','rejete')
+                AND ABS(s.lat - $1) < $3 AND ABS(s.lng - $2) < $3`;
+  const params = [parseFloat(lat), parseFloat(lng), rayon];
+  if (famille) { sql += ` AND cs.famille = $4`; params.push(famille); }
+  sql += ' ORDER BY s.cree_le DESC LIMIT 10';
+  const { rows } = await query(sql, params);
+  res.json(rows);
+}));
+
+// ── PATCH /:id/confirmer — +1 confirmation citoyen ──
+router.patch('/:id/confirmer', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `UPDATE signalement SET nb_confirmations = nb_confirmations + 1
+      WHERE id = $1 AND etat NOT IN ('resolu','rejete')
+      RETURNING id, reference, nb_confirmations`,
+    [req.params.id]);
+  if (!rows.length) throw badRequest('Signalement introuvable ou déjà résolu');
+  res.json(rows[0]);
+}));
+
 module.exports = router;
