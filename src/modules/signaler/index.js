@@ -202,13 +202,14 @@ router.post('/signalements',
     // Email de confirmation (fire-and-forget, ne bloque jamais)
     try {
       const { notify, emailCreation } = require('../../services/notifier');
-      const { rows: uRows } = await query('SELECT email, telephone FROM utilisateur WHERE id=$1', [req.user.id]);
+      const { rows: uRows } = await query('SELECT email, telephone, notifications_sms FROM utilisateur WHERE id=$1', [req.user.id]);
       const { rows: catRows } = await query('SELECT libelle FROM categorie_signal WHERE id=$1', [categorieId]);
       const { rows: comRows } = await query('SELECT nom FROM commune WHERE id=$1', [communeId || 0]);
       const sig = result.signalement;
+      const u = uRows[0] || {};
       notify({
-        email: uRows[0]?.email,
-        phone: uRows[0]?.telephone,
+        email: u.email,
+        phone: u.notifications_sms ? u.telephone : null,  // SMS seulement si opt-in
         subject: `Signalement #${sig.reference} transmis — CiviSmart`,
         html: emailCreation({
           reference: sig.reference,

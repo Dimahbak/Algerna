@@ -155,10 +155,11 @@ async function changerEtat(domaine, id, etat, parUtilisateur, preuvePath) {
 
         // Email de résolution (fire-and-forget, même hook, pas de duplication)
         const { notify, emailResolution } = require('../../services/notifier');
-        const { rows: uFull } = await c.query('SELECT email, telephone FROM utilisateur WHERE id=$1', [sig.citoyen_id]);
+        const { rows: uFull } = await c.query('SELECT email, telephone, notifications_sms FROM utilisateur WHERE id=$1', [sig.citoyen_id]);
+        const uData = uFull[0] || {};
         notify({
-          email: uFull[0]?.email,
-          phone: uFull[0]?.telephone,
+          email: uData.email,
+          phone: uData.notifications_sms ? uData.telephone : null,  // SMS seulement si opt-in
           subject: `Problème résolu — #${sig.reference} — CiviSmart`,
           html: emailResolution({
             reference: sig.reference,
