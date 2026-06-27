@@ -53,7 +53,7 @@ const FAMILLE_EPIC = {
   // autre: null (tri humain)
 };
 
-const POINTS_CREATION = 10;
+const { awardPoints } = require('../../utils/points');
 
 // ── GET /familles — catégories groupées par famille pour le chemin guidé ──
 router.get('/familles', asyncH(async (req, res) => {
@@ -180,17 +180,20 @@ router.post('/signalements',
         'INSERT INTO signalement_historique(signalement_id, etat, par_utilisateur) VALUES ($1,$2,$3)',
         [sig.id, 'recu', citoyenId]);
 
-      if (citoyenId) {
-        await c.query(
-          `INSERT INTO points_journal(citoyen_id, delta, motif, ref_type, ref_id)
-           VALUES ($1,$2,'Signalement créé','signalement',$3)`,
-          [citoyenId, POINTS_CREATION, sig.id]);
-        await c.query('UPDATE utilisateur SET points = points + $1 WHERE id = $2',
-          [POINTS_CREATION, citoyenId]);
-      }
-
-      return { signalement: sig, pointsGagnes: POINTS_CREATION, epicId, triHumain };
+      return { signalement: sig, epicId, triHumain };
     });
+
+    // Points Citoyens (hors transaction — non bloquant, avec dégressivité)
+    let pointsGagnes = 0;
+    if (req.user.id) {
+      const r1 = await awardPoints(req.user.id, 'creation', 'signalement', result.signalement.id);
+      pointsGagnes += r1.delta;
+      if (req.file) {
+        const r2 = await awardPoints(req.user.id, 'photo', 'signalement', result.signalement.id);
+        pointsGagnes += r2.delta;
+      }
+    }
+    result.pointsGagnes = pointsGagnes;
 
     // Vérifier et attribuer les badges (async, non bloquant)
     try { const { checkAndAwardBadges } = require('../points'); checkAndAwardBadges(req.user.id); }

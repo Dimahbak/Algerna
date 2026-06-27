@@ -149,6 +149,9 @@ async function changerEtat(domaine, id, etat, parUtilisateur, preuvePath) {
         await c.query(
           'INSERT INTO impact_message (citoyen_id, signalement_id, message) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
           [sig.citoyen_id, sig.id, msg]);
+        // Points Citoyens : +20 pour validation après intervention (le plus valorisé)
+        const { awardPoints } = require('../../utils/points');
+        await awardPoints(sig.citoyen_id, 'validation_resolution', 'signalement', sig.id);
       } catch (e) { console.warn('[impact]', e.message); }
     }
 

@@ -445,10 +445,10 @@ const I18N = {
     "rdv_admin.dispo": "dispo",
 
     // ─── SENTINELLE ───
-    "sent.titre": "Citoyen Sentinelle",
-    "sent.sous_titre": "Vos points civiques et le classement communautaire",
-    "sent.mes_points": "MES POINTS CIVIQUES",
-    "sent.points_accumules": "points accumulés",
+    "sent.titre": "Programme de Citoyenneté Active",
+    "sent.sous_titre": "Vos Points Citoyens et votre impact",
+    "sent.mes_points": "MES POINTS CITOYENS",
+    "sent.points_accumules": "Points Citoyens accumulés",
     "sent.journal": "Journal des points",
     "sent.aucun_point": "Aucun point enregistré pour le moment",
     "sent.impossible_charger": "Impossible de charger vos points.",
@@ -1078,10 +1078,10 @@ const I18N = {
     "rdv_admin.dispo": "متاح",
 
     // ─── SENTINELLE ─── // À RELIRE
-    "sent.titre": "المواطن الحارس",
-    "sent.sous_titre": "نقاطك المدنية وتصنيف المجتمع",
-    "sent.mes_points": "نقاطي المدنية",
-    "sent.points_accumules": "نقاط مكتسبة",
+    "sent.titre": "برنامج المواطنة النشطة",
+    "sent.sous_titre": "نقاطك المواطنية وتأثيرك",
+    "sent.mes_points": "نقاطي المواطنية",
+    "sent.points_accumules": "نقاط مواطنية مكتسبة",
     "sent.journal": "سجل النقاط",
     "sent.aucun_point": "لم يتم تسجيل أي نقاط حتى الآن",
     "sent.impossible_charger": "تعذر تحميل نقاطك.",
