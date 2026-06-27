@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════
-// CiviSmart — Dictionnaire i18n FR / AR
+// ALGERNA — Dictionnaire i18n FR / AR
 // Généré automatiquement — Les traductions AR sont à relire
 // ═══════════════════════════════════════════════════════════
 
 const I18N = {
   fr: {
     // ─── GLOBAL ───
-    "app.title": "Alger CiviSmart",
+    "app.title": "ALGERNA",
     "app.subtitle": "Plateforme de gouvernance civique",
     "app.wilaya": "Wilaya d'Alger — Gouvernance civique numérique",
     "global.chargement": "Chargement…",
@@ -68,10 +68,10 @@ const I18N = {
     "sidebar.principal": "Principal",
     "sidebar.accueil": "Accueil",
     "sidebar.modules": "Modules",
-    "sidebar.civisignal": "CiviSignal",
-    "sidebar.watersignal": "WaterSignal",
-    "sidebar.civiadmin": "CiviAdmin RDV",
-    "sidebar.sentinelle": "Citoyen Sentinelle",
+    "sidebar.civisignal": "Je signale — Propreté",
+    "sidebar.watersignal": "Je signale — Eau",
+    "sidebar.civiadmin": "Mes démarches — RDV",
+    "sidebar.sentinelle": "Mon impact",
     "sidebar.mes_signalements": "Mes Signalements",
     "sidebar.carte": "Carte",
     "sidebar.administration": "Administration",
@@ -90,9 +90,9 @@ const I18N = {
     "univers.signale_desc": "Signaler un problème (propreté, eau, voirie…)",
     "univers.signale_court": "Signaler",
     "univers.nouveau_signalement": "Nouveau signalement",
-    "univers.quartier": "Mon quartier",
+    "univers.quartier": "Ma Houma",
     "univers.quartier_desc": "Carte, scores, IQEP parcs",
-    "univers.quartier_court": "Quartier",
+    "univers.quartier_court": "Houma",
     "univers.iqep_parcs": "IQEP Parcs",
     "univers.participe": "Je participe",
     "univers.participe_desc": "Engagement citoyen et participation locale",
@@ -101,9 +101,9 @@ const I18N = {
     "univers.suivi": "Je suis",
     "univers.suivi_desc": "Suivi de mes signalements et RDV",
     "univers.suivi_court": "Suivi",
-    "univers.profil": "Mon profil",
-    "univers.profil_desc": "Points civiques, classement, badges",
-    "univers.profil_court": "Profil",
+    "univers.profil": "Mon impact",
+    "univers.profil_desc": "Citoyenneté active, badges, impact",
+    "univers.profil_court": "Impact",
     "univers.stationnement": "Stationnement",
     "univers.stationnement_desc": "Zones de stationnement et tarifs",
     // Dashboard quartier citoyen
@@ -114,7 +114,7 @@ const I18N = {
 
     // ─── BOTTOM NAV ───
     "bottomnav.accueil": "Accueil",
-    "bottomnav.civisignal": "CiviSignal",
+    "bottomnav.civisignal": "Signaler",
     "bottomnav.eau": "Eau",
     "bottomnav.rdv": "RDV",
     "bottomnav.points": "Points",
@@ -124,14 +124,14 @@ const I18N = {
     // ─── HOME ───
     "home.bienvenue": "Bienvenue, {name} !",
     "home.citoyen": "Citoyen",
-    "home.civisignal_titre": "CiviSignal",
+    "home.civisignal_titre": "Je signale — Propreté",
     "home.civisignal_desc": "Signaler un problème de propreté",
-    "home.watersignal_titre": "WaterSignal",
+    "home.watersignal_titre": "Signaler — Eau",
     "home.watersignal_desc": "Signaler un problème d'eau",
-    "home.civiadmin_titre": "CiviAdmin",
+    "home.civiadmin_titre": "Mes démarches",
     "home.civiadmin_desc": "Prendre un rendez-vous administratif",
-    "home.sentinelle_titre": "Sentinelle",
-    "home.sentinelle_desc": "Points civiques et classement",
+    "home.sentinelle_titre": "Mon impact",
+    "home.sentinelle_desc": "Citoyenneté active et suivi",
     "home.dashboard_titre": "Dashboard Admin",
     "home.dashboard_desc": "Indicateurs ICUA et statistiques",
     "home.patrimoine_titre": "PatriLocal",
@@ -309,7 +309,7 @@ const I18N = {
     "signaler.erreur_categorie": "Veuillez sélectionner un type de problème.",
 
     // ─── CIVISIGNAL ───
-    "cs.titre": "CiviSignal — Propreté",
+    "cs.titre": "Je signale — Propreté",
     "cs.sous_titre": "Signalez un problème de propreté dans votre commune",
     "cs.categorie": "Catégorie *",
     "cs.sel_categorie": "-- Sélectionner une catégorie --",
@@ -328,7 +328,7 @@ const I18N = {
     "cs.sel_categorie_requis": "Veuillez sélectionner une catégorie.",
 
     // ─── WATERSIGNAL ───
-    "ws.titre": "WaterSignal — Eau",
+    "ws.titre": "Je signale — Eau",
     "ws.sous_titre": "Signalez un problème d'eau potable ou d'assainissement",
     "ws.description_placeholder": "Décrivez le problème d'eau constaté...",
     "ws.gestion_titre": "Gestion des signalements — Eau",
@@ -356,7 +356,7 @@ const I18N = {
     "etat.rejete": "Rejeté",
 
     // ─── RDV / CIVIADMIN ───
-    "rdv.titre": "CiviAdmin — Rendez-vous",
+    "rdv.titre": "Mes démarches — Rendez-vous",
     "rdv.sous_titre": "Prenez un rendez-vous dans votre mairie ou daïra",
     "rdv.step_service": "Service",
     "rdv.step_creneau": "Créneau",
@@ -449,9 +449,9 @@ const I18N = {
 
     // ─── SENTINELLE ───
     "sent.titre": "Programme de Citoyenneté Active",
-    "sent.sous_titre": "Vos Points Citoyens et votre impact",
-    "sent.mes_points": "MES POINTS CITOYENS",
-    "sent.points_accumules": "Points Citoyens accumulés",
+    "sent.sous_titre": "Votre impact citoyen et vos contributions",
+    "sent.mes_points": "MON IMPACT",
+    "sent.points_accumules": "points d'impact accumulés",
     "sent.journal": "Journal des points",
     "sent.aucun_point": "Aucun point enregistré pour le moment",
     "sent.impossible_charger": "Impossible de charger vos points.",
@@ -507,7 +507,7 @@ const I18N = {
     "mes_sig.titre": "Mes Signalements",
     "mes_sig.sous_titre": "Historique de vos signalements soumis",
     "mes_sig.aucun": "Vous n'avez pas encore soumis de signalement.",
-    "mes_sig.aucun_desc": "Utilisez CiviSignal ou WaterSignal pour signaler un problème.",
+    "mes_sig.aucun_desc": "Utilisez « Je signale » pour signaler un problème.",
     "mes_sig.ref": "Réf :",
     "mes_sig.proprete": "Propreté",
     "mes_sig.eau": "Eau",
@@ -621,7 +621,7 @@ const I18N = {
     "op.changer_etat": "— Changer état —",
 
     // ─── PWA ───
-    "pwa.installer_titre": "Installer CiviSmart",
+    "pwa.installer_titre": "Installer ALGERNA",
     "pwa.installer_desc": "Accès rapide depuis votre écran d'accueil",
     "pwa.installer_btn": "Installer",
     "pwa.maj_dispo": "🔄 Nouvelle version disponible",
@@ -657,7 +657,7 @@ const I18N = {
 
   ar: {
     // ─── GLOBAL ─── // À RELIRE
-    "app.title": "الجزائر CiviSmart",
+    "app.title": "ALGERNA",
     "app.subtitle": "منصة الحوكمة المدنية",
     "app.wilaya": "ولاية الجزائر — الحوكمة المدنية الرقمية",
     "global.chargement": "جاري التحميل…",
@@ -719,10 +719,10 @@ const I18N = {
     "sidebar.principal": "الرئيسي",
     "sidebar.accueil": "الرئيسية",
     "sidebar.modules": "الوحدات",
-    "sidebar.civisignal": "CiviSignal",
-    "sidebar.watersignal": "WaterSignal",
-    "sidebar.civiadmin": "CiviAdmin مواعيد",
-    "sidebar.sentinelle": "المواطن الحارس",
+    "sidebar.civisignal": "أبلّغ — النظافة",
+    "sidebar.watersignal": "أبلّغ — المياه",
+    "sidebar.civiadmin": "إجراءاتي — مواعيد",
+    "sidebar.sentinelle": "تأثيري",
     "sidebar.mes_signalements": "بلاغاتي",
     "sidebar.carte": "الخريطة",
     "sidebar.administration": "الإدارة",
@@ -741,9 +741,9 @@ const I18N = {
     "univers.signale_desc": "الإبلاغ عن مشكلة (نظافة، مياه، طرق…)",
     "univers.signale_court": "إبلاغ",
     "univers.nouveau_signalement": "بلاغ جديد",
-    "univers.quartier": "حيّي",
+    "univers.quartier": "حومتي",
     "univers.quartier_desc": "الخريطة، التقييمات، IQEP الحدائق",
-    "univers.quartier_court": "الحي",
+    "univers.quartier_court": "حومتي",
     "univers.iqep_parcs": "IQEP الحدائق",
     "univers.participe": "أشارك",
     "univers.participe_desc": "المشاركة المواطنية والمحلية",
@@ -752,9 +752,9 @@ const I18N = {
     "univers.suivi": "أتابع",
     "univers.suivi_desc": "متابعة بلاغاتي ومواعيدي",
     "univers.suivi_court": "متابعة",
-    "univers.profil": "ملفي",
-    "univers.profil_desc": "النقاط المدنية، الترتيب، الشارات",
-    "univers.profil_court": "ملفي",
+    "univers.profil": "تأثيري",
+    "univers.profil_desc": "المواطنة النشطة، الشارات، التأثير",
+    "univers.profil_court": "تأثيري",
     "univers.stationnement": "المواقف",
     "univers.stationnement_desc": "مناطق الركن والتعريفات",
     "quartier.ouverts": "بلاغات مفتوحة",
@@ -764,7 +764,7 @@ const I18N = {
 
     // ─── BOTTOM NAV ─── // À RELIRE
     "bottomnav.accueil": "الرئيسية",
-    "bottomnav.civisignal": "CiviSignal",
+    "bottomnav.civisignal": "إبلاغ",
     "bottomnav.eau": "المياه",
     "bottomnav.rdv": "مواعيد",
     "bottomnav.points": "النقاط",
@@ -774,14 +774,14 @@ const I18N = {
     // ─── HOME ─── // À RELIRE
     "home.bienvenue": "مرحباً، {name}!",
     "home.citoyen": "مواطن",
-    "home.civisignal_titre": "CiviSignal",
+    "home.civisignal_titre": "أبلّغ — النظافة",
     "home.civisignal_desc": "الإبلاغ عن مشكلة نظافة",
-    "home.watersignal_titre": "WaterSignal",
+    "home.watersignal_titre": "أبلّغ — المياه",
     "home.watersignal_desc": "الإبلاغ عن مشكلة مياه",
-    "home.civiadmin_titre": "CiviAdmin",
+    "home.civiadmin_titre": "إجراءاتي",
     "home.civiadmin_desc": "حجز موعد إداري",
-    "home.sentinelle_titre": "الحارس",
-    "home.sentinelle_desc": "النقاط المدنية والتصنيف",
+    "home.sentinelle_titre": "تأثيري",
+    "home.sentinelle_desc": "المواطنة النشطة والمتابعة",
     "home.dashboard_titre": "لوحة القيادة",
     "home.dashboard_desc": "مؤشرات ICUA والإحصائيات",
     "home.patrimoine_titre": "PatriLocal",
@@ -957,7 +957,7 @@ const I18N = {
     "signaler.erreur_categorie": "يرجى اختيار نوع المشكلة.",
 
     // ─── CIVISIGNAL ─── // À RELIRE
-    "cs.titre": "CiviSignal — النظافة",
+    "cs.titre": "أبلّغ — النظافة",
     "cs.sous_titre": "أبلغ عن مشكلة نظافة في بلديتك",
     "cs.categorie": "الفئة *",
     "cs.sel_categorie": "-- اختيار فئة --",
@@ -976,7 +976,7 @@ const I18N = {
     "cs.sel_categorie_requis": "يرجى اختيار فئة.",
 
     // ─── WATERSIGNAL ─── // À RELIRE
-    "ws.titre": "WaterSignal — المياه",
+    "ws.titre": "أبلّغ — المياه",
     "ws.sous_titre": "أبلغ عن مشكلة في مياه الشرب أو الصرف الصحي",
     "ws.description_placeholder": "صف مشكلة المياه الملاحظة...",
     "ws.gestion_titre": "إدارة البلاغات — المياه",
@@ -1004,7 +1004,7 @@ const I18N = {
     "etat.rejete": "مرفوض",
 
     // ─── RDV / CIVIADMIN ─── // À RELIRE
-    "rdv.titre": "CiviAdmin — المواعيد",
+    "rdv.titre": "إجراءاتي — المواعيد",
     "rdv.sous_titre": "احجز موعدًا في بلديتك أو دائرتك",
     "rdv.step_service": "الخدمة",
     "rdv.step_creneau": "الفترة الزمنية",
@@ -1151,7 +1151,7 @@ const I18N = {
     "mes_sig.titre": "بلاغاتي",
     "mes_sig.sous_titre": "سجل بلاغاتك المقدمة",
     "mes_sig.aucun": "لم تقدم أي بلاغ بعد.",
-    "mes_sig.aucun_desc": "استخدم CiviSignal أو WaterSignal للإبلاغ عن مشكلة.",
+    "mes_sig.aucun_desc": "استخدم « أبلّغ » للإبلاغ عن مشكلة.",
     "mes_sig.ref": "المرجع:",
     "mes_sig.proprete": "النظافة",
     "mes_sig.eau": "المياه",
@@ -1265,7 +1265,7 @@ const I18N = {
     "op.changer_etat": "— تغيير الحالة —",
 
     // ─── PWA ─── // À RELIRE
-    "pwa.installer_titre": "تثبيت CiviSmart",
+    "pwa.installer_titre": "تثبيت ALGERNA",
     "pwa.installer_desc": "وصول سريع من شاشتك الرئيسية",
     "pwa.installer_btn": "تثبيت",
     "pwa.maj_dispo": "🔄 إصدار جديد متاح",

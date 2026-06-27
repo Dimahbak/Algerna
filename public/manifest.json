@@ -1,6 +1,6 @@
 {
-  "name": "Alger CiviSmart",
-  "short_name": "CiviSmart",
+  "name": "ALGERNA",
+  "short_name": "ALGERNA",
   "description": "Plateforme citoyenne de gouvernance territoriale — Wilaya d'Alger",
   "start_url": "/",
   "scope": "/",
@@ -50,8 +50,8 @@
       "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
     },
     {
-      "name": "Mon quartier",
-      "short_name": "Quartier",
+      "name": "Ma Houma",
+      "short_name": "Houma",
       "description": "Carte et qualité du quartier",
       "url": "/#carte",
       "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]

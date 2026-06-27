@@ -2,7 +2,7 @@ const app = require('./app');
 const config = require('./config');
 
 const server = app.listen(config.port, () => {
-  console.log(`Alger CiviSmart — API démarrée sur le port ${config.port} (${config.env})`);
+  console.log(`ALGERNA — API démarrée sur le port ${config.port} (${config.env})`);
 });
 
 // Arrêt propre

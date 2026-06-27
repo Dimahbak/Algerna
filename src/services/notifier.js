@@ -78,7 +78,7 @@ function notify({ email, phone, subject, html, smsBody }) {
 // ── Templates email ──
 
 const HEADER = `<div style="background:#0A3D62;padding:16px 20px;text-align:center;">
-  <span style="color:white;font-size:18px;font-weight:700;font-family:Inter,sans-serif;">Alger CiviSmart</span>
+  <span style="color:white;font-size:18px;font-weight:700;font-family:Inter,sans-serif;">ALGERNA</span>
 </div>`;
 const FOOTER = `<div style="padding:12px 20px;text-align:center;font-size:11px;color:#9ca3af;font-family:Inter,sans-serif;">
   Wilaya d'Alger — Gouvernance civique numérique<br>
@@ -112,7 +112,7 @@ function emailResolution({ reference, message, preuvePath }) {
       <p style="color:#6b7280;font-size:13px;">Référence : <strong style="color:#0A3D62;">#${reference}</strong></p>
       ${preuvePath ? `<p style="color:#6b7280;font-size:13px;">Une photo preuve a été jointe au dossier.</p>` : ''}
       <div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:8px;text-align:center;">
-        <p style="color:#1FA463;font-weight:600;margin:0;">+20 Points Citoyens</p>
+        <p style="color:#1FA463;font-weight:600;margin:0;">+20 points d'impact</p>
         <p style="color:#6b7280;font-size:12px;margin:4px 0 0;">Votre signalement a eu un impact concret.</p>
       </div>
     </div>
