@@ -1990,11 +1990,12 @@
           <p data-i18n="sent.sous_titre">Vos points civiques et le classement communautaire</p>
         </div>
 
-        <!-- Points card -->
+        <!-- Points + Niveau card -->
         <div class="card" style="margin-bottom:20px;text-align:center;padding:32px;">
-          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;" data-i18n="sent.mes_points">MES POINTS CIVIQUES</p>
+          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;" data-i18n="sent.mes_points">MES POINTS CITOYENS</p>
           <div class="points-big" id="sentinelle-points">—</div>
-          <p style="color:var(--gray-400);margin-top:8px;font-size:13px;" data-i18n="sent.points_accumules">points accumulés</p>
+          <div id="sentinelle-niveau" style="margin-top:8px;"></div>
+          <p style="color:var(--gray-400);margin-top:4px;font-size:13px;" data-i18n="sent.points_accumules">Points Citoyens accumulés</p>
         </div>
 
         <!-- Mon impact -->
@@ -3667,6 +3668,24 @@ async function loadSentinellePoints() {
     if (!res.ok) { journalEl.innerHTML = '<p style="padding:16px;color:var(--gray-400)">' + t('sent.impossible_charger') + '</p>'; return; }
     const data = await res.json();
     document.getElementById('sentinelle-points').textContent = data.points ?? '0';
+
+    // Afficher le niveau
+    const niveauEl = document.getElementById('sentinelle-niveau');
+    if (niveauEl && data.niveau) {
+      const niveauColors = { citoyen:'#94a3b8', contributeur:'#3b82f6', sentinelle:'#f59e0b', ambassadeur:'#16a34a', referent:'#7c3aed' };
+      const color = niveauColors[data.niveau_code] || '#94a3b8';
+      let html = `<span style="display:inline-block;padding:3px 12px;border-radius:12px;background:${color}22;color:${color};font-weight:700;font-size:13px;">${escHtml(data.niveau)}</span>`;
+      if (data.prochain_niveau) {
+        const pct = Math.min(100, Math.round((data.points / data.prochain_niveau.seuil) * 100));
+        html += `<div style="margin-top:6px;font-size:11px;color:var(--muted);">
+          ${t('sent.prochain_niveau')} : ${escHtml(data.prochain_niveau.nom)} (${data.prochain_niveau.seuil} pts)
+          <div style="margin-top:3px;height:4px;background:var(--gray-200);border-radius:2px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;"></div>
+          </div>
+        </div>`;
+      }
+      niveauEl.innerHTML = html;
+    }
 
     const journal = data.journal || [];
     if (!journal.length) {

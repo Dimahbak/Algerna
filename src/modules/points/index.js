@@ -11,11 +11,26 @@ const router = express.Router();
 
 // GET /api/points/moi — solde + journal du citoyen courant
 router.get('/moi', authenticate, asyncH(async (req, res) => {
-  const solde = await query('SELECT points FROM utilisateur WHERE id=$1', [req.user.id]);
+  const solde = await query(
+    `SELECT u.points, n.code AS niveau_code, n.nom AS niveau_nom,
+            n.seuil_points, n.seuil_pertinence
+       FROM utilisateur u
+       LEFT JOIN niveau n ON n.id = u.niveau_id
+      WHERE u.id = $1`, [req.user.id]);
   const journal = await query(
     'SELECT delta,motif,ref_type,ref_id,le FROM points_journal WHERE citoyen_id=$1 ORDER BY le DESC LIMIT 50',
     [req.user.id]);
-  res.json({ points: solde.rows[0]?.points ?? 0, journal: journal.rows });
+  // Niveau suivant
+  const { rows: niveaux } = await query('SELECT * FROM niveau ORDER BY seuil_points');
+  const currentPoints = solde.rows[0]?.points ?? 0;
+  const nextNiveau = niveaux.find(n => n.seuil_points > currentPoints);
+  res.json({
+    points: currentPoints,
+    niveau: solde.rows[0]?.niveau_nom || 'Citoyen',
+    niveau_code: solde.rows[0]?.niveau_code || 'citoyen',
+    prochain_niveau: nextNiveau ? { nom: nextNiveau.nom, seuil: nextNiveau.seuil_points } : null,
+    journal: journal.rows
+  });
 }));
 
 // GET /api/points/impact — messages d'impact du citoyen

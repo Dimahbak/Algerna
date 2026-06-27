@@ -56,7 +56,42 @@ async function awardPoints(userId, code, refType, refId) {
     [userId, delta, bareme[0].description || code, refType || null, refId || null]);
   await query('UPDATE utilisateur SET points = points + $1 WHERE id = $2', [delta, userId]);
 
+  // Mettre à jour le niveau après attribution
+  try { await refreshNiveau(userId); } catch(e) { console.warn('[niveau]', e.message); }
+
   return { delta, awarded: true };
 }
 
-module.exports = { awardPoints };
+/**
+ * Recalcule et met à jour le niveau d'un citoyen.
+ * Basé sur Points Citoyens cumulés ET pertinence (% signalements résolus).
+ * Un citoyen doit satisfaire les DEUX seuils pour accéder à un niveau.
+ */
+async function refreshNiveau(userId) {
+  const { rows: niveaux } = await query('SELECT * FROM niveau ORDER BY seuil_points DESC');
+  const { rows: uRows } = await query('SELECT points FROM utilisateur WHERE id = $1', [userId]);
+  if (!uRows.length) return;
+
+  const points = uRows[0].points || 0;
+
+  // Calcul pertinence : signalements résolus / signalements créés
+  const { rows: stats } = await query(
+    `SELECT COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE etat = 'resolu')::int AS resolus
+       FROM signalement WHERE citoyen_id = $1`, [userId]);
+  const total = stats[0]?.total || 0;
+  const pertinence = total > 0 ? Math.round((stats[0]?.resolus || 0) / total * 100) : 0;
+
+  // Trouver le niveau le plus haut satisfait (les deux seuils)
+  let niveauId = niveaux[niveaux.length - 1]?.id || 1; // fallback = Citoyen
+  for (const n of niveaux) {
+    if (points >= n.seuil_points && pertinence >= n.seuil_pertinence) {
+      niveauId = n.id;
+      break;
+    }
+  }
+
+  await query('UPDATE utilisateur SET niveau_id = $1 WHERE id = $2', [niveauId, userId]);
+}
+
+module.exports = { awardPoints, refreshNiveau };
