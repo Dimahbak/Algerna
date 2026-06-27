@@ -131,7 +131,28 @@ async function changerEtat(domaine, id, etat, parUtilisateur, preuvePath) {
       [id, etat, parUtilisateur || null]);
 
     const { rows: maj } = await c.query('SELECT * FROM signalement WHERE id=$1', [id]);
-    return maj[0];
+    const sig = maj[0];
+
+    // Hook résolution : message d'impact + points validation
+    if (etat === 'resolu' && sig.citoyen_id) {
+      try {
+        // Construire le message d'impact personnalisé
+        const { rows: uRows } = await c.query('SELECT prenom FROM utilisateur WHERE id=$1', [sig.citoyen_id]);
+        const { rows: catRows } = await c.query('SELECT libelle FROM categorie_signal WHERE id=$1', [sig.categorie_id]);
+        const { rows: comRows } = await c.query('SELECT nom FROM commune WHERE id=$1', [sig.commune_id]);
+        const prenom = uRows[0]?.prenom || 'Citoyen';
+        const categorie = catRows[0]?.libelle || 'problème signalé';
+        const commune = comRows[0]?.nom || '';
+        const msg = commune
+          ? `Merci ${prenom} ! Votre signalement « ${categorie} » à ${commune} a été traité. Le problème est résolu.`
+          : `Merci ${prenom} ! Votre signalement « ${categorie} » a été traité. Le problème est résolu.`;
+        await c.query(
+          'INSERT INTO impact_message (citoyen_id, signalement_id, message) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
+          [sig.citoyen_id, sig.id, msg]);
+      } catch (e) { console.warn('[impact]', e.message); }
+    }
+
+    return sig;
   });
 }
 

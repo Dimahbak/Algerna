@@ -18,6 +18,14 @@ router.get('/moi', authenticate, asyncH(async (req, res) => {
   res.json({ points: solde.rows[0]?.points ?? 0, journal: journal.rows });
 }));
 
+// GET /api/points/impact — messages d'impact du citoyen
+router.get('/impact', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    'SELECT message, cree_le FROM impact_message WHERE citoyen_id = $1 ORDER BY cree_le DESC LIMIT 50',
+    [req.user.id]);
+  res.json(rows);
+}));
+
 // GET /api/points/classement — top citoyens (anonymisable)
 router.get('/classement', asyncH(async (req, res) => {
   const { rows } = await query(
