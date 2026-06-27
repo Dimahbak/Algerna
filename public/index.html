@@ -2640,6 +2640,28 @@ async function apiFetch(path, options = {}) {
   return res;
 }
 
+/**
+ * Fetch JSON défensif : parse via text() pour attraper les réponses
+ * non-JSON (ex: ancien SW servant du HTML). Log console détaillé.
+ * @param {string} url
+ * @param {object} [opts] fetch options
+ * @param {boolean} [auth] true = passe par apiFetch (ajoute Bearer)
+ * @returns {Promise<any>} parsed JSON
+ */
+async function safeFetchJSON(url, opts, auth) {
+  const res = auth ? await apiFetch(url, opts || {}) : await fetch(url, opts);
+  if (!res.ok) {
+    console.error('[safeFetchJSON]', url, 'HTTP', res.status, res.statusText);
+    throw new Error('HTTP ' + res.status);
+  }
+  const raw = await res.text();
+  try { return JSON.parse(raw); }
+  catch (e) {
+    console.error('[safeFetchJSON]', url, 'JSON parse fail, raw:', raw.substring(0, 300));
+    throw new Error('Réponse invalide');
+  }
+}
+
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-DZ', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -2847,9 +2869,7 @@ async function initApp() {
 // ─── COMMUNES ─────────────────────────────────────────────
 async function loadCommunes() {
   try {
-    const res = await fetch('/api/referentiel/communes');
-    if (!res.ok) return;
-    communes = await res.json();
+    communes = await safeFetchJSON('/api/referentiel/communes');
     populateCommuneSelects();
   } catch (e) { console.warn('communes load error', e); }
 }
@@ -2874,9 +2894,7 @@ function populateCommuneSelects() {
 // ─── RDV SERVICES ─────────────────────────────────────────
 async function loadRdvServices() {
   try {
-    const res = await fetch('/api/rdv/services');
-    if (!res.ok) return;
-    rdvServices = await res.json();
+    rdvServices = await safeFetchJSON('/api/rdv/services');
     const sel = document.getElementById('rdv-service');
     if (!sel) return;
     sel.innerHTML = '<option value="">' + t('rdv.sel_service') + '</option>';
@@ -3323,10 +3341,7 @@ async function loadCreneaux() {
   setStep(2);
 
   try {
-    const res = await fetch(`/api/rdv/creneaux?communeId=${communeId}&serviceId=${serviceId}`);
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.message || t('global.erreur_chargement'));
+    const data = await safeFetchJSON(`/api/rdv/creneaux?communeId=${communeId}&serviceId=${serviceId}`);
 
     if (data.familleA) {
       document.getElementById('rdv-step-2').classList.add('hidden');
@@ -4004,9 +4019,7 @@ async function initEdeval() {
   el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + t('edeval.chargement') + '</div>';
   document.getElementById('edeval-detail').classList.add('hidden');
   try {
-    const res = await fetch('/api/edeval/iqep');
-    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
-    const parcs = await res.json();
+    const parcs = await safeFetchJSON('/api/edeval/iqep');
     if (!parcs.length) { el.innerHTML = '<div class="empty-state"><p>' + t('edeval.aucun_parc') + '</p></div>'; return; }
     el.innerHTML = parcs.map(p => {
       const note = p.note_finale ?? 100;
@@ -4560,9 +4573,8 @@ async function initSignaler() {
   // Charger les familles depuis l'API
   if (!sigFamillesData) {
     try {
-      const res = await fetch('/api/signaler/familles');
-      sigFamillesData = await res.json();
-    } catch (e) { sigFamillesData = {}; }
+      sigFamillesData = await safeFetchJSON('/api/signaler/familles');
+    } catch (e) { console.warn('[Signaler] familles load fail:', e); sigFamillesData = {}; }
   }
   // Peupler les communes
   const sel = document.getElementById('sig-commune');
@@ -5337,6 +5349,19 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
+const APP_CACHE_VERSION = 'v11';
+(function purgeStaleSW() {
+  const stored = localStorage.getItem('civismart_sw_ver');
+  if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
+    console.log('[SW] Version mismatch', stored, '→', APP_CACHE_VERSION, '— purging caches');
+    caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+    localStorage.setItem('civismart_sw_ver', APP_CACHE_VERSION);
+    location.reload();
+    return;
+  }
+  localStorage.setItem('civismart_sw_ver', APP_CACHE_VERSION);
+})();
 if("serviceWorker"in navigator){window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("/sw.js");swRegistration.addEventListener("updatefound",()=>{const nw=swRegistration.installing;nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller)document.getElementById("pwa-update-toast").classList.remove("hidden");});});}catch(e){console.warn("SW failed:",e);}});}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(!localStorage.getItem("pwa_dismissed")&&!window.matchMedia("(display-mode:standalone)").matches)setTimeout(()=>document.getElementById("pwa-banner").classList.remove("hidden"),3000);});
 if(window.matchMedia("(display-mode:standalone)").matches)document.getElementById("pwa-banner").classList.add("hidden");
