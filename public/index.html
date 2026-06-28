@@ -79,25 +79,15 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: linear-gradient(135deg, rgba(11,60,93,0.88) 0%, rgba(31,164,99,0.65) 100%);
-      background-size: cover;
+      background: linear-gradient(135deg, rgba(11,60,93,0.55) 0%, rgba(31,164,99,0.35) 100%),
+                  url('https://images.unsplash.com/photo-1568454537842-d933259bb258?w=1400&q=80') center/cover no-repeat;
       position: relative;
-      overflow: hidden;
     }
     #auth-page::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' style='stop-color:%2523a8d8ea'/%3E%3Cstop offset='1' style='stop-color:%25237ec8e3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='600' fill='url(%2523sky)'/%3E%3Cpath d='M0 600 Q300 550 600 570 T1200 600 L1200 800 L0 800 Z' fill='%25231b9fbe' opacity='0.6'/%3E%3Ccircle cx='150' cy='300' r='80' fill='%25231fa463' opacity='0.3'/%3E%3Crect x='400' y='250' width='60' height='200' fill='%25230B3C5D' opacity='0.5'/%3E%3Crect x='480' y='200' width='80' height='250' fill='%25230B3C5D' opacity='0.6'/%3E%3Crect x='580' y='280' width='50' height='170' fill='%25230B3C5D' opacity='0.5'/%3E%3Ccircle cx='1050' cy='150' r='60' fill='%2523E1A730' opacity='0.7'/%3E%3C/svg%3E") center/cover no-repeat;
-      z-index: 0;
-      pointer-events: none;
-    }
-    #auth-page::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(11,60,93,0.45);
-      z-index: 0;
+      background: rgba(11,60,93,0.3);
       pointer-events: none;
     }
 
@@ -1375,17 +1365,14 @@
   <div class="auth-wrapper">
     <!-- HERO (desktop) -->
     <div class="auth-hero">
-      <div class="auth-hero-logo">
-        <img src="/assets/logo/algerna_full.png" alt="ALGERNA" style="max-width:280px;width:100%;margin-bottom:12px;" />
+      <div class="auth-hero-logo" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <img src="/assets/logo/algerna_icon.png" alt="Algerna" style="height:50px;width:auto;" />
+        <h1 style="font-size:38px;font-weight:700;color:white;margin:0;letter-spacing:1px;">Algerna</h1>
       </div>
-      <div class="auth-hero-tagline">Ma ville. <span class="green">Mon pouvoir.</span> Notre avenir.</div>
-      <p class="auth-hero-desc" data-i18n="auth.hero_desc">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
-      <div class="auth-hero-features">
-        <div><div class="feat-icon" style="background:rgba(31,164,99,.2);">&#x2714;</div><span data-i18n="auth.feat_signaler">Signalez un problème en 30 secondes</span></div>
-        <div><div class="feat-icon" style="background:rgba(225,167,48,.2);">&#x1F4C5;</div><span data-i18n="auth.feat_rdv">Prenez rendez-vous à la mairie sans file d'attente</span></div>
-        <div><div class="feat-icon" style="background:rgba(37,99,235,.2);">&#x1F50D;</div><span data-i18n="auth.feat_suivi">Suivez la résolution en temps réel</span></div>
-        <div><div class="feat-icon" style="background:rgba(124,58,237,.2);">&#x1F3C5;</div><span data-i18n="auth.feat_impact">Mesurez votre impact citoyen</span></div>
+      <div class="auth-hero-tagline" style="font-size:26px;line-height:1.4;margin-bottom:20px;">
+        Ma ville. <span class="green">Mon pouvoir.</span> Notre avenir.
       </div>
+      <p class="auth-hero-desc" data-i18n="auth.hero_desc" style="font-size:14px;line-height:1.7;opacity:0.95;">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
     </div>
 
     <!-- AUTH CARD -->
