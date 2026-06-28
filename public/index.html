@@ -6305,14 +6305,17 @@ function saksiniSearch(q) {
 }
 
 function saksiniInit() {
-  // Charger historique
-  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
   const msgs = document.getElementById('saksini-msgs');
   msgs.innerHTML = '';
-  // Message de bienvenue
+  // Message de bienvenue (dans la langue active)
   saksiniAddMsg('bot', t('saksini.bienvenue'));
-  // Historique
-  hist.forEach(h => { saksiniAddMsg('user', h.q); saksiniAddMsg('bot', h.a); });
+  // Charger historique seulement si même langue
+  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
+  const lang = currentLang || 'fr';
+  hist.filter(h => h.lang === lang).forEach(h => {
+    saksiniAddMsg('user', h.q);
+    saksiniAddMsg('bot', h.a);
+  });
 }
 
 function saksiniAddMsg(role, text) {
@@ -6329,9 +6332,9 @@ function saksiniAsk(q) {
   const match = saksiniSearch(q);
   const answer = match ? (lang === 'ar' ? match.ar : match.fr) : t('saksini.pas_de_reponse');
   saksiniAddMsg('bot', answer);
-  // Sauvegarder (max 10)
+  // Sauvegarder avec la langue (max 10)
   const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
-  hist.push({ q, a: answer });
+  hist.push({ q, a: answer, lang: currentLang || 'fr' });
   if (hist.length > 10) hist.shift();
   localStorage.setItem('saksini_hist', JSON.stringify(hist));
   document.getElementById('saksini-input').value = '';
@@ -6348,8 +6351,8 @@ function saksiniToggle() {
 
 <!-- SAKSINI CHATBOT WIDGET -->
 <style>
-#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:56px;height:56px;border-radius:50%;background:white;color:var(--navy);border:1.5px solid var(--gray-200);cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
-#saksini-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(0,0,0,.18);}
+#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:56px;height:56px;border-radius:50%;background:#0B3C5D;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(11,60,93,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
+#saksini-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(11,60,93,.45);}
 #saksini-fab svg{width:26px;height:26px;}
 #saksini-widget{position:fixed;bottom:150px;right:20px;z-index:9999;width:340px;max-height:480px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden;}
 @media(max-width:480px){#saksini-widget{right:8px;left:8px;width:auto;bottom:100px;max-height:70vh;}}
@@ -6370,7 +6373,7 @@ function saksiniToggle() {
 [dir="rtl"] .sak-msg-user{border-radius:12px 12px 12px 2px;}
 </style>
 <button id="saksini-fab" onclick="saksiniToggle()" title="Saksini">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0B3C5D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="12" cy="10" r="0.5" fill="#0B3C5D" stroke="none"/><path d="M12 7v0" stroke="#0B3C5D" stroke-width="2.5" stroke-linecap="round"/><path d="M12 10v3" stroke="#0B3C5D" stroke-width="2" stroke-linecap="round"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 8v1" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M12 12v2" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
 </button>
 <div id="saksini-widget" class="hidden">
   <div class="sak-header">
