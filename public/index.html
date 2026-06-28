@@ -1437,36 +1437,45 @@
         <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
           <div class="form-row">
             <div class="form-group">
-              <label data-i18n="auth.prenom">Prénom</label>
-              <input type="text" id="reg-prenom" placeholder="Amina" data-i18n-placeholder="auth.prenom_placeholder" required />
+              <label data-i18n="auth.prenom">Prénom *</label>
+              <input type="text" id="reg-prenom" placeholder="Amina" data-i18n-placeholder="auth.prenom_placeholder" required minlength="2" />
             </div>
             <div class="form-group">
-              <label data-i18n="auth.nom">Nom</label>
-              <input type="text" id="reg-nom" placeholder="Benamara" data-i18n-placeholder="auth.nom_placeholder" required />
+              <label data-i18n="auth.nom">Nom *</label>
+              <input type="text" id="reg-nom" placeholder="Benamara" data-i18n-placeholder="auth.nom_placeholder" required minlength="2" />
             </div>
           </div>
           <div class="form-group">
-            <label data-i18n="auth.telephone">Téléphone</label>
-            <input type="tel" id="reg-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
+            <label data-i18n="auth.email">Email *</label>
+            <input type="email" id="reg-email" placeholder="exemple@gmail.com" data-i18n-placeholder="auth.email_placeholder" required />
+            <p style="font-size:11px;color:var(--muted);margin-top:2px;" data-i18n="auth.email_hint">Pour recevoir les confirmations et le suivi de vos signalements.</p>
           </div>
           <div class="form-group">
-            <label data-i18n="auth.mdp">Mot de passe</label>
-            <input type="password" id="reg-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
+            <label data-i18n="auth.telephone">Téléphone *</label>
+            <input type="tel" id="reg-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required pattern="0[0-9]{8,9}" />
           </div>
           <div class="form-group">
-            <label><span data-i18n="auth.email">Email</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnel</span>)</span></label>
-            <input type="email" id="reg-email" placeholder="exemple@gmail.com" data-i18n-placeholder="auth.email_placeholder" />
+            <label data-i18n="auth.mdp">Mot de passe *</label>
+            <input type="password" id="reg-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required minlength="6" />
+            <p style="font-size:11px;color:var(--muted);margin-top:2px;" data-i18n="auth.mdp_hint">Minimum 6 caractères.</p>
           </div>
           <div class="form-group">
-            <label data-i18n="auth.commune">Commune</label>
-            <select id="reg-commune">
+            <label data-i18n="auth.commune">Quartier / Commune *</label>
+            <select id="reg-commune" required>
               <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
             </select>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="display:flex;align-items:start;gap:8px;cursor:pointer;font-size:12px;color:var(--gray-600);">
+              <input type="checkbox" id="reg-cgu" required style="margin-top:2px;flex-shrink:0;" />
+              <span data-i18n="auth.cgu_label">J'accepte les conditions d'utilisation et la politique de confidentialité d'ALGERNA.</span>
+            </label>
           </div>
           <button type="submit" class="btn btn-primary" id="reg-btn" style="width:100%;">
             <span id="reg-btn-text" data-i18n="auth.creer_compte">Créer mon compte</span>
             <span id="reg-btn-spinner" class="spinner hidden"></span>
           </button>
+          <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;" data-i18n="auth.deja_compte">Vous avez déjà un compte ? Connectez-vous ci-dessus.</p>
         </form>
       </div>
     </div>
@@ -3019,12 +3028,24 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
   hideError('auth-error');
+
+  // Validation front
+  if (!document.getElementById('reg-cgu').checked) {
+    showError('auth-error', t('auth.cgu_requis'));
+    return;
+  }
+  const email = document.getElementById('reg-email').value.trim();
+  if (!email) {
+    showError('auth-error', t('auth.email_requis'));
+    return;
+  }
+
   const body = {
     telephone: document.getElementById('reg-tel').value.trim(),
     motDePasse: document.getElementById('reg-mdp').value,
     nom: document.getElementById('reg-nom').value.trim(),
     prenom: document.getElementById('reg-prenom').value.trim(),
-    email: document.getElementById('reg-email').value.trim() || undefined,
+    email: email,
     communeId: document.getElementById('reg-commune').value ? Number(document.getElementById('reg-commune').value) : undefined
   };
   setLoading('reg-btn', 'reg-btn-text', 'reg-btn-spinner', true);
