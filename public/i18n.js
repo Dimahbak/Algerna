@@ -1442,6 +1442,11 @@ function applyTranslations() {
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem(LANG_KEY, lang);
+  // Refresh Saksini si ouvert (pour suivre la langue active)
+  if (typeof saksiniInit === 'function') {
+    const w = document.getElementById('saksini-widget');
+    if (w && !w.classList.contains('hidden')) saksiniInit();
+  }
 
   // Direction RTL / LTR
   const html = document.documentElement;
