@@ -1555,6 +1555,23 @@
     </div>
   </nav>
 
+  <!-- Bandeau communiqués officiels -->
+  <div id="bandeau-communiques" class="hidden" style="background:#0B3C5D;color:white;overflow:hidden;position:relative;height:36px;font-size:13px;font-family:Poppins,sans-serif;">
+    <div id="bandeau-ticker" style="display:flex;align-items:center;height:100%;white-space:nowrap;animation:ticker 30s linear infinite;padding-left:100%;">
+    </div>
+  </div>
+  <style>
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    .bandeau-item { display:inline-flex;align-items:center;gap:6px;padding:0 40px; }
+    .bandeau-urgent { color:#fbbf24;font-weight:700; }
+    .bandeau-important { color:#60a5fa; }
+    .bandeau-info { color:rgba(255,255,255,0.9); }
+    .bandeau-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+    .bandeau-dot-urgent { background:#fbbf24; }
+    .bandeau-dot-important { background:#60a5fa; }
+    .bandeau-dot-info { background:rgba(255,255,255,0.5); }
+  </style>
+
   <div class="app-body">
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
@@ -3185,6 +3202,8 @@ async function initApp() {
   showView('home');
   loadHomePoints();
   applyTranslations();
+  // Charger les communiqués officiels
+  loadCommuniques();
   // Montrer Saksini après connexion
   const fab = document.getElementById('saksini-fab');
   if (fab) fab.style.display = 'flex';
@@ -5018,6 +5037,29 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── BANDEAU COMMUNIQUÉS OFFICIELS ───────────────────────────
+async function loadCommuniques() {
+  try {
+    const data = await safeFetchJSON('/api/infos/communiques');
+    if (!data.length) return;
+    const bandeau = document.getElementById('bandeau-communiques');
+    const ticker = document.getElementById('bandeau-ticker');
+    const icons = { urgent:'🔴', important:'🔵', info:'📢' };
+    ticker.innerHTML = data.map(c => {
+      const cls = 'bandeau-' + c.niveau;
+      const dot = 'bandeau-dot bandeau-dot-' + c.niveau;
+      return '<span class="bandeau-item ' + cls + '"><span class="' + dot + '"></span>' +
+        (icons[c.niveau]||'📢') + ' ' + escHtml(c.titre) + ' — ' + escHtml(c.message) + '</span>';
+    }).join('') + data.map(c => {
+      const cls = 'bandeau-' + c.niveau;
+      const dot = 'bandeau-dot bandeau-dot-' + c.niveau;
+      return '<span class="bandeau-item ' + cls + '"><span class="' + dot + '"></span>' +
+        (icons[c.niveau]||'📢') + ' ' + escHtml(c.titre) + ' — ' + escHtml(c.message) + '</span>';
+    }).join('');
+    bandeau.classList.remove('hidden');
+  } catch(e) { /* silencieux si pas de communiqués */ }
 }
 
 // ─── INFOS UTILES ────────────────────────────────────────────
