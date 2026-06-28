@@ -6392,11 +6392,22 @@ function saksiniAsk(q) {
     saksiniAddMsg('bot', msg);
     // Ajouter bouton de création
     const msgs = document.getElementById('saksini-msgs');
-    msgs.insertAdjacentHTML('beforeend',
-      `<div style="display:flex;gap:6px;margin-top:4px;">
-        <button class="btn btn-sm btn-primary" onclick="saksiniCreateSignalement(${deduction.catId},'${escHtml(deduction.famille)}')">${lang === 'ar' ? 'نعم، أنشئ' : 'Oui, créer'}</button>
-        <button class="btn btn-sm btn-outline" onclick="saksiniAddMsg('bot','${lang === 'ar' ? 'حسنا، اسأل سؤالا آخر.' : 'D\\'accord, posez une autre question.'}')">${lang === 'ar' ? 'لا' : 'Non'}</button>
-      </div>`);
+    const btnOui = lang === 'ar' ? 'نعم، أنشئ' : 'Oui, créer';
+    const btnNon = lang === 'ar' ? 'لا' : 'Non';
+    const dismissMsg = lang === 'ar' ? 'حسنا، اسأل سؤالا آخر.' : 'Posez une autre question.';
+    const btnDiv = document.createElement('div');
+    btnDiv.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
+    const b1 = document.createElement('button');
+    b1.className = 'btn btn-sm btn-primary';
+    b1.textContent = btnOui;
+    b1.onclick = function() { saksiniCreateSignalement(deduction.catId, deduction.famille); };
+    const b2 = document.createElement('button');
+    b2.className = 'btn btn-sm btn-outline';
+    b2.textContent = btnNon;
+    b2.onclick = function() { saksiniAddMsg('bot', dismissMsg); };
+    btnDiv.appendChild(b1);
+    btnDiv.appendChild(b2);
+    msgs.appendChild(btnDiv);
     msgs.scrollTop = msgs.scrollHeight;
     saksiniSaveHist(q, msg);
     document.getElementById('saksini-input').value = '';
