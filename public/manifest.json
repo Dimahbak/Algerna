@@ -15,15 +15,15 @@
   ],
   "icons": [
     {
-      "src": "/assets/logo/algerna-appicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/assets/logo/algerna_icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/assets/logo/algerna-appicon.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
+      "src": "/assets/logo/algerna_icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
