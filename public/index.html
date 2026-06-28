@@ -3160,6 +3160,9 @@ async function initApp() {
   showView('home');
   loadHomePoints();
   applyTranslations();
+  // Montrer Saksini après connexion
+  const fab = document.getElementById('saksini-fab');
+  if (fab) fab.style.display = 'flex';
 }
 
 // ─── COMMUNES ─────────────────────────────────────────────
@@ -6526,7 +6529,7 @@ function saksiniToggle() {
 
 <!-- SAKSINI CHATBOT WIDGET -->
 <style>
-#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:56px;height:56px;border-radius:50%;background:#0B3C5D;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(11,60,93,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
+#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:56px;height:56px;border-radius:50%;background:#0B3C5D;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(11,60,93,.35);display:none;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
 #saksini-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(11,60,93,.45);}
 #saksini-fab svg{width:26px;height:26px;}
 #saksini-widget{position:fixed;bottom:150px;right:20px;z-index:9999;width:340px;max-height:480px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden;}
