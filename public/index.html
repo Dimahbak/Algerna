@@ -6245,6 +6245,146 @@ async function changerEtatOperateur(domaine, id, etat) {
   else { showToast(t('toast.erreur_maj'),'error'); }
 }
 
+// ═══════════════════════════════════════════════════════════
+// SAKSINI — Chatbot FAQ 37 Q&R
+// ═══════════════════════════════════════════════════════════
+const SAKSINI_FAQ = [
+  {k:['signaler','problème','signalement','comment'],fr:"Cliquez sur « Je signale » dans le menu. Choisissez la famille (eau, déchets, voirie…), placez le point sur la carte, ajoutez une photo et envoyez.",ar:"اضغط على « أبلّغ » في القائمة. اختر العائلة (مياه، نفايات، طرق…)، ضع النقطة على الخريطة، أضف صورة وأرسل."},
+  {k:['rdv','rendez-vous','mairie','démarche','créneau'],fr:"Allez dans « Mes démarches », sélectionnez commune + service, choisissez un jour puis un créneau horaire.",ar:"اذهب إلى « إجراءاتي »، اختر البلدية + الخدمة، اختر يوما ثم فترة زمنية."},
+  {k:['suivi','état','résolu','en cours','traitement'],fr:"Consultez « Je suis » pour voir l'état de vos signalements et RDV. Vous recevrez un email à chaque changement d'état.",ar:"راجع « أتابع » لمعرفة حالة بلاغاتك ومواعيدك. ستتلقى بريدا إلكترونيا عند كل تغيير."},
+  {k:['points','impact','niveau','badge','citoyenneté'],fr:"Chaque signalement rapporte des points. La validation après résolution rapporte +20. Consultez « Mon impact » pour voir votre niveau et vos badges.",ar:"كل بلاغ يمنحك نقاطا. التحقق بعد الحل يمنح +20. راجع « تأثيري » لمعرفة مستواك وشاراتك."},
+  {k:['carte','quartier','houma','iqep','parc'],fr:"« Ma Houma » affiche la carte des signalements, les scores IQEP des parcs et les zones de stationnement de votre quartier.",ar:"« حومتي » تعرض خريطة البلاغات، تقييمات IQEP للحدائق ومناطق الركن في حيك."},
+  {k:['inscription','compte','créer','inscrire','register'],fr:"Cliquez sur « Inscription » sur la page de connexion. Remplissez prénom, nom, email, téléphone, commune et mot de passe.",ar:"اضغط على « تسجيل » في صفحة الدخول. املأ الاسم، البريد، الهاتف، البلدية وكلمة المرور."},
+  {k:['connexion','login','mot de passe','oublié'],fr:"Entrez votre numéro de téléphone et mot de passe. Si vous l'avez oublié, contactez support@algerna.dz.",ar:"أدخل رقم هاتفك وكلمة المرور. إذا نسيتها، تواصل مع support@algerna.dz."},
+  {k:['eau','fuite','coupure','seaal','pression'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
+  {k:['déchet','poubelle','benne','dépôt','ordure','netcom'],fr:"Pour les déchets (dépôt sauvage, benne pleine…), utilisez « Je signale » → famille Déchets. Routage automatique vers NETCOM ou EXTRANET.",ar:"للنفايات (رمي عشوائي، حاوية ممتلئة…)، استخدم « أبلّغ » → عائلة النفايات. توجيه تلقائي نحو NETCOM أو EXTRANET."},
+  {k:['voirie','route','trottoir','nid de poule','chaussée'],fr:"Problème de voirie ? « Je signale » → Voirie. Transmis à l'EGCTU (circulation et transports urbains).",ar:"مشكلة طرق؟ « أبلّغ » → الطرق. يُحال إلى EGCTU (الدورة المرورية والنقل الحضري)."},
+  {k:['éclairage','lampadaire','lumière','erma'],fr:"Lampadaire en panne ? « Je signale » → Éclairage. Transmis à l'ERMA (éclairage public).",ar:"عمود إنارة معطل؟ « أبلّغ » → الإنارة. يُحال إلى ERMA (الإنارة العمومية)."},
+  {k:['espace vert','arbre','parc','jardin','edeval'],fr:"Arbre dangereux ou parc dégradé ? « Je signale » → Espaces verts. Transmis à l'EDEVAL.",ar:"شجرة خطيرة أو حديقة متدهورة؟ « أبلّغ » → المساحات الخضراء. يُحال إلى EDEVAL."},
+  {k:['stationnement','parking','gênant','place'],fr:"Stationnement gênant ? « Je signale » → Stationnement. Géré par l'EPIC Parkings.",ar:"ركن مزعج؟ « أبلّغ » → المواقف. يديره EPIC المواقف."},
+  {k:['epic','service','opérateur','netcom','extranet'],fr:"Les EPIC sont les établissements publics de la Wilaya d'Alger (NETCOM, EXTRANET, EDEVAL, ERMA, EGCTU, CET, EPIC Parkings). Votre signalement est automatiquement routé vers le bon EPIC.",ar:"الـ EPIC هي المؤسسات العمومية لولاية الجزائر. يُوجَّه بلاغك تلقائيا نحو الـ EPIC المناسب."},
+  {k:['permis','construire','urbanisme','foncier','livret'],fr:"Pour le permis de construire ou le livret foncier, allez dans « Mes démarches » → choisissez la démarche Urbanisme. Délai réel : 2 à 12 mois.",ar:"لرخصة البناء أو الدفتر العقاري، اذهب إلى « إجراءاتي » → اختر إجراء التعمير. الأجل الفعلي: 2 إلى 12 شهرا."},
+  {k:['aadl','logement','recours','social'],fr:"Suivi AADL ou recours logement social : « Mes démarches » → Logement. Apportez votre récépissé de dépôt.",ar:"متابعة AADL أو طعن سكن اجتماعي: « إجراءاتي » → السكن. أحضر وصل الإيداع."},
+  {k:['certificat','bonne vie','mœurs','résidence'],fr:"Certificats communaux (bonne vie, résidence…) : « Mes démarches » → Certificats. Délai : immédiat à 48h.",ar:"الشهادات البلدية (حسن السيرة، الإقامة…): « إجراءاتي » → الشهادات. الأجل: فوري إلى 48 ساعة."},
+  {k:['biométrique','enrôlement','cni','passeport','empreinte'],fr:"Enrôlement biométrique (CNI ou passeport) : « Mes démarches » → Biométrique. Munissez-vous de l'extrait S12 et des photos.",ar:"التسجيل البيومتري (بطاقة أو جواز): « إجراءاتي » → البيومتري. أحضر مستخرج S12 والصور."},
+  {k:['prioritaire','handicap','enceinte','âgé','pmr'],fr:"Lors de la réservation d'un créneau, vous pouvez déclarer un accès prioritaire (personne âgée, handicap, femme enceinte).",ar:"عند حجز فترة زمنية، يمكنك التصريح بأولوية الوصول (شخص مسن، إعاقة، امرأة حامل)."},
+  {k:['évaluer','évaluation','satisfaction','noter'],fr:"Après un RDV traité, un bouton « Évaluer » apparaît dans vos RDV. Notez de 1 à 5 — votre avis alimente l'ICUA.",ar:"بعد موعد مُعالَج، يظهر زر « تقييم » في مواعيدك. قيّم من 1 إلى 5 — رأيك يغذي مؤشر ICUA."},
+  {k:['icua','indice','qualité','ville','score'],fr:"L'ICUA est l'Indice de Citoyenneté Urbaine Active. Il mesure la qualité de vie : propreté, réactivité, espaces verts, fluidité, engagement.",ar:"ICUA هو مؤشر المواطنة الحضرية النشطة. يقيس جودة الحياة: نظافة، استجابة، مساحات خضراء، سيولة، مشاركة."},
+  {k:['famille a','dématérialisé','portail','national','en ligne'],fr:"Les démarches Famille A (extrait de naissance, résidence…) sont dématérialisées. ALGERNA vous redirige vers le portail national.",ar:"الإجراءات فئة أ (مستخرج ميلاد، إقامة…) مُرقمنة. ALGERNA يوجهك نحو البوابة الوطنية."},
+  {k:['famille b','présentiel','physique','rdv'],fr:"Les démarches Famille B nécessitent une présence physique. Réservez un créneau via « Mes démarches ».",ar:"الإجراءات فئة ب تتطلب حضورا شخصيا. احجز فترة زمنية عبر « إجراءاتي »."},
+  {k:['photo','preuve','image','pièce jointe'],fr:"Ajoutez une photo à votre signalement — elle aide les agents à identifier et prioriser le problème. +5 points bonus.",ar:"أضف صورة لبلاغك — تساعد الأعوان في تحديد المشكلة وترتيب الأولويات. +5 نقاط إضافية."},
+  {k:['danger','urgence','grave','immédiat','blessure'],fr:"Si le problème est dangereux, sélectionnez « Danger immédiat » dans le formulaire. Il sera traité en priorité.",ar:"إذا كانت المشكلة خطيرة، اختر « خطر فوري » في الاستمارة. سيُعالَج بأولوية."},
+  {k:['doublon','même','déjà signalé','confirmer','proche'],fr:"Si un signalement existe déjà à proximité, un bandeau vous propose de confirmer (« Même problème ») au lieu de créer un doublon.",ar:"إذا وُجد بلاغ قريب، يقترح عليك شريط التأكيد (« نفس المشكلة ») بدل إنشاء نسخة."},
+  {k:['notification','email','sms','alerte'],fr:"Vous recevez un email à la création et à la résolution de votre signalement. Les SMS arrivent bientôt.",ar:"تتلقى بريدا عند إنشاء وحل بلاغك. الرسائل القصيرة قادمة قريبا."},
+  {k:['classement','quartier','commune','rang'],fr:"Le classement est par quartier (commune), jamais par individu. Votre commune gagne des points collectifs.",ar:"التصنيف حسب الحي (البلدية)، وليس حسب الأفراد. بلديتك تكسب نقاطا جماعية."},
+  {k:['badge','premier','sentinelle','ambassadeur','protecteur'],fr:"5 badges : Premier signalement, 10 résolus, Sentinelle quartier, Protecteur des parcs, Ambassadeur de l'eau. Attribués automatiquement.",ar:"5 شارات: أول بلاغ، 10 محلولة، حارس الحي، حامي الحدائق، سفير المياه. تُمنح تلقائيا."},
+  {k:['niveau','contributeur','référent','progression'],fr:"5 niveaux : Citoyen → Contributeur → Sentinelle → Ambassadeur → Référent de quartier. Basés sur les points ET la pertinence.",ar:"5 مستويات: مواطن → مساهم → حارس → سفير → مرجع الحي. بناءً على النقاط والفعالية."},
+  {k:['avantage','diplôme','médaille','inauguration'],fr:"Les niveaux débloquent des avantages symboliques : diplôme citoyen, invitation inauguration, médaille, rencontre institutionnelle.",ar:"المستويات تفتح مزايا رمزية: شهادة مواطنة، دعوة تدشين، ميدالية، لقاء مؤسساتي."},
+  {k:['algerna','application','plateforme','c\'est quoi'],fr:"ALGERNA est la plateforme citoyenne de la Wilaya d'Alger. Elle permet de signaler des problèmes, prendre des RDV, et suivre l'amélioration de votre quartier.",ar:"ALGERNA هي المنصة المواطنية لولاية الجزائر. تتيح الإبلاغ عن المشاكل، حجز المواعيد، ومتابعة تحسين حيك."},
+  {k:['sécurité','données','confidentialité','vie privée'],fr:"Vos données sont stockées sur des serveurs sécurisés. Aucun score individuel n'est publié. Votre profil est personnel.",ar:"بياناتك مخزنة على خوادم آمنة. لا يُنشر أي تقييم فردي. ملفك شخصي."},
+  {k:['langue','arabe','français','rtl'],fr:"Cliquez sur FR/AR en haut pour changer de langue. L'interface s'adapte automatiquement (RTL pour l'arabe).",ar:"اضغط على FR/AR في الأعلى لتغيير اللغة. الواجهة تتكيف تلقائيا."},
+  {k:['hors ligne','offline','connexion','réseau'],fr:"ALGERNA fonctionne partiellement hors ligne grâce au mode PWA. Les données se synchronisent au retour du réseau.",ar:"ALGERNA يعمل جزئيا بدون إنترنت بفضل وضع PWA. البيانات تتزامن عند عودة الشبكة."},
+  {k:['installer','pwa','application','mobile','téléphone'],fr:"Sur mobile, cliquez « Installer » dans la bannière pour ajouter ALGERNA à votre écran d'accueil comme une application.",ar:"على الهاتف، اضغط « تثبيت » في الشريط لإضافة ALGERNA إلى شاشتك الرئيسية كتطبيق."},
+  {k:['contact','support','aide','problème technique'],fr:"Pour l'aide technique : support@algerna.dz. Pour les urgences : contactez votre APC directement.",ar:"للمساعدة التقنية: support@algerna.dz. للطوارئ: تواصل مع بلديتك مباشرة."},
+];
+
+function saksiniSearch(q) {
+  const words = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/);
+  let best = null, bestScore = 0;
+  for (const faq of SAKSINI_FAQ) {
+    let score = 0;
+    for (const w of words) {
+      for (const k of faq.k) {
+        if (k.includes(w) || w.includes(k)) score += 2;
+        else if (k.startsWith(w.substring(0,3)) && w.length >= 3) score += 1;
+      }
+    }
+    if (score > bestScore) { bestScore = score; best = faq; }
+  }
+  return best && bestScore >= 2 ? best : null;
+}
+
+function saksiniInit() {
+  // Charger historique
+  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
+  const msgs = document.getElementById('saksini-msgs');
+  msgs.innerHTML = '';
+  // Message de bienvenue
+  saksiniAddMsg('bot', t('saksini.bienvenue'));
+  // Historique
+  hist.forEach(h => { saksiniAddMsg('user', h.q); saksiniAddMsg('bot', h.a); });
+}
+
+function saksiniAddMsg(role, text) {
+  const msgs = document.getElementById('saksini-msgs');
+  const cls = role === 'user' ? 'sak-msg-user' : 'sak-msg-bot';
+  msgs.insertAdjacentHTML('beforeend', `<div class="${cls}">${escHtml(text)}</div>`);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function saksiniAsk(q) {
+  if (!q || !q.trim()) return;
+  saksiniAddMsg('user', q);
+  const lang = currentLang || 'fr';
+  const match = saksiniSearch(q);
+  const answer = match ? (lang === 'ar' ? match.ar : match.fr) : t('saksini.pas_de_reponse');
+  saksiniAddMsg('bot', answer);
+  // Sauvegarder (max 10)
+  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
+  hist.push({ q, a: answer });
+  if (hist.length > 10) hist.shift();
+  localStorage.setItem('saksini_hist', JSON.stringify(hist));
+  document.getElementById('saksini-input').value = '';
+}
+
+function saksiniToggle() {
+  const w = document.getElementById('saksini-widget');
+  const visible = !w.classList.contains('hidden');
+  w.classList.toggle('hidden');
+  if (!visible) saksiniInit();
+}
+
 </script>
+
+<!-- SAKSINI CHATBOT WIDGET -->
+<style>
+#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:52px;height:52px;border-radius:50%;background:var(--navy);color:white;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .2s;}
+#saksini-fab:hover{transform:scale(1.1);}
+#saksini-widget{position:fixed;bottom:150px;right:20px;z-index:9999;width:340px;max-height:480px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden;}
+@media(max-width:480px){#saksini-widget{right:8px;left:8px;width:auto;bottom:100px;max-height:70vh;}}
+.sak-header{background:var(--navy);color:white;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.sak-header h4{margin:0;font-size:14px;font-weight:700;}
+.sak-close{background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:0 4px;}
+#saksini-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;max-height:300px;}
+.sak-msg-bot{background:var(--gray-100);padding:8px 12px;border-radius:12px 12px 12px 2px;font-size:13px;color:var(--gray-700);max-width:90%;align-self:flex-start;line-height:1.4;}
+.sak-msg-user{background:var(--navy);color:white;padding:8px 12px;border-radius:12px 12px 2px 12px;font-size:13px;max-width:90%;align-self:flex-end;line-height:1.4;}
+.sak-pops{display:flex;flex-wrap:wrap;gap:4px;padding:4px 12px 8px;}
+.sak-pop{font-size:11px;padding:4px 10px;border-radius:14px;border:1px solid var(--navy);color:var(--navy);background:white;cursor:pointer;transition:all .15s;}
+.sak-pop:hover{background:var(--navy);color:white;}
+.sak-input-row{display:flex;gap:6px;padding:8px 12px 12px;border-top:1px solid var(--gray-200);}
+.sak-input-row input{flex:1;padding:8px 12px;border:1px solid var(--gray-300);border-radius:20px;font-size:13px;font-family:inherit;outline:none;}
+.sak-input-row input:focus{border-color:var(--navy);}
+.sak-input-row button{background:var(--navy);color:white;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:16px;flex-shrink:0;}
+[dir="rtl"] .sak-msg-bot{border-radius:12px 12px 2px 12px;}
+[dir="rtl"] .sak-msg-user{border-radius:12px 12px 12px 2px;}
+</style>
+<button id="saksini-fab" onclick="saksiniToggle()" title="Saksini">💬</button>
+<div id="saksini-widget" class="hidden">
+  <div class="sak-header">
+    <h4 data-i18n="saksini.titre">Saksini — Assistant</h4>
+    <button class="sak-close" onclick="saksiniToggle()">✕</button>
+  </div>
+  <div id="saksini-msgs"></div>
+  <div class="sak-pops">
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop1'))" data-i18n="saksini.pop1">Comment signaler ?</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop2'))" data-i18n="saksini.pop2">Prendre un RDV</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop3'))" data-i18n="saksini.pop3">Mes points</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop4'))" data-i18n="saksini.pop4">Ma Houma</button>
+  </div>
+  <div class="sak-input-row">
+    <input type="text" id="saksini-input" data-i18n-placeholder="saksini.placeholder" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')saksiniAsk(this.value)" />
+    <button onclick="saksiniAsk(document.getElementById('saksini-input').value)">➤</button>
+  </div>
+</div>
 </body>
 </html>

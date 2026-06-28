@@ -675,6 +675,16 @@ const I18N = {
     // ─── SÉLECTEUR LANGUE ───
     "lang.fr": "FR",
     "lang.ar": "AR",
+
+    // ─── SAKSINI CHATBOT ─── // À RELIRE
+    "saksini.titre": "سقسيني — المساعد",
+    "saksini.placeholder": "اطرح سؤالك…",
+    "saksini.bienvenue": "مرحبا! أنا سقسيني، مساعدك في ALGERNA. كيف يمكنني مساعدتك؟",
+    "saksini.pas_de_reponse": "لم أجد إجابة. تواصل معنا على support@algerna.dz أو أعد المحاولة بكلمات أخرى.",
+    "saksini.pop1": "كيف أبلّغ؟",
+    "saksini.pop2": "حجز موعد",
+    "saksini.pop3": "نقاطي",
+    "saksini.pop4": "حومتي",
   },
 
   ar: {
@@ -1341,6 +1351,16 @@ const I18N = {
     // ─── SÉLECTEUR LANGUE ─── // À RELIRE
     "lang.fr": "FR",
     "lang.ar": "AR",
+
+    // ─── SAKSINI CHATBOT ───
+    "saksini.titre": "Saksini — Assistant",
+    "saksini.placeholder": "Posez votre question…",
+    "saksini.bienvenue": "Bienvenue ! Je suis Saksini, votre assistant ALGERNA. Comment puis-je vous aider ?",
+    "saksini.pas_de_reponse": "Je n'ai pas trouvé de réponse. Contactez-nous à support@algerna.dz ou réessayez avec d'autres mots.",
+    "saksini.pop1": "Comment signaler ?",
+    "saksini.pop2": "Prendre un RDV",
+    "saksini.pop3": "Mes points",
+    "saksini.pop4": "Ma Houma",
   }
 };
 
