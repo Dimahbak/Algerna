@@ -64,3 +64,18 @@ router.get('/me', authenticate, asyncH(async (req, res) => {
 }));
 
 module.exports = router;
+
+// PATCH /api/auth/preferences — mise à jour préférences citoyen
+router.patch('/preferences', authenticate, asyncH(async (req, res) => {
+  const fields = ['langue','notifications_push','notifications_sms','notifications_email',
+                  'consentement_wilaya','consentement_cgu','consentement_geo','quartier','adresse'];
+  const sets = []; const vals = []; let i = 1;
+  for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
+  if (!sets.length) return res.json({ ok: true });
+  vals.push(req.user.id);
+  const { rows } = await query(`UPDATE utilisateur SET ${sets.join(',')} WHERE id=$${i} RETURNING
+    id,telephone,nom,prenom,email,role,commune_id,points,langue,
+    notifications_push,notifications_sms,notifications_email,
+    consentement_wilaya,consentement_cgu,consentement_geo,quartier,adresse`, vals);
+  res.json(rows[0]);
+}));

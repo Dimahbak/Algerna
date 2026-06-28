@@ -2301,6 +2301,38 @@
             <span>Chargement...</span>
           </div>
         </div>
+
+        <!-- Préférences et consentements -->
+        <div class="section-title" style="margin-top:24px;">
+          <span style="font-size:18px;">⚙️</span>
+          <span data-i18n="profil.preferences">Préférences</span>
+        </div>
+        <div class="card" id="profil-preferences" style="padding:16px;">
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="pref-push" onchange="savePref('notifications_push',this.checked)">
+              <span data-i18n="profil.notif_push">Notifications push</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="pref-sms" onchange="savePref('notifications_sms',this.checked)">
+              <span data-i18n="profil.notif_sms">Notifications SMS</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="pref-email" onchange="savePref('notifications_email',this.checked)">
+              <span data-i18n="profil.notif_email">Notifications email</span>
+            </label>
+            <div style="border-top:1px solid var(--gray-200);padding-top:10px;margin-top:4px;">
+              <label style="display:flex;align-items:start;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="pref-wilaya" onchange="savePref('consentement_wilaya',this.checked)" style="margin-top:3px;">
+                <span data-i18n="profil.consentement_wilaya" style="line-height:1.4;">J'accepte de recevoir les informations officielles de la Wilaya par notification push, SMS ou email selon mes préférences.</span>
+              </label>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="pref-geo" onchange="savePref('consentement_geo',this.checked)">
+              <span data-i18n="profil.consentement_geo">Autoriser la géolocalisation</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <!-- ══ DASHBOARD VIEW ══ -->
@@ -3963,6 +3995,7 @@ async function initSentinelle() {
   loadBadges();
   loadAvantages();
   loadLeaderboard();
+  loadPreferences();
 }
 
 async function loadAvantages() {
@@ -5037,6 +5070,35 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── PRÉFÉRENCES PROFIL ──────────────────────────────────────
+async function loadPreferences() {
+  try {
+    const u = await safeFetchJSON('/api/auth/me', {}, true);
+    const checks = {
+      'pref-push': u.notifications_push,
+      'pref-sms': u.notifications_sms,
+      'pref-email': u.notifications_email,
+      'pref-wilaya': u.consentement_wilaya,
+      'pref-geo': u.consentement_geo,
+    };
+    for (const [id, val] of Object.entries(checks)) {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!val;
+    }
+  } catch(e) {}
+}
+
+async function savePref(field, value) {
+  try {
+    await apiFetch('/api/auth/preferences', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: value })
+    });
+    showToast(t('profil.pref_sauvee'));
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 // ─── BANDEAU COMMUNIQUÉS OFFICIELS ───────────────────────────
