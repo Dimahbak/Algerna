@@ -41,6 +41,8 @@ const I18N = {
     "global.inconnue": "Inconnue",
 
     // ─── AUTH ───
+    "auth.bienvenue_titre": "Bienvenue !",
+    "auth.bienvenue_sous": "Connectez-vous à votre compte",
     "auth.connexion": "Connexion",
     "auth.inscription": "Inscription",
     "auth.telephone": "Numéro de téléphone",
@@ -726,6 +728,8 @@ const I18N = {
     "global.inconnue": "غير معروف", // À RELIRE
 
     // ─── AUTH ─── // À RELIRE
+    "auth.bienvenue_titre": "!أهلاً وسهلاً",
+    "auth.bienvenue_sous": "سجّل الدخول إلى حسابك",
     "auth.connexion": "تسجيل الدخول",
     "auth.inscription": "إنشاء حساب",
     "auth.telephone": "رقم الهاتف",
