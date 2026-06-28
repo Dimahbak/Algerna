@@ -45,6 +45,8 @@ const moduleMap = {
   cap:         require('./modules/cap'),
   civipark:    require('./modules/civipark'),
   infos:       require('./modules/infos'),
+  legal:       require('./modules/legal'),
+  notifications: require('./modules/notifications'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)

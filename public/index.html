@@ -1544,6 +1544,10 @@
         <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
         <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">AR</button>
       </div>
+      <button onclick="showView('notifications')" style="background:none;border:none;cursor:pointer;position:relative;padding:4px 8px;" title="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="notif-badge" style="display:none;position:absolute;top:0;right:2px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;"></span>
+      </button>
       <div class="user-badge">
         <div class="user-avatar" id="nav-avatar">?</div>
         <span id="nav-username" data-i18n="nav.utilisateur">Utilisateur</span>
@@ -2351,6 +2355,23 @@
             </label>
           </div>
         </div>
+
+        <!-- Données et conformité -->
+        <div class="section-title" style="margin-top:24px;">
+          <span style="font-size:18px;">📋</span>
+          <span data-i18n="profil.conformite">Données et conformité</span>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+            <a href="#" onclick="showLegalPage('confidentialite');return false;" style="color:var(--navy);text-decoration:none;" data-i18n="legal.confidentialite">📄 Politique de confidentialité</a>
+            <a href="#" onclick="showLegalPage('cgu');return false;" style="color:var(--navy);text-decoration:none;" data-i18n="legal.cgu">📄 Conditions d'utilisation</a>
+            <a href="#" onclick="showLegalPage('mentions');return false;" style="color:var(--navy);text-decoration:none;" data-i18n="legal.mentions">📄 Mentions légales</a>
+            <div style="border-top:1px solid var(--gray-200);padding-top:10px;margin-top:4px;">
+              <button class="btn btn-sm btn-outline" onclick="exportMyData()" style="width:100%;margin-bottom:8px;" data-i18n="legal.exporter">📥 Exporter mes données</button>
+              <button class="btn btn-sm btn-outline" onclick="requestDelete()" style="width:100%;color:var(--red);border-color:var(--red);" data-i18n="legal.supprimer">🗑️ Demander la suppression de mon compte</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ══ DASHBOARD VIEW ══ -->
@@ -2648,6 +2669,28 @@
           <button class="btn btn-sm btn-primary" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
         <div id="parkzones-list"></div>
+      </div>
+
+      <!-- ══ MES NOTIFICATIONS ══ -->
+      <div id="view-notifications" class="view">
+        <div class="page-header">
+          <h2 data-i18n="notif.titre">Mes notifications</h2>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-sm btn-outline" onclick="loadNotifications()" data-i18n="infos.tous">Toutes</button>
+            <button class="btn btn-sm btn-outline" onclick="loadNotifications('signalement')">Signalements</button>
+            <button class="btn btn-sm btn-outline" onclick="loadNotifications('rdv')">RDV</button>
+            <button class="btn btn-sm btn-outline" onclick="markAllRead()" data-i18n="notif.tout_lu">Tout marquer lu</button>
+          </div>
+        </div>
+        <div id="notif-list"></div>
+      </div>
+
+      <!-- ══ PAGES LÉGALES ══ -->
+      <div id="view-legal" class="view">
+        <div class="page-header">
+          <h2 id="legal-page-title">Mentions légales</h2>
+        </div>
+        <div class="card" style="padding:24px;" id="legal-content"></div>
       </div>
 
       <!-- ══ INFOS UTILES ══ -->
@@ -3252,8 +3295,9 @@ async function initApp() {
   showView('home');
   loadHomePoints();
   applyTranslations();
-  // Charger les communiqués officiels
+  // Charger les communiqués officiels + badge notifs
   loadCommuniques();
+  loadNotifBadge();
   // Montrer Saksini après connexion
   const fab = document.getElementById('saksini-fab');
   if (fab) fab.style.display = 'flex';
@@ -3480,6 +3524,7 @@ function showView(name) {
   if (name === 'edeval') initEdeval();
   if (name === 'parkzones') initParkzones();
   if (name === 'infos') loadInfos();
+  if (name === 'notifications') loadNotifications();
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
@@ -5088,6 +5133,90 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────
+async function loadNotifications(type) {
+  const el = document.getElementById('notif-list');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('global.chargement') + '</div>';
+  try {
+    const url = type ? '/api/notifications?type=' + type : '/api/notifications';
+    const notifs = await safeFetchJSON(url, {}, true);
+    if (!notifs.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('notif.aucune') + '</p>'; return; }
+    el.innerHTML = notifs.map(function(n) {
+      return '<div class="card" style="margin-bottom:6px;padding:10px 14px;border-left:3px solid ' + (n.lu ? 'var(--gray-200)' : 'var(--green)') + ';opacity:' + (n.lu ? '0.7' : '1') + ';" onclick="markNotifRead(' + n.id + ',this)">' +
+        '<div style="font-weight:' + (n.lu ? '400' : '600') + ';font-size:13px;color:var(--navy);">' + escHtml(n.titre) + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);">' + escHtml(n.message) + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + fmtDateTime(n.cree_le) + '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function loadNotifBadge() {
+  try {
+    const d = await safeFetchJSON('/api/notifications/count', {}, true);
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      if (d.unread > 0) { badge.textContent = d.unread; badge.style.display = ''; }
+      else { badge.style.display = 'none'; }
+    }
+  } catch(e) {}
+}
+
+async function markNotifRead(id, el) {
+  try {
+    await apiFetch('/api/notifications/' + id + '/lu', { method: 'PATCH', headers: authHeaders() });
+    if (el) { el.style.borderLeftColor = 'var(--gray-200)'; el.style.opacity = '0.7'; }
+    loadNotifBadge();
+  } catch(e) {}
+}
+
+async function markAllRead() {
+  try {
+    await apiFetch('/api/notifications/lire-tout', { method: 'PATCH', headers: authHeaders() });
+    loadNotifications();
+    loadNotifBadge();
+  } catch(e) {}
+}
+
+// ─── PAGES LÉGALES ──────────────────────────────────────────
+const LEGAL_PAGES = {
+  confidentialite: { titre: 'Politique de confidentialité', content: 'ALGERNA (Wilaya d\'Alger) collecte et traite vos données personnelles (nom, email, téléphone, commune, signalements, RDV) dans le cadre de la plateforme citoyenne. Vos données sont stockées sur des serveurs sécurisés. Aucun score individuel n\'est publié. Vous pouvez exporter vos données ou demander leur suppression depuis votre profil. Contact DPO : dpo@algerna.dz' },
+  cgu: { titre: 'Conditions d\'utilisation', content: 'En utilisant ALGERNA, vous vous engagez à : fournir des informations exactes ; ne pas soumettre de faux signalements ; respecter les autres utilisateurs ; ne pas tenter d\'accéder à des données qui ne vous appartiennent pas. ALGERNA se réserve le droit de suspendre tout compte contrevenant. Les points et badges sont attribués selon le barème en vigueur et ne constituent pas un droit acquis.' },
+  mentions: { titre: 'Mentions légales', content: 'Éditeur : Wilaya d\'Alger — Plateforme ALGERNA. Hébergement : Pylcom. Responsable : Secrétariat Général de la Wilaya d\'Alger. Contact : support@algerna.dz — Tél : 1548. Ce service est fourni à titre gratuit aux citoyens de la Wilaya d\'Alger.' },
+};
+
+function showLegalPage(page) {
+  const data = LEGAL_PAGES[page];
+  if (!data) return;
+  document.getElementById('legal-page-title').textContent = data.titre;
+  document.getElementById('legal-content').innerHTML = '<p style="font-size:14px;line-height:1.7;color:#333;">' + escHtml(data.content) + '</p>';
+  showView('legal');
+}
+
+async function exportMyData() {
+  try {
+    const data = await safeFetchJSON('/api/legal/export', {}, true);
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'algerna_mes_donnees.json'; a.click();
+    URL.revokeObjectURL(url);
+    showToast(t('legal.export_ok'));
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+}
+
+async function requestDelete() {
+  if (!confirm(t('legal.supprimer_confirm'))) return;
+  try {
+    const res = await apiFetch('/api/legal/delete-request', {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const d = await res.json();
+    showToast(d.message || t('legal.supprimer_ok'));
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 // ─── PRÉPARER MON DOSSIER ────────────────────────────────────
@@ -6781,8 +6910,10 @@ function saksiniToggle() {
   <div class="sak-pops">
     <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop1'))" data-i18n="saksini.pop1">Comment signaler ?</button>
     <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop2'))" data-i18n="saksini.pop2">Prendre un RDV</button>
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop3'))" data-i18n="saksini.pop3">Mes points</button>
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop4'))" data-i18n="saksini.pop4">Ma Houma</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop5'))" data-i18n="saksini.pop5">Infos utiles</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop6'))" data-i18n="saksini.pop6">Préparer un dossier</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop7'))" data-i18n="saksini.pop7">Suivre un signalement</button>
+    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop8'))" data-i18n="saksini.pop8">Contacter la Wilaya</button>
   </div>
   <div class="sak-input-row">
     <input type="text" id="saksini-input" data-i18n-placeholder="saksini.placeholder" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')saksiniAsk(this.value)" />

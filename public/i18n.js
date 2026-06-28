@@ -710,6 +710,24 @@ const I18N = {
     "saksini.pop2": "Prendre un RDV",
     "saksini.pop3": "Mes points",
     "saksini.pop4": "Ma Houma",
+    "saksini.pop5": "Infos utiles",
+    "saksini.pop6": "Préparer un dossier",
+    "saksini.pop7": "Suivre un signalement",
+    "saksini.pop8": "Contacter la Wilaya",
+    // Notifications
+    "notif.titre": "Mes notifications",
+    "notif.aucune": "Aucune notification.",
+    "notif.tout_lu": "Tout marquer lu",
+    // Légal
+    "legal.confidentialite": "Politique de confidentialité",
+    "legal.cgu": "Conditions d'utilisation",
+    "legal.mentions": "Mentions légales",
+    "legal.exporter": "Exporter mes données",
+    "legal.export_ok": "Données exportées.",
+    "legal.supprimer": "Demander la suppression de mon compte",
+    "legal.supprimer_confirm": "Êtes-vous sûr ? Cette demande est irréversible.",
+    "legal.supprimer_ok": "Demande enregistrée. Vous serez contacté sous 30 jours.",
+    "profil.conformite": "Données et conformité",
   },
 
   ar: {
@@ -1411,6 +1429,22 @@ const I18N = {
     "saksini.pop2": "حجز موعد",
     "saksini.pop3": "نقاطي",
     "saksini.pop4": "حومتي",
+    "saksini.pop5": "معلومات مفيدة",
+    "saksini.pop6": "تحضير ملف",
+    "saksini.pop7": "متابعة بلاغ",
+    "saksini.pop8": "الاتصال بالولاية",
+    "notif.titre": "إشعاراتي",
+    "notif.aucune": "لا توجد إشعارات.",
+    "notif.tout_lu": "تعليم الكل كمقروء",
+    "legal.confidentialite": "سياسة الخصوصية",
+    "legal.cgu": "شروط الاستخدام",
+    "legal.mentions": "الإشعارات القانونية",
+    "legal.exporter": "تصدير بياناتي",
+    "legal.export_ok": "تم تصدير البيانات.",
+    "legal.supprimer": "طلب حذف حسابي",
+    "legal.supprimer_confirm": "هل أنت متأكد؟ هذا الطلب لا رجعة فيه.",
+    "legal.supprimer_ok": "تم تسجيل الطلب. سيتم الاتصال بك خلال 30 يوما.",
+    "profil.conformite": "البيانات والامتثال",
   }
 };
 
