@@ -76,19 +76,19 @@
     #auth-page {
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: flex-end;
-      padding: 40px 60px;
+      padding: 30px 60px;
+      padding-top: 5vh;
       background: url('/assets/bg/landing_pc.png') center/cover no-repeat;
       position: relative;
     }
     @media (max-width: 767px) {
       #auth-page {
-        background-image: url('/assets/bg/landing_mobile.png') !important;
+        background: url('/assets/bg/landing_mobile.png') center/cover no-repeat !important;
         justify-content: center;
-        padding: 20px;
-        align-items: flex-end;
-        padding-bottom: 40px;
+        align-items: center;
+        padding: 15px;
       }
     }
 
@@ -150,21 +150,21 @@
 
     /* ── AUTH CARD (specs Algerna) ── */
     .auth-card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 28px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-      width: 470px;
+      background: rgba(255,255,255,0.96);
+      border-radius: 22px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+      width: 400px;
       max-width: 100%;
       overflow: hidden;
       flex-shrink: 0;
     }
     @media (max-width: 767px) {
-      .auth-card { width: 90%; max-width: 335px; }
+      .auth-card { width: 92%; max-width: 340px; }
     }
 
     .auth-header {
       background: transparent;
-      padding: 48px 45px 0;
+      padding: 28px 35px 0;
       text-align: center;
       color: #0F2E5E;
     }
@@ -173,27 +173,27 @@
 
     .auth-header h2 {
       font-family: 'Poppins', sans-serif;
-      font-size: 36px;
+      font-size: 28px;
       font-weight: 600;
       color: #0F2E5E;
-      margin: 0 0 8px;
+      margin: 0 0 4px;
     }
     .auth-header .auth-subtitle {
       font-family: 'Poppins', sans-serif;
-      font-size: 18px;
+      font-size: 15px;
       color: #566273;
-      margin: 0 0 30px;
+      margin: 0 0 16px;
     }
     @media (max-width: 767px) {
-      .auth-header { padding: 36px 18px 0; }
-      .auth-header h2 { font-size: 30px; }
-      .auth-header .auth-subtitle { font-size: 16px; margin-bottom: 20px; }
+      .auth-header { padding: 22px 18px 0; }
+      .auth-header h2 { font-size: 24px; }
+      .auth-header .auth-subtitle { font-size: 14px; margin-bottom: 12px; }
     }
 
     .auth-tabs {
       display: flex;
       border-bottom: 2px solid #f0f0f0;
-      margin: 0 45px;
+      margin: 0 35px;
     }
     @media (max-width: 767px) { .auth-tabs { margin: 0 18px; } }
 
@@ -219,22 +219,22 @@
     }
 
     .auth-body {
-      padding: 30px 45px 40px;
+      padding: 16px 35px 24px;
     }
-    @media (max-width: 767px) { .auth-body { padding: 20px 18px 30px; } }
+    @media (max-width: 767px) { .auth-body { padding: 14px 18px 20px; } }
 
-    .auth-body .form-group { margin-bottom: 18px; }
+    .auth-body .form-group { margin-bottom: 12px; }
     .auth-body .form-group label {
       display: none;
     }
     .auth-body .form-group input {
-      width: 380px; max-width: 100%;
-      height: 56px;
-      padding: 0 16px 0 48px;
+      width: 100%;
+      height: 48px;
+      padding: 0 14px 0 14px;
       border: 1px solid #D8DEE8;
-      border-radius: 16px;
+      border-radius: 12px;
       font-family: 'Poppins', sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       color: #333;
       background: #fff;
     }
@@ -245,17 +245,17 @@
       box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
     }
     @media (max-width: 767px) {
-      .auth-body .form-group input { width: 300px; height: 52px; }
+      .auth-body .form-group input { height: 44px; }
     }
 
     .auth-forgot {
       display: block;
       text-align: right;
       font-family: 'Poppins', sans-serif;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 500;
       color: #1976D2;
-      margin: -6px 0 12px;
+      margin: -4px 0 10px;
       text-decoration: none;
     }
     .auth-forgot:hover { text-decoration: underline; }
@@ -263,53 +263,50 @@
     .auth-body .btn.btn-primary,
     .auth-body #login-btn,
     .auth-body #reg-btn {
-      width: 380px; max-width: 100%;
-      height: 56px;
+      width: 100%;
+      height: 48px;
       background: #2E7D32;
       border: none;
-      border-radius: 16px;
+      border-radius: 12px;
       font-family: 'Poppins', sans-serif;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: #fff;
       cursor: pointer;
       transition: background .2s;
-      margin-bottom: 26px;
+      margin-bottom: 14px;
     }
     .auth-body .btn.btn-primary:hover,
     .auth-body #login-btn:hover { background: #256B2A; }
     @media (max-width: 767px) {
       .auth-body .btn.btn-primary,
       .auth-body #login-btn,
-      .auth-body #reg-btn { width: 300px; height: 54px; }
+      .auth-body #reg-btn { height: 46px; }
     }
 
     .auth-divider {
       display: flex; align-items: center; gap: 14px;
-      margin-bottom: 22px;
+      margin-bottom: 10px;
       font-family: 'Poppins', sans-serif;
-      font-size: 16px; color: #7A7A7A;
+      font-size: 13px; color: #7A7A7A;
     }
     .auth-divider::before, .auth-divider::after {
       content: ''; flex: 1; height: 1px; background: #D9D9D9;
     }
 
     .auth-social {
-      display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px;
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
     }
     .auth-social-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 380px; max-width: 100%; height: 56px;
-      border-radius: 16px; border: 1px solid #D8DEE8;
+      width: 100%; height: 44px;
+      border-radius: 12px; border: 1px solid #D8DEE8;
       background: #fff;
       font-family: 'Poppins', sans-serif;
-      font-size: 16px; font-weight: 500; color: #333;
+      font-size: 14px; font-weight: 500; color: #333;
       cursor: pointer; transition: background .2s;
     }
     .auth-social-btn:hover { background: #f9f9f9; }
-    @media (max-width: 767px) {
-      .auth-social-btn { width: 300px; height: 52px; }
-    }
 
     .form-group { margin-bottom: 16px; }
 
