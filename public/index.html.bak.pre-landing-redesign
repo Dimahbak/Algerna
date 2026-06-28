@@ -79,18 +79,16 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: url('/assets/bg/algiers_landscape.png') center/cover no-repeat;
+      background: linear-gradient(135deg, #051e2f 0%, var(--navy) 40%, #0d4a7a 100%);
+      background-size: cover;
       position: relative;
     }
     #auth-page::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(11,60,93,0.3);
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='0.03'/%3E%3Cstop offset='1' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='800' height='600'/%3E%3Ccircle cx='650' cy='100' r='200' fill='%23ffffff' opacity='0.02'/%3E%3Ccircle cx='100' cy='500' r='150' fill='%23ffffff' opacity='0.02'/%3E%3C/svg%3E") center/cover no-repeat;
       pointer-events: none;
-    }
-    @media (max-width: 767px) {
-      #auth-page { background-image: url('/assets/bg/algiers_landscape.png') !important; }
     }
 
     .auth-wrapper {
@@ -130,10 +128,9 @@
     }
 
     .auth-hero-tagline {
-      font-size: 24px; font-weight: 300; color: white;
-      margin-bottom: 16px; line-height: 1.4;
+      font-size: 20px; font-weight: 700; color: var(--gold);
+      margin-bottom: 12px; line-height: 1.3;
     }
-    .auth-hero-tagline .green { color: #1FA463; font-weight: 500; }
     .auth-hero-desc {
       font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6;
       margin-bottom: 24px;
@@ -1367,14 +1364,17 @@
   <div class="auth-wrapper">
     <!-- HERO (desktop) -->
     <div class="auth-hero">
-      <div class="auth-hero-logo" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <img src="/assets/logo/algerna_icon.png" alt="Algerna" style="height:50px;width:auto;" />
-        <h1 style="font-size:38px;font-weight:700;color:white;margin:0;letter-spacing:1px;">Algerna</h1>
+      <div class="auth-hero-logo">
+        <img src="/assets/logo/algerna_full.png" alt="ALGERNA" style="max-width:280px;width:100%;margin-bottom:12px;" />
       </div>
-      <div class="auth-hero-tagline" style="font-size:26px;line-height:1.4;margin-bottom:20px;">
-        Ma ville. <span class="green">Mon pouvoir.</span> Notre avenir.
+      <div class="auth-hero-tagline" data-i18n="auth.tagline">Ma ville. Mon pouvoir. Notre avenir.</div>
+      <p class="auth-hero-desc" data-i18n="auth.hero_desc">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
+      <div class="auth-hero-features">
+        <div><div class="feat-icon" style="background:rgba(31,164,99,.2);">&#x2714;</div><span data-i18n="auth.feat_signaler">Signalez un problème en 30 secondes</span></div>
+        <div><div class="feat-icon" style="background:rgba(225,167,48,.2);">&#x1F4C5;</div><span data-i18n="auth.feat_rdv">Prenez rendez-vous à la mairie sans file d'attente</span></div>
+        <div><div class="feat-icon" style="background:rgba(37,99,235,.2);">&#x1F50D;</div><span data-i18n="auth.feat_suivi">Suivez la résolution en temps réel</span></div>
+        <div><div class="feat-icon" style="background:rgba(124,58,237,.2);">&#x1F3C5;</div><span data-i18n="auth.feat_impact">Mesurez votre impact citoyen</span></div>
       </div>
-      <p class="auth-hero-desc" data-i18n="auth.hero_desc" style="font-size:14px;line-height:1.7;opacity:0.95;">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
     </div>
 
     <!-- AUTH CARD -->

@@ -6,13 +6,11 @@
   <meta name="theme-color" content="#0A3D62" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="ALGERNA" />
+  <meta name="apple-mobile-web-app-title" content="CiviSmart" />
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" href="/assets/logo/algerna_icon.png" />
-  <link rel="apple-touch-icon" href="/assets/logo/algerna_icon.png" />
   <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
-  <title>ALGERNA</title>
+  <title>Alger CiviSmart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -25,15 +23,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy: #0B3C5D;
+      --navy: #0A3D62;
       --navy-dark: #072C47;
       --navy-light: #E8EEF3;
       --blue: #1C7293;
       --blue-light: #E0F0F6;
       --gold: #E1A730;
       --gold-light: #FDF4E1;
-      --green: #3FAE49;
-      --green-dark: #2D8A38;
+      --green: #1FA463;
+      --green-dark: #178A52;
       --green-light: #E6F7EE;
       --red: #EF4444;
       --red-light: #FEE2E2;
@@ -79,111 +77,38 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: url('/assets/bg/algiers_landscape.png') center/cover no-repeat;
-      position: relative;
-    }
-    #auth-page::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(11,60,93,0.3);
-      pointer-events: none;
-    }
-    @media (max-width: 767px) {
-      #auth-page { background-image: url('/assets/bg/algiers_landscape.png') !important; }
-    }
-
-    .auth-wrapper {
-      display: flex;
-      gap: 40px;
-      align-items: center;
-      max-width: 900px;
-      width: 100%;
-      position: relative;
-      z-index: 1;
-    }
-
-    .auth-hero {
-      flex: 1;
-      color: white;
-      display: none;
-    }
-    @media (min-width: 768px) {
-      .auth-hero { display: block; }
-    }
-
-    .auth-hero-logo {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .auth-hero-logo-icon {
-      width: 56px; height: 56px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(8px);
-    }
-    .auth-hero-logo h1 {
-      font-size: 32px; font-weight: 900; color: white; letter-spacing: 2px;
-    }
-
-    .auth-hero-tagline {
-      font-size: 24px; font-weight: 300; color: white;
-      margin-bottom: 16px; line-height: 1.4;
-    }
-    .auth-hero-tagline .green { color: #1FA463; font-weight: 500; }
-    .auth-hero-desc {
-      font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6;
-      margin-bottom: 24px;
-    }
-    .auth-hero-features {
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .auth-hero-features div {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: rgba(255,255,255,0.9);
-    }
-    .auth-hero-features .feat-icon {
-      width: 28px; height: 28px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--blue) 100%);
     }
 
     .auth-card {
       background: var(--white);
       border-radius: var(--radius-lg);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-lg);
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       overflow: hidden;
-      flex-shrink: 0;
     }
 
     .auth-header {
       background: linear-gradient(135deg, var(--navy-dark), var(--navy));
-      padding: 24px 28px 18px;
+      padding: 32px 32px 24px;
       text-align: center;
       color: white;
-    }
-    @media (min-width: 768px) {
-      .auth-header { padding: 18px 28px 14px; }
     }
 
     .auth-logo {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
     .auth-logo-icon {
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
       background: rgba(255,255,255,0.2);
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -191,25 +116,14 @@
 
     .auth-header h1 {
       font-size: 22px;
-      font-weight: 900;
+      font-weight: 800;
       color: white;
-      letter-spacing: 1px;
     }
 
     .auth-header p {
-      font-size: 12px;
-      color: rgba(255,255,255,0.7);
-      margin-top: 2px;
-    }
-    .auth-header .tagline-mobile {
-      display: block;
-      font-size: 12px;
-      color: var(--gold);
-      font-weight: 600;
-      margin-top: 6px;
-    }
-    @media (min-width: 768px) {
-      .auth-header .tagline-mobile { display: none; }
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
     }
 
     .auth-tabs {
@@ -219,7 +133,7 @@
 
     .auth-tab {
       flex: 1;
-      padding: 12px;
+      padding: 14px;
       text-align: center;
       font-size: 14px;
       font-weight: 500;
@@ -237,32 +151,7 @@
       font-weight: 600;
     }
 
-    .auth-body { padding: 22px 28px 28px; }
-
-    .auth-social {
-      display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
-    }
-    .auth-social-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--gray-300);
-      background: white; font-size: 13px; font-weight: 500; cursor: pointer;
-      transition: background .2s, border-color .2s; color: var(--gray-700);
-    }
-    .auth-social-btn:hover { background: var(--gray-50); border-color: var(--gray-400); }
-
-    .auth-divider {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      font-size: 12px; color: var(--gray-400);
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--gray-200);
-    }
-
-    .auth-forgot {
-      display: block; text-align: right; font-size: 12px; color: var(--navy);
-      margin-top: -8px; margin-bottom: 14px; text-decoration: none;
-    }
-    .auth-forgot:hover { text-decoration: underline; }
+    .auth-body { padding: 28px 32px 32px; }
 
     .form-group { margin-bottom: 16px; }
 
@@ -781,30 +670,11 @@
     .icua-sublabel { font-size: 13px; color: var(--gray-500); }
 
     /* ─── RDV ─── */
-    .day-chip {
-      flex-shrink: 0;
-      min-width: 64px;
-      padding: 10px 12px;
-      border: 2px solid var(--gray-200);
-      border-radius: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .2s;
-      background: white;
-    }
-    .day-chip:hover { border-color: var(--navy); }
-    .day-chip.selected { border-color: var(--navy); background: var(--navy); color: white; }
-    .day-chip .day-name { font-size: 11px; font-weight: 500; text-transform: uppercase; }
-    .day-chip .day-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
-    .day-chip .day-month { font-size: 10px; opacity: 0.7; }
-    .day-chip .day-slots { font-size: 10px; margin-top: 2px; color: var(--green); }
-    .day-chip.selected .day-slots { color: rgba(255,255,255,.8); }
-
     .creneaux-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 8px;
-      margin-top: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
     }
 
     .creneau-card {
@@ -1357,126 +1227,87 @@
   </style>
 </head>
 <body>
-  <div id="pwa-banner" class="hidden"><div class="bi">&#x1F4F1;</div><div class="bt"><strong data-i18n="pwa.installer_titre">Installer ALGERNA</strong><span data-i18n="pwa.installer_desc">Acc&#232;s rapide depuis votre &#233;cran d'accueil</span></div><div class="ba"><button class="btn-install" onclick="pwaInstall()" data-i18n="pwa.installer_btn">Installer</button><button class="btn-dismiss" onclick="pwaDismiss()">&#x2715;</button></div></div>
+  <div id="pwa-banner" class="hidden"><div class="bi">&#x1F4F1;</div><div class="bt"><strong data-i18n="pwa.installer_titre">Installer CiviSmart</strong><span data-i18n="pwa.installer_desc">Acc&#232;s rapide depuis votre &#233;cran d'accueil</span></div><div class="ba"><button class="btn-install" onclick="pwaInstall()" data-i18n="pwa.installer_btn">Installer</button><button class="btn-dismiss" onclick="pwaDismiss()">&#x2715;</button></div></div>
   <div id="pwa-update-toast" class="hidden"><span data-i18n="pwa.maj_dispo">&#x1F504; Nouvelle version disponible</span><button onclick="pwaUpdate()" data-i18n="pwa.maj_btn">Mettre &#224; jour</button></div>
 
 <!-- ═══════════════════════════════════════════════════════
      AUTH PAGE
 ══════════════════════════════════════════════════════════ -->
 <div id="auth-page">
-  <div class="auth-wrapper">
-    <!-- HERO (desktop) -->
-    <div class="auth-hero">
-      <div class="auth-hero-logo" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <img src="/assets/logo/algerna_icon.png" alt="Algerna" style="height:50px;width:auto;" />
-        <h1 style="font-size:38px;font-weight:700;color:white;margin:0;letter-spacing:1px;">Algerna</h1>
+  <div class="auth-card">
+    <div class="auth-header">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+          <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">AR</button>
+        </div>
       </div>
-      <div class="auth-hero-tagline" style="font-size:26px;line-height:1.4;margin-bottom:20px;">
-        Ma ville. <span class="green">Mon pouvoir.</span> Notre avenir.
+      <div class="auth-logo">
+        <div class="auth-logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <h1 data-i18n="app.title">Alger CiviSmart</h1>
       </div>
-      <p class="auth-hero-desc" data-i18n="auth.hero_desc" style="font-size:14px;line-height:1.7;opacity:0.95;">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
+      <p data-i18n="app.subtitle">Plateforme de gouvernance civique</p>
     </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')" data-i18n="auth.connexion">Connexion</button>
+      <button class="auth-tab" onclick="switchTab('register')" data-i18n="auth.inscription">Inscription</button>
+    </div>
+    <div class="auth-body">
+      <div id="auth-error" class="alert alert-error hidden"></div>
 
-    <!-- AUTH CARD -->
-    <div class="auth-card">
-      <div class="auth-header">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:4px;">
-          <div class="lang-selector">
-            <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
-            <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">AR</button>
+      <!-- LOGIN FORM -->
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label data-i18n="auth.telephone">Numéro de téléphone</label>
+          <input type="tel" id="login-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
+        </div>
+        <div class="form-group">
+          <label data-i18n="auth.mdp">Mot de passe</label>
+          <input type="password" id="login-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="login-btn">
+          <span id="login-btn-text" data-i18n="auth.se_connecter">Se connecter</span>
+          <span id="login-btn-spinner" class="spinner hidden"></span>
+        </button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="auth.prenom">Prénom</label>
+            <input type="text" id="reg-prenom" placeholder="Amina" data-i18n-placeholder="auth.prenom_placeholder" required />
+          </div>
+          <div class="form-group">
+            <label data-i18n="auth.nom">Nom</label>
+            <input type="text" id="reg-nom" placeholder="Benamara" data-i18n-placeholder="auth.nom_placeholder" required />
           </div>
         </div>
-        <div class="auth-logo">
-          <div class="auth-logo-icon">
-            <img src="/assets/logo/algerna_icon.png" alt="" height="28" style="border-radius:6px;" />
-          </div>
-          <h1 data-i18n="app.title">ALGERNA</h1>
+        <div class="form-group">
+          <label data-i18n="auth.telephone">Téléphone</label>
+          <input type="tel" id="reg-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
         </div>
-        <p data-i18n="app.subtitle">Plateforme de gouvernance civique</p>
-        <span class="tagline-mobile" data-i18n="auth.tagline">Ma ville. Mon pouvoir. Notre avenir.</span>
-      </div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchTab('login')" data-i18n="auth.connexion">Connexion</button>
-        <button class="auth-tab" onclick="switchTab('register')" data-i18n="auth.inscription">Inscription</button>
-      </div>
-      <div class="auth-body">
-        <div id="auth-error" class="alert alert-error hidden"></div>
-
-        <!-- LOGIN FORM -->
-        <form id="login-form" onsubmit="handleLogin(event)">
-          <!-- Social auth buttons -->
-          <div class="auth-social">
-            <button type="button" class="auth-social-btn" onclick="showToast('Google Auth — bientôt disponible','error')">
-              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              <span data-i18n="auth.google">Continuer avec Google</span>
-            </button>
-            <button type="button" class="auth-social-btn" onclick="showToast('Apple Auth — bientôt disponible','error')">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-              <span data-i18n="auth.apple">Continuer avec Apple</span>
-            </button>
-          </div>
-          <div class="auth-divider" data-i18n="auth.ou">ou</div>
-
-          <div class="form-group">
-            <label data-i18n="auth.telephone">Numéro de téléphone</label>
-            <input type="tel" id="login-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required />
-          </div>
-          <div class="form-group">
-            <label data-i18n="auth.mdp">Mot de passe</label>
-            <input type="password" id="login-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
-          </div>
-          <a href="#" class="auth-forgot" onclick="showToast('Réinitialisation — bientôt disponible','error');return false;" data-i18n="auth.mdp_oublie">Mot de passe oublié ?</a>
-          <button type="submit" class="btn btn-primary" id="login-btn" style="width:100%;">
-            <span id="login-btn-text" data-i18n="auth.se_connecter">Se connecter</span>
-            <span id="login-btn-spinner" class="spinner hidden"></span>
-          </button>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="register-form" onsubmit="handleRegister(event)" class="hidden">
-          <div class="form-row">
-            <div class="form-group">
-              <label data-i18n="auth.prenom">Prénom *</label>
-              <input type="text" id="reg-prenom" placeholder="Amina" data-i18n-placeholder="auth.prenom_placeholder" required minlength="2" />
-            </div>
-            <div class="form-group">
-              <label data-i18n="auth.nom">Nom *</label>
-              <input type="text" id="reg-nom" placeholder="Benamara" data-i18n-placeholder="auth.nom_placeholder" required minlength="2" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label data-i18n="auth.email">Email *</label>
-            <input type="email" id="reg-email" placeholder="exemple@gmail.com" data-i18n-placeholder="auth.email_placeholder" required />
-            <p style="font-size:11px;color:var(--muted);margin-top:2px;" data-i18n="auth.email_hint">Pour recevoir les confirmations et le suivi de vos signalements.</p>
-          </div>
-          <div class="form-group">
-            <label data-i18n="auth.telephone">Téléphone *</label>
-            <input type="tel" id="reg-tel" placeholder="0770 000 000" data-i18n-placeholder="auth.telephone_placeholder" required pattern="0[0-9]{8,9}" />
-          </div>
-          <div class="form-group">
-            <label data-i18n="auth.mdp">Mot de passe *</label>
-            <input type="password" id="reg-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required minlength="6" />
-            <p style="font-size:11px;color:var(--muted);margin-top:2px;" data-i18n="auth.mdp_hint">Minimum 6 caractères.</p>
-          </div>
-          <div class="form-group">
-            <label data-i18n="auth.commune">Quartier / Commune *</label>
-            <select id="reg-commune" required>
-              <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:16px;">
-            <label style="display:flex;align-items:start;gap:8px;cursor:pointer;font-size:12px;color:var(--gray-600);">
-              <input type="checkbox" id="reg-cgu" required style="margin-top:2px;flex-shrink:0;" />
-              <span data-i18n="auth.cgu_label">J'accepte les conditions d'utilisation et la politique de confidentialité d'ALGERNA.</span>
-            </label>
-          </div>
-          <button type="submit" class="btn btn-primary" id="reg-btn" style="width:100%;">
-            <span id="reg-btn-text" data-i18n="auth.creer_compte">Créer mon compte</span>
-            <span id="reg-btn-spinner" class="spinner hidden"></span>
-          </button>
-          <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;" data-i18n="auth.deja_compte">Vous avez déjà un compte ? Connectez-vous ci-dessus.</p>
-        </form>
-      </div>
+        <div class="form-group">
+          <label data-i18n="auth.mdp">Mot de passe</label>
+          <input type="password" id="reg-mdp" placeholder="••••••••" data-i18n-placeholder="auth.mdp_placeholder" required />
+        </div>
+        <div class="form-group">
+          <label><span data-i18n="auth.email">Email</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnel</span>)</span></label>
+          <input type="email" id="reg-email" placeholder="exemple@gmail.com" data-i18n-placeholder="auth.email_placeholder" />
+        </div>
+        <div class="form-group">
+          <label data-i18n="auth.commune">Commune</label>
+          <select id="reg-commune">
+            <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" id="reg-btn">
+          <span id="reg-btn-text" data-i18n="auth.creer_compte">Créer mon compte</span>
+          <span id="reg-btn-spinner" class="spinner hidden"></span>
+        </button>
+      </form>
     </div>
   </div>
 </div>
@@ -1489,9 +1320,9 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <div class="navbar-brand-icon">
-        <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" height="32" style="border-radius:6px;" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </div>
-      <span data-i18n="app.title">ALGERNA</span>
+      <span data-i18n="app.title">Alger CiviSmart</span>
     </div>
     <div class="navbar-right">
       <div class="lang-selector">
@@ -1529,7 +1360,7 @@
       </button>
       <button class="nav-item" onclick="showView('carte')" data-view="carte" data-univers="quartier" data-i18n="univers.quartier">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-        Ma Houma
+        Mon quartier
       </button>
       <button class="nav-item" onclick="showView('participe')" data-view="participe" data-univers="participe" data-i18n="univers.participe">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1541,7 +1372,7 @@
       </button>
       <button class="nav-item" onclick="showView('sentinelle')" data-view="sentinelle" data-univers="profil" data-i18n="univers.profil">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Mon impact
+        Mon profil
       </button>
       <div class="nav-divider" id="admin-divider" style="display:none"></div>
       <div class="nav-label hidden" id="admin-nav-label" data-i18n="sidebar.administration">Administration</div>
@@ -1601,7 +1432,7 @@
             <div class="module-icon" style="background:#f0fdf4;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
             </div>
-            <h3 data-i18n="univers.quartier">Ma Houma</h3>
+            <h3 data-i18n="univers.quartier">Mon quartier</h3>
             <p data-i18n="univers.quartier_desc" style="font-size:11px;">Carte, scores, IQEP parcs</p>
           </div>
           <div class="module-card" onclick="showView('participe')" style="opacity:0.7;">
@@ -1622,8 +1453,8 @@
             <div class="module-icon" style="background:#fef3c7;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
-            <h3 data-i18n="univers.profil">Mon impact</h3>
-            <p data-i18n="univers.profil_desc" style="font-size:11px;">Citoyenneté active, badges, impact</p>
+            <h3 data-i18n="univers.profil">Mon profil</h3>
+            <p data-i18n="univers.profil_desc" style="font-size:11px;">Points civiques, classement, badges</p>
           </div>
           <!-- ADMIN CARDS (hidden, shown for admin roles) -->
           <div class="module-card hidden" id="home-admin-card" onclick="showView('dashboard')">
@@ -1657,19 +1488,31 @@
         </div>
       </div>
 
-      <!-- ══ SIGNALER — GRILLE 16 CATÉGORIES ══ -->
+      <!-- ══ SIGNALER — DOUBLE CHEMIN UNIFIÉ ══ -->
       <div id="view-signaler" class="view">
         <div class="page-header">
-          <h2 data-i18n="signaler.titre">Que souhaitez-vous signaler ?</h2>
-          <p data-i18n="signaler.sous_titre_v2" style="color:var(--muted);font-size:13px;">Choisissez la catégorie du problème</p>
+          <h2 data-i18n="univers.signale">Je signale</h2>
+          <p data-i18n="signaler.sous_titre">Choisissez le type de problème à signaler</p>
+        </div>
+        <!-- Sub-nav univers Je signale -->
+        <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="showView('signaler')" data-subview="signaler" data-i18n="univers.nouveau_signalement">Nouveau signalement</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('civisignal')" data-subview="civisignal" data-i18n="sidebar.civisignal">CiviSignal</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('watersignal')" data-subview="watersignal" data-i18n="sidebar.watersignal">WaterSignal</button>
         </div>
 
-        <!-- ÉTAPE 0 : grille directe des 16 catégories (plus de double choix) -->
+        <!-- ÉTAPE 0 : choix du chemin (guidé vs direct) -->
         <div id="sig-step-choix">
-          <div id="sig-familles-grid-direct" class="module-grid"></div>
-          <div style="text-align:center;margin-top:10px;">
-            <button class="btn-link" onclick="sigShowEpics()" style="font-size:12px;color:var(--navy);cursor:pointer;background:none;border:none;text-decoration:underline;" data-i18n="signaler.chemin_direct_lien">Ou choisir par service (EPIC) →</button>
+          <div style="display:flex;gap:10px;margin-bottom:18px;">
+            <button class="btn btn-primary" style="flex:1;" onclick="sigShowFamilles()" data-i18n="signaler.chemin_guide">Par nature du problème</button>
+            <button class="btn btn-outline" style="flex:1;" onclick="sigShowEpics()" data-i18n="signaler.chemin_direct">Par service (EPIC)</button>
           </div>
+        </div>
+
+        <!-- ÉTAPE 1a : familles (chemin guidé) -->
+        <div id="sig-step-familles" class="hidden">
+          <button class="btn-link" onclick="sigBackToChoix()" data-i18n="signaler.retour_choix" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour au choix</button>
+          <div id="sig-familles-grid" class="module-grid"></div>
         </div>
 
         <!-- ÉTAPE 1b : sous-cas (après sélection famille) -->
@@ -1701,9 +1544,23 @@
                 <input type="hidden" id="sig-categorie-id" />
               </div>
 
-              <!-- 1. Localisation EN PREMIER -->
+              <!-- Commune -->
               <div class="form-group">
-                <label data-i18n="signaler.geo_label">Où se situe le problème ?</label>
+                <label data-i18n="signaler.commune_label">Commune</label>
+                <select id="sig-commune">
+                  <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="form-group">
+                <label data-i18n="signaler.description_label">Description</label>
+                <textarea id="sig-description" rows="3" data-i18n-placeholder="signaler.description_placeholder" placeholder="Décrivez le problème constaté…"></textarea>
+              </div>
+
+              <!-- Géolocalisation -->
+              <div class="form-group">
+                <label data-i18n="signaler.geo_label">Localisation</label>
                 <p class="mini-map-hint" data-i18n="signaler.geo_hint" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Cliquez sur la carte ou utilisez le bouton GPS</p>
                 <div id="sig-minimap" class="mini-map-picker"></div>
                 <div id="sig-adresse-geo" style="font-size:12px;color:var(--gray-600);margin-top:4px;min-height:16px;"></div>
@@ -1716,79 +1573,23 @@
                 <input type="hidden" id="sig-lng" />
               </div>
 
-              <!-- Commune (auto-déduite de la position, modifiable) -->
-              <div class="form-group">
-                <label data-i18n="signaler.commune_label">Commune</label>
-                <select id="sig-commune">
-                  <option value="" data-i18n="global.selectionner_commune">-- Sélectionner une commune --</option>
-                </select>
-                <p id="sig-commune-auto" style="font-size:11px;color:var(--green);margin-top:2px;" class="hidden" data-i18n="signaler.commune_auto">Commune détectée automatiquement</p>
-              </div>
-
-              <!-- 2. Photo -->
+              <!-- Photo -->
               <div class="form-group">
                 <label><span data-i18n="signaler.photo_label">Photo</span> <span style="color:var(--gray-400)">(<span data-i18n="global.optionnel">optionnel</span>)</span></label>
                 <div class="photo-upload-area">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <p data-i18n="signaler.photo_click">Prenez ou ajoutez une photo</p>
+                  <p data-i18n="cs.photo_click">Cliquez pour ajouter une photo</p>
                   <input type="file" id="sig-photo" accept="image/*" />
                 </div>
                 <div id="sig-photo-name" class="geo-coords hidden"></div>
               </div>
 
-              <!-- 3. Description EN DERNIER -->
-              <div class="form-group">
-                <label data-i18n="signaler.description_label">Décrivez ce que vous voyez</label>
-                <textarea id="sig-description" rows="3" data-i18n-placeholder="signaler.description_placeholder" placeholder="Que constatez-vous ? Depuis quand ?"></textarea>
-              </div>
-
-              <!-- Signalements proches (rempli dynamiquement) -->
-              <div id="sig-proches" class="hidden" style="margin-bottom:12px;"></div>
-
-              <!-- 4. Gravité / danger -->
-              <div class="form-group">
-                <label data-i18n="signaler.gravite_label" style="font-weight:600;">Ce problème représente-t-il un danger ?</label>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;" class="gravite-option" onclick="selectGravite(this,'danger_immediat')">
-                    <input type="radio" name="sig-gravite" value="danger_immediat" style="display:none;">
-                    <span style="font-size:18px;">🔴</span>
-                    <span data-i18n="signaler.gravite_danger">Danger immédiat</span>
-                  </label>
-                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;" class="gravite-option" onclick="selectGravite(this,'risque_blessure')">
-                    <input type="radio" name="sig-gravite" value="risque_blessure" style="display:none;">
-                    <span style="font-size:18px;">🟠</span>
-                    <span data-i18n="signaler.gravite_risque">Risque de blessure</span>
-                  </label>
-                  <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:6px;padding:8px 10px;border:2px solid var(--navy);border-radius:8px;cursor:pointer;font-size:12px;transition:border-color .2s;background:var(--navy-light);" class="gravite-option" onclick="selectGravite(this,'degradation')">
-                    <input type="radio" name="sig-gravite" value="degradation" style="display:none;" checked>
-                    <span style="font-size:18px;">🟢</span>
-                    <span data-i18n="signaler.gravite_degradation">Simple dégradation</span>
-                  </label>
-                </div>
-              </div>
-
               <!-- Submit -->
               <button type="submit" class="btn btn-primary" id="sig-submit-btn" style="width:100%;">
-                <span id="sig-submit-text" data-i18n="signaler.envoyer">Envoyer mon signalement</span>
+                <span id="sig-submit-text" data-i18n="signaler.envoyer">Envoyer le signalement</span>
                 <span id="sig-submit-spinner" class="spinner hidden"></span>
               </button>
             </form>
-          </div>
-        </div>
-
-        <!-- ÉTAPE : Confirmation post-envoi -->
-        <div id="sig-step-confirmation" class="hidden">
-          <div class="card" style="text-align:center;padding:32px 20px;">
-            <div style="width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            </div>
-            <h3 style="font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px;" data-i18n="signaler.conf_titre">Signalement transmis. Merci !</h3>
-            <p style="color:var(--gray-500);margin-bottom:12px;" data-i18n="signaler.conf_msg">Vous recevrez une notification dès que le problème sera traité.</p>
-            <div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;" id="sig-conf-ref">#—</div>
-            <div style="font-size:13px;color:var(--green);margin-bottom:8px;" id="sig-conf-points"></div>
-            <div id="sig-conf-email" style="font-size:12px;color:var(--muted);margin-bottom:4px;"></div>
-            <div id="sig-conf-sms" style="font-size:12px;color:var(--muted);margin-bottom:16px;"></div>
-            <button class="btn btn-outline" onclick="sigBackToChoix()" data-i18n="signaler.autre_signalement">Signaler un autre problème</button>
           </div>
         </div>
       </div>
@@ -1976,7 +1777,7 @@
       <!-- ══ CIVIADMIN VIEW ══ -->
       <div id="view-civiadmin" class="view">
         <div class="page-header">
-          <h2 data-i18n="rdv.titre">Mes démarches — Rendez-vous</h2>
+          <h2 data-i18n="rdv.titre">CiviAdmin — Rendez-vous</h2>
           <p data-i18n="rdv.sous_titre">Prenez un rendez-vous dans votre mairie ou daïra</p>
         </div>
 
@@ -2021,11 +1822,6 @@
           </button>
         </div>
 
-        <!-- Détail démarche + Assistant + Checklist (entre step 1 et step 2) -->
-        <div class="card hidden" id="rdv-demarche-detail" style="margin-top:12px;">
-          <div id="rdv-demarche-content"></div>
-        </div>
-
         <!-- Famille A info -->
         <div class="alert alert-info hidden" id="rdv-famille-a">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -2041,31 +1837,13 @@
         <!-- Step 2: Creneaux -->
         <div class="card hidden" id="rdv-step-2">
           <div class="card-title" data-i18n="rdv.choisir_creneau">Choisir un créneau</div>
+          <div class="card-subtitle" id="rdv-step2-subtitle" data-i18n="rdv.sel_date_heure">Sélectionnez une date et heure disponibles</div>
           <div id="rdv-creneaux-loading" class="loading-overlay">
             <div class="spinner spinner-dark"></div>
             <span data-i18n="rdv.chargement_creneaux">Chargement des créneaux...</span>
           </div>
-          <!-- Picker jour -->
-          <div id="rdv-day-picker" class="hidden" style="margin-bottom:14px;">
-            <div class="card-subtitle" data-i18n="rdv.choisir_jour">Choisissez un jour</div>
-            <div id="rdv-days" style="display:flex;gap:6px;overflow-x:auto;padding:8px 0;"></div>
-          </div>
-          <!-- Horaires du jour sélectionné -->
-          <div id="rdv-time-picker" class="hidden" style="margin-bottom:14px;">
-            <div class="card-subtitle" id="rdv-time-label"></div>
-            <div class="creneaux-grid" id="rdv-creneaux-grid"></div>
-          </div>
+          <div class="creneaux-grid hidden" id="rdv-creneaux-grid"></div>
           <div class="divider"></div>
-          <!-- Public prioritaire -->
-          <div class="form-group hidden" id="rdv-priorite-group" style="margin-bottom:12px;">
-            <label data-i18n="rdv.priorite_label" style="font-size:13px;font-weight:600;">Accès prioritaire (déclaratif)</label>
-            <select id="rdv-priorite" style="font-size:13px;">
-              <option value="" data-i18n="rdv.priorite_aucun">Aucun (standard)</option>
-              <option value="age" data-i18n="rdv.priorite_age">Personne âgée (65+)</option>
-              <option value="handicap" data-i18n="rdv.priorite_handicap">Personne en situation de handicap</option>
-              <option value="femme_enceinte" data-i18n="rdv.priorite_enceinte">Femme enceinte</option>
-            </select>
-          </div>
           <button class="btn btn-primary hidden" id="rdv-confirm-btn" onclick="confirmRDV()">
             <span data-i18n="rdv.confirmer_creneau">Confirmer ce créneau</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -2079,9 +1857,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
             </div>
             <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;color:var(--green)" data-i18n="rdv.confirmation_titre">Rendez-vous confirmé !</h3>
-            <p style="color:var(--gray-500);margin-bottom:8px;" id="rdv-confirmed-details" data-i18n="rdv.confirmation_desc">Votre RDV a été enregistré avec succès.</p>
-            <div id="rdv-conf-email" style="font-size:12px;color:var(--muted);margin-bottom:4px;"></div>
-            <p style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:16px;padding:8px;background:var(--gold-light);border-radius:6px;" data-i18n="rdv.conf_formulaire">Munissez-vous du formulaire de confirmation de votre RDV le jour J.</p>
+            <p style="color:var(--gray-500);margin-bottom:20px;" id="rdv-confirmed-details" data-i18n="rdv.confirmation_desc">Votre RDV a été enregistré avec succès.</p>
             <button class="btn btn-outline" onclick="resetRDV()" data-i18n="rdv.autre_rdv">Prendre un autre rendez-vous</button>
           </div>
         </div>
@@ -2173,42 +1949,11 @@
           <p data-i18n="sent.sous_titre">Vos points civiques et le classement communautaire</p>
         </div>
 
-        <!-- Points + Niveau card -->
+        <!-- Points card -->
         <div class="card" style="margin-bottom:20px;text-align:center;padding:32px;">
-          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;" data-i18n="sent.mes_points">MES POINTS CITOYENS</p>
+          <p style="font-size:13px;font-weight:500;color:var(--gray-500);margin-bottom:8px;" data-i18n="sent.mes_points">MES POINTS CIVIQUES</p>
           <div class="points-big" id="sentinelle-points">—</div>
-          <div id="sentinelle-niveau" style="margin-top:8px;"></div>
-          <p style="color:var(--gray-400);margin-top:4px;font-size:13px;" data-i18n="sent.points_accumules">points d'impact accumulés</p>
-        </div>
-
-        <!-- Stats personnelles (CV civique) -->
-        <div id="sentinelle-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
-
-        <!-- Mon impact -->
-        <div class="section-title">
-          <span style="font-size:18px;">✅</span>
-          <span data-i18n="sent.mon_impact">Mon impact</span>
-        </div>
-        <div class="card" id="sentinelle-impact" style="margin-bottom:20px;">
-          <div style="text-align:center;padding:16px;color:var(--muted);">&hellip;</div>
-        </div>
-
-        <!-- Badges -->
-        <div class="section-title">
-          <span style="font-size:18px;">🏅</span>
-          <span data-i18n="sent.badges">Mes badges</span>
-        </div>
-        <div class="card" id="sentinelle-badges" style="margin-bottom:20px;">
-          <div style="text-align:center;padding:16px;color:var(--muted);">&hellip;</div>
-        </div>
-
-        <!-- Avantages symboliques -->
-        <div class="section-title">
-          <span style="font-size:18px;">🎖️</span>
-          <span data-i18n="sent.avantages">Avantages</span>
-        </div>
-        <div class="card" id="sentinelle-avantages" style="margin-bottom:20px;">
-          <div style="text-align:center;padding:16px;color:var(--muted);">&hellip;</div>
+          <p style="color:var(--gray-400);margin-top:8px;font-size:13px;" data-i18n="sent.points_accumules">points accumulés</p>
         </div>
 
         <!-- Journal -->
@@ -2294,17 +2039,13 @@
       <!-- ══ CARTE VIEW ══ -->
       <div id="view-carte" class="view">
         <div class="page-header">
-          <h2 data-i18n="univers.quartier">Ma Houma</h2>
+          <h2 data-i18n="univers.quartier">Mon quartier</h2>
           <p data-i18n="carte.sous_titre">Visualisez les signalements sur la carte</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-primary" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
           <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
-        <!-- Dashboard quartier citoyen -->
-        <div id="quartier-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
-
         <div class="carte-filters">
           <button class="carte-filter-btn active" onclick="filterCarte('tous', this)" data-i18n="carte.tous">Tous</button>
           <button class="carte-filter-btn" onclick="filterCarte('proprete', this)" data-i18n="carte.proprete">🌿 Propreté</button>
@@ -2332,13 +2073,12 @@
       <!-- ══ EDEVAL SMART GREEN VIEW ══ -->
       <div id="view-edeval" class="view">
         <div class="page-header">
-          <h2 data-i18n="univers.quartier">Ma Houma</h2>
+          <h2 data-i18n="univers.quartier">Mon quartier</h2>
           <p data-i18n="edeval.sous_titre">Qualité des espaces publics — Wilaya d'Alger</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
           <button class="btn btn-sm btn-primary" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
         </div>
 
         <!-- Liste des parcs avec IQEP -->
@@ -2517,20 +2257,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- ══ PARKZONES — CiviPark citoyen (lecture seule) ══ -->
-      <div id="view-parkzones" class="view">
-        <div class="page-header">
-          <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p data-i18n="univers.stationnement_desc">Zones de stationnement et tarifs</p>
-        </div>
-        <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" data-i18n="univers.iqep_parcs">IQEP Parcs</button>
-          <button class="btn btn-sm btn-primary" onclick="showView('parkzones')" data-subview="parkzones" data-i18n="univers.stationnement">Stationnement</button>
-        </div>
-        <div id="parkzones-list"></div>
       </div>
 
       <!-- ══ JE PARTICIPE (placeholder) ══ -->
@@ -2883,28 +2609,6 @@ async function apiFetch(path, options = {}) {
   return res;
 }
 
-/**
- * Fetch JSON défensif : parse via text() pour attraper les réponses
- * non-JSON (ex: ancien SW servant du HTML). Log console détaillé.
- * @param {string} url
- * @param {object} [opts] fetch options
- * @param {boolean} [auth] true = passe par apiFetch (ajoute Bearer)
- * @returns {Promise<any>} parsed JSON
- */
-async function safeFetchJSON(url, opts, auth) {
-  const res = auth ? await apiFetch(url, opts || {}) : await fetch(url, opts);
-  if (!res.ok) {
-    console.error('[safeFetchJSON]', url, 'HTTP', res.status, res.statusText);
-    throw new Error('HTTP ' + res.status);
-  }
-  const raw = await res.text();
-  try { return JSON.parse(raw); }
-  catch (e) {
-    console.error('[safeFetchJSON]', url, 'JSON parse fail, raw:', raw.substring(0, 300));
-    throw new Error('Réponse invalide');
-  }
-}
-
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-DZ', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -3015,25 +2719,13 @@ async function handleLogin(e) {
 async function handleRegister(e) {
   e.preventDefault();
   hideError('auth-error');
-
-  // Validation front
-  if (!document.getElementById('reg-cgu').checked) {
-    showError('auth-error', t('auth.cgu_requis'));
-    return;
-  }
-  const email = document.getElementById('reg-email').value.trim();
-  if (!email) {
-    showError('auth-error', t('auth.email_requis'));
-    return;
-  }
-
   const body = {
     telephone: document.getElementById('reg-tel').value.trim(),
     motDePasse: document.getElementById('reg-mdp').value,
     nom: document.getElementById('reg-nom').value.trim(),
     prenom: document.getElementById('reg-prenom').value.trim(),
-    email: email,
-    communeId: document.getElementById('reg-commune').value ? Number(document.getElementById('reg-commune').value) : undefined
+    email: document.getElementById('reg-email').value.trim() || undefined,
+    communeId: document.getElementById('reg-commune').value || undefined
   };
   setLoading('reg-btn', 'reg-btn-text', 'reg-btn-spinner', true);
   try {
@@ -3085,12 +2777,10 @@ async function initApp() {
     document.getElementById('admin-nav-label').classList.remove('hidden');
     document.getElementById('admin-divider').style.display = '';
     document.getElementById('home-admin-card').classList.remove('hidden');
-    // PatriLocal : strictement admin_apc / admin_wilaya
-    document.getElementById('nav-patrimoine').classList.remove('hidden');
-    document.getElementById('home-patrimoine-card').classList.remove('hidden');
   }
   if (isAdmin()) {
-    // CAP + CiviPark gestion : agent + admin
+    document.getElementById('nav-patrimoine').classList.remove('hidden');
+    document.getElementById('home-patrimoine-card').classList.remove('hidden');
     document.getElementById('nav-cap').classList.remove('hidden');
     document.getElementById('home-cap-card').classList.remove('hidden');
     document.getElementById('nav-civipark').classList.remove('hidden');
@@ -3124,7 +2814,9 @@ async function initApp() {
 // ─── COMMUNES ─────────────────────────────────────────────
 async function loadCommunes() {
   try {
-    communes = await safeFetchJSON('/api/referentiel/communes');
+    const res = await fetch('/api/referentiel/communes');
+    if (!res.ok) return;
+    communes = await res.json();
     populateCommuneSelects();
   } catch (e) { console.warn('communes load error', e); }
 }
@@ -3149,143 +2841,20 @@ function populateCommuneSelects() {
 // ─── RDV SERVICES ─────────────────────────────────────────
 async function loadRdvServices() {
   try {
-    rdvServices = await safeFetchJSON('/api/rdv/services');
+    const res = await fetch('/api/rdv/services');
+    if (!res.ok) return;
+    rdvServices = await res.json();
     const sel = document.getElementById('rdv-service');
     if (!sel) return;
     sel.innerHTML = '<option value="">' + t('rdv.sel_service') + '</option>';
-    // Grouper par catégorie
-    const cats = {};
     rdvServices.forEach(s => {
-      const cat = s.categorie || 'autre';
-      if (!cats[cat]) cats[cat] = [];
-      cats[cat].push(s);
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nom + (s.famille ? ` [${s.famille}]` : '');
+      opt.dataset.famille = s.famille || '';
+      sel.appendChild(opt);
     });
-    const catLabels = { urbanisme: t('rdv.cat_urbanisme'), logement: t('rdv.cat_logement'), certificats: t('rdv.cat_certificats'), biometrique: t('rdv.cat_biometrique'), etat_civil: t('rdv.cat_etat_civil'), identite: t('rdv.cat_identite'), autre: t('rdv.cat_autre') };
-    for (const [cat, svcs] of Object.entries(cats)) {
-      const grp = document.createElement('optgroup');
-      grp.label = (catLabels[cat] || cat) + (svcs[0]?.famille === 'A' ? ' [A — en ligne]' : ' [B — présentiel]');
-      svcs.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.nom;
-        opt.dataset.famille = s.famille || '';
-        grp.appendChild(opt);
-      });
-      sel.appendChild(grp);
-    }
-    // Listener pour afficher détail démarche
-    sel.addEventListener('change', showDemarcheDetail);
   } catch (e) { console.warn('rdv services load error', e); }
-}
-
-function showDemarcheDetail() {
-  const sel = document.getElementById('rdv-service');
-  const svc = rdvServices.find(s => s.id === Number(sel.value));
-  const panel = document.getElementById('rdv-demarche-detail');
-  if (!svc || !sel.value) { panel.classList.add('hidden'); return; }
-  if (svc.famille === 'A') { panel.classList.add('hidden'); return; }
-
-  const pieces = svc.pieces_requises || [];
-  const questions = svc.assistant_questions || [];
-  const hasAssistant = questions.length > 0;
-
-  let html = `<div style="margin-bottom:12px;">
-    <h4 style="color:var(--navy);margin:0 0 4px;">${escHtml(svc.nom)}</h4>
-    ${svc.description ? `<p style="font-size:12px;color:var(--muted);margin:0 0 8px;">${escHtml(svc.description)}</p>` : ''}
-  </div>`;
-
-  // Délai + frais
-  html += `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
-    ${svc.delai_reel ? `<div style="padding:6px 10px;background:#fef3c7;border-radius:8px;font-size:12px;"><strong>${t('rdv.delai')} :</strong> ${escHtml(svc.delai_reel)}</div>` : ''}
-    ${svc.frais ? `<div style="padding:6px 10px;background:#f0fdf4;border-radius:8px;font-size:12px;"><strong>${t('rdv.frais')} :</strong> ${escHtml(svc.frais)}</div>` : ''}
-  </div>`;
-
-  // Mini-assistant (qualification)
-  if (hasAssistant) {
-    html += `<div style="margin-bottom:12px;padding:10px;background:#eff6ff;border-radius:8px;">
-      <h5 style="margin:0 0 8px;font-size:13px;color:#2563eb;">${t('rdv.assistant_titre')}</h5>
-      <div id="rdv-assistant-flow"></div>
-    </div>`;
-  }
-
-  // Checklist pièces requises
-  if (pieces.length) {
-    html += `<div style="margin-bottom:12px;">
-      <h5 style="margin:0 0 6px;font-size:13px;">${t('rdv.pieces_titre')}</h5>
-      <div id="rdv-checklist">
-        ${pieces.map((p, i) => `
-          <label style="display:flex;align-items:start;gap:6px;margin-bottom:4px;font-size:12px;cursor:pointer;">
-            <input type="checkbox" class="rdv-piece-check" data-idx="${i}" style="margin-top:2px;">
-            <span>${escHtml(p)}</span>
-          </label>`).join('')}
-      </div>
-      <div id="rdv-checklist-status" style="font-size:11px;margin-top:4px;color:var(--muted);"></div>
-    </div>`;
-  }
-
-  // Formulaires
-  if (svc.formulaires && svc.formulaires.length) {
-    html += `<div style="margin-bottom:8px;">
-      <h5 style="margin:0 0 4px;font-size:13px;">${t('rdv.formulaires_titre')}</h5>
-      ${svc.formulaires.map(f => `<div style="font-size:12px;color:var(--muted);">📄 ${escHtml(f)}</div>`).join('')}
-    </div>`;
-  }
-
-  panel.classList.remove('hidden');
-  document.getElementById('rdv-demarche-content').innerHTML = html;
-
-  // Init assistant
-  if (hasAssistant) initAssistant(questions);
-
-  // Init checklist listeners
-  document.querySelectorAll('.rdv-piece-check').forEach(cb => {
-    cb.addEventListener('change', updateChecklistStatus);
-  });
-  updateChecklistStatus();
-}
-
-function updateChecklistStatus() {
-  const checks = document.querySelectorAll('.rdv-piece-check');
-  if (!checks.length) return;
-  const total = checks.length;
-  const done = [...checks].filter(c => c.checked).length;
-  const el = document.getElementById('rdv-checklist-status');
-  if (el) {
-    if (done === total) el.innerHTML = `<span style="color:var(--green);font-weight:600;">${t('rdv.checklist_complet')}</span>`;
-    else el.textContent = `${done}/${total} ${t('rdv.checklist_progression')}`;
-  }
-}
-
-function initAssistant(questions) {
-  const flow = document.getElementById('rdv-assistant-flow');
-  if (!flow) return;
-  let step = 0;
-  function renderStep() {
-    if (step >= questions.length) {
-      flow.innerHTML = `<div style="color:var(--green);font-weight:600;font-size:13px;">${t('rdv.assistant_ok')}</div>`;
-      return;
-    }
-    const q = questions[step];
-    flow.innerHTML = `
-      <div style="font-size:13px;margin-bottom:6px;font-weight:500;">${escHtml(q.q)}</div>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-sm btn-primary" onclick="rdvAssistantAnswer(true)">${t('global.oui')}</button>
-        <button class="btn btn-sm btn-outline" onclick="rdvAssistantAnswer(false)">${t('global.non')}</button>
-      </div>`;
-  }
-  window._rdvAssistantQuestions = questions;
-  window._rdvAssistantStep = step;
-  window.rdvAssistantAnswer = function(isOui) {
-    const q = window._rdvAssistantQuestions[window._rdvAssistantStep];
-    if (isOui) {
-      if (q.oui === 'next') { window._rdvAssistantStep++; renderStep(); }
-      else { flow.innerHTML = `<div style="color:var(--gold);font-size:12px;">${escHtml(q.oui)}</div>`; }
-    } else {
-      if (q.non === 'next') { window._rdvAssistantStep++; renderStep(); }
-      else { flow.innerHTML = `<div style="color:var(--red);font-size:12px;">${escHtml(q.non)}</div>`; }
-    }
-  };
-  renderStep();
 }
 
 // ─── VIEW SWITCHING ───────────────────────────────────────
@@ -3293,27 +2862,13 @@ function initAssistant(questions) {
 const UNIVERS_MAP = {
   civiadmin: 'demarches',
   signaler: 'signale', civisignal: 'signale', watersignal: 'signale',
-  carte: 'quartier', edeval: 'quartier', parkzones: 'quartier',
+  carte: 'quartier', edeval: 'quartier',
   participe: 'participe',
   'mes-signalements': 'suivi',
   sentinelle: 'profil'
 };
 
 function showView(name) {
-  // Gating par rôle — empêche citoyen d'accéder aux vues admin
-  const adminViews = ['dashboard', 'cap', 'civipark', 'operateur'];
-  const wilayaViews = ['patrimoine'];
-  if (currentUser && currentUser.role === 'citoyen') {
-    if (adminViews.includes(name) || wilayaViews.includes(name)) {
-      showToast(t('global.acces_refuse') || 'Accès réservé aux agents.', 'error');
-      return;
-    }
-  }
-  if (currentUser && wilayaViews.includes(name) && !isSuperAdmin()) {
-    showToast(t('global.acces_refuse') || 'Accès réservé.', 'error');
-    return;
-  }
-
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById('view-' + name);
   if (target) target.classList.add('active');
@@ -3340,7 +2895,6 @@ function showView(name) {
   if (name === 'mes-signalements') initMesSignalements();
   if (name === 'carte') initCarte();
   if (name === 'edeval') initEdeval();
-  if (name === 'parkzones') initParkzones();
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
@@ -3596,7 +3150,10 @@ async function loadCreneaux() {
   setStep(2);
 
   try {
-    const data = await safeFetchJSON(`/api/rdv/creneaux?communeId=${communeId}&serviceId=${serviceId}`);
+    const res = await fetch(`/api/rdv/creneaux?communeId=${communeId}&serviceId=${serviceId}`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || t('global.erreur_chargement'));
 
     if (data.familleA) {
       document.getElementById('rdv-step-2').classList.add('hidden');
@@ -3608,44 +3165,22 @@ async function loadCreneaux() {
 
     document.getElementById('rdv-creneaux-loading').classList.add('hidden');
     const creneaux = data.creneaux || [];
-    window._rdvCreneaux = creneaux;
+    const grid = document.getElementById('rdv-creneaux-grid');
 
     if (!creneaux.length) {
-      document.getElementById('rdv-day-picker').classList.remove('hidden');
-      document.getElementById('rdv-days').innerHTML = '<p style="color:var(--gray-400);padding:8px;">' + t('rdv.aucun_creneau') + '</p>';
+      grid.innerHTML = '<p style="color:var(--gray-400);padding:8px;">' + t('rdv.aucun_creneau') + '</p>';
+      grid.classList.remove('hidden');
       return;
     }
 
-    // Grouper par jour
-    const byDay = {};
-    creneaux.forEach(cr => {
-      const dt = new Date(cr.debut);
-      const key = dt.toISOString().slice(0, 10); // YYYY-MM-DD
-      if (!byDay[key]) byDay[key] = [];
-      byDay[key].push(cr);
-    });
-    const days = Object.keys(byDay).sort();
-
-    // Afficher le picker jours
-    const daysEl = document.getElementById('rdv-days');
-    daysEl.innerHTML = days.map(day => {
-      const dt = new Date(day + 'T12:00:00');
-      const name = dt.toLocaleDateString('fr-DZ', { weekday: 'short' });
-      const num = dt.getDate();
-      const month = dt.toLocaleDateString('fr-DZ', { month: 'short' });
-      const totalSlots = byDay[day].reduce((s, c) => s + Number(c.restants), 0);
-      return `<div class="day-chip" onclick="rdvSelectDay('${day}')" data-day="${day}">
-        <div class="day-name">${name}</div>
-        <div class="day-num">${num}</div>
-        <div class="day-month">${month}</div>
-        <div class="day-slots">${totalSlots} ${t('rdv_admin.dispo')}</div>
-      </div>`;
-    }).join('');
-    document.getElementById('rdv-day-picker').classList.remove('hidden');
-    document.getElementById('rdv-time-picker').classList.add('hidden');
-
-    // Auto-sélectionner le premier jour
-    rdvSelectDay(days[0]);
+    grid.innerHTML = creneaux.map(cr => `
+      <div class="creneau-card" onclick="selectCreneau('${escHtml(cr.id)}', this)" data-id="${escHtml(cr.id)}">
+        <div class="creneau-date">${fmtDate(cr.date || cr.dateHeure)}</div>
+        <div class="creneau-time">${cr.heure || (cr.dateHeure ? new Date(cr.dateHeure).toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' }) : '—')}</div>
+        <div class="creneau-lieu">${escHtml(cr.lieu || cr.salle || '')}</div>
+      </div>
+    `).join('');
+    grid.classList.remove('hidden');
   } catch (e) {
     document.getElementById('rdv-creneaux-loading').classList.add('hidden');
     showError('rdv-error', e.message);
@@ -3653,38 +3188,10 @@ async function loadCreneaux() {
   }
 }
 
-function rdvSelectDay(day) {
-  // Highlight le jour sélectionné
-  document.querySelectorAll('.day-chip').forEach(c => c.classList.toggle('selected', c.dataset.day === day));
-
-  // Filtrer les créneaux de ce jour
-  const creneaux = (window._rdvCreneaux || []).filter(cr => cr.debut.startsWith(day));
-  const grid = document.getElementById('rdv-creneaux-grid');
-  const dt = new Date(day + 'T12:00:00');
-  document.getElementById('rdv-time-label').textContent = t('rdv.horaires_du') + ' ' + dt.toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' });
-
-  grid.innerHTML = creneaux.map(cr => {
-    const t2 = new Date(cr.debut);
-    const timeStr = t2.toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' });
-    const restants = Number(cr.restants);
-    const capacite = Number(cr.capacite);
-    return `
-    <div class="creneau-card" onclick="selectCreneau(${cr.id}, this)" data-id="${cr.id}">
-      <div class="creneau-time" style="font-size:20px;font-weight:700;">${timeStr}</div>
-      <div style="font-size:11px;color:${restants <= 2 ? 'var(--red)' : 'var(--green)'};">${restants}/${capacite} ${t('rdv_admin.dispo')}</div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('rdv-time-picker').classList.remove('hidden');
-  document.getElementById('rdv-confirm-btn').classList.add('hidden');
-  document.getElementById('rdv-priorite-group').classList.remove('hidden');
-  selectedCreneauId = null;
-}
-
 function selectCreneau(id, el) {
   document.querySelectorAll('.creneau-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  selectedCreneauId = Number(id);
+  selectedCreneauId = id;
   document.getElementById('rdv-confirm-btn').classList.remove('hidden');
 }
 
@@ -3693,12 +3200,11 @@ async function confirmRDV() {
   const btn = document.getElementById('rdv-confirm-btn');
   btn.disabled = true;
   btn.textContent = t('rdv.confirmation_en_cours');
-  const priorite = document.getElementById('rdv-priorite')?.value || null;
   try {
     const res = await apiFetch('/api/rdv', {
       method: 'POST',
       headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ creneauId: selectedCreneauId, public_prioritaire: priorite || null })
+      body: JSON.stringify({ creneauId: selectedCreneauId })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || t('rdv.erreur_reservation'));
@@ -3712,8 +3218,6 @@ async function confirmRDV() {
     if (rdv.date || rdv.dateHeure) details += ` ${t('rdv.date')} ${fmtDateTime(rdv.date || rdv.dateHeure)}.`;
     if (rdv.service) details += ` ${t('rdv.service_label')} ${rdv.service}.`;
     document.getElementById('rdv-confirmed-details').textContent = details;
-    const rdvEmailEl = document.getElementById('rdv-conf-email');
-    if (rdvEmailEl && currentUser?.email) rdvEmailEl.textContent = t('signaler.conf_email') + ' ' + currentUser.email;
 
     await loadMesRDV();
   } catch (e) {
@@ -3728,14 +3232,9 @@ function resetRDV() {
   document.getElementById('rdv-step-2').classList.add('hidden');
   document.getElementById('rdv-step-3').classList.add('hidden');
   document.getElementById('rdv-famille-a').classList.add('hidden');
-  document.getElementById('rdv-demarche-detail').classList.add('hidden');
-  document.getElementById('rdv-priorite-group').classList.add('hidden');
-  document.getElementById('rdv-day-picker').classList.add('hidden');
-  document.getElementById('rdv-time-picker').classList.add('hidden');
   document.getElementById('rdv-creneaux-grid').innerHTML = '';
   document.getElementById('rdv-confirm-btn').classList.add('hidden');
   selectedCreneauId = null;
-  window._rdvCreneaux = null;
   hideError('rdv-error');
 }
 
@@ -3764,28 +3263,19 @@ async function loadMesRDV() {
       container.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><p>' + t('rdv.aucun_rdv') + '</p></div>';
       return;
     }
-    container.innerHTML = list.map(r => {
-      const canEval = (r.statut === 'traite' || r.statut === 'present') && !r.evalue_le;
-      const hasEval = !!r.evalue_le;
-      const prioLabel = r.public_prioritaire ? t('rdv.priorite_' + r.public_prioritaire) : '';
-      return `
-      <div class="rdv-item" style="flex-wrap:wrap;">
+    container.innerHTML = list.map(r => `
+      <div class="rdv-item">
         <div class="rdv-icon-box">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
-        <div class="rdv-info" style="flex:1;min-width:160px;">
+        <div class="rdv-info">
           <strong>${escHtml(r.service || r.service_nom || t('rdv.step_service'))}</strong>
-          <p>${fmtDateTime(r.debut || r.date || r.dateHeure || r.creneau_date)}</p>
+          <p>${fmtDateTime(r.date || r.dateHeure || r.creneau_date)}</p>
           <p>${escHtml(r.commune || r.commune_nom || '')}${r.lieu ? ' — ' + r.lieu : ''}</p>
-          ${prioLabel ? `<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#eff6ff;color:#2563eb;">${prioLabel}</span>` : ''}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span class="badge ${rdvStatusBadge(r.statut)}">${escHtml(r.statut || 'confirmé')}</span>
-          ${canEval ? `<button class="btn btn-sm btn-outline" onclick="showEvalRDV('${r.id}')" style="font-size:10px;">${t('rdv.evaluer')}</button>` : ''}
-          ${hasEval ? `<span style="font-size:10px;color:var(--gold);">★ ${r.note_satisfaction}/5</span>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+        <span class="badge ${rdvStatusBadge(r.statut)}">${escHtml(r.statut || 'confirmé')}</span>
+      </div>
+    `).join('');
   } catch (e) {
     container.innerHTML = `<p style="padding:16px;color:var(--red)">${escHtml(e.message)}</p>`;
   }
@@ -3798,186 +3288,19 @@ function rdvStatusBadge(s) {
   return 'badge-gray';
 }
 
-// ─── ÉVALUATION POST-RDV ─────────────────────────────────
-function showEvalRDV(rdvId) {
-  const container = document.getElementById('mes-rdv-container');
-  // Ajouter le formulaire d'évaluation en bas
-  let evalForm = document.getElementById('eval-rdv-form');
-  if (evalForm) evalForm.remove();
-  container.insertAdjacentHTML('afterend', `
-    <div id="eval-rdv-form" class="card" style="margin-top:12px;padding:16px;">
-      <h4 style="margin:0 0 10px;color:var(--navy);">${t('rdv.eval_titre')}</h4>
-      <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:13px;">${t('rdv.eval_note')} <span style="color:var(--gold);">★</span></label>
-        <div style="display:flex;gap:6px;" id="eval-stars">
-          ${[1,2,3,4,5].map(n => `<button type="button" class="btn btn-sm btn-outline eval-star" data-note="${n}" onclick="selectEvalStar(${n})" style="font-size:16px;">★</button>`).join('')}
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="eval-honore"> ${t('rdv.eval_honore')}
-        </label>
-      </div>
-      <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="eval-delai"> ${t('rdv.eval_delai')}
-        </label>
-      </div>
-      <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:13px;">${t('rdv.eval_commentaire')}</label>
-        <textarea id="eval-commentaire" rows="2" style="font-size:13px;"></textarea>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="submitEvalRDV('${rdvId}')" style="width:100%;">${t('rdv.eval_envoyer')}</button>
-    </div>
-  `);
-  window._evalNote = 0;
-  document.getElementById('eval-rdv-form').scrollIntoView({ behavior: 'smooth' });
-}
-
-function selectEvalStar(n) {
-  window._evalNote = n;
-  document.querySelectorAll('.eval-star').forEach(btn => {
-    btn.style.color = Number(btn.dataset.note) <= n ? '#eab308' : 'var(--muted)';
-    btn.style.background = Number(btn.dataset.note) <= n ? '#fef3c7' : '';
-  });
-}
-
-async function submitEvalRDV(rdvId) {
-  if (!window._evalNote) { showToast(t('rdv.eval_note_requis'), 'error'); return; }
-  try {
-    const res = await apiFetch('/api/rdv/' + rdvId + '/evaluer', {
-      method: 'PATCH',
-      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        note_satisfaction: window._evalNote,
-        rdv_honore: document.getElementById('eval-honore').checked,
-        delai_respecte: document.getElementById('eval-delai').checked,
-        commentaire_eval: document.getElementById('eval-commentaire').value || null,
-      })
-    });
-    if (res.ok) {
-      showToast(t('rdv.eval_succes'));
-      const form = document.getElementById('eval-rdv-form');
-      if (form) form.remove();
-      loadMesRDV();
-    } else {
-      const data = await res.json();
-      showToast(data.message || t('rdv.eval_erreur'), 'error');
-    }
-  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
-}
-
 // ─── SENTINELLE ───────────────────────────────────────────
 async function initSentinelle() {
   loadSentinellePoints();
-  loadImpact();
-  loadBadges();
-  loadAvantages();
   loadLeaderboard();
-}
-
-async function loadAvantages() {
-  const el = document.getElementById('sentinelle-avantages');
-  try {
-    const list = await safeFetchJSON('/api/points/avantages', {}, true);
-    if (!list.length) { el.innerHTML = ''; return; }
-    el.innerHTML = list.map(a => `
-      <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-100);align-items:center;${a.debloque ? '' : 'opacity:0.4;'}">
-        <span style="font-size:22px;">${a.icone}</span>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:13px;color:var(--navy);">${escHtml(a.nom)}</div>
-          <div style="font-size:11px;color:var(--muted);">${escHtml(a.description)}</div>
-        </div>
-        <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:${a.debloque ? '#dcfce7' : 'var(--gray-100)'};color:${a.debloque ? '#16a34a' : 'var(--muted)'};">
-          ${a.debloque ? '✓' : escHtml(a.niveau_requis)}
-        </span>
-      </div>
-    `).join('') + `
-      <div style="margin-top:10px;padding:8px;background:#eff6ff;border-radius:8px;font-size:11px;color:#2563eb;text-align:center;">
-        ${t('sent.avantages_bientot')}
-      </div>`;
-  } catch(e) { el.innerHTML = ''; }
-}
-
-async function loadImpact() {
-  const el = document.getElementById('sentinelle-impact');
-  try {
-    const msgs = await safeFetchJSON('/api/points/impact', {}, true);
-    if (!msgs.length) {
-      el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">${t('sent.impact_vide')}</div>`;
-      return;
-    }
-    el.innerHTML = msgs.map(m => `
-      <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-100);align-items:start;">
-        <span style="color:var(--green);font-size:16px;flex-shrink:0;">✅</span>
-        <div style="flex:1;">
-          <div style="font-size:13px;color:var(--navy);">${escHtml(m.message)}</div>
-          <div style="font-size:11px;color:var(--muted);">${fmtDate(m.cree_le)}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) { el.innerHTML = ''; }
-}
-
-async function loadBadges() {
-  const el = document.getElementById('sentinelle-badges');
-  try {
-    const data = await safeFetchJSON('/api/points/badges', {}, true);
-    const earned = data.earned || [];
-    const all = data.all || [];
-    if (!all.length) { el.innerHTML = ''; return; }
-    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px;">
-      ${all.map(b => {
-        const got = earned.find(e => e.code === b.code);
-        return `<div style="text-align:center;width:70px;opacity:${got ? 1 : 0.35};">
-          <div style="font-size:28px;">${b.icone}</div>
-          <div style="font-size:10px;font-weight:600;color:var(--navy);line-height:1.2;">${escHtml(b.nom)}</div>
-          ${got ? `<div style="font-size:9px;color:var(--green);">${fmtDate(got.obtenu_le)}</div>` : `<div style="font-size:9px;color:var(--muted);">${b.condition_seuil}+</div>`}
-        </div>`;
-      }).join('')}
-    </div>`;
-  } catch(e) { el.innerHTML = ''; }
 }
 
 async function loadSentinellePoints() {
   const journalEl = document.getElementById('sentinelle-journal');
   try {
-    const data = await safeFetchJSON('/api/points/profil', {}, true);
+    const res = await apiFetch('/api/points/moi', { headers: authHeaders() });
+    if (!res.ok) { journalEl.innerHTML = '<p style="padding:16px;color:var(--gray-400)">' + t('sent.impossible_charger') + '</p>'; return; }
+    const data = await res.json();
     document.getElementById('sentinelle-points').textContent = data.points ?? '0';
-
-    // Afficher le niveau
-    const niveauEl = document.getElementById('sentinelle-niveau');
-    if (niveauEl && data.niveau) {
-      const niveauColors = { citoyen:'#94a3b8', contributeur:'#3b82f6', sentinelle:'#f59e0b', ambassadeur:'#16a34a', referent:'#7c3aed' };
-      const color = niveauColors[data.niveau_code] || '#94a3b8';
-      let html = `<span style="display:inline-block;padding:3px 12px;border-radius:12px;background:${color}22;color:${color};font-weight:700;font-size:13px;">${escHtml(data.niveau)}</span>`;
-      if (data.prochain_niveau) {
-        const pct = Math.min(100, Math.round((data.points / data.prochain_niveau.seuil) * 100));
-        html += `<div style="margin-top:6px;font-size:11px;color:var(--muted);">
-          ${t('sent.prochain_niveau')} : ${escHtml(data.prochain_niveau.nom)} (${data.prochain_niveau.seuil} pts)
-          <div style="margin-top:3px;height:4px;background:var(--gray-200);border-radius:2px;overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;"></div>
-          </div>
-        </div>`;
-      }
-      niveauEl.innerHTML = html;
-    }
-
-    // Stats personnelles (CV civique — strictement personnel, pas de comparaison)
-    const statsEl = document.getElementById('sentinelle-stats');
-    if (statsEl && data.stats) {
-      const s = data.stats;
-      const pct = s.total > 0 ? Math.round(s.resolus / s.total * 100) : 0;
-      statsEl.innerHTML = [
-        { v: s.total, l: t('sent.stat_signales'), c: '#0A3D62' },
-        { v: s.resolus, l: t('sent.stat_resolus'), c: '#1FA463' },
-        { v: pct + '%', l: t('sent.stat_pertinence'), c: '#2563eb' },
-        { v: s.communes, l: t('sent.stat_communes'), c: '#E1A730' },
-      ].map(i => `<div style="flex:1;min-width:70px;padding:8px;background:${i.c}10;border-radius:8px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:${i.c};">${i.v}</div>
-        <div style="font-size:10px;color:var(--muted);">${i.l}</div>
-      </div>`).join('');
-    }
 
     const journal = data.journal || [];
     if (!journal.length) {
@@ -4010,24 +3333,22 @@ async function loadSentinellePoints() {
 async function loadLeaderboard() {
   const el = document.getElementById('sentinelle-leaderboard');
   try {
-    const list = await safeFetchJSON('/api/points/classement-quartiers');
+    const res = await fetch('/api/points/classement');
+    if (!res.ok) { el.innerHTML = '<p style="padding:16px;color:var(--gray-400)">' + t('sent.classement_indisponible') + '</p>'; return; }
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (data.classement || []);
     if (!list.length) {
       el.innerHTML = '<div class="empty-state"><p>' + t('sent.classement_vide') + '</p></div>';
       return;
     }
-    const userCommune = currentUser?.commune_id;
     el.innerHTML = list.slice(0, 20).map((item, idx) => {
       const rank = idx + 1;
-      const isMyCommune = item.commune_id === userCommune;
       const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
       return `
-        <div class="leaderboard-item" style="${isMyCommune ? 'background:var(--navy-light);border-radius:8px;padding:6px 8px;' : ''}">
+        <div class="leaderboard-item">
           <div class="rank-badge ${rankClass}">${rank}</div>
-          <div style="flex:1;">
-            <div style="font-weight:${rank <= 3 ? '700' : '500'}">${escHtml(item.commune)}${isMyCommune ? ' ★' : ''}</div>
-            <div style="font-size:11px;color:var(--muted);">${item.citoyens_actifs} ${t('sent.classement_citoyens')} · ${item.resolus} ${t('sent.stat_resolus')}</div>
-          </div>
-          <div style="font-weight:700;color:var(--green)">${item.points_collectifs} pts</div>
+          <div style="flex:1;font-weight:${rank <= 3 ? '700' : '500'}">${escHtml(item.prenom || item.nom || t('home.citoyen'))}</div>
+          <div style="font-weight:700;color:var(--green)">${item.points} pts</div>
         </div>`;
     }).join('');
   } catch (e) {
@@ -4421,7 +3742,9 @@ async function initEdeval() {
   el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + t('edeval.chargement') + '</div>';
   document.getElementById('edeval-detail').classList.add('hidden');
   try {
-    const parcs = await safeFetchJSON('/api/edeval/iqep');
+    const res = await fetch('/api/edeval/iqep');
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    const parcs = await res.json();
     if (!parcs.length) { el.innerHTML = '<div class="empty-state"><p>' + t('edeval.aucun_parc') + '</p></div>'; return; }
     el.innerHTML = parcs.map(p => {
       const note = p.note_finale ?? 100;
@@ -4457,7 +3780,8 @@ async function showIqepDetail(parcId) {
   wrap.classList.remove('hidden');
   card.innerHTML = '<div style="text-align:center;padding:20px;">' + t('global.chargement') + '</div>';
   try {
-    const d = await safeFetchJSON('/api/edeval/iqep/' + parcId);
+    const res = await fetch('/api/edeval/iqep/' + parcId);
+    const d = await res.json();
     const note = d.note_finale ?? d.note_auto ?? 100;
     const color = iqepColor(note);
     const isAdmin = isSuperAdmin() || isAgent();
@@ -4768,7 +4092,9 @@ async function cpLoadZones() {
   const el = document.getElementById('cp-panel-zones');
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
   try {
-    cpZones = await safeFetchJSON('/api/civipark/zones');
+    const res = await fetch('/api/civipark/zones');
+    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
+    cpZones = await res.json();
     if (!cpZones.length) {
       el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>';
       return;
@@ -4905,89 +4231,31 @@ async function cpCreateEncaissement(e) {
   } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
-// ─── PARKZONES — CiviPark citoyen (lecture seule) ────────────
-async function initParkzones() {
-  const el = document.getElementById('parkzones-list');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
-  try {
-    const res = await fetch('/api/civipark/zones');
-    if (!res.ok) {
-      console.error('[ParkZones] fetch failed:', res.status, res.statusText, res.url);
-      el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + ' <span style="font-size:11px;color:var(--muted);display:block;">HTTP ' + res.status + '</span></p>';
-      return;
-    }
-    const raw = await res.text();
-    let zones;
-    try { zones = JSON.parse(raw); } catch (pe) {
-      console.error('[ParkZones] JSON parse error:', pe, 'raw:', raw.substring(0, 200));
-      el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>';
-      return;
-    }
-    if (!Array.isArray(zones) || !zones.length) {
-      el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>';
-      return;
-    }
-    const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge:'#ef4444' };
-    el.innerHTML = zones.map(z => {
-      const color = ZONE_COLORS[z.type] || '#94a3b8';
-      return `<div class="card" style="margin-bottom:8px;padding:12px;border-left:4px solid ${color};">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-          <div style="flex:1;min-width:180px;">
-            <div style="font-weight:700;color:var(--navy);">${escHtml(z.nom)}</div>
-            <div style="font-size:12px;color:var(--muted);">${escHtml(z.commune_nom||'—')}</div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${color}22;color:${color};font-weight:600;">${t('civipark.zone_'+z.type)}</span>
-            ${z.places_total ? `<span style="font-size:11px;color:var(--muted);">${z.places_total} ${t('civipark.places')}</span>` : ''}
-            ${z.tarif_horaire ? `<span style="font-size:11px;font-weight:600;color:var(--navy);">${z.tarif_horaire} ${t('civipark.da_h')}</span>` : ''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    console.error('[ParkZones] initParkzones error:', e);
-    el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
-  }
-}
-
 // ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────
-// Taxonomie 16 catégories inline (pas de dépendance API pour le rendu)
 let sigFamillesData = null;
-const SIG_TAXONOMY_INLINE = {"accessibilite":[{"id":72,"libelle":"Autre accessibilité","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"accessibilite autre handicap mobilite"},{"id":70,"libelle":"Absence de rampe / main courante","groupe":"Bâtiments","criticite":"moyenne","epic_sigle":null,"keywords":"rampe main courante absence escalier"},{"id":69,"libelle":"Trottoir non accessible PMR","groupe":"Piétons","criticite":"moyenne","epic_sigle":null,"keywords":"trottoir non accessible pmr fauteuil roulant"},{"id":71,"libelle":"Place PMR occupée / non conforme","groupe":"Stationnement","criticite":"moyenne","epic_sigle":"EPIC-PARKINGS","keywords":"place pmr occupee non conforme parking"}],"animaux":[{"id":68,"libelle":"Autre animal","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"animal autre"},{"id":65,"libelle":"Animal errant (chien, chat)","groupe":"Errants","criticite":"basse","epic_sigle":null,"keywords":"animal errant chien chat abandonner"},{"id":67,"libelle":"Nid d'insectes dangereux (guêpes, frelons)","groupe":"Insectes","criticite":"haute","epic_sigle":null,"keywords":"nid insecte guepe frelon abeille dangereux"},{"id":66,"libelle":"Animal mort sur la voie publique","groupe":"Urgences","criticite":"moyenne","epic_sigle":null,"keywords":"animal mort cadavre voie publique"}],"assainissement":[{"id":40,"libelle":"Autre assainissement","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"assainissement autre"},{"id":38,"libelle":"Odeurs nauséabondes","groupe":"Nuisances","criticite":"moyenne","epic_sigle":null,"keywords":"odeur nauseabonde puanteur egout"},{"id":37,"libelle":"Regard/avaloir bouché","groupe":"Réseau","criticite":"haute","epic_sigle":null,"keywords":"regard avaloir bouche egout grille"},{"id":39,"libelle":"Refoulement eaux usées","groupe":"Urgences","criticite":"haute","epic_sigle":null,"keywords":"refoulement eaux usees debordement"}],"autre":[{"id":36,"libelle":"Autre problème","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"autre probleme divers"}],"batiments":[{"id":42,"libelle":"Accessibilité non conforme","groupe":"Accessibilité","criticite":"moyenne","epic_sigle":null,"keywords":"accessibilite rampe ascenseur handicap"},{"id":44,"libelle":"Autre bâtiment public","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"batiment public autre ecole mairie"},{"id":43,"libelle":"Équipement défectueux (chauffage, sanitaires)","groupe":"Équipements","criticite":"moyenne","epic_sigle":null,"keywords":"equipement chauffage sanitaire plomberie"},{"id":41,"libelle":"Bâtiment dégradé (façade, toiture)","groupe":"Structure","criticite":"moyenne","epic_sigle":null,"keywords":"batiment degrade facade toiture fissure mur"}],"eau":[{"id":9,"libelle":"Coupure d'eau ou pression faible","groupe":"Alimentation","criticite":"haute","epic_sigle":null,"keywords":"coupure eau pression faible robinet"},{"id":12,"libelle":"Pression insuffisante","groupe":"Alimentation","criticite":"moyenne","epic_sigle":null,"keywords":"pression insuffisante debit"},{"id":14,"libelle":"Autre eau","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"eau autre probleme"},{"id":8,"libelle":"Fuite d'eau visible","groupe":"Fuites","criticite":"haute","epic_sigle":null,"keywords":"fuite eau visible canalisation tuyau"},{"id":11,"libelle":"Fuite sur compteur","groupe":"Fuites","criticite":"moyenne","epic_sigle":null,"keywords":"fuite compteur branchement"},{"id":10,"libelle":"Eau non potable ou colorée","groupe":"Qualité","criticite":"haute","epic_sigle":null,"keywords":"eau non potable colorée"},{"id":13,"libelle":"Inondation ou refoulement","groupe":"Urgences","criticite":"haute","epic_sigle":null,"keywords":"inondation refoulement debordement egout"}],"eclairage":[{"id":26,"libelle":"Autre éclairage","groupe":"Autre","criticite":"basse","epic_sigle":"ERMA","keywords":"eclairage autre"},{"id":6,"libelle":"Éclairage défaillant","groupe":"Lampadaires","criticite":"moyenne","epic_sigle":"ERMA","keywords":"eclairage defaillant lampe"},{"id":23,"libelle":"Lampadaire éteint","groupe":"Lampadaires","criticite":"moyenne","epic_sigle":"ERMA","keywords":"lampadaire eteint nuit sombre"},{"id":24,"libelle":"Lampadaire clignotant ou défectueux","groupe":"Lampadaires","criticite":"moyenne","epic_sigle":"ERMA","keywords":"lampadaire clignotant defectueux"},{"id":25,"libelle":"Câble électrique apparent (danger)","groupe":"Urgences","criticite":"haute","epic_sigle":"ERMA","keywords":"cable electrique apparent danger"}],"environnement":[{"id":60,"libelle":"Autre environnement","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"environnement autre ecologie nature"},{"id":58,"libelle":"Cours d'eau / oued pollué","groupe":"Eau","criticite":"haute","epic_sigle":null,"keywords":"cours eau oued pollue riviere"},{"id":57,"libelle":"Déversement illicite (huile, chimique)","groupe":"Pollution","criticite":"haute","epic_sigle":"CET","keywords":"deversement illicite huile chimique toxique"},{"id":59,"libelle":"Terrain vague insalubre","groupe":"Salubrité","criticite":"moyenne","epic_sigle":null,"keywords":"terrain vague insalubre friche abandon"}],"espaces_verts":[{"id":15,"libelle":"Arbre dangereux ou espace vert dégradé","groupe":"Arbres","criticite":"moyenne","epic_sigle":"EDEVAL","keywords":"arbre dangereux espace vert degrade branche"},{"id":22,"libelle":"Autre espaces verts","groupe":"Autre","criticite":"basse","epic_sigle":"EDEVAL","keywords":"espaces verts autre"},{"id":18,"libelle":"Arrosage défectueux ou fuite","groupe":"Entretien","criticite":"moyenne","epic_sigle":"EDEVAL","keywords":"arrosage defectueux fuite pelouse"},{"id":21,"libelle":"Plantation ou fleurissement à entretenir","groupe":"Entretien","criticite":"basse","epic_sigle":"EDEVAL","keywords":"plantation fleurissement entretenir herbe"},{"id":19,"libelle":"Mobilier urbain dégradé (banc…)","groupe":"Équipements","criticite":"basse","epic_sigle":"EDEVAL","keywords":"mobilier urbain banc degrade casse"},{"id":20,"libelle":"Aire de jeux endommagée","groupe":"Équipements","criticite":"moyenne","epic_sigle":"EDEVAL","keywords":"aire jeux endommagee enfant"}],"mobilier_urbain":[{"id":52,"libelle":"Autre mobilier urbain","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"mobilier urbain autre"},{"id":49,"libelle":"Banc / abri bus dégradé","groupe":"Mobilier","criticite":"basse","epic_sigle":null,"keywords":"banc abri bus degrade casse arret"},{"id":50,"libelle":"Poubelle publique manquante ou cassée","groupe":"Propreté","criticite":"moyenne","epic_sigle":null,"keywords":"poubelle publique manquante cassee corbeille"},{"id":51,"libelle":"Panneau / affichage endommagé","groupe":"Signalétique","criticite":"basse","epic_sigle":null,"keywords":"panneau affichage endommage info"}],"nuisances":[{"id":47,"libelle":"Nuisibles (rats, insectes, pigeons)","groupe":"Animaux","criticite":"moyenne","epic_sigle":null,"keywords":"nuisible rat insecte pigeon cafard moustique"},{"id":48,"libelle":"Autre nuisance","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"nuisance autre gene"},{"id":45,"libelle":"Bruit excessif (chantier, voisinage)","groupe":"Bruit","criticite":"moyenne","epic_sigle":null,"keywords":"bruit excessif chantier voisinage tapage nocturne"},{"id":46,"libelle":"Pollution de l'air / fumées","groupe":"Pollution","criticite":"haute","epic_sigle":null,"keywords":"pollution air fumee odeur usine"}],"proprete":[{"id":7,"libelle":"Autre propreté","groupe":"Autre","criticite":"basse","epic_sigle":null,"keywords":"proprete autre nettoyage"},{"id":1,"libelle":"Dépôt sauvage (ordures, gravats)","groupe":"Collecte","criticite":"haute","epic_sigle":null,"keywords":"depot sauvage ordure gravats dechets"},{"id":2,"libelle":"Benne pleine ou débordante","groupe":"Collecte","criticite":"moyenne","epic_sigle":null,"keywords":"benne pleine debordante conteneur"},{"id":3,"libelle":"Encombrants sur la voie publique","groupe":"Collecte","criticite":"basse","epic_sigle":null,"keywords":"encombrants voie publique meuble matelas"},{"id":4,"libelle":"Tags ou graffitis","groupe":"Dégradations","criticite":"basse","epic_sigle":null,"keywords":"tags graffiti graffitis mur facade"},{"id":17,"libelle":"Décharge sauvage (enfouissement illicite)","groupe":"Urgences","criticite":"haute","epic_sigle":"CET","keywords":"decharge sauvage enfouissement illicite pollution"}],"securite":[{"id":64,"libelle":"Autre danger","groupe":"Autre","criticite":"haute","epic_sigle":null,"keywords":"securite danger autre risque"},{"id":61,"libelle":"Trou / excavation non protégé","groupe":"Danger","criticite":"haute","epic_sigle":null,"keywords":"trou excavation non protege chantier ouvert"},{"id":62,"libelle":"Mur / structure menaçant de s'effondrer","groupe":"Danger","criticite":"haute","epic_sigle":null,"keywords":"mur structure effondrer danger ruine"},{"id":63,"libelle":"Câble / fil électrique au sol","groupe":"Électrique","criticite":"haute","epic_sigle":"ERMA","keywords":"cable fil electrique sol danger"}],"stationnement":[{"id":33,"libelle":"Place PMR non respectée","groupe":"Accessibilité","criticite":"moyenne","epic_sigle":"EPIC-PARKINGS","keywords":"place pmr non respectee handicap"},{"id":35,"libelle":"Autre stationnement","groupe":"Autre","criticite":"basse","epic_sigle":"EPIC-PARKINGS","keywords":"stationnement autre parking"},{"id":16,"libelle":"Stationnement gênant ou anarchique","groupe":"Gênant","criticite":"moyenne","epic_sigle":"EPIC-PARKINGS","keywords":"stationnement genant anarchique double file"},{"id":34,"libelle":"Zone à réguler","groupe":"Régulation","criticite":"basse","epic_sigle":"EPIC-PARKINGS","keywords":"zone reguler horodateur"}],"transport":[{"id":56,"libelle":"Autre transport","groupe":"Autre","criticite":"basse","epic_sigle":"EGCTU","keywords":"transport autre bus tram metro"},{"id":53,"libelle":"Arrêt de bus sans abri / dégradé","groupe":"Infrastructure","criticite":"basse","epic_sigle":"EGCTU","keywords":"arret bus abri degrade transport"},{"id":55,"libelle":"Passage piéton effacé / dangereux","groupe":"Sécurité","criticite":"moyenne","epic_sigle":"EGCTU","keywords":"passage pieton efface dangereux zebra"},{"id":54,"libelle":"Signalisation routière manquante","groupe":"Signalisation","criticite":"moyenne","epic_sigle":"EGCTU","keywords":"signalisation routiere manquante panneau stop"}],"voirie":[{"id":31,"libelle":"Autre voirie","groupe":"Autre","criticite":"basse","epic_sigle":"EGCTU","keywords":"voirie autre route"},{"id":5,"libelle":"Chaussée dégradée (nid-de-poule)","groupe":"Chaussée","criticite":"haute","epic_sigle":"EGCTU","keywords":"chaussee degradee nid poule trou goudron"},{"id":30,"libelle":"Feu tricolore en panne","groupe":"Circulation","criticite":"haute","epic_sigle":"EGCTU","keywords":"feu tricolore panne rouge circulation"},{"id":29,"libelle":"Signalisation manquante ou endommagée","groupe":"Signalisation","criticite":"moyenne","epic_sigle":"EGCTU","keywords":"signalisation manquante endommagee panneau"},{"id":28,"libelle":"Trottoir dégradé ou inaccessible","groupe":"Trottoirs","criticite":"moyenne","epic_sigle":"EGCTU","keywords":"trottoir degrade inaccessible dalle"}]};
 let sigMapInitialized = false;
 let sigMap = null;
 let sigMarker = null;
 
 const SIG_FAMILLE_META = {
-  eau:             { icon: '💧', color: '#2563eb', label: 'Eau',              label_ar: 'المياه' },
-  assainissement:  { icon: '🚿', color: '#0891b2', label: 'Assainissement',   label_ar: 'الصرف الصحي' },
-  voirie:          { icon: '🛣️', color: '#64748b', label: 'Voirie',           label_ar: 'الطرق' },
-  eclairage:       { icon: '💡', color: '#eab308', label: 'Éclairage',        label_ar: 'الإنارة' },
-  proprete:        { icon: '🗑️', color: '#0B3C5D', label: 'Propreté',         label_ar: 'النظافة' },
-  espaces_verts:   { icon: '🌳', color: '#16a34a', label: 'Espaces verts',    label_ar: 'المساحات الخضراء' },
-  stationnement:   { icon: '🅿️', color: '#8b5cf6', label: 'Stationnement',   label_ar: 'المواقف' },
-  transport:       { icon: '🚌', color: '#f59e0b', label: 'Transport',        label_ar: 'النقل' },
-  batiments:       { icon: '🏢', color: '#78716c', label: 'Bâtiments publics',label_ar: 'المباني العمومية' },
-  nuisances:       { icon: '🔊', color: '#ef4444', label: 'Nuisances',        label_ar: 'الإزعاجات' },
-  mobilier_urbain: { icon: '🪑', color: '#6366f1', label: 'Mobilier urbain',  label_ar: 'الأثاث الحضري' },
-  environnement:   { icon: '🌍', color: '#059669', label: 'Environnement',    label_ar: 'البيئة' },
-  securite:        { icon: '⚠️', color: '#dc2626', label: 'Sécurité',         label_ar: 'الأمن' },
-  animaux:         { icon: '🐾', color: '#a16207', label: 'Animaux',          label_ar: 'الحيوانات' },
-  accessibilite:   { icon: '♿', color: '#7c3aed', label: 'Accessibilité',    label_ar: 'سهولة الوصول' },
-  autre:           { icon: '❓', color: '#9ca3af', label: 'Autre',            label_ar: 'أخرى' },
+  eau:            { icon: 'droplets',        color: '#2563eb' },
+  espaces_verts:  { icon: 'tree-deciduous',  color: '#16a34a' },
+  eclairage:      { icon: 'lightbulb',       color: '#eab308' },
+  voirie:         { icon: 'road',            color: '#64748b' },
+  proprete:       { icon: 'trash-2',         color: '#0A3D62' },
+  stationnement:  { icon: 'parking-meter',   color: '#8b5cf6' },
+  autre:          { icon: 'help-circle',     color: '#9ca3af' },
 };
 
-const SIG_FAMILLE_ORDER = ['eau','assainissement','voirie','eclairage','proprete','espaces_verts','stationnement','transport','batiments','nuisances','mobilier_urbain','environnement','securite','animaux','accessibilite','autre'];
+const SIG_FAMILLE_ORDER = ['eau','espaces_verts','eclairage','voirie','proprete','stationnement','autre'];
 
 async function initSignaler() {
-  // Charger les familles: API d'abord, taxonomie inline en fallback
-  if (!sigFamillesData || !Object.keys(sigFamillesData).length) {
+  // Charger les familles depuis l'API
+  if (!sigFamillesData) {
     try {
-      sigFamillesData = await safeFetchJSON('/api/signaler/familles');
-    } catch (e) {
-      console.warn('[Signaler] API indisponible, taxonomie inline utilisée');
-      sigFamillesData = SIG_TAXONOMY_INLINE;
-    }
+      const res = await fetch('/api/signaler/familles');
+      sigFamillesData = await res.json();
+    } catch (e) { sigFamillesData = {}; }
   }
   // Peupler les communes
   const sel = document.getElementById('sig-commune');
@@ -5011,29 +4279,12 @@ async function initSignaler() {
       }
     });
   }
-  // Remplir la grille 16 catégories directement
-  sigRenderGrid();
+  // Reset à l'étape choix
   sigShowStep('choix');
 }
 
-function sigRenderGrid() {
-  const grid = document.getElementById('sig-familles-grid-direct');
-  if (!grid) return;
-  const lang = currentLang || 'fr';
-  grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
-    const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
-    const label = lang === 'ar' ? meta.label_ar : meta.label;
-    return '<div class="module-card" onclick="sigShowSousCas(\'' + fam + '\')" style="cursor:pointer;min-width:0;">' +
-      '<div class="module-icon" style="background:' + meta.color + '15;">' +
-      '<span style="font-size:28px;">' + meta.icon + '</span>' +
-      '</div>' +
-      '<h3 style="font-size:13px;line-height:1.2;">' + escHtml(label) + '</h3>' +
-      '</div>';
-  }).join('');
-}
-
 function sigShowStep(step) {
-  ['choix','souscas','epics','form','confirmation'].forEach(s => {
+  ['choix','familles','souscas','epics','form'].forEach(s => {
     const el = document.getElementById('sig-step-' + s);
     if (el) el.classList.toggle('hidden', s !== step);
   });
@@ -5046,45 +4297,43 @@ function sigBackToChoix() {
 }
 
 // ── PORTE 1 : chemin guidé par familles ──
-function sigBackToFamilles() { sigShowStep('choix'); }
+function sigShowFamilles() {
+  const grid = document.getElementById('sig-familles-grid');
+  grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
+    const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
+    const label = t('signaler.fam_' + fam);
+    return `
+      <div class="module-card" onclick="sigShowSousCas('${fam}')" style="cursor:pointer;">
+        <div class="module-icon" style="background:${meta.color}15;">
+          <i data-lucide="${meta.icon}" style="color:${meta.color};width:28px;height:28px;"></i>
+        </div>
+        <h3 style="font-size:14px;">${escHtml(label)}</h3>
+      </div>`;
+  }).join('');
+  if (window.lucide) lucide.createIcons();
+  sigShowStep('familles');
+}
+
+function sigBackToFamilles() { sigShowStep('familles'); }
 
 function sigShowSousCas(famille) {
-  // Fallback taxonomie inline si l'API n'a pas chargé
-  if (!sigFamillesData || !Object.keys(sigFamillesData).length) {
-    sigFamillesData = SIG_TAXONOMY_INLINE;
-  }
-  const cats = (sigFamillesData[famille] || []);
+  const cats = sigFamillesData[famille] || [];
   if (!cats.length) {
+    // Famille sans sous-cas → formulaire direct avec "Autre"
     sigSelectCategorie(null, famille);
     return;
   }
-  const meta = SIG_FAMILLE_META[famille] || SIG_FAMILLE_META.autre;
   const list = document.getElementById('sig-souscas-list');
-  // Grouper par groupe
-  const groups = {};
-  cats.forEach(c => {
-    const g = c.groupe || 'Autre';
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(c);
-  });
-  let html = '';
-  for (const [grp, items] of Object.entries(groups)) {
-    if (Object.keys(groups).length > 1) {
-      html += `<div style="font-size:12px;font-weight:600;color:${meta.color};text-transform:uppercase;margin:12px 0 6px;letter-spacing:0.5px;">${escHtml(grp)}</div>`;
-    }
-    html += items.map(c => {
-      const badge = c.criticite === 'haute' ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#fee2e2;color:#ef4444;margin-left:6px;">urgent</span>' : '';
-      return `<div class="card" style="margin-bottom:6px;padding:10px 14px;cursor:pointer;transition:background .15s;"
+  list.innerHTML = cats.map(c => `
+    <div class="card" style="margin-bottom:8px;padding:12px 16px;cursor:pointer;transition:background .15s;"
          onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
          onclick="sigSelectCategorie(${c.id}, '${famille}')">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:13px;font-weight:500;">${escHtml(c.libelle)}${badge}</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
-        </div>
-      </div>`;
-    }).join('');
-  }
-  list.innerHTML = html;
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:14px;font-weight:500;">${escHtml(c.libelle)}</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
+      </div>
+    </div>
+  `).join('');
   sigShowStep('souscas');
 }
 
@@ -5095,43 +4344,22 @@ async function sigShowEpics() {
   sigShowStep('epics');
   try {
     const res = await fetch('/api/signaler/epics');
-    if (!res.ok) {
-      console.error('[EPIC] fetch failed:', res.status, res.statusText);
-      throw new Error('HTTP ' + res.status);
-    }
-    const raw = await res.text();
-    let epics;
-    try { epics = JSON.parse(raw); } catch (pe) {
-      console.error('[EPIC] JSON parse error:', pe, 'raw:', raw.substring(0, 200));
-      throw new Error('Réponse invalide du serveur');
-    }
-    if (!Array.isArray(epics) || !epics.length) {
-      list.innerHTML = '<p style="color:var(--muted);padding:16px;">' + t('global.aucun') + '</p>';
-      return;
-    }
-    list.innerHTML = epics.map(ep => {
-      const sigle = ep.sigle || ep.code || '?';
-      const nom = ep.nom || ep.libelle || ep.name || '';
-      return `
+    const epics = await res.json();
+    list.innerHTML = epics.map(ep => `
       <div class="card" style="margin-bottom:8px;padding:14px 16px;cursor:pointer;transition:background .15s;"
            onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
-           onclick="sigSelectEpic(${ep.id}, '${escHtml(sigle)}')">
+           onclick="sigSelectEpic(${ep.id}, '${escHtml(ep.sigle)}')">
         <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:40px;height:40px;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:var(--navy);position:relative;">
-            ${escHtml(sigle.substring(0,4))}
-            <span style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid white;" title="${t('epic.en_ligne')}"></span>
-          </div>
-          <div style="flex:1;">
-            <div style="font-weight:600;font-size:14px;color:var(--navy);">${escHtml(sigle)}</div>
-            <div style="font-size:12px;color:var(--muted);line-height:1.3;">${escHtml(nom)}</div>
-            ${ep.description ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${escHtml(ep.description.substring(0,80))}…</div>` : ''}
+          <div style="width:40px;height:40px;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:var(--navy);">${escHtml(ep.sigle.substring(0,4))}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--navy);">${escHtml(ep.sigle)}</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.3;">${escHtml(ep.nom)}</div>
           </div>
         </div>
-      </div>`;
-    }).join('');
+      </div>
+    `).join('');
   } catch (e) {
-    console.error('[EPIC] sigShowEpics error:', e);
-    list.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + ' <span style="font-size:11px;color:var(--muted);display:block;margin-top:4px;">' + escHtml(e.message) + '</span></p>';
+    list.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>';
   }
 }
 
@@ -5221,10 +4449,6 @@ function sigSelectCategorie(catId, famille) {
             const adresse = await reverseGeocode(lat, lng);
             adresseEl.textContent = adresse ? '📍 ' + adresse : '';
           }
-          // Auto-détecter la commune la plus proche
-          autoDetectCommune(parseFloat(lat), parseFloat(lng));
-          // Chercher les signalements proches
-          checkProches(lat, lng);
         });
         sigMapInitialized = true;
       }
@@ -5237,56 +4461,6 @@ function sigSelectCategorie(catId, famille) {
   document.getElementById('sig-success').classList.add('hidden');
   sigShowStep('form');
   applyTranslations();
-}
-
-async function checkProches(lat, lng) {
-  const panel = document.getElementById('sig-proches');
-  try {
-    const proches = await safeFetchJSON(`/api/signaler/proches?lat=${lat}&lng=${lng}`);
-    if (!proches.length) { panel.classList.add('hidden'); return; }
-    panel.classList.remove('hidden');
-    panel.innerHTML = `
-      <div style="padding:10px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;">
-        <div style="font-weight:600;font-size:13px;color:#1d4ed8;margin-bottom:6px;">
-          ${proches.length} ${t('signaler.proches_titre')}
-        </div>
-        ${proches.map(p => `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid #e0e7ff;">
-            <span>${escHtml(p.categorie)} — ${escHtml((p.description||'').substring(0,50))}${p.nb_confirmations?` (+${p.nb_confirmations})`:''}</span>
-            <button type="button" class="btn btn-sm btn-outline" onclick="confirmerProche('${p.id}')" style="font-size:10px;padding:2px 6px;">
-              ${t('signaler.proches_confirmer')}
-            </button>
-          </div>
-        `).join('')}
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">${t('signaler.proches_hint')}</div>
-      </div>`;
-  } catch(e) { panel.classList.add('hidden'); }
-}
-
-async function confirmerProche(id) {
-  try {
-    const res = await apiFetch('/api/signaler/' + id + '/confirmer', {
-      method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }
-    });
-    if (res.ok) {
-      const d = await res.json();
-      showToast(t('signaler.proches_confirme') + ' (+' + d.nb_confirmations + ')');
-      // Recharger les proches
-      const lat = document.getElementById('sig-lat').value;
-      const lng = document.getElementById('sig-lng').value;
-      if (lat && lng) checkProches(lat, lng);
-    }
-  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
-}
-
-function selectGravite(el, value) {
-  document.querySelectorAll('.gravite-option').forEach(o => {
-    o.style.borderColor = 'var(--gray-200)';
-    o.style.background = '';
-  });
-  el.style.borderColor = value === 'danger_immediat' ? '#ef4444' : value === 'risque_blessure' ? '#f59e0b' : 'var(--navy)';
-  el.style.background = value === 'danger_immediat' ? '#fef2f2' : value === 'risque_blessure' ? '#fffbeb' : 'var(--navy-light)';
-  el.querySelector('input').checked = true;
 }
 
 // ── Soumission du formulaire unifié ──
@@ -5316,8 +4490,6 @@ async function handleUnifiedSignalement(e) {
     if (lat) fd.append('lat', lat);
     if (lng) fd.append('lng', lng);
     if (photoInput.files && photoInput.files[0]) fd.append('photo', photoInput.files[0]);
-    const graviteRadio = document.querySelector('input[name="sig-gravite"]:checked');
-    if (graviteRadio) fd.append('gravite', graviteRadio.value);
 
     const res = await apiFetch('/api/signaler/signalements', {
       method: 'POST',
@@ -5327,7 +4499,7 @@ async function handleUnifiedSignalement(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || data.error || data.erreur || t('sig.erreur_envoi'));
 
-    const ref = data.signalement?.reference || 'N/A';
+    showSuccess(sucId, `${t('signaler.succes')} #${(data.signalement && data.signalement.reference) || 'N/A'}`);
 
     // Sauvegarder dans localStorage pour "Mes signalements"
     try {
@@ -5335,7 +4507,7 @@ async function handleUnifiedSignalement(e) {
       const mesSignals = JSON.parse(localStorage.getItem('civismart_mes_signalements') || '[]');
       mesSignals.unshift({
         id: data.signalement?.id || Date.now(),
-        reference: ref,
+        reference: data.signalement?.reference || 'N/A',
         domaine: data.signalement?.domaine || 'general',
         categorie: document.getElementById('sig-categorie-display').value,
         commune: commune ? commune.nom : '',
@@ -5347,18 +4519,7 @@ async function handleUnifiedSignalement(e) {
       localStorage.setItem('civismart_mes_signalements', JSON.stringify(mesSignals));
     } catch(_) {}
 
-    // Afficher l'écran de confirmation (remplace le formulaire)
-    sigShowStep('confirmation');
-    document.getElementById('sig-conf-ref').textContent = '#' + ref;
-    const ptsEl = document.getElementById('sig-conf-points');
-    if (ptsEl && data.pointsGagnes) ptsEl.textContent = '+' + data.pointsGagnes + ' ' + t('sent.points_accumules');
-    // Afficher info email/SMS
-    const emailEl = document.getElementById('sig-conf-email');
-    const smsEl = document.getElementById('sig-conf-sms');
-    if (emailEl && currentUser?.email) emailEl.textContent = t('signaler.conf_email') + ' ' + currentUser.email;
-    if (smsEl && currentUser?.telephone) smsEl.textContent = t('signaler.conf_sms') + ' ' + currentUser.telephone;
-
-    // Reset le formulaire en arrière-plan
+    // Reset form
     document.getElementById('sig-form').reset();
     document.getElementById('sig-lat').value = '';
     document.getElementById('sig-lng').value = '';
@@ -5379,39 +4540,26 @@ async function handleUnifiedSignalement(e) {
 // certains reverse proxies comme OpenLiteSpeed).
 // Montée en charge : remplacer TILE_URL par un fournisseur avec clé
 // (MapTiler gratuit 100k/mois, Stadia, Thunderforest) sans refactor.
-// Fournisseurs de tuiles avec cascade de fallback
-// Fournisseurs de tuiles testés et fonctionnels (sans clé API)
-// Stadia retiré : requiert une API key depuis 2023 (401 Unauthorized)
-const TILE_PROVIDERS = [
-  { name: 'CARTO', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' }},
-  { name: 'CARTO-Voyager', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © CARTO', maxZoom: 19, subdomains: 'abcd' }},
-  { name: 'OSM', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a>', maxZoom: 19 }},
-];
+const TILE_URL      = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+const TILE_OPTS     = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' };
+const TILE_URL_ALT  = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_OPTS_ALT = { attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19 };
 
 /**
- * Crée une couche de tuiles avec cascade de fallback automatique.
- * CARTO → Stadia → OSM. Chaque échec bascule vers le suivant.
+ * Crée une couche de tuiles avec fallback automatique.
+ * Si le fournisseur principal échoue (tileerror), bascule sur le secondaire.
  */
 function createTileLayer(map) {
-  let idx = 0;
-  function tryProvider(i) {
-    if (i >= TILE_PROVIDERS.length) { console.error('[carte] Aucun fournisseur de tuiles disponible'); return; }
-    const p = TILE_PROVIDERS[i];
-    const layer = L.tileLayer(p.url, p.opts);
-    let switched = false;
-    layer.on('tileerror', function() {
-      if (switched) return;
-      switched = true;
-      console.warn('[carte]', p.name, 'indisponible — bascule vers', TILE_PROVIDERS[i+1]?.name || 'aucun');
-      map.removeLayer(layer);
-      tryProvider(i + 1);
-    });
-    layer.addTo(map);
-  }
-  tryProvider(0);
+  const primary = L.tileLayer(TILE_URL, TILE_OPTS);
+  let switched = false;
+  primary.on('tileerror', function() {
+    if (switched) return;
+    switched = true;
+    console.warn('[CiviSmart] Tuiles CARTO indisponibles — bascule sur OSM');
+    map.removeLayer(primary);
+    L.tileLayer(TILE_URL_ALT, TILE_OPTS_ALT).addTo(map);
+  });
+  primary.addTo(map);
 }
 
 let carteMap = null;
@@ -5430,30 +4578,6 @@ async function initCarte() {
   setTimeout(() => { if (carteMap) carteMap.invalidateSize(); }, 200);
   await loadCarteSignals();
   await loadCarteBiens();
-  loadQuartierDashboard();
-}
-
-async function loadQuartierDashboard() {
-  const el = document.getElementById('quartier-dashboard');
-  if (!el) return;
-  // Utiliser la commune du citoyen s'il en a une
-  const communeId = currentUser?.commune_id;
-  if (!communeId) { el.innerHTML = ''; return; }
-  try {
-    const d = await safeFetchJSON('/api/dashboard/quartier?communeId=' + communeId);
-    const items = [];
-    if (d.ouverts !== undefined) items.push({ label: t('quartier.ouverts'), value: d.ouverts, color: '#ef4444' });
-    if (d.resolus_ce_mois !== undefined) items.push({ label: t('quartier.resolus_mois'), value: d.resolus_ce_mois, color: '#16a34a' });
-    if (d.pct_resolus !== null) items.push({ label: t('quartier.pct_resolus'), value: d.pct_resolus + '%', color: '#2563eb' });
-    if (d.delai_moyen_heures) items.push({ label: t('quartier.delai_moyen'), value: d.delai_moyen_heures + 'h', color: '#f59e0b' });
-    if (d.iqep_moyen) items.push({ label: 'IQEP', value: d.iqep_moyen + '/100', color: '#16a34a' });
-    if (!items.length) { el.innerHTML = ''; return; }
-    el.innerHTML = items.map(i =>
-      `<div style="flex:1;min-width:80px;padding:8px 10px;background:${i.color}10;border-radius:8px;text-align:center;">
-        <div style="font-size:18px;font-weight:800;color:${i.color};">${i.value}</div>
-        <div style="font-size:10px;color:var(--muted);">${i.label}</div>
-      </div>`).join('');
-  } catch(e) { el.innerHTML = ''; }
 }
 
 async function loadCarteBiens() {
@@ -5683,29 +4807,10 @@ function centerMiniMap(prefix) {
         if (prefix === 'cs') csMarker = newMarker;
         else if (prefix === 'ws') wsMarker = newMarker;
         else if (prefix === 'sig') sigMarker = newMarker;
-        // Auto-détecter la commune pour le signalement unifié
-        if (prefix === 'sig') autoDetectCommune(lat, lng);
       }
     },
     () => alert(t('geo.impossible'))
   );
-}
-
-// Trouver la commune la plus proche d'un point GPS et pré-remplir le select
-function autoDetectCommune(lat, lng) {
-  if (!communes || !communes.length) return;
-  let best = null, bestDist = Infinity;
-  for (const c of communes) {
-    if (!c.centre_lat || !c.centre_lng) continue;
-    const d = Math.pow(lat - c.centre_lat, 2) + Math.pow(lng - c.centre_lng, 2);
-    if (d < bestDist) { bestDist = d; best = c; }
-  }
-  if (best) {
-    const sel = document.getElementById('sig-commune');
-    if (sel) { sel.value = best.id; }
-    const autoLabel = document.getElementById('sig-commune-auto');
-    if (autoLabel) { autoLabel.textContent = '📍 ' + best.nom; autoLabel.classList.remove('hidden'); }
-  }
 }
 
 // ─── POPULATE AGENT COMMUNE FILTERS ──────────────────────
@@ -5907,19 +5012,6 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v16';
-(function purgeStaleSW() {
-  const stored = localStorage.getItem('civismart_sw_ver');
-  if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
-    console.log('[SW] Version mismatch', stored, '→', APP_CACHE_VERSION, '— purging caches');
-    caches.keys().then(ks => Promise.all(ks.map(k => caches.delete(k))));
-    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-    localStorage.setItem('civismart_sw_ver', APP_CACHE_VERSION);
-    location.reload();
-    return;
-  }
-  localStorage.setItem('civismart_sw_ver', APP_CACHE_VERSION);
-})();
 if("serviceWorker"in navigator){window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("/sw.js");swRegistration.addEventListener("updatefound",()=>{const nw=swRegistration.installing;nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller)document.getElementById("pwa-update-toast").classList.remove("hidden");});});}catch(e){console.warn("SW failed:",e);}});}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(!localStorage.getItem("pwa_dismissed")&&!window.matchMedia("(display-mode:standalone)").matches)setTimeout(()=>document.getElementById("pwa-banner").classList.remove("hidden"),3000);});
 if(window.matchMedia("(display-mode:standalone)").matches)document.getElementById("pwa-banner").classList.add("hidden");
@@ -6265,266 +5357,6 @@ async function changerEtatOperateur(domaine, id, etat) {
   else { showToast(t('toast.erreur_maj'),'error'); }
 }
 
-// ═══════════════════════════════════════════════════════════
-// SAKSINI v2 — 41 Q&R, 529 keywords, matching strict
-// ═══════════════════════════════════════════════════════════
-const SAKSINI_FAQ = [
-  {k:['signaler','signalement','probleme','declarer','alerter','reporter','denoncer','prevenir'],fr:"Cliquez sur « Je signale » dans le menu. Choisissez la famille (eau, déchets, voirie…), placez le point sur la carte, ajoutez une photo et envoyez.",ar:"اضغط على « أبلّغ » في القائمة. اختر العائلة (مياه، نفايات، طرق…)، ضع النقطة على الخريطة، أضف صورة وأرسل."},
-  {k:['rdv','rendez-vous','rendezvous','reservation','reserver','creneau','horaire','disponibilite','agenda','planning'],fr:"Allez dans « Mes démarches », sélectionnez commune + service, choisissez un jour puis un créneau horaire.",ar:"اذهب إلى « إجراءاتي »، اختر البلدية + الخدمة، اختر يوما ثم فترة زمنية."},
-  {k:['suivi','suivre','etat','statut','avancement','resolution','traitement','traite','resolu','progression'],fr:"Consultez « Je suis » pour voir l'état de vos signalements et RDV. Vous recevrez un email à chaque changement d'état.",ar:"راجع « أتابع » لمعرفة حالة بلاغاتك ومواعيدك. ستتلقى بريدا إلكترونيا عند كل تغيير."},
-  {k:['points','impact','niveau','badge','recompense','citoyennete','merite','score','progres','contribution'],fr:"Chaque signalement rapporte des points. La validation après résolution rapporte +20. Consultez « Mon impact » pour voir votre niveau et vos badges.",ar:"كل بلاغ يمنحك نقاطا. التحقق بعد الحل يمنح +20. راجع « تأثيري » لمعرفة مستواك وشاراتك."},
-  {k:['carte','quartier','houma','voisinage','proximite','autour','pres','zone','secteur','cartographie'],fr:"« Ma Houma » affiche la carte des signalements, les scores IQEP des parcs et les zones de stationnement de votre quartier.",ar:"« حومتي » تعرض خريطة البلاغات، تقييمات IQEP للحدائق ومناطق الركن في حيك."},
-  {k:['inscription','inscrire','compte','creer','register','enregistrer','nouveau','rejoindre'],fr:"Cliquez sur « Inscription » sur la page de connexion. Remplissez prénom, nom, email, téléphone, commune et mot de passe.",ar:"اضغط على « تسجيل » في صفحة الدخول. املأ الاسم، البريد، الهاتف، البلدية وكلمة المرور."},
-  {k:['connexion','connecter','login','identifiant','mot de passe','mdp','oublie','reinitialiser','acces'],fr:"Entrez votre numéro de téléphone et mot de passe. Si vous l'avez oublié, contactez support@algerna.dz.",ar:"أدخل رقم هاتفك وكلمة المرور. إذا نسيتها، تواصل مع support@algerna.dz."},
-  {k:['eau','fuite','coupure','seaal','pression','robinet','compteur','canalisation','tuyau','plomberie'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
-  {k:['dechet','poubelle','benne','depot','ordure','netcom','extranet','ramassage','collecte','recyclage','encombrant'],fr:"Pour les déchets (dépôt sauvage, benne pleine…), utilisez « Je signale » → famille Déchets. Routage automatique vers NETCOM ou EXTRANET.",ar:"للنفايات (رمي عشوائي، حاوية ممتلئة…)، استخدم « أبلّغ » → عائلة النفايات. توجيه تلقائي نحو NETCOM أو EXTRANET."},
-  {k:['voirie','route','trottoir','nid de poule','chaussee','goudron','bitume','asphalte','trou','fissure','revêtement'],fr:"Problème de voirie ? « Je signale » → Voirie. Transmis à l'EGCTU (circulation et transports urbains).",ar:"مشكلة طرق؟ « أبلّغ » → الطرق. يُحال إلى EGCTU (الدورة المرورية والنقل الحضري)."},
-  {k:['eclairage','lampadaire','lumiere','erma','ampoule','nuit','sombre','electrique','panne'],fr:"Lampadaire en panne ? « Je signale » → Éclairage. Transmis à l'ERMA (éclairage public).",ar:"عمود إنارة معطل؟ « أبلّغ » → الإنارة. يُحال إلى ERMA (الإنارة العمومية)."},
-  {k:['espace vert','arbre','parc','jardin','edeval','pelouse','herbe','vegetation','plante','branche','taille'],fr:"Arbre dangereux ou parc dégradé ? « Je signale » → Espaces verts. Transmis à l'EDEVAL.",ar:"شجرة خطيرة أو حديقة متدهورة؟ « أبلّغ » → المساحات الخضراء. يُحال إلى EDEVAL."},
-  {k:['stationnement','parking','genant','place','vehicule','gare','stationner','voiture','double file'],fr:"Stationnement gênant ? « Je signale » → Stationnement. Géré par l'EPIC Parkings.",ar:"ركن مزعج؟ « أبلّغ » → المواقف. يديره EPIC المواقف."},
-  {k:['epic','operateur','netcom','extranet','egctu','erma','edeval','etablissement','public'],fr:"Les EPIC sont les établissements publics de la Wilaya d'Alger (NETCOM, EXTRANET, EDEVAL, ERMA, EGCTU, CET, EPIC Parkings). Votre signalement est automatiquement routé vers le bon EPIC.",ar:"الـ EPIC هي المؤسسات العمومية لولاية الجزائر. يُوجَّه بلاغك تلقائيا نحو الـ EPIC المناسب."},
-  {k:['permis','construire','urbanisme','foncier','livret','terrain','construction','batir','cu','conformite'],fr:"Pour le permis de construire ou le livret foncier, allez dans « Mes démarches » → Urbanisme. Délai réel : 2 à 12 mois.",ar:"لرخصة البناء أو الدفتر العقاري، اذهب إلى « إجراءاتي » → اختر إجراء التعمير. الأجل الفعلي: 2 إلى 12 شهرا."},
-  {k:['aadl','logement','recours','social','appartement','hlm','attribution','liste','attente'],fr:"Suivi AADL ou recours logement social : « Mes démarches » → Logement. Apportez votre récépissé de dépôt.",ar:"متابعة AADL أو طعن سكن اجتماعي: « إجراءاتي » → السكن. أحضر وصل الإيداع."},
-  {k:['certificat','bonne vie','moeurs','residence','attestation','document','papier','administratif'],fr:"Certificats communaux (bonne vie, résidence…) : « Mes démarches » → Certificats. Délai : immédiat à 48h.",ar:"الشهادات البلدية (حسن السيرة، الإقامة…): « إجراءاتي » → الشهادات. الأجل: فوري إلى 48 ساعة."},
-  {k:['biometrique','enrolement','cni','passeport','empreinte','identite','carte nationale','voyage','visa'],fr:"Enrôlement biométrique (CNI ou passeport) : « Mes démarches » → Biométrique. Munissez-vous de l'extrait S12 et des photos.",ar:"التسجيل البيومتري (بطاقة أو جواز): « إجراءاتي » → البيومتري. أحضر مستخرج S12 والصور."},
-  {k:['prioritaire','handicap','enceinte','age','pmr','mobilite','fauteuil','senior','accessibilite'],fr:"Lors de la réservation d'un créneau, vous pouvez déclarer un accès prioritaire (personne âgée, handicap, femme enceinte).",ar:"عند حجز فترة زمنية، يمكنك التصريح بأولوية الوصول (شخص مسن، إعاقة، امرأة حامل)."},
-  {k:['evaluer','evaluation','satisfaction','noter','avis','retour','feedback','qualite','appreciation'],fr:"Après un RDV traité, un bouton « Évaluer » apparaît dans vos RDV. Notez de 1 à 5 — votre avis alimente l'ICUA.",ar:"بعد موعد مُعالَج، يظهر زر « تقييم » في مواعيدك. قيّم من 1 إلى 5 — رأيك يغذي مؤشر ICUA."},
-  {k:['icua','indice','qualite','ville','indicateur','mesure','performance','gouvernance'],fr:"L'ICUA est l'Indice de Citoyenneté Urbaine Active. Il mesure la qualité de vie : propreté, réactivité, espaces verts, fluidité, engagement.",ar:"ICUA هو مؤشر المواطنة الحضرية النشطة. يقيس جودة الحياة: نظافة، استجابة، مساحات خضراء، سيولة، مشاركة."},
-  {k:['iqep','espaces publics','note','parc','qualite parc','evaluation parc','score parc','vert'],fr:"L'IQEP (Indice Qualité des Espaces Publics) note chaque parc de 0 à 100. Consultez-le dans « Ma Houma » → IQEP Parcs.",ar:"IQEP (مؤشر جودة الفضاءات العمومية) يقيّم كل حديقة من 0 إلى 100. راجعه في « حومتي » → IQEP الحدائق."},
-  {k:['famille a','dematerialise','portail','national','en ligne','internet','numerique','digital'],fr:"Les démarches Famille A (extrait de naissance, résidence…) sont dématérialisées. ALGERNA vous redirige vers le portail national.",ar:"الإجراءات فئة أ (مستخرج ميلاد، إقامة…) مُرقمنة. ALGERNA يوجهك نحو البوابة الوطنية."},
-  {k:['famille b','presentiel','physique','guichet','bureau','sur place'],fr:"Les démarches Famille B nécessitent une présence physique. Réservez un créneau via « Mes démarches ».",ar:"الإجراءات فئة ب تتطلب حضورا شخصيا. احجز فترة زمنية عبر « إجراءاتي »."},
-  {k:['photo','preuve','image','piece jointe','camera','appareil','capture','prise'],fr:"Ajoutez une photo à votre signalement — elle aide les agents à identifier et prioriser le problème. +5 points bonus.",ar:"أضف صورة لبلاغك — تساعد الأعوان في تحديد المشكلة وترتيب الأولويات. +5 نقاط إضافية."},
-  {k:['danger','urgence','grave','immediat','blessure','securite','risque','menace','accident'],fr:"Si le problème est dangereux, sélectionnez « Danger immédiat » dans le formulaire. Il sera traité en priorité.",ar:"إذا كانت المشكلة خطيرة، اختر « خطر فوري » في الاستمارة. سيُعالَج بأولوية."},
-  {k:['doublon','meme','deja signale','confirmer','proche','similaire','existant','repeter'],fr:"Si un signalement existe déjà à proximité, un bandeau vous propose de confirmer (« Même problème ») au lieu de créer un doublon.",ar:"إذا وُجد بلاغ قريب، يقترح عليك شريط التأكيد (« نفس المشكلة ») بدل إنشاء نسخة."},
-  {k:['notification','email','sms','alerte','mail','courriel','message','prevenir','informer'],fr:"Vous recevez un email à la création et à la résolution de votre signalement. Les SMS arrivent bientôt.",ar:"تتلقى بريدا عند إنشاء وحل بلاغك. الرسائل القصيرة قادمة قريبا."},
-  {k:['classement','quartier','commune','rang','palmares','top','meilleur','comparaison','competition'],fr:"Le classement est par quartier (commune), jamais par individu. Votre commune gagne des points collectifs.",ar:"التصنيف حسب الحي (البلدية)، وليس حسب الأفراد. بلديتك تكسب نقاطا جماعية."},
-  {k:['badge','premier','sentinelle','ambassadeur','protecteur','distinction','trophee','medaille','recompense'],fr:"5 badges : Premier signalement, 10 résolus, Sentinelle quartier, Protecteur des parcs, Ambassadeur de l'eau. Attribués automatiquement.",ar:"5 شارات: أول بلاغ، 10 محلولة، حارس الحي، حامي الحدائق، سفير المياه. تُمنح تلقائيا."},
-  {k:['niveau','contributeur','referent','progression','evolution','monter','avancer','palier','grade'],fr:"5 niveaux : Citoyen → Contributeur → Sentinelle → Ambassadeur → Référent de quartier. Basés sur les points ET la pertinence.",ar:"5 مستويات: مواطن → مساهم → حارس → سفير → مرجع الحي. بناءً على النقاط والفعالية."},
-  {k:['avantage','diplome','medaille','inauguration','ceremonie','honneur','distinction','officiel'],fr:"Les niveaux débloquent des avantages symboliques : diplôme citoyen, invitation inauguration, médaille, rencontre institutionnelle.",ar:"المستويات تفتح مزايا رمزية: شهادة مواطنة، دعوة تدشين، ميدالية، لقاء مؤسساتي."},
-  {k:['algerna','application','plateforme','appli','site','web','outil','c est quoi','presentation','a propos'],fr:"ALGERNA est la plateforme citoyenne de la Wilaya d'Alger. Elle permet de signaler des problèmes, prendre des RDV, et suivre l'amélioration de votre quartier.",ar:"ALGERNA هي المنصة المواطنية لولاية الجزائر. تتيح الإبلاغ عن المشاكل، حجز المواعيد، ومتابعة تحسين حيك."},
-  {k:['securite','donnees','confidentialite','vie privee','rgpd','protection','personnel','prive'],fr:"Vos données sont stockées sur des serveurs sécurisés. Aucun score individuel n'est publié. Votre profil est personnel.",ar:"بياناتك مخزنة على خوادم آمنة. لا يُنشر أي تقييم فردي. ملفك شخصي."},
-  {k:['langue','arabe','francais','rtl','traduction','bilingue','changer langue'],fr:"Cliquez sur FR/AR en haut pour changer de langue. L'interface s'adapte automatiquement (RTL pour l'arabe).",ar:"اضغط على FR/AR في الأعلى لتغيير اللغة. الواجهة تتكيف تلقائيا."},
-  {k:['hors ligne','offline','connexion','reseau','internet','wifi','deconnecte','pas de reseau'],fr:"ALGERNA fonctionne partiellement hors ligne grâce au mode PWA. Les données se synchronisent au retour du réseau.",ar:"ALGERNA يعمل جزئيا بدون إنترنت بفضل وضع PWA. البيانات تتزامن عند عودة الشبكة."},
-  {k:['installer','pwa','application','mobile','telephone','ecran accueil','raccourci','icone'],fr:"Sur mobile, cliquez « Installer » dans la bannière pour ajouter ALGERNA à votre écran d'accueil comme une application.",ar:"على الهاتف، اضغط « تثبيت » في الشريط لإضافة ALGERNA إلى شاشتك الرئيسية كتطبيق."},
-  {k:['contact','support','aide','probleme technique','bug','erreur','assistance','service client','reclamation'],fr:"Pour l'aide technique : support@algerna.dz. Pour les urgences : contactez votre APC directement.",ar:"للمساعدة التقنية: support@algerna.dz. للطوارئ: تواصل مع بلديتك مباشرة."},
-  {k:['wali','wilaya','gouverneur','prefet','autorite','administration','institution','responsable'],fr:"ALGERNA est une plateforme de la Wilaya d'Alger. Pour contacter les services de la Wilaya, utilisez « Mes démarches » ou écrivez à support@algerna.dz.",ar:"ALGERNA هي منصة ولاية الجزائر. للتواصل مع مصالح الولاية، استخدم « إجراءاتي » أو اكتب إلى support@algerna.dz."},
-  {k:['apc','mairie','commune','maire','elu','president','assemblee','populaire','communale'],fr:"L'APC (Assemblée Populaire Communale) gère votre commune. Prenez un RDV via « Mes démarches » pour vos démarches en mairie.",ar:"المجلس الشعبي البلدي يدير بلديتك. احجز موعدا عبر « إجراءاتي » لإجراءاتك في البلدية."},
-  {k:['saksini','chatbot','robot','assistant','aide automatique','bot','question'],fr:"Je suis Saksini, l'assistant ALGERNA. Posez-moi vos questions sur les signalements, les démarches, les points ou l'application.",ar:"أنا سقسيني، مساعد ALGERNA. اطرح عليّ أسئلتك حول البلاغات، الإجراءات، النقاط أو التطبيق."},
-];
-
-/**
- * Recherche FAQ Saksini v2 — matching strict par keywords.
- * Ignore les mots < 3 chars. Exige un score minimum de 3.
- * Retourne null si aucun match → le fallback poli s'affiche.
- */
-function saksiniSearch(q) {
-  const words = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .split(/\s+/).filter(w => w.length >= 3); // ignorer les mots courts (le, un, de, je...)
-  if (!words.length) return null;
-  let best = null, bestScore = 0;
-  for (const faq of SAKSINI_FAQ) {
-    let score = 0;
-    for (const w of words) {
-      for (const k of faq.k) {
-        // Match exact ou contenu (keyword dans mot ou mot dans keyword)
-        if (w === k) score += 4;           // exact match
-        else if (k.length >= 4 && w.includes(k)) score += 2;  // mot contient keyword (ex: "signalement" contient "signal")
-        else if (w.length >= 4 && k.includes(w)) score += 2;  // keyword contient mot
-        else if (w.length >= 4 && k.length >= 4 && k.startsWith(w.substring(0,4))) score += 1; // préfixe commun
-      }
-    }
-    if (score > bestScore) { bestScore = score; best = faq; }
-  }
-  return best && bestScore >= 3 ? best : null; // seuil minimum 3 pour éviter les faux matches
-}
-
-function saksiniInit() {
-  const msgs = document.getElementById('saksini-msgs');
-  msgs.innerHTML = '';
-  // Message de bienvenue (dans la langue active)
-  saksiniAddMsg('bot', t('saksini.bienvenue'));
-  // Charger historique seulement si même langue
-  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
-  const lang = currentLang || 'fr';
-  hist.filter(h => h.lang === lang).forEach(h => {
-    saksiniAddMsg('user', h.q);
-    saksiniAddMsg('bot', h.a);
-  });
-}
-
-function saksiniAddMsg(role, text) {
-  const msgs = document.getElementById('saksini-msgs');
-  const cls = role === 'user' ? 'sak-msg-user' : 'sak-msg-bot';
-  msgs.insertAdjacentHTML('beforeend', `<div class="${cls}">${escHtml(text)}</div>`);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function saksiniAsk(q) {
-  if (!q || !q.trim()) return;
-  saksiniAddMsg('user', q);
-  const lang = currentLang || 'fr';
-
-  // 1. Chercher dans la FAQ
-  const match = saksiniSearch(q);
-  if (match) {
-    const answer = lang === 'ar' ? match.ar : match.fr;
-    saksiniAddMsg('bot', answer);
-    saksiniSaveHist(q, answer);
-    document.getElementById('saksini-input').value = '';
-    return;
-  }
-
-  // 2. Tenter la déduction signalement par mots-clés
-  const deduction = saksiniDeduceSignalement(q);
-  if (deduction) {
-    const meta = SIG_FAMILLE_META[deduction.famille] || {};
-    const catLabel = lang === 'ar' ? (meta.label_ar || deduction.famille) : (meta.label || deduction.famille);
-    const lieu = deduction.lieu ? ` — ${deduction.lieu}` : '';
-    const epicInfo = deduction.epic ? ` (${deduction.epic})` : '';
-    const prioLabel = deduction.priorite === 'haute' ? (lang === 'ar' ? '⚠ عاجل' : '⚠ Urgent') : '';
-    const msg = lang === 'ar'
-      ? `فهمت: ${catLabel} / ${deduction.sousCategorie}${lieu}${epicInfo} ${prioLabel}\n\nهل تريد إنشاء هذا البلاغ؟`
-      : `J'ai compris : ${catLabel} / ${deduction.sousCategorie}${lieu}${epicInfo} ${prioLabel}\n\nVoulez-vous créer ce signalement ?`;
-    saksiniAddMsg('bot', msg);
-    // Ajouter bouton de création
-    const msgs = document.getElementById('saksini-msgs');
-    const btnOui = lang === 'ar' ? 'نعم، أنشئ' : 'Oui, créer';
-    const btnNon = lang === 'ar' ? 'لا' : 'Non';
-    const dismissMsg = lang === 'ar' ? 'حسنا، اسأل سؤالا آخر.' : 'Posez une autre question.';
-    const btnDiv = document.createElement('div');
-    btnDiv.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
-    const b1 = document.createElement('button');
-    b1.className = 'btn btn-sm btn-primary';
-    b1.textContent = btnOui;
-    b1.onclick = function() { saksiniCreateSignalement(deduction.catId, deduction.famille); };
-    const b2 = document.createElement('button');
-    b2.className = 'btn btn-sm btn-outline';
-    b2.textContent = btnNon;
-    b2.onclick = function() { saksiniAddMsg('bot', dismissMsg); };
-    btnDiv.appendChild(b1);
-    btnDiv.appendChild(b2);
-    msgs.appendChild(btnDiv);
-    msgs.scrollTop = msgs.scrollHeight;
-    saksiniSaveHist(q, msg);
-    document.getElementById('saksini-input').value = '';
-    return;
-  }
-
-  // 3. Fallback poli
-  saksiniAddMsg('bot', t('saksini.pas_de_reponse'));
-  saksiniSaveHist(q, t('saksini.pas_de_reponse'));
-  document.getElementById('saksini-input').value = '';
-}
-
-function saksiniSaveHist(q, a) {
-  const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
-  hist.push({ q, a, lang: currentLang || 'fr' });
-  if (hist.length > 10) hist.shift();
-  localStorage.setItem('saksini_hist', JSON.stringify(hist));
-}
-
-// Déduction de signalement par mots-clés des sous-catégories
-function saksiniDeduceSignalement(q) {
-  if (!sigFamillesData) return null;
-  const words = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .split(/\s+/).filter(w => w.length >= 3);
-  if (words.length < 2) return null; // besoin d'au moins 2 mots significatifs
-
-  let bestCat = null, bestScore = 0;
-  for (const [famille, cats] of Object.entries(sigFamillesData)) {
-    for (const cat of cats) {
-      const kw = (cat.keywords || '').toLowerCase().split(/\s+/);
-      let score = 0;
-      for (const w of words) {
-        for (const k of kw) {
-          if (w === k) score += 4;
-          else if (k.length >= 4 && w.includes(k)) score += 2;
-          else if (w.length >= 4 && k.includes(w)) score += 2;
-        }
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        bestCat = { catId: cat.id, famille, sousCategorie: cat.libelle,
-                    epic: cat.epic_sigle || null, priorite: cat.criticite };
-      }
-    }
-  }
-  if (bestScore < 4) return null; // seuil strict
-
-  // Détecter un lieu (commune) dans la phrase
-  if (communes && communes.length) {
-    const qLower = q.toLowerCase();
-    for (const c of communes) {
-      if (qLower.includes(c.nom.toLowerCase())) {
-        bestCat.lieu = c.nom;
-        bestCat.communeId = c.id;
-        break;
-      }
-    }
-  }
-  return bestCat;
-}
-
-function saksiniCreateSignalement(catId, famille) {
-  saksiniToggle(); // fermer le chat
-  showView('signaler');
-  // Pré-remplir le formulaire
-  setTimeout(() => {
-    sigSelectCategorie(catId, famille);
-  }, 300);
-}
-
-function saksiniToggle() {
-  const w = document.getElementById('saksini-widget');
-  const visible = !w.classList.contains('hidden');
-  w.classList.toggle('hidden');
-  if (!visible) saksiniInit();
-}
-
 </script>
-
-<!-- SAKSINI CHATBOT WIDGET -->
-<style>
-#saksini-fab{position:fixed;bottom:90px;right:20px;z-index:9998;width:56px;height:56px;border-radius:50%;background:#0B3C5D;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(11,60,93,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;}
-#saksini-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(11,60,93,.45);}
-#saksini-fab svg{width:26px;height:26px;}
-#saksini-widget{position:fixed;bottom:150px;right:20px;z-index:9999;width:340px;max-height:480px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden;}
-@media(max-width:480px){#saksini-widget{right:8px;left:8px;width:auto;bottom:100px;max-height:70vh;}}
-.sak-header{background:var(--navy);color:white;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
-.sak-header h4{margin:0;font-size:14px;font-weight:700;}
-.sak-close{background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:0 4px;}
-#saksini-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;max-height:300px;}
-.sak-msg-bot{background:var(--gray-100);padding:8px 12px;border-radius:12px 12px 12px 2px;font-size:13px;color:var(--gray-700);max-width:90%;align-self:flex-start;line-height:1.4;}
-.sak-msg-user{background:var(--navy);color:white;padding:8px 12px;border-radius:12px 12px 2px 12px;font-size:13px;max-width:90%;align-self:flex-end;line-height:1.4;}
-.sak-pops{display:flex;flex-wrap:wrap;gap:4px;padding:4px 12px 8px;}
-.sak-pop{font-size:11px;padding:4px 10px;border-radius:14px;border:1px solid var(--navy);color:var(--navy);background:white;cursor:pointer;transition:all .15s;}
-.sak-pop:hover{background:var(--navy);color:white;}
-.sak-input-row{display:flex;gap:6px;padding:8px 12px 12px;border-top:1px solid var(--gray-200);}
-.sak-input-row input{flex:1;padding:8px 12px;border:1px solid var(--gray-300);border-radius:20px;font-size:13px;font-family:inherit;outline:none;}
-.sak-input-row input:focus{border-color:var(--navy);}
-.sak-input-row button{background:var(--navy);color:white;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:16px;flex-shrink:0;}
-[dir="rtl"] .sak-msg-bot{border-radius:12px 12px 2px 12px;}
-[dir="rtl"] .sak-msg-user{border-radius:12px 12px 12px 2px;}
-</style>
-<button id="saksini-fab" onclick="saksiniToggle()" title="Saksini">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 8v1" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M12 12v2" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
-</button>
-<div id="saksini-widget" class="hidden">
-  <div class="sak-header">
-    <h4 data-i18n="saksini.titre">Saksini — Assistant</h4>
-    <button class="sak-close" onclick="saksiniToggle()">✕</button>
-  </div>
-  <div id="saksini-msgs"></div>
-  <div class="sak-pops">
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop1'))" data-i18n="saksini.pop1">Comment signaler ?</button>
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop2'))" data-i18n="saksini.pop2">Prendre un RDV</button>
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop3'))" data-i18n="saksini.pop3">Mes points</button>
-    <button class="sak-pop" onclick="saksiniAsk(t('saksini.pop4'))" data-i18n="saksini.pop4">Ma Houma</button>
-  </div>
-  <div class="sak-input-row">
-    <input type="text" id="saksini-input" data-i18n-placeholder="saksini.placeholder" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')saksiniAsk(this.value)" />
-    <button onclick="saksiniAsk(document.getElementById('saksini-input').value)">➤</button>
-  </div>
-</div>
 </body>
 </html>
