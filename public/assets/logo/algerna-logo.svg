@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 600" fill="none">
+  <!-- Emblème circulaire -->
+  <circle cx="256" cy="230" r="190" stroke="#00A651" stroke-width="8" fill="none"/>
+  <!-- Main secourable -->
+  <path d="M176 340 C176 310 196 290 226 290 L286 290 C316 290 336 310 336 340 L336 360 C336 370 330 376 320 376 L192 376 C182 376 176 370 176 360 Z" fill="#00A651"/>
+  <path d="M196 290 C196 260 210 245 230 245 L240 245 L240 290" fill="#00A651"/>
+  <path d="M316 290 C316 260 302 245 282 245 L272 245 L272 290" fill="#00A651"/>
+  <!-- Skyline 5 bâtiments -->
+  <rect x="198" y="170" width="28" height="90" rx="4" fill="#0A5E8A"/>
+  <rect x="232" y="140" width="22" height="120" rx="4" fill="#0A5E8A"/>
+  <rect x="260" y="120" width="30" height="140" rx="4" fill="#0A5E8A"/>
+  <rect x="296" y="150" width="22" height="110" rx="4" fill="#0A5E8A"/>
+  <rect x="324" y="180" width="26" height="80" rx="4" fill="#0A5E8A"/>
+  <!-- Maqam Echahid (centre, géométrique simplifié) -->
+  <path d="M265 120 L275 120 L275 80 L280 60 L270 45 L260 60 L265 80 Z" fill="white"/>
+  <path d="M258 75 L270 45 L282 75" stroke="#0A5E8A" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Trois feuilles -->
+  <path d="M230 250 C220 230 225 210 240 205 C240 220 235 240 230 250 Z" fill="#6DBE45"/>
+  <path d="M256 240 C256 218 260 200 270 195 C275 210 270 230 256 240 Z" fill="#6DBE45"/>
+  <path d="M282 250 C292 230 287 210 272 205 C272 220 277 240 282 250 Z" fill="#6DBE45"/>
+  <!-- Soleil -->
+  <circle cx="380" cy="100" r="18" fill="#FDB813"/>
+  <!-- Texte ALGERNA -->
+  <text x="256" y="460" text-anchor="middle" font-family="Poppins,Montserrat,sans-serif" font-weight="700" font-size="64" fill="#0A5E8A" letter-spacing="2">ALGERNA</text>
+  <!-- Sous-titre -->
+  <text x="256" y="500" text-anchor="middle" font-family="Poppins,Montserrat,sans-serif" font-weight="400" font-size="22" fill="#666666">La plateforme citoyenne</text>
+</svg>

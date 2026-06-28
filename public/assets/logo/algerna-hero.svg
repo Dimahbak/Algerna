@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <!-- Fond blanc -->
+  <rect width="1920" height="1080" fill="white"/>
+
+  <!-- === GAUCHE: Logo + texte + features + boutons === -->
+  <!-- Logo compact -->
+  <circle cx="200" cy="200" r="50" stroke="#00A651" stroke-width="4" fill="none"/>
+  <path d="M178 230 C178 218 188 210 200 210 L210 210 C222 210 228 218 228 230 L228 236 C228 240 224 244 220 244 L186 244 C182 244 178 240 178 236 Z" fill="#00A651"/>
+  <rect x="186" y="176" width="10" height="30" rx="2" fill="#0A5E8A"/>
+  <rect x="198" y="166" width="12" height="40" rx="2" fill="#0A5E8A"/>
+  <rect x="212" y="172" width="10" height="34" rx="2" fill="#0A5E8A"/>
+  <circle cx="230" cy="170" r="6" fill="#FDB813"/>
+
+  <!-- Titre ALGERNA -->
+  <text x="120" y="340" font-family="Poppins,Montserrat,sans-serif" font-weight="800" font-size="72" fill="#0A5E8A" letter-spacing="3">ALGERNA</text>
+
+  <!-- Sous-titre -->
+  <text x="120" y="400" font-family="Poppins,Montserrat,sans-serif" font-weight="400" font-size="28" fill="#666666">La plateforme citoyenne des villes algériennes.</text>
+
+  <!-- 4 Features avec coches -->
+  <circle cx="140" cy="480" r="14" fill="#00A651"/><text x="140" y="486" text-anchor="middle" font-family="sans-serif" font-size="16" fill="white" font-weight="700">✓</text>
+  <text x="165" y="488" font-family="Poppins,sans-serif" font-size="24" fill="#333">Signaler un problème</text>
+
+  <circle cx="140" cy="530" r="14" fill="#00A651"/><text x="140" y="536" text-anchor="middle" font-family="sans-serif" font-size="16" fill="white" font-weight="700">✓</text>
+  <text x="165" y="538" font-family="Poppins,sans-serif" font-size="24" fill="#333">Participer à ma ville</text>
+
+  <circle cx="140" cy="580" r="14" fill="#00A651"/><text x="140" y="586" text-anchor="middle" font-family="sans-serif" font-size="16" fill="white" font-weight="700">✓</text>
+  <text x="165" y="588" font-family="Poppins,sans-serif" font-size="24" fill="#333">Mes démarches administratives</text>
+
+  <circle cx="140" cy="630" r="14" fill="#00A651"/><text x="140" y="636" text-anchor="middle" font-family="sans-serif" font-size="16" fill="white" font-weight="700">✓</text>
+  <text x="165" y="638" font-family="Poppins,sans-serif" font-size="24" fill="#333">Ma Houma — mon quartier</text>
+
+  <!-- Bouton Primary -->
+  <rect x="120" y="700" width="280" height="56" rx="28" fill="#00A651"/>
+  <text x="260" y="736" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="22" fill="white">Créer un compte</text>
+
+  <!-- Bouton Secondary -->
+  <rect x="420" y="700" width="200" height="56" rx="28" fill="none" stroke="#0A5E8A" stroke-width="2"/>
+  <text x="520" y="736" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="600" font-size="22" fill="#0A5E8A">Connexion</text>
+
+  <!-- === DROITE: Smartphone mockup === -->
+  <!-- Cadre téléphone -->
+  <rect x="1050" y="140" width="380" height="780" rx="40" fill="#1a1a1a"/>
+  <rect x="1062" y="160" width="356" height="740" rx="28" fill="white"/>
+
+  <!-- Header app -->
+  <rect x="1062" y="160" width="356" height="70" rx="28 28 0 0" fill="#0A5E8A"/>
+  <text x="1240" y="204" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="700" font-size="22" fill="white">ALGERNA</text>
+
+  <!-- Dashboard cards -->
+  <rect x="1082" y="250" width="156" height="80" rx="12" fill="#E8F5E9"/>
+  <text x="1160" y="282" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="28" fill="#00A651">12</text>
+  <text x="1160" y="316" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#666">Signalements</text>
+
+  <rect x="1248" y="250" width="156" height="80" rx="12" fill="#E3F2FD"/>
+  <text x="1326" y="282" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="28" fill="#0A5E8A">85</text>
+  <text x="1326" y="316" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#666">Points</text>
+
+  <!-- Mini carte -->
+  <rect x="1082" y="350" width="322" height="160" rx="12" fill="#E8EEF3"/>
+  <circle cx="1200" cy="420" r="8" fill="#00A651"/>
+  <circle cx="1260" cy="400" r="6" fill="#EF4444"/>
+  <circle cx="1300" cy="440" r="7" fill="#F59E0B"/>
+  <text x="1243" y="497" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#999">Ma Houma — Carte</text>
+
+  <!-- Score citoyen -->
+  <rect x="1082" y="530" width="322" height="70" rx="12" fill="#FFF8E1"/>
+  <text x="1110" y="572" font-family="sans-serif" font-weight="700" font-size="18" fill="#F59E0B">⭐</text>
+  <text x="1140" y="572" font-family="sans-serif" font-weight="600" font-size="18" fill="#333">Niveau: Contributeur</text>
+
+  <!-- Notifications -->
+  <rect x="1082" y="620" width="322" height="50" rx="12" fill="#F3E5F5"/>
+  <text x="1110" y="652" font-family="sans-serif" font-size="16" fill="#7B1FA2">🔔</text>
+  <text x="1140" y="652" font-family="sans-serif" font-size="15" fill="#333">Signalement résolu !</text>
+
+  <rect x="1082" y="680" width="322" height="50" rx="12" fill="#E8F5E9"/>
+  <text x="1110" y="712" font-family="sans-serif" font-size="16" fill="#00A651">✅</text>
+  <text x="1140" y="712" font-family="sans-serif" font-size="15" fill="#333">+20 Points Citoyens</text>
+
+  <!-- Icônes flottantes autour du téléphone -->
+  <circle cx="1000" cy="300" r="28" fill="#E3F2FD"/><text x="1000" y="308" text-anchor="middle" font-size="24">💧</text>
+  <circle cx="980" cy="500" r="28" fill="#FFF8E1"/><text x="980" y="508" text-anchor="middle" font-size="24">🅿️</text>
+  <circle cx="1010" cy="700" r="28" fill="#E8EEF3"/><text x="1010" y="708" text-anchor="middle" font-size="24">🛣️</text>
+  <circle cx="1480" cy="280" r="28" fill="#E8F5E9"/><text x="1480" y="288" text-anchor="middle" font-size="24">🌍</text>
+  <circle cx="1500" cy="480" r="28" fill="#E8F5E9"/><text x="1500" y="488" text-anchor="middle" font-size="24">🌳</text>
+  <circle cx="1470" cy="680" r="28" fill="#F3E5F5"/><text x="1470" y="688" text-anchor="middle" font-size="24">👤</text>
+</svg>

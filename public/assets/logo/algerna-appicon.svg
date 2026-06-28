@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <!-- Fond carré arrondi -->
+  <rect width="1024" height="1024" rx="220" fill="white"/>
+  <!-- Main secourable -->
+  <path d="M352 660 C352 610 392 580 452 580 L572 580 C632 580 672 610 672 660 L672 700 C672 720 656 732 636 732 L388 732 C368 732 352 720 352 700 Z" fill="#00A651"/>
+  <path d="M392 580 C392 530 420 505 460 505 L480 505 L480 580" fill="#00A651"/>
+  <path d="M632 580 C632 530 604 505 564 505 L544 505 L544 580" fill="#00A651"/>
+  <!-- Skyline -->
+  <rect x="396" y="350" width="52" height="170" rx="6" fill="#0A5E8A"/>
+  <rect x="458" y="290" width="42" height="230" rx="6" fill="#0A5E8A"/>
+  <rect x="510" y="250" width="56" height="270" rx="6" fill="#0A5E8A"/>
+  <rect x="576" y="310" width="42" height="210" rx="6" fill="#0A5E8A"/>
+  <rect x="628" y="370" width="48" height="150" rx="6" fill="#0A5E8A"/>
+  <!-- Feuille centrale -->
+  <path d="M500 510 C490 470 500 430 520 420 C530 450 525 490 512 510 Z" fill="#6DBE45"/>
+  <path d="M536 510 C546 470 536 430 516 420 C506 450 511 490 524 510 Z" fill="#6DBE45"/>
+</svg>
