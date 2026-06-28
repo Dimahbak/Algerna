@@ -284,6 +284,8 @@ const I18N = {
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
     "signaler.sous_titre": "Choisissez le type de problème à signaler",
+    "signaler.sous_titre_v2": "Choisissez la catégorie du problème",
+    "signaler.chemin_direct_lien": "Ou choisir par service (EPIC) →",
     "signaler.chemin_guide": "Par nature du problème",
     "signaler.chemin_direct": "Par service (EPIC)",
     "signaler.retour_familles": "← Retour aux familles",
@@ -966,6 +968,8 @@ const I18N = {
     // ─── SIGNALER (double chemin unifié) ─── // À RELIRE
     "signaler.titre": "ماذا تريد الإبلاغ عنه؟",
     "signaler.sous_titre": "اختر نوع المشكلة للإبلاغ عنها",
+    "signaler.sous_titre_v2": "اختر فئة المشكلة",
+    "signaler.chemin_direct_lien": "أو اختر حسب الخدمة (EPIC) ←",
     "signaler.chemin_guide": "حسب طبيعة المشكلة",
     "signaler.chemin_direct": "حسب المؤسسة (EPIC)",
     "signaler.retour_familles": "→ العودة إلى العائلات",

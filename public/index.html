@@ -1658,24 +1658,18 @@
         </div>
       </div>
 
-      <!-- ══ SIGNALER — DOUBLE CHEMIN UNIFIÉ ══ -->
+      <!-- ══ SIGNALER — GRILLE 16 CATÉGORIES ══ -->
       <div id="view-signaler" class="view">
         <div class="page-header">
-          <h2 data-i18n="univers.signale">Je signale</h2>
-          <p data-i18n="signaler.sous_titre">Choisissez le type de problème à signaler</p>
-        </div>
-        <!-- Sub-nav univers Je signale -->
-        <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-primary" onclick="showView('signaler')" data-subview="signaler" data-i18n="univers.nouveau_signalement">Nouveau signalement</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('civisignal')" data-subview="civisignal" data-i18n="sidebar.civisignal">CiviSignal</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('watersignal')" data-subview="watersignal" data-i18n="sidebar.watersignal">WaterSignal</button>
+          <h2 data-i18n="signaler.titre">Que souhaitez-vous signaler ?</h2>
+          <p data-i18n="signaler.sous_titre_v2" style="color:var(--muted);font-size:13px;">Choisissez la catégorie du problème</p>
         </div>
 
-        <!-- ÉTAPE 0 : choix du chemin (guidé vs direct) -->
+        <!-- ÉTAPE 0 : grille directe des 16 catégories (plus de double choix) -->
         <div id="sig-step-choix">
-          <div style="display:flex;gap:10px;margin-bottom:18px;">
-            <button class="btn btn-primary" style="flex:1;" onclick="sigShowFamilles()" data-i18n="signaler.chemin_guide">Par nature du problème</button>
-            <button class="btn btn-outline" style="flex:1;" onclick="sigShowEpics()" data-i18n="signaler.chemin_direct">Par service (EPIC)</button>
+          <div id="sig-familles-grid-direct" class="module-grid"></div>
+          <div style="text-align:center;margin-top:10px;">
+            <button class="btn-link" onclick="sigShowEpics()" style="font-size:12px;color:var(--navy);cursor:pointer;background:none;border:none;text-decoration:underline;" data-i18n="signaler.chemin_direct_lien">Ou choisir par service (EPIC) →</button>
           </div>
         </div>
 
@@ -5019,8 +5013,25 @@ async function initSignaler() {
       }
     });
   }
-  // Reset à l'étape choix
+  // Remplir la grille 16 catégories directement
+  sigRenderGrid();
   sigShowStep('choix');
+}
+
+function sigRenderGrid() {
+  const grid = document.getElementById('sig-familles-grid-direct');
+  if (!grid) return;
+  const lang = currentLang || 'fr';
+  grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
+    const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
+    const label = lang === 'ar' ? meta.label_ar : meta.label;
+    return '<div class="module-card" onclick="sigShowSousCas(\'' + fam + '\')" style="cursor:pointer;min-width:0;">' +
+      '<div class="module-icon" style="background:' + meta.color + '15;">' +
+      '<span style="font-size:28px;">' + meta.icon + '</span>' +
+      '</div>' +
+      '<h3 style="font-size:13px;line-height:1.2;">' + escHtml(label) + '</h3>' +
+      '</div>';
+  }).join('');
 }
 
 function sigShowStep(step) {
@@ -5054,7 +5065,7 @@ function sigShowFamilles() {
   sigShowStep('familles');
 }
 
-function sigBackToFamilles() { sigShowStep('familles'); }
+function sigBackToFamilles() { sigShowStep('choix'); }
 
 function sigShowSousCas(famille) {
   const cats = sigFamillesData[famille] || [];
