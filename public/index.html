@@ -1585,6 +1585,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
         Je suis
       </button>
+      <button class="nav-item" onclick="showView('infos')" data-view="infos" data-i18n="univers.infos">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Infos utiles
+      </button>
       <button class="nav-item" onclick="showView('sentinelle')" data-view="sentinelle" data-univers="profil" data-i18n="univers.profil">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Mon impact
@@ -2579,6 +2583,22 @@
         <div id="parkzones-list"></div>
       </div>
 
+      <!-- ══ INFOS UTILES ══ -->
+      <div id="view-infos" class="view">
+        <div class="page-header">
+          <h2 data-i18n="univers.infos">Infos utiles</h2>
+          <p data-i18n="infos.sous_titre">Numéros d'urgence, services et contacts</p>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="loadInfos()" data-i18n="infos.tous">Tous</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInfos('urgences')" data-i18n="infos.urgences">Urgences</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInfos('reseaux')" data-i18n="infos.reseaux">Réseaux</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInfos('transports')" data-i18n="infos.transports">Transports</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInfos('institutions')" data-i18n="infos.institutions">Institutions</button>
+        </div>
+        <div id="infos-list"></div>
+      </div>
+
       <!-- ══ JE PARTICIPE (placeholder) ══ -->
       <div id="view-participe" class="view">
         <div class="page-header">
@@ -3390,6 +3410,7 @@ function showView(name) {
   if (name === 'carte') initCarte();
   if (name === 'edeval') initEdeval();
   if (name === 'parkzones') initParkzones();
+  if (name === 'infos') loadInfos();
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
@@ -4997,6 +5018,36 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── INFOS UTILES ────────────────────────────────────────────
+async function loadInfos(categorie) {
+  const el = document.getElementById('infos-list');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('global.chargement') + '</div>';
+  try {
+    const url = categorie ? '/api/infos/contacts?categorie=' + categorie : '/api/infos/contacts';
+    const contacts = await safeFetchJSON(url);
+    if (!contacts.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('global.aucun') + '</p>'; return; }
+    const catIcons = { urgences:'🚨', reseaux:'🔧', transports:'🚌', institutions:'🏛️' };
+    const catColors = { urgences:'#ef4444', reseaux:'#2563eb', transports:'#f59e0b', institutions:'#0B3C5D' };
+    el.innerHTML = contacts.map(c => {
+      const icon = catIcons[c.categorie] || 'ℹ️';
+      const color = catColors[c.categorie] || '#666';
+      return '<div class="card" style="margin-bottom:8px;padding:12px 14px;border-left:3px solid ' + color + ';">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+          '<div style="flex:1;min-width:160px;">' +
+            '<div style="font-weight:700;color:var(--navy);">' + icon + ' ' + escHtml(c.nom) + '</div>' +
+            (c.horaires ? '<div style="font-size:11px;color:var(--muted);">🕐 ' + escHtml(c.horaires) + '</div>' : '') +
+            (c.adresse ? '<div style="font-size:11px;color:var(--muted);">📍 ' + escHtml(c.adresse) + '</div>' : '') +
+          '</div>' +
+          '<div style="display:flex;gap:6px;">' +
+            (c.telephone ? '<a href="tel:' + c.telephone + '" class="btn btn-sm btn-primary" style="font-size:12px;padding:4px 10px;">📞 ' + escHtml(c.telephone) + '</a>' : '') +
+            (c.email ? '<a href="mailto:' + c.email + '" class="btn btn-sm btn-outline" style="font-size:12px;padding:4px 10px;">✉️</a>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
 }
 
 // ─── SIGNALER — DOUBLE CHEMIN UNIFIÉ ─────────────────────────

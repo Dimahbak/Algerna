@@ -44,6 +44,7 @@ const moduleMap = {
   edeval:      require('./modules/edeval'),
   cap:         require('./modules/cap'),
   civipark:    require('./modules/civipark'),
+  infos:       require('./modules/infos'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)
