@@ -2047,6 +2047,24 @@
           <p data-i18n="rdv.sous_titre">Prenez un rendez-vous dans votre mairie ou daïra</p>
         </div>
 
+        <!-- Sous-onglets Mes démarches -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-outline" onclick="showDemarchesTab('preparer')" id="tab-preparer" data-i18n="demarches.preparer">Préparer mon dossier</button>
+          <button class="btn btn-sm btn-primary" onclick="showDemarchesTab('rdv')" id="tab-rdv" data-i18n="demarches.prendre_rdv">Prendre un RDV</button>
+        </div>
+
+        <!-- Préparer mon dossier -->
+        <div id="demarches-preparer" class="hidden">
+          <div class="card" style="padding:16px;">
+            <h3 style="margin:0 0 12px;font-size:16px;color:var(--navy);" data-i18n="demarches.preparer_titre">Préparez votre dossier avant le RDV</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;" data-i18n="demarches.preparer_desc">Sélectionnez une démarche pour voir les pièces à fournir, les frais et le délai réel.</p>
+            <select id="preparer-service" onchange="showPreparerDetail()" style="width:100%;padding:10px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px;margin-bottom:12px;">
+              <option value="" data-i18n="rdv.sel_service">-- Sélectionner un service --</option>
+            </select>
+            <div id="preparer-detail"></div>
+          </div>
+        </div>
+
         <!-- Steps -->
         <div class="steps" id="rdv-steps">
           <div class="step active" id="step-1">
@@ -5070,6 +5088,47 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── PRÉPARER MON DOSSIER ────────────────────────────────────
+function showDemarchesTab(tab) {
+  document.getElementById('demarches-preparer').classList.toggle('hidden', tab !== 'preparer');
+  document.getElementById('rdv-steps').classList.toggle('hidden', tab === 'preparer');
+  document.getElementById('rdv-step-1').classList.toggle('hidden', tab === 'preparer');
+  document.getElementById('tab-preparer').className = tab === 'preparer' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+  document.getElementById('tab-rdv').className = tab === 'rdv' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+  if (tab === 'preparer') {
+    const sel = document.getElementById('preparer-service');
+    if (sel && sel.options.length <= 1 && rdvServices) {
+      rdvServices.filter(s => s.famille === 'B').forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.nom;
+        sel.appendChild(opt);
+      });
+    }
+  }
+}
+
+function showPreparerDetail() {
+  const id = document.getElementById('preparer-service').value;
+  const el = document.getElementById('preparer-detail');
+  if (!id || !rdvServices) { el.innerHTML = ''; return; }
+  const svc = rdvServices.find(s => s.id === Number(id));
+  if (!svc) { el.innerHTML = ''; return; }
+  const pieces = svc.pieces_requises || [];
+  let html = '';
+  if (svc.delai_reel) html += '<div style="padding:8px 12px;background:#fef3c7;border-radius:8px;font-size:13px;margin-bottom:8px;"><strong>' + t('rdv.delai') + ' :</strong> ' + escHtml(svc.delai_reel) + '</div>';
+  if (svc.frais) html += '<div style="padding:8px 12px;background:#f0fdf4;border-radius:8px;font-size:13px;margin-bottom:8px;"><strong>' + t('rdv.frais') + ' :</strong> ' + escHtml(svc.frais) + '</div>';
+  if (pieces.length) {
+    html += '<h4 style="font-size:14px;margin:12px 0 6px;">' + t('rdv.pieces_titre') + '</h4>';
+    html += pieces.map(function(p) { return '<div style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px;"><span style="color:var(--navy);">📄</span>' + escHtml(p) + '</div>'; }).join('');
+  }
+  if (svc.formulaires && svc.formulaires.length) {
+    html += '<h4 style="font-size:14px;margin:12px 0 6px;">' + t('rdv.formulaires_titre') + '</h4>';
+    html += svc.formulaires.map(function(f) { return '<div style="font-size:13px;color:var(--muted);">📝 ' + escHtml(f) + '</div>'; }).join('');
+  }
+  if (svc.description) html += '<p style="font-size:12px;color:var(--muted);margin-top:10px;">' + escHtml(svc.description) + '</p>';
+  el.innerHTML = html;
 }
 
 // ─── PRÉFÉRENCES PROFIL ──────────────────────────────────────
