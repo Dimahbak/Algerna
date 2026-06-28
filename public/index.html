@@ -776,11 +776,30 @@
     .icua-sublabel { font-size: 13px; color: var(--gray-500); }
 
     /* ─── RDV ─── */
+    .day-chip {
+      flex-shrink: 0;
+      min-width: 64px;
+      padding: 10px 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: white;
+    }
+    .day-chip:hover { border-color: var(--navy); }
+    .day-chip.selected { border-color: var(--navy); background: var(--navy); color: white; }
+    .day-chip .day-name { font-size: 11px; font-weight: 500; text-transform: uppercase; }
+    .day-chip .day-num { font-size: 20px; font-weight: 800; line-height: 1.2; }
+    .day-chip .day-month { font-size: 10px; opacity: 0.7; }
+    .day-chip .day-slots { font-size: 10px; margin-top: 2px; color: var(--green); }
+    .day-chip.selected .day-slots { color: rgba(255,255,255,.8); }
+
     .creneaux-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 10px;
-      margin-top: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
     }
 
     .creneau-card {
@@ -2026,12 +2045,20 @@
         <!-- Step 2: Creneaux -->
         <div class="card hidden" id="rdv-step-2">
           <div class="card-title" data-i18n="rdv.choisir_creneau">Choisir un créneau</div>
-          <div class="card-subtitle" id="rdv-step2-subtitle" data-i18n="rdv.sel_date_heure">Sélectionnez une date et heure disponibles</div>
           <div id="rdv-creneaux-loading" class="loading-overlay">
             <div class="spinner spinner-dark"></div>
             <span data-i18n="rdv.chargement_creneaux">Chargement des créneaux...</span>
           </div>
-          <div class="creneaux-grid hidden" id="rdv-creneaux-grid"></div>
+          <!-- Picker jour -->
+          <div id="rdv-day-picker" class="hidden" style="margin-bottom:14px;">
+            <div class="card-subtitle" data-i18n="rdv.choisir_jour">Choisissez un jour</div>
+            <div id="rdv-days" style="display:flex;gap:6px;overflow-x:auto;padding:8px 0;"></div>
+          </div>
+          <!-- Horaires du jour sélectionné -->
+          <div id="rdv-time-picker" class="hidden" style="margin-bottom:14px;">
+            <div class="card-subtitle" id="rdv-time-label"></div>
+            <div class="creneaux-grid" id="rdv-creneaux-grid"></div>
+          </div>
           <div class="divider"></div>
           <!-- Public prioritaire -->
           <div class="form-group hidden" id="rdv-priorite-group" style="margin-bottom:12px;">
@@ -3573,35 +3600,77 @@ async function loadCreneaux() {
 
     document.getElementById('rdv-creneaux-loading').classList.add('hidden');
     const creneaux = data.creneaux || [];
-    const grid = document.getElementById('rdv-creneaux-grid');
+    window._rdvCreneaux = creneaux;
 
     if (!creneaux.length) {
-      grid.innerHTML = '<p style="color:var(--gray-400);padding:8px;">' + t('rdv.aucun_creneau') + '</p>';
-      grid.classList.remove('hidden');
+      document.getElementById('rdv-day-picker').classList.remove('hidden');
+      document.getElementById('rdv-days').innerHTML = '<p style="color:var(--gray-400);padding:8px;">' + t('rdv.aucun_creneau') + '</p>';
       return;
     }
 
-    grid.innerHTML = creneaux.map(cr => {
+    // Grouper par jour
+    const byDay = {};
+    creneaux.forEach(cr => {
       const dt = new Date(cr.debut);
-      const dateStr = dt.toLocaleDateString('fr-DZ', { weekday: 'short', day: 'numeric', month: 'short' });
-      const timeStr = dt.toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' });
-      const restants = Number(cr.restants);
-      const capacite = Number(cr.capacite);
-      return `
-      <div class="creneau-card" onclick="selectCreneau(${cr.id}, this)" data-id="${cr.id}">
-        <div class="creneau-date">${dateStr}</div>
-        <div class="creneau-time" style="font-size:18px;font-weight:700;">${timeStr}</div>
-        <div style="font-size:11px;color:${restants <= 2 ? 'var(--red)' : 'var(--green)'};">${restants}/${capacite} ${t('rdv_admin.dispo')}</div>
+      const key = dt.toISOString().slice(0, 10); // YYYY-MM-DD
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(cr);
+    });
+    const days = Object.keys(byDay).sort();
+
+    // Afficher le picker jours
+    const daysEl = document.getElementById('rdv-days');
+    daysEl.innerHTML = days.map(day => {
+      const dt = new Date(day + 'T12:00:00');
+      const name = dt.toLocaleDateString('fr-DZ', { weekday: 'short' });
+      const num = dt.getDate();
+      const month = dt.toLocaleDateString('fr-DZ', { month: 'short' });
+      const totalSlots = byDay[day].reduce((s, c) => s + Number(c.restants), 0);
+      return `<div class="day-chip" onclick="rdvSelectDay('${day}')" data-day="${day}">
+        <div class="day-name">${name}</div>
+        <div class="day-num">${num}</div>
+        <div class="day-month">${month}</div>
+        <div class="day-slots">${totalSlots} ${t('rdv_admin.dispo')}</div>
       </div>`;
     }).join('');
-    grid.classList.remove('hidden');
-    // Montrer le sélecteur prioritaire
-    document.getElementById('rdv-priorite-group').classList.remove('hidden');
+    document.getElementById('rdv-day-picker').classList.remove('hidden');
+    document.getElementById('rdv-time-picker').classList.add('hidden');
+
+    // Auto-sélectionner le premier jour
+    rdvSelectDay(days[0]);
   } catch (e) {
     document.getElementById('rdv-creneaux-loading').classList.add('hidden');
     showError('rdv-error', e.message);
     setStep(1);
   }
+}
+
+function rdvSelectDay(day) {
+  // Highlight le jour sélectionné
+  document.querySelectorAll('.day-chip').forEach(c => c.classList.toggle('selected', c.dataset.day === day));
+
+  // Filtrer les créneaux de ce jour
+  const creneaux = (window._rdvCreneaux || []).filter(cr => cr.debut.startsWith(day));
+  const grid = document.getElementById('rdv-creneaux-grid');
+  const dt = new Date(day + 'T12:00:00');
+  document.getElementById('rdv-time-label').textContent = t('rdv.horaires_du') + ' ' + dt.toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  grid.innerHTML = creneaux.map(cr => {
+    const t2 = new Date(cr.debut);
+    const timeStr = t2.toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' });
+    const restants = Number(cr.restants);
+    const capacite = Number(cr.capacite);
+    return `
+    <div class="creneau-card" onclick="selectCreneau(${cr.id}, this)" data-id="${cr.id}">
+      <div class="creneau-time" style="font-size:20px;font-weight:700;">${timeStr}</div>
+      <div style="font-size:11px;color:${restants <= 2 ? 'var(--red)' : 'var(--green)'};">${restants}/${capacite} ${t('rdv_admin.dispo')}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rdv-time-picker').classList.remove('hidden');
+  document.getElementById('rdv-confirm-btn').classList.add('hidden');
+  document.getElementById('rdv-priorite-group').classList.remove('hidden');
+  selectedCreneauId = null;
 }
 
 function selectCreneau(id, el) {
@@ -3653,9 +3722,12 @@ function resetRDV() {
   document.getElementById('rdv-famille-a').classList.add('hidden');
   document.getElementById('rdv-demarche-detail').classList.add('hidden');
   document.getElementById('rdv-priorite-group').classList.add('hidden');
+  document.getElementById('rdv-day-picker').classList.add('hidden');
+  document.getElementById('rdv-time-picker').classList.add('hidden');
   document.getElementById('rdv-creneaux-grid').innerHTML = '';
   document.getElementById('rdv-confirm-btn').classList.add('hidden');
   selectedCreneauId = null;
+  window._rdvCreneaux = null;
   hideError('rdv-error');
 }
 
