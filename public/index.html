@@ -1673,12 +1673,6 @@
           </div>
         </div>
 
-        <!-- ÉTAPE 1a : familles (chemin guidé) -->
-        <div id="sig-step-familles" class="hidden">
-          <button class="btn-link" onclick="sigBackToChoix()" data-i18n="signaler.retour_choix" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour au choix</button>
-          <div id="sig-familles-grid" class="module-grid"></div>
-        </div>
-
         <!-- ÉTAPE 1b : sous-cas (après sélection famille) -->
         <div id="sig-step-souscas" class="hidden">
           <button class="btn-link" onclick="sigBackToFamilles()" data-i18n="signaler.retour_familles" style="margin-bottom:12px;font-size:13px;color:var(--navy);cursor:pointer;background:none;border:none;">← Retour aux familles</button>
@@ -5035,7 +5029,7 @@ function sigRenderGrid() {
 }
 
 function sigShowStep(step) {
-  ['choix','familles','souscas','epics','form','confirmation'].forEach(s => {
+  ['choix','souscas','epics','form','confirmation'].forEach(s => {
     const el = document.getElementById('sig-step-' + s);
     if (el) el.classList.toggle('hidden', s !== step);
   });
@@ -5048,23 +5042,6 @@ function sigBackToChoix() {
 }
 
 // ── PORTE 1 : chemin guidé par familles ──
-function sigShowFamilles() {
-  const grid = document.getElementById('sig-familles-grid');
-  const lang = currentLang || 'fr';
-  grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
-    const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
-    const label = lang === 'ar' ? meta.label_ar : meta.label;
-    return `
-      <div class="module-card" onclick="sigShowSousCas('${fam}')" style="cursor:pointer;min-width:0;">
-        <div class="module-icon" style="background:${meta.color}15;">
-          <span style="font-size:28px;">${meta.icon}</span>
-        </div>
-        <h3 style="font-size:13px;line-height:1.2;">${escHtml(label)}</h3>
-      </div>`;
-  }).join('');
-  sigShowStep('familles');
-}
-
 function sigBackToFamilles() { sigShowStep('choix'); }
 
 function sigShowSousCas(famille) {
