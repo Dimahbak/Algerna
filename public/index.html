@@ -4970,16 +4970,25 @@ let sigMap = null;
 let sigMarker = null;
 
 const SIG_FAMILLE_META = {
-  eau:            { icon: 'droplets',        color: '#2563eb' },
-  espaces_verts:  { icon: 'tree-deciduous',  color: '#16a34a' },
-  eclairage:      { icon: 'lightbulb',       color: '#eab308' },
-  voirie:         { icon: 'road',            color: '#64748b' },
-  proprete:       { icon: 'trash-2',         color: '#0A3D62' },
-  stationnement:  { icon: 'parking-meter',   color: '#8b5cf6' },
-  autre:          { icon: 'help-circle',     color: '#9ca3af' },
+  eau:             { icon: '💧', color: '#2563eb', label: 'Eau',              label_ar: 'المياه' },
+  assainissement:  { icon: '🚿', color: '#0891b2', label: 'Assainissement',   label_ar: 'الصرف الصحي' },
+  voirie:          { icon: '🛣️', color: '#64748b', label: 'Voirie',           label_ar: 'الطرق' },
+  eclairage:       { icon: '💡', color: '#eab308', label: 'Éclairage',        label_ar: 'الإنارة' },
+  proprete:        { icon: '🗑️', color: '#0B3C5D', label: 'Propreté',         label_ar: 'النظافة' },
+  espaces_verts:   { icon: '🌳', color: '#16a34a', label: 'Espaces verts',    label_ar: 'المساحات الخضراء' },
+  stationnement:   { icon: '🅿️', color: '#8b5cf6', label: 'Stationnement',   label_ar: 'المواقف' },
+  transport:       { icon: '🚌', color: '#f59e0b', label: 'Transport',        label_ar: 'النقل' },
+  batiments:       { icon: '🏢', color: '#78716c', label: 'Bâtiments publics',label_ar: 'المباني العمومية' },
+  nuisances:       { icon: '🔊', color: '#ef4444', label: 'Nuisances',        label_ar: 'الإزعاجات' },
+  mobilier_urbain: { icon: '🪑', color: '#6366f1', label: 'Mobilier urbain',  label_ar: 'الأثاث الحضري' },
+  environnement:   { icon: '🌍', color: '#059669', label: 'Environnement',    label_ar: 'البيئة' },
+  securite:        { icon: '⚠️', color: '#dc2626', label: 'Sécurité',         label_ar: 'الأمن' },
+  animaux:         { icon: '🐾', color: '#a16207', label: 'Animaux',          label_ar: 'الحيوانات' },
+  accessibilite:   { icon: '♿', color: '#7c3aed', label: 'Accessibilité',    label_ar: 'سهولة الوصول' },
+  autre:           { icon: '❓', color: '#9ca3af', label: 'Autre',            label_ar: 'أخرى' },
 };
 
-const SIG_FAMILLE_ORDER = ['eau','espaces_verts','eclairage','voirie','proprete','stationnement','autre'];
+const SIG_FAMILLE_ORDER = ['eau','assainissement','voirie','eclairage','proprete','espaces_verts','stationnement','transport','batiments','nuisances','mobilier_urbain','environnement','securite','animaux','accessibilite','autre'];
 
 async function initSignaler() {
   // Charger les familles depuis l'API
@@ -5030,18 +5039,18 @@ function sigBackToChoix() {
 // ── PORTE 1 : chemin guidé par familles ──
 function sigShowFamilles() {
   const grid = document.getElementById('sig-familles-grid');
+  const lang = currentLang || 'fr';
   grid.innerHTML = SIG_FAMILLE_ORDER.map(fam => {
     const meta = SIG_FAMILLE_META[fam] || SIG_FAMILLE_META.autre;
-    const label = t('signaler.fam_' + fam);
+    const label = lang === 'ar' ? meta.label_ar : meta.label;
     return `
-      <div class="module-card" onclick="sigShowSousCas('${fam}')" style="cursor:pointer;">
+      <div class="module-card" onclick="sigShowSousCas('${fam}')" style="cursor:pointer;min-width:0;">
         <div class="module-icon" style="background:${meta.color}15;">
-          <i data-lucide="${meta.icon}" style="color:${meta.color};width:28px;height:28px;"></i>
+          <span style="font-size:28px;">${meta.icon}</span>
         </div>
-        <h3 style="font-size:14px;">${escHtml(label)}</h3>
+        <h3 style="font-size:13px;line-height:1.2;">${escHtml(label)}</h3>
       </div>`;
   }).join('');
-  if (window.lucide) lucide.createIcons();
   sigShowStep('familles');
 }
 
@@ -5050,21 +5059,36 @@ function sigBackToFamilles() { sigShowStep('familles'); }
 function sigShowSousCas(famille) {
   const cats = sigFamillesData[famille] || [];
   if (!cats.length) {
-    // Famille sans sous-cas → formulaire direct avec "Autre"
     sigSelectCategorie(null, famille);
     return;
   }
+  const meta = SIG_FAMILLE_META[famille] || SIG_FAMILLE_META.autre;
   const list = document.getElementById('sig-souscas-list');
-  list.innerHTML = cats.map(c => `
-    <div class="card" style="margin-bottom:8px;padding:12px 16px;cursor:pointer;transition:background .15s;"
+  // Grouper par groupe
+  const groups = {};
+  cats.forEach(c => {
+    const g = c.groupe || 'Autre';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(c);
+  });
+  let html = '';
+  for (const [grp, items] of Object.entries(groups)) {
+    if (Object.keys(groups).length > 1) {
+      html += `<div style="font-size:12px;font-weight:600;color:${meta.color};text-transform:uppercase;margin:12px 0 6px;letter-spacing:0.5px;">${escHtml(grp)}</div>`;
+    }
+    html += items.map(c => {
+      const badge = c.criticite === 'haute' ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#fee2e2;color:#ef4444;margin-left:6px;">urgent</span>' : '';
+      return `<div class="card" style="margin-bottom:6px;padding:10px 14px;cursor:pointer;transition:background .15s;"
          onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
          onclick="sigSelectCategorie(${c.id}, '${famille}')">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:14px;font-weight:500;">${escHtml(c.libelle)}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
-      </div>
-    </div>
-  `).join('');
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:500;">${escHtml(c.libelle)}${badge}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  list.innerHTML = html;
   sigShowStep('souscas');
 }
 
@@ -6343,15 +6367,104 @@ function saksiniAsk(q) {
   if (!q || !q.trim()) return;
   saksiniAddMsg('user', q);
   const lang = currentLang || 'fr';
+
+  // 1. Chercher dans la FAQ
   const match = saksiniSearch(q);
-  const answer = match ? (lang === 'ar' ? match.ar : match.fr) : t('saksini.pas_de_reponse');
-  saksiniAddMsg('bot', answer);
-  // Sauvegarder avec la langue (max 10)
+  if (match) {
+    const answer = lang === 'ar' ? match.ar : match.fr;
+    saksiniAddMsg('bot', answer);
+    saksiniSaveHist(q, answer);
+    document.getElementById('saksini-input').value = '';
+    return;
+  }
+
+  // 2. Tenter la déduction signalement par mots-clés
+  const deduction = saksiniDeduceSignalement(q);
+  if (deduction) {
+    const meta = SIG_FAMILLE_META[deduction.famille] || {};
+    const catLabel = lang === 'ar' ? (meta.label_ar || deduction.famille) : (meta.label || deduction.famille);
+    const lieu = deduction.lieu ? ` — ${deduction.lieu}` : '';
+    const epicInfo = deduction.epic ? ` (${deduction.epic})` : '';
+    const prioLabel = deduction.priorite === 'haute' ? (lang === 'ar' ? '⚠ عاجل' : '⚠ Urgent') : '';
+    const msg = lang === 'ar'
+      ? `فهمت: ${catLabel} / ${deduction.sousCategorie}${lieu}${epicInfo} ${prioLabel}\n\nهل تريد إنشاء هذا البلاغ؟`
+      : `J'ai compris : ${catLabel} / ${deduction.sousCategorie}${lieu}${epicInfo} ${prioLabel}\n\nVoulez-vous créer ce signalement ?`;
+    saksiniAddMsg('bot', msg);
+    // Ajouter bouton de création
+    const msgs = document.getElementById('saksini-msgs');
+    msgs.insertAdjacentHTML('beforeend',
+      `<div style="display:flex;gap:6px;margin-top:4px;">
+        <button class="btn btn-sm btn-primary" onclick="saksiniCreateSignalement(${deduction.catId},'${escHtml(deduction.famille)}')">${lang === 'ar' ? 'نعم، أنشئ' : 'Oui, créer'}</button>
+        <button class="btn btn-sm btn-outline" onclick="saksiniAddMsg('bot','${lang === 'ar' ? 'حسنا، اسأل سؤالا آخر.' : 'D\\'accord, posez une autre question.'}')">${lang === 'ar' ? 'لا' : 'Non'}</button>
+      </div>`);
+    msgs.scrollTop = msgs.scrollHeight;
+    saksiniSaveHist(q, msg);
+    document.getElementById('saksini-input').value = '';
+    return;
+  }
+
+  // 3. Fallback poli
+  saksiniAddMsg('bot', t('saksini.pas_de_reponse'));
+  saksiniSaveHist(q, t('saksini.pas_de_reponse'));
+  document.getElementById('saksini-input').value = '';
+}
+
+function saksiniSaveHist(q, a) {
   const hist = JSON.parse(localStorage.getItem('saksini_hist') || '[]');
-  hist.push({ q, a: answer, lang: currentLang || 'fr' });
+  hist.push({ q, a, lang: currentLang || 'fr' });
   if (hist.length > 10) hist.shift();
   localStorage.setItem('saksini_hist', JSON.stringify(hist));
-  document.getElementById('saksini-input').value = '';
+}
+
+// Déduction de signalement par mots-clés des sous-catégories
+function saksiniDeduceSignalement(q) {
+  if (!sigFamillesData) return null;
+  const words = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .split(/\s+/).filter(w => w.length >= 3);
+  if (words.length < 2) return null; // besoin d'au moins 2 mots significatifs
+
+  let bestCat = null, bestScore = 0;
+  for (const [famille, cats] of Object.entries(sigFamillesData)) {
+    for (const cat of cats) {
+      const kw = (cat.keywords || '').toLowerCase().split(/\s+/);
+      let score = 0;
+      for (const w of words) {
+        for (const k of kw) {
+          if (w === k) score += 4;
+          else if (k.length >= 4 && w.includes(k)) score += 2;
+          else if (w.length >= 4 && k.includes(w)) score += 2;
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestCat = { catId: cat.id, famille, sousCategorie: cat.libelle,
+                    epic: cat.epic_sigle || null, priorite: cat.criticite };
+      }
+    }
+  }
+  if (bestScore < 4) return null; // seuil strict
+
+  // Détecter un lieu (commune) dans la phrase
+  if (communes && communes.length) {
+    const qLower = q.toLowerCase();
+    for (const c of communes) {
+      if (qLower.includes(c.nom.toLowerCase())) {
+        bestCat.lieu = c.nom;
+        bestCat.communeId = c.id;
+        break;
+      }
+    }
+  }
+  return bestCat;
+}
+
+function saksiniCreateSignalement(catId, famille) {
+  saksiniToggle(); // fermer le chat
+  showView('signaler');
+  // Pré-remplir le formulaire
+  setTimeout(() => {
+    sigSelectCategorie(catId, famille);
+  }, 300);
 }
 
 function saksiniToggle() {

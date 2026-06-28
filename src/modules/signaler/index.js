@@ -58,12 +58,13 @@ const { awardPoints } = require('../../utils/points');
 // ── GET /familles — catégories groupées par famille pour le chemin guidé ──
 router.get('/familles', asyncH(async (req, res) => {
   const { rows } = await query(
-    `SELECT cs.id, cs.domaine, cs.libelle, cs.criticite, cs.epic_id, cs.famille,
+    `SELECT cs.id, cs.domaine, cs.libelle, cs.libelle_ar, cs.criticite,
+            cs.epic_id, cs.famille, cs.groupe, cs.keywords,
             e.sigle AS epic_sigle
        FROM categorie_signal cs
        LEFT JOIN epic e ON e.id = cs.epic_id AND e.actif = TRUE
       WHERE cs.famille IS NOT NULL
-      ORDER BY cs.famille, cs.id`
+      ORDER BY cs.famille, cs.groupe, cs.id`
   );
 
   // Grouper par famille
