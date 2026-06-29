@@ -1604,7 +1604,7 @@
       </button>
       <button class="nav-item" onclick="showView('mes-signalements')" data-view="mes-signalements" data-univers="suivi" data-i18n="univers.suivi">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        Je suis
+        Mon suivi
       </button>
       <button class="nav-item" onclick="showView('infos')" data-view="infos" data-i18n="univers.infos">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -1643,15 +1643,38 @@
 
       <!-- ══ HOME VIEW ══ -->
       <div id="view-home" class="view active">
+        <!-- Dashboard citoyen -->
         <div class="welcome-card">
           <h2 id="welcome-name">Bienvenue, Citoyen !</h2>
-          <p data-i18n="app.wilaya">Wilaya d'Alger — Gouvernance civique numérique</p>
+          <p id="home-date" style="font-size:13px;opacity:0.9;"></p>
           <div class="points-badge-home">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span id="home-points">0 points</span>
           </div>
         </div>
 
+        <!-- Cartes dynamiques -->
+        <div id="home-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
+        <!-- Actions rapides -->
+        <div style="margin-bottom:16px;">
+          <h3 style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:8px;" data-i18n="home.actions_rapides">Actions rapides</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-primary" onclick="showView('signaler')">🚨 <span data-i18n="univers.signale">Je signale</span></button>
+            <button class="btn btn-sm btn-outline" onclick="showView('civiadmin');showDemarchesTab('preparer')">📄 <span data-i18n="demarches.preparer">Préparer un dossier</span></button>
+            <button class="btn btn-sm btn-outline" onclick="showView('civiadmin')">📅 <span data-i18n="demarches.prendre_rdv">Prendre un RDV</span></button>
+            <button class="btn btn-sm btn-outline" onclick="showView('infos')">ℹ️ <span data-i18n="univers.infos">Infos utiles</span></button>
+          </div>
+        </div>
+
+        <!-- Communiqués récents -->
+        <div id="home-communiques" style="margin-bottom:16px;"></div>
+
+        <!-- Activité récente -->
+        <div id="home-activite" style="margin-bottom:16px;"></div>
+
+        <!-- Modules -->
+        <h3 style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:8px;" data-i18n="home.modules">Modules</h3>
         <div class="module-grid">
           <!-- 6 UNIVERS CITOYENS -->
           <div class="module-card" onclick="showView('civiadmin')" style="border:2px solid var(--navy);box-shadow:0 2px 8px rgba(10,61,98,.15);">
@@ -1675,12 +1698,12 @@
             <h3 data-i18n="univers.quartier">Ma Houma</h3>
             <p data-i18n="univers.quartier_desc" style="font-size:11px;">Carte, scores, IQEP parcs</p>
           </div>
-          <div class="module-card" onclick="showView('participe')" style="opacity:0.7;">
+          <div class="module-card" onclick="showView('participe')">
             <div class="module-icon" style="background:#eff6ff;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <h3 data-i18n="univers.participe">Je participe</h3>
-            <p data-i18n="univers.bientot" style="font-size:11px;color:var(--muted);">Bientôt disponible</p>
+            <p data-i18n="univers.participe_desc" style="font-size:11px;">Engagement citoyen et participation</p>
           </div>
           <div class="module-card" onclick="showView('mes-signalements')">
             <div class="module-icon" style="background:#fef3c7;">
@@ -2709,19 +2732,13 @@
         <div id="infos-list"></div>
       </div>
 
-      <!-- ══ JE PARTICIPE (placeholder) ══ -->
+      <!-- ══ JE PARTICIPE ══ -->
       <div id="view-participe" class="view">
         <div class="page-header">
           <h2 data-i18n="univers.participe">Je participe</h2>
           <p data-i18n="univers.participe_desc">Engagement citoyen et participation locale</p>
         </div>
-        <div style="text-align:center;padding:60px 20px;">
-          <div style="font-size:48px;margin-bottom:16px;opacity:0.5;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <h3 style="color:var(--navy);margin-bottom:8px;" data-i18n="univers.bientot">Bientôt disponible</h3>
-          <p style="color:var(--muted);font-size:14px;max-width:400px;margin:0 auto;" data-i18n="univers.participe_soon">Consultations citoyennes, budgets participatifs et initiatives de quartier seront bientôt accessibles ici.</p>
-        </div>
+        <div id="participe-list"></div>
       </div>
 
       <!-- ══ PATRIMOINE VIEW ══ -->
@@ -3524,6 +3541,7 @@ function showView(name) {
   if (name === 'edeval') initEdeval();
   if (name === 'parkzones') initParkzones();
   if (name === 'infos') loadInfos();
+  if (name === 'participe') loadParticipations();
   if (name === 'notifications') loadNotifications();
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
@@ -3534,15 +3552,59 @@ function showView(name) {
   applyTranslations();
 }
 
-// ─── HOME POINTS ──────────────────────────────────────────
+// ─── HOME DASHBOARD ──────────────────────────────────────────
 async function loadHomePoints() {
+  // Date du jour
+  const dateEl = document.getElementById('home-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
   try {
-    const res = await apiFetch('/api/points/moi', { headers: authHeaders() });
-    if (!res.ok) return;
-    const data = await res.json();
-    const pts = data.points ?? 0;
-    document.getElementById('home-points').textContent = `${pts} ${pts !== 1 ? t('global.points') : t('global.point')}`;
-  } catch (e) { console.warn('points load error', e); }
+    const data = await safeFetchJSON('/api/dashboard/citoyen', {}, true);
+
+    // Points
+    const pts = data.points || 0;
+    document.getElementById('home-points').textContent = pts + ' ' + t('sent.points_accumules');
+
+    // Cartes dashboard
+    const dash = document.getElementById('home-dashboard');
+    if (dash) {
+      const cards = [
+        { v: data.signalements?.ouverts || 0, l: t('home.sig_ouverts'), c: '#ef4444', click: "showView('mes-signalements')" },
+        { v: data.signalements?.resolus || 0, l: t('home.sig_resolus'), c: '#3FAE49', click: "showView('mes-signalements')" },
+        { v: data.notifications_non_lues || 0, l: t('notif.titre'), c: '#2563eb', click: "showView('notifications')" },
+        { v: data.iqep !== null ? data.iqep + '/100' : '—', l: 'IQEP', c: '#16a34a', click: "showView('carte')" },
+      ];
+      if (data.prochain_rdv) {
+        const dt = new Date(data.prochain_rdv.debut);
+        cards.push({ v: dt.toLocaleDateString('fr-DZ',{day:'numeric',month:'short'}), l: data.prochain_rdv.service, c: '#f59e0b', click: "showView('civiadmin')" });
+      }
+      dash.innerHTML = cards.map(function(c) {
+        return '<div onclick="' + c.click + '" style="flex:1;min-width:80px;padding:10px;background:' + c.c + '10;border-radius:10px;text-align:center;cursor:pointer;">' +
+          '<div style="font-size:20px;font-weight:800;color:' + c.c + ';">' + c.v + '</div>' +
+          '<div style="font-size:10px;color:var(--muted);">' + c.l + '</div></div>';
+      }).join('');
+    }
+
+    // Communiqués récents
+    const comEl = document.getElementById('home-communiques');
+    if (comEl && data.communiques && data.communiques.length) {
+      comEl.innerHTML = '<h3 style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:6px;">' + t('communiques.titre') + '</h3>' +
+        data.communiques.map(function(c) {
+          var icon = c.niveau === 'urgent' ? '🔴' : c.niveau === 'important' ? '🔵' : '📢';
+          return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--gray-100);">' + icon + ' <strong>' + escHtml(c.titre) + '</strong> — ' + escHtml(c.message) + '</div>';
+        }).join('');
+    }
+
+    // Activité récente
+    var actEl = document.getElementById('home-activite');
+    if (actEl && data.activite_recente && data.activite_recente.length) {
+      actEl.innerHTML = '<h3 style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:6px;">' + t('home.activite') + '</h3>' +
+        data.activite_recente.map(function(a) {
+          return '<div style="font-size:12px;padding:4px 0;color:var(--muted);">' +
+            (a.delta > 0 ? '✅ +' + a.delta : '⬇️ ' + a.delta) + ' — ' + escHtml(a.motif) + ' · ' + fmtDate(a.le) + '</div>';
+        }).join('');
+    }
+  } catch (e) { console.warn('dashboard load error', e); }
 }
 
 // ─── PROPRETE CATEGORIES ──────────────────────────────────
@@ -5133,6 +5195,43 @@ async function initParkzones() {
     console.error('[ParkZones] initParkzones error:', e);
     el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' <span style="font-size:11px;color:var(--muted);display:block;">' + escHtml(e.message) + '</span></p>';
   }
+}
+
+// ─── JE PARTICIPE ────────────────────────────────────────────
+async function loadParticipations() {
+  var el = document.getElementById('participe-list');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('global.chargement') + '</div>';
+  try {
+    var data = await safeFetchJSON('/api/participation');
+    if (!data.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('participe.aucune') + '</p>'; return; }
+    var typeIcons = {consultation:'💬',sondage:'📊',vote:'🗳️',idee:'💡',budget:'💰',nettoyage:'🧹',plantation:'🌱',don_sang:'🩸',reunion:'🤝',evenement:'🎉',enquete:'📝'};
+    el.innerHTML = data.map(function(p) {
+      var icon = typeIcons[p.type] || '📋';
+      var fin = p.date_fin ? fmtDate(p.date_fin) : '—';
+      return '<div class="card" style="margin-bottom:10px;padding:14px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:start;gap:10px;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:700;font-size:14px;color:var(--navy);">' + icon + ' ' + escHtml(p.titre) + '</div>' +
+            (p.description ? '<p style="font-size:12px;color:var(--muted);margin:4px 0;">' + escHtml(p.description) + '</p>' : '') +
+            '<div style="font-size:11px;color:var(--muted);">' + t('participe.jusqua') + ' ' + fin + ' · ' + p.nb_participants + ' ' + t('participe.participants') +
+            (p.points_gagnes ? ' · +' + p.points_gagnes + ' pts' : '') + '</div>' +
+          '</div>' +
+          '<button class="btn btn-sm btn-primary" onclick="participer(' + p.id + ')">' + t('participe.btn') + '</button>' +
+        '</div></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+}
+
+async function participer(id) {
+  try {
+    var res = await apiFetch('/api/participation/' + id + '/participer', {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: '{}'
+    });
+    var d = await res.json();
+    if (d.deja) showToast(t('participe.deja'));
+    else showToast(t('participe.succes'));
+    loadParticipations();
+  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
 // ─── NOTIFICATIONS ───────────────────────────────────────────

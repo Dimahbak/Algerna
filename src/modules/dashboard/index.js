@@ -135,4 +135,37 @@ router.get('/quartier', asyncH(async (req, res) => {
   });
 }));
 
+// GET /api/dashboard/citoyen — tableau de bord personnel
+router.get('/citoyen', authenticate, asyncH(async (req, res) => {
+  const uid = req.user.id;
+  const cid = req.user.commune_id;
+  const [sigs, rdvs, notifs, pts, iqepR, communiques, activite] = await Promise.all([
+    query(`SELECT COUNT(*) FILTER (WHERE etat NOT IN ('resolu','rejete'))::int AS ouverts,
+                  COUNT(*) FILTER (WHERE etat = 'resolu')::int AS resolus
+             FROM signalement WHERE citoyen_id = $1`, [uid]),
+    query(`SELECT r.id, c.debut, s.nom AS service, r.statut
+             FROM rdv r JOIN creneau c ON c.id=r.creneau_id JOIN service s ON s.id=c.service_id
+            WHERE r.citoyen_id=$1 AND c.debut > NOW() AND r.statut='reserve'
+            ORDER BY c.debut LIMIT 1`, [uid]),
+    query('SELECT COUNT(*)::int AS n FROM notification WHERE utilisateur_id=$1 AND lu=FALSE', [uid]),
+    query('SELECT points FROM utilisateur WHERE id=$1', [uid]),
+    cid ? query(`SELECT AVG(COALESCE(i.note_manuelle,i.note_auto))::int AS moy
+                   FROM iqep i JOIN parc p ON p.id=i.parc_id WHERE p.commune_id=$1 AND p.actif=TRUE`, [cid])
+        : { rows: [{ moy: null }] },
+    query(`SELECT titre, message, niveau FROM communique
+            WHERE actif=TRUE AND (date_fin IS NULL OR date_fin > NOW())
+            ORDER BY cree_le DESC LIMIT 3`),
+    query(`SELECT motif, delta, le FROM points_journal WHERE citoyen_id=$1 ORDER BY le DESC LIMIT 5`, [uid]),
+  ]);
+  res.json({
+    signalements: sigs.rows[0],
+    prochain_rdv: rdvs.rows[0] || null,
+    notifications_non_lues: notifs.rows[0].n,
+    points: pts.rows[0]?.points || 0,
+    iqep: iqepR.rows[0]?.moy || null,
+    communiques: communiques.rows,
+    activite_recente: activite.rows,
+  });
+}));
+
 module.exports = router;

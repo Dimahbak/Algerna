@@ -45,6 +45,7 @@ const moduleMap = {
   cap:         require('./modules/cap'),
   civipark:    require('./modules/civipark'),
   infos:       require('./modules/infos'),
+  participation: require('./modules/participation'),
   legal:       require('./modules/legal'),
   notifications: require('./modules/notifications'),
 };
