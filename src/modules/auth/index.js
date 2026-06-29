@@ -79,3 +79,20 @@ router.patch('/preferences', authenticate, asyncH(async (req, res) => {
     consentement_wilaya,consentement_cgu,consentement_geo,quartier,adresse`, vals);
   res.json(rows[0]);
 }));
+
+// PATCH /api/auth/password — changement de mot de passe
+router.patch('/password', authenticate, asyncH(async (req, res) => {
+  const { ancienMotDePasse, nouveauMotDePasse } = req.body;
+  if (!ancienMotDePasse || !nouveauMotDePasse) throw badRequest('Ancien et nouveau mot de passe requis.');
+  if (nouveauMotDePasse.length < 6) throw badRequest('Le nouveau mot de passe doit contenir au moins 6 caractères.');
+
+  const { rows } = await query('SELECT mot_de_passe FROM utilisateur WHERE id=$1', [req.user.id]);
+  if (!rows.length) throw unauthorized('Utilisateur introuvable.');
+
+  const ok = await bcrypt.compare(ancienMotDePasse, rows[0].mot_de_passe);
+  if (!ok) throw unauthorized('Mot de passe actuel incorrect.');
+
+  const hash = await bcrypt.hash(nouveauMotDePasse, config.bcryptRounds);
+  await query('UPDATE utilisateur SET mot_de_passe=$1 WHERE id=$2', [hash, req.user.id]);
+  res.json({ ok: true, message: 'Mot de passe modifié avec succès.' });
+}));

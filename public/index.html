@@ -1534,10 +1534,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         <!-- Dropdown -->
         <div id="user-dropdown" class="hidden" style="position:absolute;top:100%;right:0;margin-top:8px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);min-width:200px;overflow:hidden;z-index:100;">
-          <a href="#" onclick="showView('sentinelle');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">⭐ Mon profil</a>
-          <a href="#" onclick="showView('sentinelle');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">⚙️ Préférences</a>
+          <a href="#" onclick="showView('profil');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">👤 Mon profil</a>
+          <a href="#" onclick="showView('sentinelle');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">⭐ Mon impact</a>
           <a href="#" onclick="showView('notifications');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">🔔 Mes notifications</a>
-          <a href="#" onclick="showLegalPage('cgu');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">🔒 Sécurité</a>
+          <a href="#" onclick="showView('securite');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);">🔒 Sécurité</a>
           <a href="#" onclick="handleLogout();return false;" style="display:flex;align-items:center;gap:8px;padding:12px 16px;color:#ef4444;text-decoration:none;font-size:13px;font-weight:600;">🚪 Déconnexion</a>
         </div>
       </div>
@@ -1545,13 +1545,14 @@
   </nav>
 
   <!-- Bandeau communiqués officiels -->
-  <div id="bandeau-communiques" class="hidden" style="background:#0B3C5D;color:white;overflow:hidden;position:relative;height:36px;font-size:13px;font-family:Poppins,sans-serif;">
-    <div id="bandeau-ticker" style="display:flex;align-items:center;height:100%;white-space:nowrap;animation:ticker 30s linear infinite;padding-left:100%;">
+  <div id="bandeau-communiques" class="hidden" style="background:linear-gradient(90deg,#0B3C5D,#0F4C75);color:white;overflow:hidden;position:relative;min-height:38px;font-size:13px;font-family:Poppins,sans-serif;">
+    <div id="bandeau-ticker" style="display:flex;align-items:center;min-height:38px;padding:0 16px;justify-content:center;text-align:center;">
     </div>
+    <button id="bandeau-voir-tout" class="hidden" onclick="showView('infos')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:2px 10px;border-radius:12px;font-size:11px;cursor:pointer;font-family:Poppins,sans-serif;">Voir tout</button>
   </div>
   <style>
-    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-    .bandeau-item { display:inline-flex;align-items:center;gap:6px;padding:0 40px; }
+    @keyframes bandeauFadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .bandeau-item { display:inline-flex;align-items:center;gap:6px;padding:4px 16px;animation:bandeauFadeIn 0.4s ease; }
     .bandeau-urgent { color:#fbbf24;font-weight:700; }
     .bandeau-important { color:#60a5fa; }
     .bandeau-info { color:rgba(255,255,255,0.9); }
@@ -1617,6 +1618,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         PatriLocal
       </button>
+      <button class="nav-item hidden" onclick="showView('admin-communiques')" data-view="admin-communiques" id="nav-admin-communiques">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Communiqués
+      </button>
       <button class="nav-item hidden" onclick="showView('operateur')" data-view="operateur" id="nav-operateur" data-i18n="sidebar.operateur">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
         Espace Opérateur
@@ -1652,13 +1657,7 @@
           </div>
         </div>
 
-        <!-- Communiqués récents -->
-        <div id="home-communiques" style="margin-bottom:16px;"></div>
-
-        <!-- Activité récente -->
-        <div id="home-activite" style="margin-bottom:16px;"></div>
-
-        <!-- Modules -->
+        <!-- Modules (before activité récente) -->
         <h3 style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:8px;" data-i18n="home.modules">Modules</h3>
         <div class="module-grid">
           <!-- 6 UNIVERS CITOYENS -->
@@ -1701,8 +1700,15 @@
             <div class="module-icon" style="background:#fef3c7;">
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
-            <h3 data-i18n="univers.profil">Mon impact</h3>
-            <p data-i18n="univers.profil_desc" style="font-size:11px;">Citoyenneté active, badges, impact</p>
+            <h3>Mon impact</h3>
+            <p style="font-size:11px;">Citoyenneté active, badges, impact</p>
+          </div>
+          <div class="module-card" onclick="showView('profil')">
+            <div class="module-icon" style="background:var(--blue-light);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h3>Mon profil</h3>
+            <p style="font-size:11px;">Informations personnelles, préférences</p>
           </div>
           <!-- ADMIN CARDS (hidden, shown for admin roles) -->
           <div class="module-card hidden" id="home-admin-card" onclick="showView('dashboard')">
@@ -1734,6 +1740,12 @@
             <p data-i18n="home.patrimoine_desc">Patrimoine immobilier communal</p>
           </div>
         </div>
+
+        <!-- Communiqués récents -->
+        <div id="home-communiques" style="margin-bottom:16px;"></div>
+
+        <!-- Activité récente -->
+        <div id="home-activite" style="margin-bottom:16px;"></div>
       </div>
 
       <!-- ══ SIGNALER — GRILLE 16 CATÉGORIES ══ -->
@@ -2060,9 +2072,15 @@
         </div>
 
         <!-- Sous-onglets Mes démarches -->
-        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-outline" onclick="showDemarchesTab('preparer')" id="tab-preparer" data-i18n="demarches.preparer">Préparer mon dossier</button>
-          <button class="btn btn-sm btn-primary" onclick="showDemarchesTab('rdv')" id="tab-rdv" data-i18n="demarches.prendre_rdv">Prendre un RDV</button>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="showDemarchesTab('preparer')" id="tab-preparer" style="flex:1;min-width:180px;padding:12px 18px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span data-i18n="demarches.preparer">Préparer mon dossier</span>
+          </button>
+          <button class="btn btn-outline" onclick="showDemarchesTab('rdv')" id="tab-rdv" style="flex:1;min-width:140px;padding:12px 18px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span data-i18n="demarches.prendre_rdv">Prendre un RDV</span>
+          </button>
         </div>
 
         <!-- Préparer mon dossier -->
@@ -2382,6 +2400,154 @@
         </div>
       </div>
 
+      <!-- ══ MON PROFIL VIEW ══ -->
+      <div id="view-profil" class="view">
+        <div class="page-header">
+          <h2>Mon profil</h2>
+          <p style="color:var(--muted);font-size:13px;">Vos informations personnelles</p>
+        </div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <div id="profil-infos-content">
+            <div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px;margin-bottom:16px;">
+          <h4 style="margin:0 0 12px;color:var(--navy);">Modifier mes informations</h4>
+          <div id="profil-edit-error" class="alert alert-error hidden"></div>
+          <div id="profil-edit-success" class="alert alert-success hidden"></div>
+          <form onsubmit="saveProfileInfo(event)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="form-group" style="margin:0;"><label>Prénom</label><input type="text" id="profil-prenom"></div>
+              <div class="form-group" style="margin:0;"><label>Nom</label><input type="text" id="profil-nom"></div>
+              <div class="form-group" style="margin:0;"><label>Téléphone</label><input type="text" id="profil-tel" readonly style="background:var(--gray-100);"></div>
+              <div class="form-group" style="margin:0;"><label>Email</label><input type="email" id="profil-email"></div>
+              <div class="form-group" style="margin:0;"><label>Adresse</label><input type="text" id="profil-adresse"></div>
+              <div class="form-group" style="margin:0;"><label>Quartier</label><input type="text" id="profil-quartier"></div>
+            </div>
+            <div class="form-group" style="margin-top:10px;"><label>Commune</label>
+              <select id="profil-commune"><option value="">-- Sélectionner --</option></select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:10px;">Sauvegarder</button>
+          </form>
+        </div>
+        <!-- Préférences de notification -->
+        <div class="card" style="padding:16px;">
+          <h4 style="margin:0 0 10px;color:var(--navy);">Préférences de notification</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="profil-pref-push" onchange="savePref('notifications_push',this.checked)">
+              Notifications push
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="profil-pref-sms" onchange="savePref('notifications_sms',this.checked)">
+              Notifications SMS
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="profil-pref-email" onchange="savePref('notifications_email',this.checked)">
+              Notifications email
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SÉCURITÉ VIEW ══ -->
+      <div id="view-securite" class="view">
+        <div class="page-header">
+          <h2>Sécurité</h2>
+          <p style="color:var(--muted);font-size:13px;">Gérez la sécurité de votre compte</p>
+        </div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <h4 style="margin:0 0 14px;color:var(--navy);">Changer le mot de passe</h4>
+          <div id="securite-error" class="alert alert-error hidden"></div>
+          <div id="securite-success" class="alert alert-success hidden"></div>
+          <form onsubmit="changePassword(event)">
+            <div class="form-group"><label>Mot de passe actuel</label><input type="password" id="sec-old-pwd" required></div>
+            <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="sec-new-pwd" required minlength="6"></div>
+            <div class="form-group"><label>Confirmer le nouveau mot de passe</label><input type="password" id="sec-confirm-pwd" required minlength="6"></div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Modifier le mot de passe</button>
+          </form>
+        </div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <h4 style="margin:0 0 10px;color:var(--navy);">Méthode de connexion</h4>
+          <div style="font-size:13px;color:var(--muted);">
+            <p>Connexion par téléphone + mot de passe</p>
+          </div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <h4 style="margin:0 0 10px;color:var(--navy);">Session active</h4>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+            <p>Vous êtes connecté sur cet appareil.</p>
+          </div>
+          <button class="btn btn-outline" style="width:100%;color:var(--red);border-color:var(--red);" onclick="handleLogout()">Déconnexion globale</button>
+        </div>
+      </div>
+
+      <!-- ══ ADMIN COMMUNIQUÉS VIEW ══ -->
+      <div id="view-admin-communiques" class="view">
+        <div class="page-header">
+          <h2>Gestion des communiqués</h2>
+          <p style="color:var(--muted);font-size:13px;">Créer, modifier et publier des communiqués officiels</p>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:space-between;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-primary" onclick="loadAdminCommuniques()">Tous</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('publie')">Publiés</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('brouillon')">Brouillons</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('archive')">Archivés</button>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="showCommuniqueForm()">+ Nouveau communiqué</button>
+        </div>
+        <div id="admin-communiques-list"></div>
+        <div id="admin-communique-form" class="hidden" style="margin-top:16px;">
+          <div class="card" style="padding:20px;">
+            <h4 id="communique-form-title" style="margin:0 0 14px;color:var(--navy);">Nouveau communiqué</h4>
+            <div id="comm-form-error" class="alert alert-error hidden"></div>
+            <form onsubmit="saveCommunique(event)">
+              <input type="hidden" id="comm-edit-id" value="">
+              <div class="form-group"><label>Titre *</label><input type="text" id="comm-titre" required></div>
+              <div class="form-group"><label>Message court *</label><input type="text" id="comm-message" required></div>
+              <div class="form-group"><label>Contenu détaillé</label><textarea id="comm-detail" rows="3"></textarea></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-group" style="margin:0;"><label>Type</label>
+                  <select id="comm-categorie">
+                    <option value="info">Information</option>
+                    <option value="alerte">Alerte</option>
+                    <option value="travaux">Travaux</option>
+                    <option value="securite">Sécurité</option>
+                    <option value="circulation">Circulation</option>
+                    <option value="eau">Eau</option>
+                    <option value="electricite">Électricité</option>
+                    <option value="evenement">Évènement</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Priorité</label>
+                  <select id="comm-niveau">
+                    <option value="info">Normale</option>
+                    <option value="important">Importante</option>
+                    <option value="urgent">Urgente</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Commune</label>
+                  <select id="comm-commune"><option value="">Toute la Wilaya</option></select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Statut</label>
+                  <select id="comm-statut">
+                    <option value="brouillon">Brouillon</option>
+                    <option value="publie">Publié</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin:0;"><label>Date début</label><input type="datetime-local" id="comm-debut"></div>
+                <div class="form-group" style="margin:0;"><label>Date fin</label><input type="datetime-local" id="comm-fin"></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button type="submit" class="btn btn-primary" style="flex:1;">Enregistrer</button>
+                <button type="button" class="btn btn-outline" onclick="hideCommuniqueForm()">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ DASHBOARD VIEW ══ -->
       <div id="view-dashboard" class="view">
         <div class="page-header">
@@ -2441,7 +2607,7 @@
       <div id="view-carte" class="view">
         <div class="page-header">
           <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p data-i18n="carte.sous_titre">Visualisez les signalements sur la carte</p>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;">Ma Houma vous permet de visualiser les signalements, équipements publics et indicateurs de qualité de votre quartier.</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-primary" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
@@ -2453,11 +2619,17 @@
         <div id="quartier-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
 
         <div class="carte-filters">
-          <button class="carte-filter-btn active" onclick="filterCarte('tous', this)" data-i18n="carte.tous">Tous</button>
-          <button class="carte-filter-btn" onclick="filterCarte('proprete', this)" data-i18n="carte.proprete">🌿 Propreté</button>
-          <button class="carte-filter-btn" onclick="filterCarte('eau', this)" data-i18n="carte.eau">💧 Eau</button>
-          <button class="carte-filter-btn" onclick="filterCarte('en_cours', this)" data-i18n="carte.en_cours">En cours</button>
-          <button class="carte-filter-btn" onclick="filterCarte('resolus', this)" data-i18n="carte.resolus">Résolus</button>
+          <button class="carte-filter-btn active" onclick="filterCarte('tous', this)">Tous</button>
+          <button class="carte-filter-btn" onclick="filterCarte('proprete', this)">🗑️ Propreté</button>
+          <button class="carte-filter-btn" onclick="filterCarte('eau', this)">💧 Eau</button>
+          <button class="carte-filter-btn" onclick="filterCarte('voirie', this)">🛣️ Voirie</button>
+          <button class="carte-filter-btn" onclick="filterCarte('eclairage', this)">💡 Éclairage</button>
+          <button class="carte-filter-btn" onclick="filterCarte('espaces_verts', this)">🌳 Espaces verts</button>
+          <button class="carte-filter-btn" onclick="filterCarte('stationnement', this)">🅿️ Stationnement</button>
+          <button class="carte-filter-btn" onclick="filterCarte('securite', this)">⚠️ Sécurité</button>
+          <button class="carte-filter-btn" onclick="filterCarte('nuisances', this)">🔊 Nuisances</button>
+          <button class="carte-filter-btn" onclick="filterCarte('en_cours', this)">🔄 En cours</button>
+          <button class="carte-filter-btn" onclick="filterCarte('resolus', this)">✅ Résolus</button>
           <button class="btn btn-outline btn-sm" onclick="centerOnUser()" style="margin-left:auto;">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
             <span data-i18n="carte.ma_position">Ma position</span>
@@ -2480,7 +2652,7 @@
       <div id="view-edeval" class="view">
         <div class="page-header">
           <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p data-i18n="edeval.sous_titre">Qualité des espaces publics — Wilaya d'Alger</p>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;">L'IQEP est un indice de qualité des espaces publics. Il permet de suivre l'état des parcs, équipements, propreté, éclairage et cadre de vie.</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
@@ -2689,7 +2861,7 @@
       <div id="view-parkzones" class="view">
         <div class="page-header">
           <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p data-i18n="univers.stationnement_desc">Zones de stationnement et tarifs</p>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;">Cette rubrique permet de visualiser les zones de stationnement, les difficultés signalées et les informations disponibles sur votre quartier.</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" data-i18n="sidebar.carte">Carte</button>
@@ -3260,8 +3432,32 @@ function handleLogout() {
   communes = [];
   rdvServices = [];
   selectedCreneauId = null;
+  equipTypesLoaded = false;
+  sigFamillesData = null;
+  _bandeauData = [];
+  if (_bandeauTimer) { clearInterval(_bandeauTimer); _bandeauTimer = null; }
+  // Reset UI state
   document.getElementById('auth-page').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
+  // Clear nav
+  var navAvatar = document.getElementById('nav-avatar');
+  if (navAvatar) navAvatar.textContent = '?';
+  var navUsername = document.getElementById('nav-username');
+  if (navUsername) navUsername.textContent = '';
+  var welcomeName = document.getElementById('welcome-name');
+  if (welcomeName) welcomeName.textContent = '';
+  // Hide admin elements
+  ['nav-dashboard','nav-patrimoine','nav-cap','nav-civipark','nav-operateur',
+   'home-admin-card','home-patrimoine-card','home-cap-card','home-civipark-card',
+   'admin-nav-label'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  var divider = document.getElementById('admin-divider');
+  if (divider) divider.style.display = 'none';
+  // Hide bandeau
+  var bandeau = document.getElementById('bandeau-communiques');
+  if (bandeau) bandeau.classList.add('hidden');
 }
 
 // ─── INIT APP ─────────────────────────────────────────────
@@ -3270,6 +3466,15 @@ async function initApp() {
   var authLang = document.querySelector('.auth-lang');
   if (authLang) authLang.style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+
+  // Refresh user data from server to avoid stale cache
+  try {
+    var freshUser = await safeFetchJSON('/api/auth/me', {}, true);
+    if (freshUser && freshUser.id) {
+      currentUser = freshUser;
+      localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+    }
+  } catch(e) { console.warn('[initApp] refresh user failed', e.message); }
 
   // Populate nav
   const u = currentUser;
@@ -3289,6 +3494,9 @@ async function initApp() {
     // PatriLocal : strictement admin_apc / admin_wilaya
     document.getElementById('nav-patrimoine').classList.remove('hidden');
     document.getElementById('home-patrimoine-card').classList.remove('hidden');
+    // Admin communiqués
+    var navComm = document.getElementById('nav-admin-communiques');
+    if (navComm) navComm.classList.remove('hidden');
   }
   if (isAdmin()) {
     // CAP + CiviPark gestion : agent + admin
@@ -3556,6 +3764,9 @@ function showView(name) {
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
   if (name === 'operateur') initOperateur();
+  if (name === 'profil') initProfil();
+  if (name === 'securite') { /* static view, nothing to init */ }
+  if (name === 'admin-communiques') loadAdminCommuniques();
 
   window.scrollTo(0, 0);
   applyTranslations();
@@ -5351,13 +5562,227 @@ async function requestDelete() {
   } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
 }
 
+// ─── MON PROFIL ─────────────────────────────────────────────
+async function initProfil() {
+  try {
+    var u = await safeFetchJSON('/api/auth/me', {}, true);
+    // Populate read view
+    var roleLabels = { citoyen:'Citoyen', agent:'Agent', admin_apc:'Admin APC', admin_wilaya:'Admin Wilaya', operateur:'Opérateur' };
+    var communeNom = '';
+    if (u.commune_id && communes.length) {
+      var c = communes.find(function(x) { return x.id === u.commune_id; });
+      communeNom = c ? c.nom : '';
+    }
+    document.getElementById('profil-infos-content').innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">' +
+      '<div><span style="color:var(--muted);">Prénom</span><div style="font-weight:600;">' + escHtml(u.prenom || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Nom</span><div style="font-weight:600;">' + escHtml(u.nom || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Téléphone</span><div style="font-weight:600;">' + escHtml(u.telephone || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Email</span><div style="font-weight:600;">' + escHtml(u.email || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Commune</span><div style="font-weight:600;">' + escHtml(communeNom || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Quartier</span><div style="font-weight:600;">' + escHtml(u.quartier || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Adresse</span><div style="font-weight:600;">' + escHtml(u.adresse || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">Rôle</span><div style="font-weight:600;">' + escHtml(roleLabels[u.role] || u.role) + '</div></div>' +
+      '</div>';
+    // Populate edit form
+    document.getElementById('profil-prenom').value = u.prenom || '';
+    document.getElementById('profil-nom').value = u.nom || '';
+    document.getElementById('profil-tel').value = u.telephone || '';
+    document.getElementById('profil-email').value = u.email || '';
+    document.getElementById('profil-adresse').value = u.adresse || '';
+    document.getElementById('profil-quartier').value = u.quartier || '';
+    // Commune select
+    var commSel = document.getElementById('profil-commune');
+    commSel.innerHTML = '<option value="">-- Sélectionner --</option>';
+    communes.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.nom;
+      commSel.appendChild(opt);
+    });
+    if (u.commune_id) commSel.value = u.commune_id;
+    // Prefs
+    var prefMap = {'profil-pref-push':'notifications_push','profil-pref-sms':'notifications_sms','profil-pref-email':'notifications_email'};
+    for (var pid in prefMap) {
+      var el = document.getElementById(pid);
+      if (el) el.checked = !!u[prefMap[pid]];
+    }
+  } catch(e) {
+    document.getElementById('profil-infos-content').innerHTML = '<p style="color:var(--red);">' + escHtml(e.message) + '</p>';
+  }
+}
+
+async function saveProfileInfo(e) {
+  e.preventDefault();
+  hideError('profil-edit-error');
+  try {
+    var body = {
+      adresse: document.getElementById('profil-adresse').value.trim() || undefined,
+      quartier: document.getElementById('profil-quartier').value.trim() || undefined,
+    };
+    await apiFetch('/api/auth/preferences', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    showSuccess('profil-edit-success', 'Profil mis à jour.');
+    setTimeout(function() { initProfil(); }, 500);
+  } catch(e) { showError('profil-edit-error', e.message); }
+}
+
+async function changePassword(e) {
+  e.preventDefault();
+  hideError('securite-error');
+  var oldPwd = document.getElementById('sec-old-pwd').value;
+  var newPwd = document.getElementById('sec-new-pwd').value;
+  var confirmPwd = document.getElementById('sec-confirm-pwd').value;
+  if (newPwd !== confirmPwd) { showError('securite-error', 'Les mots de passe ne correspondent pas.'); return; }
+  if (newPwd.length < 6) { showError('securite-error', 'Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  try {
+    var res = await apiFetch('/api/auth/password', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ancienMotDePasse: oldPwd, nouveauMotDePasse: newPwd })
+    });
+    if (!res.ok) { var d = await res.json(); throw new Error(d.message || 'Erreur'); }
+    showSuccess('securite-success', 'Mot de passe modifié avec succès.');
+    document.getElementById('sec-old-pwd').value = '';
+    document.getElementById('sec-new-pwd').value = '';
+    document.getElementById('sec-confirm-pwd').value = '';
+  } catch(e) { showError('securite-error', e.message); }
+}
+
+// ─── ADMIN COMMUNIQUÉS ──────────────────────────────────────
+async function loadAdminCommuniques(statut) {
+  var el = document.getElementById('admin-communiques-list');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  // Populate commune select
+  var commSel = document.getElementById('comm-commune');
+  if (commSel && commSel.options.length <= 1) {
+    communes.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.nom;
+      commSel.appendChild(opt);
+    });
+  }
+  try {
+    var url = '/api/infos/communiques?admin=true';
+    if (statut) url += '&statut=' + statut;
+    var data = await safeFetchJSON(url, {}, true);
+    if (!data || !data.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">Aucun communiqué.</p>'; return; }
+    var niveauColors = { urgent:'#ef4444', important:'#2563eb', info:'#16a34a' };
+    var statutLabels = { brouillon:'Brouillon', publie:'Publié', archive:'Archivé' };
+    el.innerHTML = '<div class="table-wrapper"><table><thead><tr><th>Statut</th><th>Priorité</th><th>Titre</th><th>Commune</th><th>Début</th><th>Fin</th><th>Actions</th></tr></thead><tbody>' +
+      data.map(function(c) {
+        var sColor = c.actif ? '#16a34a' : '#9ca3af';
+        var statLabel = c.actif ? (statutLabels[c.statut] || 'Publié') : 'Inactif';
+        return '<tr>' +
+          '<td><span style="padding:2px 8px;border-radius:8px;font-size:11px;background:' + sColor + '22;color:' + sColor + ';">' + statLabel + '</span></td>' +
+          '<td><span style="color:' + (niveauColors[c.niveau]||'#666') + ';font-weight:600;">' + escHtml(c.niveau||'info') + '</span></td>' +
+          '<td style="font-weight:600;">' + escHtml(c.titre) + '</td>' +
+          '<td>' + escHtml(c.commune_nom || 'Toute la Wilaya') + '</td>' +
+          '<td style="font-size:11px;">' + fmtDate(c.date_debut) + '</td>' +
+          '<td style="font-size:11px;">' + (c.date_fin ? fmtDate(c.date_fin) : '—') + '</td>' +
+          '<td style="white-space:nowrap;">' +
+            '<button class="btn btn-sm btn-outline" onclick="editCommunique(' + c.id + ')" style="font-size:11px;padding:2px 8px;">Modifier</button> ' +
+            (c.actif ? '<button class="btn btn-sm btn-outline" onclick="toggleCommunique(' + c.id + ',false)" style="font-size:11px;padding:2px 8px;">Dépublier</button> ' :
+                       '<button class="btn btn-sm btn-outline" onclick="toggleCommunique(' + c.id + ',true)" style="font-size:11px;padding:2px 8px;">Publier</button> ') +
+            '<button class="btn btn-sm btn-outline" onclick="deleteCommunique(' + c.id + ')" style="font-size:11px;padding:2px 8px;color:var(--red);">Suppr.</button>' +
+          '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + escHtml(e.message) + '</p>'; }
+}
+
+function showCommuniqueForm() {
+  document.getElementById('comm-edit-id').value = '';
+  document.getElementById('comm-titre').value = '';
+  document.getElementById('comm-message').value = '';
+  document.getElementById('comm-detail').value = '';
+  document.getElementById('comm-categorie').value = 'info';
+  document.getElementById('comm-niveau').value = 'info';
+  document.getElementById('comm-statut').value = 'brouillon';
+  document.getElementById('comm-debut').value = new Date().toISOString().slice(0,16);
+  document.getElementById('comm-fin').value = '';
+  document.getElementById('communique-form-title').textContent = 'Nouveau communiqué';
+  document.getElementById('admin-communique-form').classList.remove('hidden');
+}
+
+function hideCommuniqueForm() { document.getElementById('admin-communique-form').classList.add('hidden'); }
+
+async function editCommunique(id) {
+  try {
+    var data = await safeFetchJSON('/api/infos/communiques?admin=true', {}, true);
+    var c = data.find(function(x) { return x.id === id; });
+    if (!c) return;
+    document.getElementById('comm-edit-id').value = c.id;
+    document.getElementById('comm-titre').value = c.titre;
+    document.getElementById('comm-message').value = c.message;
+    document.getElementById('comm-detail').value = c.detail || '';
+    document.getElementById('comm-categorie').value = c.categorie || 'info';
+    document.getElementById('comm-niveau').value = c.niveau || 'info';
+    document.getElementById('comm-statut').value = c.statut || 'publie';
+    if (c.commune_id) document.getElementById('comm-commune').value = c.commune_id;
+    if (c.date_debut) document.getElementById('comm-debut').value = new Date(c.date_debut).toISOString().slice(0,16);
+    if (c.date_fin) document.getElementById('comm-fin').value = new Date(c.date_fin).toISOString().slice(0,16);
+    document.getElementById('communique-form-title').textContent = 'Modifier le communiqué';
+    document.getElementById('admin-communique-form').classList.remove('hidden');
+  } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
+async function saveCommunique(e) {
+  e.preventDefault();
+  hideError('comm-form-error');
+  var editId = document.getElementById('comm-edit-id').value;
+  var body = {
+    titre: document.getElementById('comm-titre').value.trim(),
+    message: document.getElementById('comm-message').value.trim(),
+    detail: document.getElementById('comm-detail').value.trim() || null,
+    categorie: document.getElementById('comm-categorie').value,
+    niveau: document.getElementById('comm-niveau').value,
+    commune_id: document.getElementById('comm-commune').value ? Number(document.getElementById('comm-commune').value) : null,
+    date_debut: document.getElementById('comm-debut').value || null,
+    date_fin: document.getElementById('comm-fin').value || null,
+    actif: document.getElementById('comm-statut').value === 'publie',
+  };
+  try {
+    var url = editId ? '/api/infos/communiques/' + editId : '/api/infos/communiques';
+    var method = editId ? 'PATCH' : 'POST';
+    var res = await apiFetch(url, { method: method, headers: { ...authHeaders(), 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) { var d = await res.json(); throw new Error(d.message || 'Erreur'); }
+    hideCommuniqueForm();
+    loadAdminCommuniques();
+    loadCommuniques();
+    showToast(editId ? 'Communiqué modifié.' : 'Communiqué créé.');
+  } catch(e) { showError('comm-form-error', e.message); }
+}
+
+async function toggleCommunique(id, actif) {
+  try {
+    await apiFetch('/api/infos/communiques/' + id, { method:'PATCH', headers:{ ...authHeaders(), 'Content-Type':'application/json' }, body:JSON.stringify({ actif: actif }) });
+    loadAdminCommuniques();
+    loadCommuniques();
+    showToast(actif ? 'Communiqué publié.' : 'Communiqué dépublié.');
+  } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
+async function deleteCommunique(id) {
+  if (!confirm('Supprimer ce communiqué ?')) return;
+  try {
+    await apiFetch('/api/infos/communiques/' + id, { method:'DELETE', headers:authHeaders() });
+    loadAdminCommuniques();
+    loadCommuniques();
+    showToast('Communiqué supprimé.');
+  } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
+}
+
 // ─── PRÉPARER MON DOSSIER ────────────────────────────────────
 function showDemarchesTab(tab) {
   document.getElementById('demarches-preparer').classList.toggle('hidden', tab !== 'preparer');
   document.getElementById('rdv-steps').classList.toggle('hidden', tab === 'preparer');
   document.getElementById('rdv-step-1').classList.toggle('hidden', tab === 'preparer');
-  document.getElementById('tab-preparer').className = tab === 'preparer' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
-  document.getElementById('tab-rdv').className = tab === 'rdv' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+  var tabPrepStyle = document.getElementById('tab-preparer');
+  var tabRdvStyle = document.getElementById('tab-rdv');
+  tabPrepStyle.className = tab === 'preparer' ? 'btn btn-primary' : 'btn btn-outline';
+  tabRdvStyle.className = tab === 'rdv' ? 'btn btn-primary' : 'btn btn-outline';
   if (tab === 'preparer') {
     const sel = document.getElementById('preparer-service');
     if (sel && sel.options.length <= 1 && rdvServices) {
@@ -5422,32 +5847,58 @@ async function savePref(field, value) {
 }
 
 // ─── BANDEAU COMMUNIQUÉS OFFICIELS ───────────────────────────
+var _bandeauData = [];
+var _bandeauIdx = 0;
+var _bandeauTimer = null;
+
 async function loadCommuniques() {
   try {
     var data;
     try { data = await safeFetchJSON('/api/infos/communiques'); }
-    catch(e) { data = await safeFetchJSON('/infos/communiques'); }
+    catch(e) {
+      try { data = await safeFetchJSON('/infos/communiques'); }
+      catch(e2) { data = []; }
+    }
+    var bandeau = document.getElementById('bandeau-communiques');
+    var ticker = document.getElementById('bandeau-ticker');
+    var voirTout = document.getElementById('bandeau-voir-tout');
+    if (!bandeau || !ticker) return;
+
     if (!data || !data.length) {
-      var b = document.getElementById('bandeau-communiques');
-      if (b) { b.classList.remove('hidden'); document.getElementById('bandeau-ticker').innerHTML = '<span class="bandeau-item bandeau-info" style="padding:0 20px;">📢 Aucun communiqué en cours</span>'; }
+      ticker.innerHTML = '<span class="bandeau-item bandeau-info">📢 Aucun communiqué en cours</span>';
+      bandeau.classList.remove('hidden');
       return;
     }
-    const bandeau = document.getElementById('bandeau-communiques');
-    const ticker = document.getElementById('bandeau-ticker');
-    const icons = { urgent:'🔴', important:'🔵', info:'📢' };
-    ticker.innerHTML = data.map(c => {
-      const cls = 'bandeau-' + c.niveau;
-      const dot = 'bandeau-dot bandeau-dot-' + c.niveau;
-      return '<span class="bandeau-item ' + cls + '"><span class="' + dot + '"></span>' +
-        (icons[c.niveau]||'📢') + ' ' + escHtml(c.titre) + ' — ' + escHtml(c.message) + '</span>';
-    }).join('') + data.map(c => {
-      const cls = 'bandeau-' + c.niveau;
-      const dot = 'bandeau-dot bandeau-dot-' + c.niveau;
-      return '<span class="bandeau-item ' + cls + '"><span class="' + dot + '"></span>' +
-        (icons[c.niveau]||'📢') + ' ' + escHtml(c.titre) + ' — ' + escHtml(c.message) + '</span>';
-    }).join('');
+
+    _bandeauData = data;
+    _bandeauIdx = 0;
+
+    // Afficher le premier communiqué
+    function renderBandeauItem(idx) {
+      var c = _bandeauData[idx];
+      if (!c) return;
+      var icons = { urgent:'🔴', important:'🔵', info:'📢' };
+      var cls = 'bandeau-' + (c.niveau || 'info');
+      var dot = 'bandeau-dot bandeau-dot-' + (c.niveau || 'info');
+      ticker.innerHTML = '<span class="bandeau-item ' + cls + '"><span class="' + dot + '"></span>' +
+        (icons[c.niveau] || '📢') + ' <strong>' + escHtml(c.titre) + '</strong> — ' + escHtml(c.message) + '</span>';
+    }
+
+    renderBandeauItem(0);
     bandeau.classList.remove('hidden');
-  } catch(e) { /* silencieux si pas de communiqués */ }
+
+    // Bouton "Voir tout" si plusieurs communiqués
+    if (data.length > 1 && voirTout) voirTout.classList.remove('hidden');
+
+    // Rotation automatique toutes les 7 secondes si plusieurs
+    if (_bandeauTimer) clearInterval(_bandeauTimer);
+    if (data.length > 1) {
+      _bandeauTimer = setInterval(function() {
+        _bandeauIdx = (_bandeauIdx + 1) % _bandeauData.length;
+        renderBandeauItem(_bandeauIdx);
+      }, 7000);
+    }
+  } catch(e) { console.warn('[communiques]', e.message); }
 }
 
 // ─── INFOS UTILES ────────────────────────────────────────────
@@ -5456,8 +5907,10 @@ async function loadInfos(categorie) {
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('global.chargement') + '</div>';
   try {
     const url = categorie ? '/api/infos/contacts?categorie=' + categorie : '/api/infos/contacts';
-    const contacts = await safeFetchJSON(url);
-    if (!contacts.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('global.aucun') + '</p>'; return; }
+    var contacts;
+    try { contacts = await safeFetchJSON(url, {}, true); }
+    catch(e) { contacts = await safeFetchJSON(url.replace('/api/', '/')); }
+    if (!contacts || !contacts.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('global.aucun') + '</p>'; return; }
     const catIcons = { urgences:'🚨', reseaux:'🔧', transports:'🚌', institutions:'🏛️' };
     const catColors = { urgences:'#ef4444', reseaux:'#2563eb', transports:'#f59e0b', institutions:'#0B3C5D' };
     el.innerHTML = contacts.map(c => {
@@ -5473,11 +5926,12 @@ async function loadInfos(categorie) {
           '<div style="display:flex;gap:6px;">' +
             (c.telephone ? '<a href="tel:' + c.telephone + '" class="btn btn-sm btn-primary" style="font-size:12px;padding:4px 10px;">📞 ' + escHtml(c.telephone) + '</a>' : '') +
             (c.email ? '<a href="mailto:' + c.email + '" class="btn btn-sm btn-outline" style="font-size:12px;padding:4px 10px;">✉️</a>' : '') +
+            (c.lat && c.lng ? '<a href="https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng + '" target="_blank" class="btn btn-sm btn-outline" style="font-size:12px;padding:4px 10px;">🧭</a>' : '') +
           '</div>' +
         '</div>' +
       '</div>';
     }).join('');
-  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + ' — ' + escHtml(e.message) + '</p>'; }
 }
 
 // ─── ÉQUIPEMENTS PUBLICS ─────────────────────────────────────
@@ -5488,17 +5942,21 @@ async function loadEquipements(type) {
   // Charger les filtres types une fois
   if (!equipTypesLoaded) {
     try {
-      var types = await safeFetchJSON('/api/equipements/types');
+      var types;
+      try { types = await safeFetchJSON('/api/equipements/types', {}, true); }
+      catch(e) { types = await safeFetchJSON('/equipements/types'); }
       var icons = {apc:'🏛️',daira:'🏛️',ecole:'🏫',college:'🏫',lycee:'🎓',mosquee:'🕌',hopital:'🏥',polyclinique:'🏥',pharmacie:'💊',poste:'📮',marche:'🛒',parc:'🌳',aire_jeux:'🎠',bibliotheque:'📚',maison_jeunes:'🏠',salle_sport:'⚽',transport:'🚌',parking:'🅿️',cap:'👤',autre:'📍'};
       var filtersEl = document.getElementById('equip-filters');
       filtersEl.innerHTML = '<button class="btn btn-sm btn-primary" onclick="loadEquipements()">Tous</button>' +
         types.map(function(tp) { return '<button class="btn btn-sm btn-outline" onclick="loadEquipements(\'' + tp + '\')">' + (icons[tp]||'📍') + ' ' + tp + '</button>'; }).join('');
       equipTypesLoaded = true;
-    } catch(e) {}
+    } catch(e) { console.warn('[equip types]', e.message); }
   }
   try {
     var url = type ? '/api/equipements?type=' + type : '/api/equipements';
-    var data = await safeFetchJSON(url);
+    var data;
+    try { data = await safeFetchJSON(url, {}, true); }
+    catch(e) { data = await safeFetchJSON(url.replace('/api/', '/')); }
     if (!data.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('global.aucun') + '</p>'; return; }
     var icons = {apc:'🏛️',daira:'🏛️',ecole:'🏫',college:'🏫',lycee:'🎓',mosquee:'🕌',hopital:'🏥',polyclinique:'🏥',pharmacie:'💊',poste:'📮',marche:'🛒',parc:'🌳',aire_jeux:'🎠',bibliotheque:'📚',maison_jeunes:'🏠',salle_sport:'⚽',transport:'🚌',parking:'🅿️',cap:'👤',autre:'📍'};
     var statusColors = {actif:'#3FAE49',ferme_temp:'#f59e0b',en_travaux:'#2563eb',hors_service:'#ef4444'};
@@ -5632,23 +6090,38 @@ function sigShowSousCas(famille) {
   }
   const meta = SIG_FAMILLE_META[famille] || SIG_FAMILLE_META.autre;
   const list = document.getElementById('sig-souscas-list');
-  // Grouper par groupe
+  // Grouper par groupe — "Autre" toujours en dernier
   const groups = {};
   cats.forEach(c => {
     const g = c.groupe || 'Autre';
     if (!groups[g]) groups[g] = [];
     groups[g].push(c);
   });
+  // Trier les groupes : "Autre" en dernier
+  const sortedGroups = Object.entries(groups).sort(([a], [b]) => {
+    if (a === 'Autre') return 1;
+    if (b === 'Autre') return -1;
+    return 0;
+  });
   let html = '';
-  for (const [grp, items] of Object.entries(groups)) {
-    if (Object.keys(groups).length > 1) {
+  for (const [grp, items] of sortedGroups) {
+    // Trier les items dans chaque groupe : "Autre..." en dernier
+    items.sort((a, b) => {
+      const aIsAutre = (a.libelle || '').toLowerCase().startsWith('autre');
+      const bIsAutre = (b.libelle || '').toLowerCase().startsWith('autre');
+      if (aIsAutre && !bIsAutre) return 1;
+      if (!aIsAutre && bIsAutre) return -1;
+      return 0;
+    });
+    if (sortedGroups.length > 1) {
       html += `<div style="font-size:12px;font-weight:600;color:${meta.color};text-transform:uppercase;margin:12px 0 6px;letter-spacing:0.5px;">${escHtml(grp)}</div>`;
     }
     html += items.map(c => {
+      const isAutre = (c.libelle || '').toLowerCase().startsWith('autre');
       const badge = c.criticite === 'haute' ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#fee2e2;color:#ef4444;margin-left:6px;">urgent</span>' : '';
-      return `<div class="card" style="margin-bottom:6px;padding:10px 14px;cursor:pointer;transition:background .15s;"
+      return `<div class="card" style="margin-bottom:6px;padding:10px 14px;cursor:pointer;transition:background .15s;${isAutre ? 'border-left:3px solid var(--gray-300);' : ''}"
          onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''"
-         onclick="sigSelectCategorie(${c.id}, '${famille}')">
+         onclick="sigSelectCategorie(${c.id}, '${famille}'${isAutre ? ', true' : ''})">
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <span style="font-size:13px;font-weight:500;">${escHtml(c.libelle)}${badge}</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><polyline points="${currentLang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>
@@ -5747,7 +6220,7 @@ function sigSelectEpic(epicId, sigle) {
 }
 
 // ── Sélection catégorie → formulaire ──
-function sigSelectCategorie(catId, famille) {
+function sigSelectCategorie(catId, famille, isAutre) {
   const display = document.getElementById('sig-categorie-display');
   const hidden = document.getElementById('sig-categorie-id');
 
@@ -5768,6 +6241,22 @@ function sigSelectCategorie(catId, famille) {
     const cats = sigFamillesData[famille] || [];
     const autreCat = cats.find(c => c.libelle.toLowerCase().startsWith('autre'));
     hidden.value = autreCat ? autreCat.id : '';
+    isAutre = true;
+  }
+
+  // Si "Autre" est sélectionné, rendre la description obligatoire
+  var descEl = document.getElementById('sig-description');
+  if (descEl) {
+    if (isAutre) {
+      descEl.required = true;
+      descEl.placeholder = 'Décrivez le problème (obligatoire)';
+      descEl.style.border = '2px solid var(--gold)';
+      descEl.focus();
+    } else {
+      descEl.required = false;
+      descEl.placeholder = 'Que constatez-vous ? Depuis quand ?';
+      descEl.style.border = '';
+    }
   }
 
   // Init mini-map
@@ -6066,20 +6555,42 @@ async function loadCarteSignals() {
       }
     } catch (e) { console.warn('carte api error', e); }
   } else {
-    // Citizens: use localStorage
+    // Citizens: load from API (nearby signals) + localStorage
+    try {
+      const communeId = currentUser?.commune_id;
+      if (communeId) {
+        const [resP, resE] = await Promise.all([
+          apiFetch('/api/proprete/signalements?communeId=' + communeId + '&limit=100', { headers: authHeaders() }).catch(() => null),
+          apiFetch('/api/eau/signalements?communeId=' + communeId + '&limit=100', { headers: authHeaders() }).catch(() => null)
+        ]);
+        if (resP && resP.ok) {
+          const d = await resP.json();
+          const list = Array.isArray(d) ? d : (d.signalements || d.data || []);
+          list.forEach(s => { s._domaine = 'proprete'; carteAllSignals.push(s); });
+        }
+        if (resE && resE.ok) {
+          const d = await resE.json();
+          const list = Array.isArray(d) ? d : (d.signalements || d.data || []);
+          list.forEach(s => { s._domaine = 'eau'; carteAllSignals.push(s); });
+        }
+      }
+    } catch(e) { console.warn('[carte citoyen api]', e.message); }
+    // Fallback: also include localStorage signals
     const saved = JSON.parse(localStorage.getItem(MES_SIG_KEY) || '[]');
     saved.forEach(s => {
-      carteAllSignals.push({
-        id: s.id,
-        reference: s.reference,
-        categorie: s.categorie,
-        etat: s.etat,
-        commune: s.commune,
-        created_at: s.cree_le,
-        lat: s.lat,
-        lng: s.lng,
-        _domaine: s.domaine
-      });
+      if (!carteAllSignals.find(x => x.id === s.id)) {
+        carteAllSignals.push({
+          id: s.id,
+          reference: s.reference,
+          categorie: s.categorie,
+          etat: s.etat,
+          commune: s.commune,
+          created_at: s.cree_le,
+          lat: s.lat,
+          lng: s.lng,
+          _domaine: s.domaine
+        });
+      }
     });
   }
 
@@ -6126,10 +6637,14 @@ function renderCarteMarkers(filter) {
 
   let filtered = carteAllSignals.filter(s => s.lat && s.lng);
 
-  if (filter === 'proprete') filtered = filtered.filter(s => s._domaine === 'proprete');
-  else if (filter === 'eau') filtered = filtered.filter(s => s._domaine === 'eau');
-  else if (filter === 'en_cours') filtered = filtered.filter(s => ['recu','transmis','en_intervention'].includes(s.etat || s.statut));
-  else if (filter === 'resolus') filtered = filtered.filter(s => (s.etat || s.statut) === 'resolu');
+  var famFilters = ['proprete','eau','voirie','eclairage','espaces_verts','stationnement','securite','nuisances','mobilier_urbain','animaux','accessibilite','environnement','transport','batiments'];
+  if (famFilters.includes(filter)) {
+    filtered = filtered.filter(s => s._domaine === filter || s.famille === filter || (s.categorie_famille || '') === filter);
+  } else if (filter === 'en_cours') {
+    filtered = filtered.filter(s => ['recu','transmis','en_intervention'].includes(s.etat || s.statut));
+  } else if (filter === 'resolus') {
+    filtered = filtered.filter(s => (s.etat || s.statut) === 'resolu');
+  }
 
   filtered.forEach(s => {
     const lat = parseFloat(s.lat);
