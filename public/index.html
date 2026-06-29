@@ -88,35 +88,32 @@
     @media (max-width: 1440px) { #auth-page { padding-right: 120px; } }
     @media (max-width: 1280px) { #auth-page { padding-right: 80px; } }
     @media (max-width: 1024px) { #auth-page { padding: 20px 40px; } }
-    @media (max-width: 767px) {
+    @media (max-width: 768px) {
       #auth-page {
-        background: url('/assets/bg/landing_mobile_clean.png') center bottom/cover no-repeat !important;
-        justify-content: flex-start;
+        background: url('/assets/bg/landing_mobile_clean.png') center center/cover no-repeat !important;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        padding: 80px 16px 24px;
         align-items: center;
-        padding: 12px 4% 0;
-        min-height: 100vh;
+        justify-content: center;
       }
       .auth-wrapper {
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        align-items: center !important;
         width: 100% !important;
-        gap: 0 !important;
+        justify-content: center !important;
       }
       .auth-hero { display: none !important; }
       .auth-card {
         width: 92% !important;
         max-width: 420px !important;
+        margin: 0 auto !important;
+        position: relative;
+        z-index: 20;
         border-radius: 20px !important;
       }
-      /* Masquer footer et sceau mobile */
-      #auth-page > div:last-child { display: none; }
+      /* Masquer sceau/footer mobile */
+      .auth-footer-seal { display: none !important; }
       /* Sélecteur langue mobile */
-      #auth-page > div:first-child {
-        top: 12px !important;
-        right: 12px !important;
-        max-width: 100px;
-      }
+      .auth-lang { top: 12px !important; right: 12px !important; }
     }
 
     .auth-wrapper {
@@ -1418,8 +1415,8 @@
      AUTH PAGE
 ══════════════════════════════════════════════════════════ -->
 <div id="auth-page">
-  <!-- Sélecteur langue -->
-  <div style="position:absolute;top:16px;right:20px;z-index:3;display:flex;gap:4px;background:rgba(255,255,255,0.9);border-radius:10px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+  <!-- Sélecteur langue (unique, fixed) -->
+  <div class="auth-lang" style="position:fixed;top:24px;right:32px;z-index:60;display:flex;gap:4px;background:rgba(255,255,255,0.9);border-radius:10px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
     <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')" style="background:#0B3C5D;color:white;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;">FR</button>
     <button class="lang-btn" data-lang="ar" onclick="setLang('ar')" style="background:transparent;color:#0B3C5D;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;">AR</button>
   </div>
@@ -1520,8 +1517,8 @@
     </div>
   </div>
 
-  <!-- Sceau Wilaya + footer -->
-  <div style="text-align:center;padding:8px 0;position:relative;z-index:1;color:rgba(255,255,255,0.6);">
+  <!-- Sceau Wilaya + footer (desktop only) -->
+  <div class="auth-footer-seal" style="text-align:center;padding:8px 0;position:relative;z-index:1;color:rgba(255,255,255,0.6);">
     <div style="font-size:10px;margin-bottom:2px;">ولاية الجزائر</div>
     <div style="font-size:10px;letter-spacing:1px;">WILAYA D'ALGER</div>
     <div style="font-size:9px;margin-top:6px;">© Wilaya d'Alger 2026</div>
@@ -3288,6 +3285,8 @@ function handleLogout() {
 // ─── INIT APP ─────────────────────────────────────────────
 async function initApp() {
   document.getElementById('auth-page').style.display = 'none';
+  var authLang = document.querySelector('.auth-lang');
+  if (authLang) authLang.style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
   // Populate nav
@@ -6492,7 +6491,7 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v18';
+const APP_CACHE_VERSION = 'v19';
 (function purgeStaleSW() {
   const stored = localStorage.getItem('civismart_sw_ver');
   if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
