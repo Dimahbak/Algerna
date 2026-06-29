@@ -88,11 +88,19 @@
     @media (max-width: 1024px) { #auth-page { padding: 3vh 40px 20px; } }
     @media (max-width: 767px) {
       #auth-page {
-        background: url('/assets/bg/landing_mobile.png') center/cover no-repeat !important;
+        background: url('/assets/bg/landing_mobile.png') center top/cover no-repeat !important;
         justify-content: center;
-        align-items: center;
-        padding: 15px;
+        align-items: flex-start;
+        padding: 12px 16px 20px;
+        flex-direction: column;
       }
+      .auth-wrapper {
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+      }
+      .auth-mobile-brand { display: flex !important; }
+      .auth-card { width: 100% !important; max-width: 100% !important; margin-top: 8px; }
     }
 
     .auth-wrapper {
@@ -166,9 +174,7 @@
       flex-shrink: 0;
       animation: slideRight 0.5s ease-out;
     }
-    @media (max-width: 767px) {
-      .auth-card { width: 92%; max-width: 380px; animation: none; }
-    }
+    /* mobile auth-card géré dans le bloc @media 767px principal */
 
     /* #11 pas de tabs, juste titre + sous-titre. #16 titre 28px semi. #17 padding 48 interne */
     .auth-header {
@@ -194,9 +200,9 @@
       margin: 0 0 8px;
     }
     @media (max-width: 767px) {
-      .auth-header { padding: 28px 24px 0; }
-      .auth-header h2 { font-size: 24px; }
-      .auth-header .auth-subtitle { font-size: 13px; }
+      .auth-header { padding: 16px 20px 0; }
+      .auth-header h2 { font-size: 22px; margin-bottom: 2px; }
+      .auth-header .auth-subtitle { font-size: 12px; margin-bottom: 6px; }
     }
 
     /* #11 Tabs cachés — remplacés par titre + lien "Créer un compte" */
@@ -227,14 +233,19 @@
     .auth-body {
       padding: 16px 48px 28px;
     }
-    @media (max-width: 767px) { .auth-body { padding: 14px 24px 22px; } }
+    @media (max-width: 767px) { .auth-body { padding: 10px 20px 16px; } }
 
     .auth-body .form-group { margin-bottom: 14px; }
     .auth-body .form-group label { display: none; }
+    .auth-body .form-group { position: relative; }
+    .auth-body .form-group .input-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #8B95A7; pointer-events: none;
+    }
     .auth-body .form-group input {
       width: 100%;
       height: 48px;
-      padding: 0 14px;
+      padding: 0 14px 0 42px;
       border: 1px solid #D8DEE8;
       border-radius: 12px;
       font-family: 'Poppins', sans-serif;
@@ -305,14 +316,18 @@
     }
     .auth-social-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      width: 100%; height: 44px;
-      border-radius: 12px; border: 1px solid #D8DEE8;
+      width: 100%; height: 48px;
+      border-radius: 14px; border: 1px solid #D8DEE8;
       background: #fff;
       font-family: 'Poppins', sans-serif;
       font-size: 14px; font-weight: 500; color: #333;
       cursor: pointer; transition: background .2s;
     }
     .auth-social-btn:hover { background: #f9f9f9; }
+    @media (max-width: 767px) {
+      .auth-social-btn { height: 44px; font-size: 13px; border-radius: 12px; }
+      .auth-social { gap: 6px; }
+    }
 
     .form-group { margin-bottom: 16px; }
 
@@ -1414,6 +1429,22 @@
      AUTH PAGE
 ══════════════════════════════════════════════════════════ -->
 <div id="auth-page">
+  <!-- Sélecteur langue discret en haut -->
+  <div style="position:absolute;top:10px;right:16px;z-index:3;display:flex;gap:6px;">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')" style="background:rgba(255,255,255,0.3);color:white;border:1px solid rgba(255,255,255,0.4);padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">FR</button>
+    <button class="lang-btn" data-lang="ar" onclick="setLang('ar')" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">AR</button>
+  </div>
+
+  <!-- Branding mobile (visible uniquement mobile) -->
+  <div class="auth-mobile-brand" style="display:none;flex-direction:column;align-items:center;text-align:center;color:white;padding:8px 0 4px;">
+    <p style="font-size:10px;opacity:0.7;letter-spacing:1px;margin-bottom:6px;">WILAYA D'ALGER · ولاية الجزائر</p>
+    <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" style="height:44px;margin-bottom:6px;">
+    <h1 style="font-size:24px;font-weight:700;margin:0;letter-spacing:1px;">ALGERNA</h1>
+    <p style="font-size:13px;margin:4px 0 2px;">Ma ville. <span style="color:#3FAE49;font-weight:600;">Mon pouvoir.</span> Notre avenir.</p>
+    <p style="font-size:11px;opacity:0.85;margin:2px 0;">La plateforme numérique des citoyens de la Wilaya d'Alger</p>
+    <p style="font-size:10px;opacity:0.7;margin:2px 0;">Un seul compte. Tous vos services.</p>
+  </div>
+
   <div class="auth-wrapper">
     <!-- HERO (desktop) -->
     <div class="auth-hero">
@@ -1450,10 +1481,12 @@
         <form id="login-form" onsubmit="handleLogin(event)">
           <div class="form-group">
             <label data-i18n="auth.telephone">Numéro de téléphone</label>
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <input type="tel" id="login-tel" placeholder="Numéro de téléphone ou adresse e-mail" required />
           </div>
           <div class="form-group">
             <label data-i18n="auth.mdp">Mot de passe</label>
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <input type="password" id="login-mdp" placeholder="Mot de passe" required />
           </div>
           <a href="#" class="auth-forgot" onclick="showToast('Réinitialisation — bientôt disponible','error');return false;" data-i18n="auth.mdp_oublie">Mot de passe oublié ?</a>
@@ -1524,6 +1557,11 @@
         </form>
       </div>
     </div>
+  </div>
+
+  <!-- Footer institutionnel -->
+  <div style="text-align:center;padding:12px 0 8px;font-size:10px;color:rgba(255,255,255,0.6);position:relative;z-index:1;">
+    Une initiative officielle de la Wilaya d'Alger · © Wilaya d'Alger 2026
   </div>
 </div>
 
