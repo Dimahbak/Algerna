@@ -78,14 +78,14 @@
       min-height: 100vh;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      padding: 20px 140px 20px 60px;
+      justify-content: center;
+      padding: 30px 80px;
       background: url('/assets/bg/landing_pc.png') 40% 15%/cover no-repeat;
       position: relative;
     }
-    @media (max-width: 1440px) { #auth-page { padding-right: 100px; } }
-    @media (max-width: 1280px) { #auth-page { padding-right: 60px; } }
-    @media (max-width: 1024px) { #auth-page { padding: 3vh 40px 20px; } }
+    @media (max-width: 1440px) { #auth-page { padding: 30px 60px; } }
+    @media (max-width: 1280px) { #auth-page { padding: 20px 40px; } }
+    @media (max-width: 1024px) { #auth-page { padding: 20px 30px; } }
     @media (max-width: 767px) {
       #auth-page {
         background: url('/assets/bg/landing_mobile.png') center top/cover no-repeat !important;
@@ -106,17 +106,26 @@
     .auth-wrapper {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
+      gap: 60px;
       width: 100%;
-      max-width: 1400px;
+      max-width: 1200px;
       position: relative;
       z-index: 1;
     }
     @media (max-width: 767px) {
-      .auth-wrapper { justify-content: center; }
+      .auth-wrapper { justify-content: center; gap: 0; }
     }
 
-    .auth-hero { display: none; }
+    /* Hero branding desktop */
+    .auth-hero {
+      flex: 1;
+      color: white;
+      display: block;
+    }
+    @media (max-width: 767px) {
+      .auth-hero { display: none; }
+    }
 
     /* #19 Animation */
     @keyframes slideRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
@@ -160,15 +169,14 @@
       font-size: 14px; flex-shrink: 0;
     }
 
-    /* #15 radius 24, #20 glassmorphism, card réduite 360px */
     .auth-card {
-      background: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.93);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(255,255,255,0.35);
-      border-radius: 24px;
+      border-radius: 28px;
       box-shadow: 0 25px 70px rgba(15,46,94,0.12);
-      width: 420px;
+      width: 460px;
       max-width: 100%;
       overflow: hidden;
       flex-shrink: 0;
@@ -1446,16 +1454,18 @@
   </div>
 
   <div class="auth-wrapper">
-    <!-- HERO (desktop) -->
+    <!-- HERO BRANDING (desktop) -->
     <div class="auth-hero">
-      <div class="auth-hero-logo" style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-        <img src="/assets/logo/algerna_icon.png" alt="Algerna" style="height:50px;width:auto;" />
-        <h1 style="font-size:38px;font-weight:700;color:white;margin:0;letter-spacing:1px;">Algerna</h1>
+      <p style="font-size:11px;opacity:0.7;letter-spacing:1.5px;margin-bottom:16px;text-transform:uppercase;">WILAYA D'ALGER · ولاية الجزائر</p>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" style="height:56px;width:auto;" />
+        <h1 style="font-size:42px;font-weight:700;color:white;margin:0;letter-spacing:2px;">ALGERNA</h1>
       </div>
-      <div class="auth-hero-tagline" style="font-size:26px;line-height:1.4;margin-bottom:20px;">
-        Ma ville. <span class="green">Mon pouvoir.</span> Notre avenir.
+      <div style="font-size:28px;line-height:1.4;margin-bottom:16px;font-weight:300;">
+        Ma ville. <span style="color:#3FAE49;font-weight:600;">Mon pouvoir.</span> Notre avenir.
       </div>
-      <p class="auth-hero-desc" data-i18n="auth.hero_desc" style="font-size:14px;line-height:1.7;opacity:0.95;">La plateforme citoyenne de la Wilaya d'Alger. Signalez les problèmes de votre quartier, suivez leur résolution, et participez à l'amélioration de votre cadre de vie.</p>
+      <p style="font-size:15px;line-height:1.7;opacity:0.9;margin-bottom:8px;">La plateforme numérique des citoyens de la Wilaya d'Alger.</p>
+      <p style="font-size:14px;opacity:0.75;font-weight:500;letter-spacing:0.5px;">Un seul compte. Tous vos services.</p>
     </div>
 
     <!-- AUTH CARD -->
