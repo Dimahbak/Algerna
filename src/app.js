@@ -46,6 +46,7 @@ const moduleMap = {
   civipark:    require('./modules/civipark'),
   infos:       require('./modules/infos'),
   participation: require('./modules/participation'),
+  equipements: require('./modules/equipements'),
   legal:       require('./modules/legal'),
   notifications: require('./modules/notifications'),
 };

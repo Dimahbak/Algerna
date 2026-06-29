@@ -164,6 +164,8 @@ const I18N = {
     // ─── HOME ───
     "home.bienvenue": "Bienvenue, {name} !",
     "home.citoyen": "Citoyen",
+    "equip.titre": "Équipements",
+    "equip.sous_titre": "Équipements publics de votre quartier",
     "participe.aucune": "Aucune participation ouverte.",
     "participe.jusqua": "Jusqu'au",
     "participe.participants": "participants",
@@ -900,6 +902,8 @@ const I18N = {
     // ─── HOME ─── // À RELIRE
     "home.bienvenue": "مرحباً، {name}!",
     "home.citoyen": "مواطن",
+    "equip.titre": "المرافق",
+    "equip.sous_titre": "المرافق العمومية في حيك",
     "participe.aucune": "لا توجد مشاركات مفتوحة.",
     "participe.jusqua": "حتى",
     "participe.participants": "مشاركين",
