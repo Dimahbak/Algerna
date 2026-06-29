@@ -6520,7 +6520,7 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v16';
+const APP_CACHE_VERSION = 'v17';
 (function purgeStaleSW() {
   const stored = localStorage.getItem('civismart_sw_ver');
   if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
