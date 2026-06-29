@@ -79,12 +79,12 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding: 30px 100px 30px 60px;
+      padding: 30px 170px 30px 60px;
       background: url('/assets/bg/landing_pc.png') center/cover no-repeat;
       position: relative;
     }
-    @media (max-width: 1440px) { #auth-page { padding-right: 80px; } }
-    @media (max-width: 1280px) { #auth-page { padding-right: 60px; } }
+    @media (max-width: 1440px) { #auth-page { padding-right: 120px; } }
+    @media (max-width: 1280px) { #auth-page { padding-right: 80px; } }
     @media (max-width: 1024px) { #auth-page { padding: 20px 40px; } }
     @media (max-width: 767px) {
       #auth-page {
@@ -214,7 +214,7 @@
       color: #333;
       background: #fff;
     }
-    .auth-body .form-group input::placeholder { color: #8B95A7; }
+    .auth-body .form-group input::placeholder { color: #6B7585; }
     .auth-body .form-group input:focus {
       outline: none;
       border-color: #2E7D32;
@@ -264,7 +264,7 @@
 
     .auth-divider {
       display: flex; align-items: center; gap: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       font-family: 'Poppins', sans-serif;
       font-size: 13px; color: #7A7A7A;
     }
@@ -273,7 +273,7 @@
     }
 
     .auth-social {
-      display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
+      display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px;
     }
     .auth-social-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -1391,9 +1391,9 @@
 ══════════════════════════════════════════════════════════ -->
 <div id="auth-page">
   <!-- Sélecteur langue -->
-  <div style="position:absolute;top:10px;right:16px;z-index:3;display:flex;gap:6px;">
-    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')" style="background:rgba(255,255,255,0.3);color:white;border:1px solid rgba(255,255,255,0.4);padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">FR</button>
-    <button class="lang-btn" data-lang="ar" onclick="setLang('ar')" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">AR</button>
+  <div style="position:absolute;top:16px;right:20px;z-index:3;display:flex;gap:4px;background:rgba(255,255,255,0.9);border-radius:10px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')" style="background:#0B3C5D;color:white;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;">FR</button>
+    <button class="lang-btn" data-lang="ar" onclick="setLang('ar')" style="background:transparent;color:#0B3C5D;border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;">AR</button>
   </div>
 
   <div class="auth-wrapper">
@@ -1438,10 +1438,10 @@
               <span data-i18n="auth.apple">Continuer avec Apple</span>
             </button>
           </div>
-          <p style="text-align:center;font-family:Poppins,sans-serif;font-size:14px;color:#566273;margin-top:8px;">
-            <span data-i18n="auth.pas_de_compte">Pas encore de compte ?</span>
-            <a href="#" onclick="switchTab('register');return false;" style="color:#1976D2;font-weight:700;text-decoration:none;margin-left:4px;" data-i18n="auth.creer_lien">Créer un compte</a>
-          </p>
+          <div style="text-align:center;font-family:Poppins,sans-serif;margin-top:10px;">
+            <p style="font-size:13px;color:#566273;margin:0 0 4px;" data-i18n="auth.pas_de_compte">Pas encore de compte ?</p>
+            <a href="#" onclick="switchTab('register');return false;" style="color:#1976D2;font-weight:700;text-decoration:none;font-size:14px;" data-i18n="auth.creer_lien">Créer un compte</a>
+          </div>
         </form>
 
         <!-- REGISTER FORM -->
