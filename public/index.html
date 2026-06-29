@@ -89,6 +89,7 @@
     @media (max-width: 1280px) { #auth-page { padding-right: 140px; } }
     @media (max-width: 1024px) { #auth-page { padding: 20px 40px; } }
     /* ═══ LANDING MOBILE ═══ */
+    .mobile-brand { display: none; }
     @media (max-width: 768px) {
       #auth-page {
         background: url('/assets/bg/landing_mobile_clean.png') center center/cover no-repeat !important;
@@ -106,6 +107,13 @@
         justify-content: flex-start !important;
         padding: 40px 4% 0;
         gap: 10px !important;
+      }
+      .mobile-brand {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        color: white;
       }
       .auth-card {
         width: 92% !important;
@@ -1396,6 +1404,12 @@
   </div>
 
   <div class="auth-wrapper">
+    <!-- BRANDING MOBILE (visible uniquement ≤768px via CSS) -->
+    <div class="mobile-brand">
+      <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" style="height:48px;">
+      <div style="font-size:20px;font-weight:700;letter-spacing:1px;margin:6px 0 4px;">ALGERNA</div>
+      <div style="font-size:12px;font-weight:300;line-height:1.3;">Ma ville. <span style="color:#3FAE49;font-weight:600;">Mon pouvoir.</span> Notre avenir.</div>
+    </div>
     <!-- AUTH CARD -->
     <div class="auth-card">
       <div class="auth-header">
