@@ -80,7 +80,7 @@
       align-items: center;
       justify-content: flex-end;
       padding: 30px 170px 30px 60px;
-      background: url('/assets/bg/landing_pc.png') center/cover no-repeat;
+      background: url('/assets/bg/landing_pc.png') center left/cover no-repeat;
       position: relative;
     }
     @media (max-width: 1440px) { #auth-page { padding-right: 120px; } }
@@ -6490,7 +6490,7 @@ async function adminSupprimerCreneau(id, btn) {
 }
 
 let deferredInstallPrompt=null,swRegistration=null;
-const APP_CACHE_VERSION = 'v17';
+const APP_CACHE_VERSION = 'v18';
 (function purgeStaleSW() {
   const stored = localStorage.getItem('civismart_sw_ver');
   if (stored && stored !== APP_CACHE_VERSION && 'serviceWorker' in navigator) {
