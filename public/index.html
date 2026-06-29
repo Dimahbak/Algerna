@@ -81,7 +81,9 @@
       justify-content: flex-end;
       padding: 30px 170px 30px 60px;
       background: url('/assets/bg/landing_pc.png') center left/cover no-repeat;
-      position: relative;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
     }
     @media (max-width: 1440px) { #auth-page { padding-right: 120px; } }
     @media (max-width: 1280px) { #auth-page { padding-right: 80px; } }
@@ -6503,7 +6505,7 @@ const APP_CACHE_VERSION = 'v18';
   }
   localStorage.setItem('civismart_sw_ver', APP_CACHE_VERSION);
 })();
-if("serviceWorker"in navigator){window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("/sw.js");swRegistration.addEventListener("updatefound",()=>{const nw=swRegistration.installing;nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller)document.getElementById("pwa-update-toast").classList.remove("hidden");});});}catch(e){console.warn("SW failed:",e);}});}
+if("serviceWorker"in navigator){window.addEventListener("load",async()=>{try{swRegistration=await navigator.serviceWorker.register("/sw.js");swRegistration.addEventListener("updatefound",()=>{const nw=swRegistration.installing;nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller){var ap=document.getElementById('auth-page');if(ap&&ap.style.display!=='none'){nw.postMessage({type:'SKIP_WAITING'});navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload());}else{document.getElementById("pwa-update-toast").classList.remove("hidden");}}});});}catch(e){console.warn("SW failed:",e);}});}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstallPrompt=e;if(!localStorage.getItem("pwa_dismissed")&&!window.matchMedia("(display-mode:standalone)").matches)setTimeout(()=>document.getElementById("pwa-banner").classList.remove("hidden"),3000);});
 if(window.matchMedia("(display-mode:standalone)").matches)document.getElementById("pwa-banner").classList.add("hidden");
 function pwaInstall(){if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();deferredInstallPrompt.userChoice.then(r=>{if(r.outcome==="accepted")document.getElementById("pwa-banner").classList.add("hidden");deferredInstallPrompt=null;});}
