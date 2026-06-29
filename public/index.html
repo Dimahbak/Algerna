@@ -79,17 +79,16 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding: 30px 170px 30px 60px;
+      padding: 30px 250px 30px 60px;
       background: url('/assets/bg/landing_pc_v2.png') center left/cover no-repeat;
       position: fixed;
       inset: 0;
       z-index: 50;
     }
-    @media (max-width: 1440px) { #auth-page { padding-right: 120px; } }
-    @media (max-width: 1280px) { #auth-page { padding-right: 80px; } }
+    @media (max-width: 1440px) { #auth-page { padding-right: 200px; } }
+    @media (max-width: 1280px) { #auth-page { padding-right: 140px; } }
     @media (max-width: 1024px) { #auth-page { padding: 20px 40px; } }
-    /* ═══ LANDING MOBILE DÉDIÉE ═══ */
-    .mobile-brand { display: none; }
+    /* ═══ LANDING MOBILE ═══ */
     @media (max-width: 768px) {
       #auth-page {
         background: url('/assets/bg/landing_mobile_clean.png') center center/cover no-repeat !important;
@@ -107,14 +106,6 @@
         justify-content: flex-start !important;
         padding: 40px 4% 0;
         gap: 10px !important;
-      }
-      .auth-hero { display: none !important; }
-      .mobile-brand {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        color: white;
       }
       .auth-card {
         width: 92% !important;
@@ -135,7 +126,6 @@
       .auth-divider { margin-bottom: 4px !important; font-size: 11px !important; }
       .auth-social { gap: 5px !important; margin-bottom: 4px !important; }
       .auth-social-btn { height: 42px !important; font-size: 12px !important; border-radius: 12px !important; }
-      .auth-footer-seal { display: none !important; }
       .auth-lang { top: 10px !important; right: 10px !important; }
     }
 
@@ -148,8 +138,6 @@
       z-index: 1;
     }
 
-    /* Hero masqué — le branding est dans l'image de fond */
-    .auth-hero { display: none; }
 
     /* #19 Animation */
     @keyframes slideRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
@@ -167,7 +155,6 @@
       flex-shrink: 0;
       animation: slideRight 0.5s ease-out;
     }
-    /* mobile auth-card géré dans le bloc @media 767px principal */
 
     /* #11 pas de tabs, juste titre + sous-titre. #16 titre 28px semi. #17 padding 48 interne */
     .auth-header {
@@ -176,8 +163,7 @@
       text-align: center;
       color: #0F2E5E;
     }
-    .auth-header h1, .auth-header p, .auth-header .tagline-mobile,
-    .auth-logo, .auth-logo-icon { display: none; }
+    .auth-header h1, .auth-header p, .auth-header .tagline-mobile { display: none; }
 
     .auth-header h2 {
       font-family: 'Poppins', sans-serif;
@@ -1337,7 +1323,6 @@
     [dir="rtl"] .navbar-right,
     [dir="rtl"] .nav-item,
     [dir="rtl"] .user-badge,
-    [dir="rtl"] .auth-logo,
     [dir="rtl"] .geo-btn,
     [dir="rtl"] .alert,
     [dir="rtl"] .rdv-item,
@@ -1411,13 +1396,6 @@
   </div>
 
   <div class="auth-wrapper">
-    <!-- BRANDING MOBILE (visible uniquement <768px) -->
-    <div class="mobile-brand">
-      <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" style="height:48px;">
-      <div style="font-size:20px;font-weight:700;letter-spacing:1px;margin:6px 0 4px;">ALGERNA</div>
-      <div style="font-size:12px;font-weight:300;line-height:1.3;">Ma ville. <span style="color:#3FAE49;font-weight:600;">Mon pouvoir.</span> Notre avenir.</div>
-    </div>
-
     <!-- AUTH CARD -->
     <div class="auth-card">
       <div class="auth-header">
@@ -1513,12 +1491,6 @@
     </div>
   </div>
 
-  <!-- Sceau Wilaya + footer (desktop only) -->
-  <div class="auth-footer-seal" style="text-align:center;padding:8px 0;position:relative;z-index:1;color:rgba(255,255,255,0.6);">
-    <div style="font-size:10px;margin-bottom:2px;">ولاية الجزائر</div>
-    <div style="font-size:10px;letter-spacing:1px;">WILAYA D'ALGER</div>
-    <div style="font-size:9px;margin-top:6px;">© Wilaya d'Alger 2026</div>
-  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════
