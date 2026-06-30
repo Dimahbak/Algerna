@@ -81,6 +81,24 @@ function makeSignalementRouter(domaine) {
       res.send('\uFEFF' + csv);
     }));
 
+  // GET /signalements/carte — authenticated, read-only pour la carte Ma Houma
+  router.get('/signalements/carte', authenticate, asyncH(async (req, res) => {
+    const { query: dbQuery } = require('../../db/pool');
+    const { communeId } = req.query;
+    let sql = `SELECT s.id, s.reference, s.lat, s.lng, s.etat, s.domaine, s.cree_le,
+                      cs.libelle AS categorie, cs.famille AS categorie_famille,
+                      c.nom AS commune_nom
+                 FROM signalement s
+                 LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+                 LEFT JOIN commune c ON c.id = s.commune_id
+                WHERE s.domaine = $1`;
+    const params = [domaine];
+    if (communeId) { params.push(Number(communeId)); sql += ` AND s.commune_id = $${params.length}`; }
+    sql += ` ORDER BY s.cree_le DESC LIMIT 200`;
+    const { rows } = await dbQuery(sql, params);
+    res.json(rows);
+  }));
+
   // GET /signalements (agent/opérateur/wilaya) — filtres en query + pagination
   router.get('/signalements',
     authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
@@ -110,16 +128,46 @@ function makeSignalementRouter(domaine) {
       res.json(rows);
     }));
 
-  // PATCH /signalements/:id/etat (agent/opérateur, preuve photo possible)
+  // PATCH /signalements/:id/etat — workflow engine
   router.patch('/signalements/:id/etat',
     authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
     upload.single('preuve'),
-    validate(etatSchema),
     asyncH(async (req, res) => {
-      const maj = await svc.changerEtat(
-        domaine, req.params.id, req.body.etat, req.user.id,
-        req.file ? req.file.path : null);
-      res.json(maj);
+      const workflow = require('../../services/workflow');
+      const { etat, commentaire, motifRejet, transmisA } = req.body;
+      if (!etat) return res.status(400).json({ erreur: 'etat requis' });
+      const result = await workflow.transitionEtat(
+        req.params.id, etat, req.user,
+        { commentaire, motifRejet, transmisA }
+      );
+      // Handle preuve photo if provided
+      if (req.file) {
+        const { query: dbQ } = require('../../db/pool');
+        await dbQ('UPDATE signalement SET preuve_path = $1 WHERE id = $2', [req.file.path, req.params.id]);
+      }
+      res.json(result);
+    }));
+
+  // POST /signalements/:id/mission-cap — créer mission CAP
+  router.post('/signalements/:id/mission-cap',
+    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    asyncH(async (req, res) => {
+      const workflow = require('../../services/workflow');
+      const { type, priorite, commentaire, secteur } = req.body;
+      const mission = await workflow.creerMissionCap(
+        req.params.id, req.user,
+        { type, priorite, commentaire, secteur }
+      );
+      res.status(201).json(mission);
+    }));
+
+  // GET /signalements/:id/route — routage automatique
+  router.get('/signalements/:id/route',
+    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    asyncH(async (req, res) => {
+      const workflow = require('../../services/workflow');
+      const service = await workflow.routerSignalement(req.params.id);
+      res.json({ service });
     }));
 
   // GET /dashboard — vue consolidée (scores, points noirs, délai moyen)

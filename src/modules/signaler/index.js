@@ -25,7 +25,7 @@ const multer = require('multer');
 const { z } = require('zod');
 const { query, withTransaction } = require('../../db/pool');
 const { validate } = require('../../middleware/validation');
-const { authenticate } = require('../../middleware/auth');
+const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH, makeReference, badRequest } = require('../../utils/http');
 const config = require('../../config');
 
@@ -254,5 +254,85 @@ router.patch('/:id/confirmer', authenticate, asyncH(async (req, res) => {
   if (!rows.length) throw badRequest('Signalement introuvable ou déjà résolu');
   res.json(rows[0]);
 }));
+
+// GET /board — tous les signalements pour le Board Agent (tous domaines)
+router.get('/board',
+  authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+  asyncH(async (req, res) => {
+    const { communeId, etat, categorie } = req.query;
+    let sql = `SELECT s.id, s.reference, s.domaine, s.etat, cs.criticite, s.gravite,
+                      s.description, s.photo_path, s.lat, s.lng, s.cree_le, s.resolu_le,
+                      s.assigne_a, s.transmis_a, s.motif_rejet, s.nb_confirmations,
+                      cs.libelle AS categorie_nom, cs.famille AS categorie_famille,
+                      c.nom AS commune_nom, s.commune_id,
+                      u.prenom AS citoyen_prenom, u.nom AS citoyen_nom, u.telephone AS citoyen_tel
+                 FROM signalement s
+                 LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+                 LEFT JOIN commune c ON c.id = s.commune_id
+                 LEFT JOIN utilisateur u ON u.id = s.citoyen_id
+                WHERE 1=1`;
+    const params = [];
+    if (communeId) { params.push(Number(communeId)); sql += ` AND s.commune_id = $${params.length}`; }
+    if (etat) { params.push(etat); sql += ` AND s.etat = $${params.length}`; }
+    if (categorie) { params.push(categorie); sql += ` AND cs.famille = $${params.length}`; }
+    // Admin APC : restreint à sa commune
+    if (req.user.role === 'admin_apc' && req.user.commune_id) {
+      params.push(req.user.commune_id);
+      sql += ` AND s.commune_id = $${params.length}`;
+    }
+    sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
+    const { rows } = await query(sql, params);
+    res.json(rows);
+  }));
+
+// PATCH /board/:id/etat — workflow via le board (tous domaines)
+router.patch('/board/:id/etat',
+  authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+  asyncH(async (req, res) => {
+    const workflow = require('../../services/workflow');
+    const { etat, commentaire, motifRejet, transmisA } = req.body;
+    if (!etat) return res.status(400).json({ erreur: 'etat requis' });
+    const result = await workflow.transitionEtat(
+      req.params.id, etat, req.user,
+      { commentaire, motifRejet, transmisA }
+    );
+    res.json(result);
+  }));
+
+// POST /board/:id/mission-cap — mission CAP (tous domaines)
+router.post('/board/:id/mission-cap',
+  authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+  asyncH(async (req, res) => {
+    const workflow = require('../../services/workflow');
+    const { type, priorite, commentaire, secteur } = req.body;
+    const mission = await workflow.creerMissionCap(
+      req.params.id, req.user,
+      { type, priorite, commentaire, secteur }
+    );
+    res.status(201).json(mission);
+  }));
+
+// GET /board/:id/historique — historique (tous domaines)
+router.get('/board/:id/historique',
+  authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+  asyncH(async (req, res) => {
+    const { rows } = await query(
+      `SELECT h.*, u.prenom, u.nom, u.role
+         FROM signalement_historique h
+         LEFT JOIN utilisateur u ON u.id = h.par_utilisateur
+        WHERE h.signalement_id = $1
+        ORDER BY h.le ASC`,
+      [req.params.id]);
+    res.json(rows);
+  }));
+
+// GET /board/:id/route — routage (tous domaines)
+router.get('/board/:id/route',
+  authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+  asyncH(async (req, res) => {
+    const workflow = require('../../services/workflow');
+    const service = await workflow.routerSignalement(req.params.id);
+    res.json({ service });
+  }));
 
 module.exports = router;

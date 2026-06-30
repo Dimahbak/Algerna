@@ -106,8 +106,52 @@ router.get('/synthese',
     });
   }));
 
-// GET /api/dashboard/quartier?communeId= — tableau de bord citoyen (public)
+// GET /api/dashboard/quartier — multiplex endpoint
+// OLS only proxies this exact path. Use ?module= to access other data.
+// ?module=equipements&type=parking → equipements list
+// ?module=contacts&categorie=urgences → contacts list
+// ?module=communiques → active communiqués
+// ?module=equip_types → distinct equipment types
+// (no module) → original quartier dashboard
 router.get('/quartier', asyncH(async (req, res) => {
+  const mod = req.query.module;
+
+  if (mod === 'equipements') {
+    const { type, commune_id, commune: qCommune, q, lat, lng, latitude, longitude, rayon } = req.query;
+    let sql = `SELECT e.*, c.nom AS commune_nom FROM equipement_public e
+               LEFT JOIN commune c ON c.id = e.commune_id WHERE e.statut != 'hors_service'`;
+    const p = [];
+    if (type) { p.push(type); sql += ` AND e.type = $${p.length}`; }
+    if (commune_id) { p.push(commune_id); sql += ` AND e.commune_id = $${p.length}`; }
+    if (qCommune) { p.push('%' + qCommune + '%'); sql += ` AND c.nom ILIKE $${p.length}`; }
+    if (q) { p.push('%' + q + '%'); sql += ` AND (e.nom ILIKE $${p.length} OR e.type ILIKE $${p.length} OR e.adresse ILIKE $${p.length})`; }
+    const pLat = lat || latitude; const pLng = lng || longitude;
+    if (pLat && pLng) { const r = parseFloat(rayon) || 0.02; p.push(parseFloat(pLat), parseFloat(pLng), r); sql += ` AND ABS(e.lat - $${p.length-2}) < $${p.length} AND ABS(e.lng - $${p.length-1}) < $${p.length}`; }
+    sql += ' ORDER BY e.type, e.nom LIMIT 500';
+    return res.json((await query(sql, p)).rows);
+  }
+
+  if (mod === 'equip_types') {
+    return res.json((await query('SELECT DISTINCT type FROM equipement_public ORDER BY type')).rows.map(r => r.type));
+  }
+
+  if (mod === 'contacts') {
+    const { categorie } = req.query;
+    let sql = 'SELECT * FROM contact_utile WHERE actif = TRUE'; const p = [];
+    if (categorie) { p.push(categorie); sql += ` AND categorie = $${p.length}`; }
+    return res.json((await query(sql + ' ORDER BY ordre, nom', p)).rows);
+  }
+
+  if (mod === 'communiques') {
+    return res.json((await query(
+      `SELECT c.*, cm.nom AS commune_nom FROM communique c
+       LEFT JOIN commune cm ON cm.id = c.commune_id
+       WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
+       ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC
+       LIMIT 20`)).rows);
+  }
+
+  // Original quartier dashboard
   const { communeId } = req.query;
   if (!communeId) return res.json({});
 
@@ -166,6 +210,50 @@ router.get('/citoyen', authenticate, asyncH(async (req, res) => {
     communiques: communiques.rows,
     activite_recente: activite.rows,
   });
+}));
+
+// ── Proxy bridges via /api/dashboard/* (OLS proxies this path) ──
+const { asyncH: bAsyncH } = require('../../utils/http');
+
+router.get('/equipements', bAsyncH(async (req, res) => {
+  const { type, commune_id, commune, lat, lng, rayon, q, latitude, longitude } = req.query;
+  let sql = `SELECT e.*, c.nom AS commune_nom FROM equipement_public e
+             LEFT JOIN commune c ON c.id = e.commune_id WHERE e.statut != 'hors_service'`;
+  const p = [];
+  if (type) { p.push(type); sql += ` AND e.type = $${p.length}`; }
+  if (commune_id) { p.push(commune_id); sql += ` AND e.commune_id = $${p.length}`; }
+  if (commune) { p.push('%' + commune + '%'); sql += ` AND c.nom ILIKE $${p.length}`; }
+  if (q) { p.push('%' + q + '%'); sql += ` AND (e.nom ILIKE $${p.length} OR e.type ILIKE $${p.length} OR e.adresse ILIKE $${p.length})`; }
+  const pLat = lat || latitude; const pLng = lng || longitude;
+  if (pLat && pLng) { const r = parseFloat(rayon) || 0.02; p.push(parseFloat(pLat), parseFloat(pLng), r); sql += ` AND ABS(e.lat - $${p.length-2}) < $${p.length} AND ABS(e.lng - $${p.length-1}) < $${p.length}`; }
+  sql += ' ORDER BY e.type, e.nom LIMIT 500';
+  const { rows } = await query(sql, p);
+  res.json(rows);
+}));
+
+router.get('/equipements/types', bAsyncH(async (req, res) => {
+  const { rows } = await query('SELECT DISTINCT type FROM equipement_public ORDER BY type');
+  res.json(rows.map(r => r.type));
+}));
+
+router.get('/contacts', bAsyncH(async (req, res) => {
+  const { categorie } = req.query;
+  let sql = 'SELECT * FROM contact_utile WHERE actif = TRUE';
+  const p = [];
+  if (categorie) { p.push(categorie); sql += ` AND categorie = $${p.length}`; }
+  sql += ' ORDER BY ordre, nom';
+  const { rows } = await query(sql, p);
+  res.json(rows);
+}));
+
+router.get('/communiques', bAsyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT c.*, cm.nom AS commune_nom FROM communique c
+     LEFT JOIN commune cm ON cm.id = c.commune_id
+     WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
+     ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC
+     LIMIT 20`);
+  res.json(rows);
 }));
 
 module.exports = router;

@@ -94,8 +94,9 @@ router.get('/communiques', asyncH(async (req, res) => {
 }));
 
 // POST /communiques — admin
-router.post('/communiques', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
-  const { titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, statut, priorite } = req.body;
+router.post('/communiques', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+  const { titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, statut, priorite,
+          titre_ar, message_ar, detail_ar, service } = req.body;
   if (!titre || !message) throw badRequest('titre et message requis');
   const { rows } = await query(
     `INSERT INTO communique (titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, cree_par, statut, priorite)
@@ -148,4 +149,37 @@ router.delete('/communiques/:id', authenticate, requireRole('admin_apc','admin_w
   const { rows } = await query('DELETE FROM communique WHERE id=$1 RETURNING id', [req.params.id]);
   if (!rows.length) throw notFound('Communiqué introuvable');
   res.json({ deleted: rows[0].id });
+}));
+
+// ═══ WORKFLOW COMMUNIQUÉS — Sprint 5 ═══
+const comm = require('../../services/communication');
+
+// PATCH /communiques/:id/workflow — transition de statut
+router.patch('/communiques/:id/workflow', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+  const { statut, commentaire } = req.body;
+  if (!statut) throw badRequest('statut requis');
+  // Agents can only send to en_revision
+  if (req.user.role === 'agent' && !['en_revision'].includes(statut)) {
+    throw badRequest('Les agents ne peuvent qu\'envoyer en révision.');
+  }
+  const result = await comm.transitionStatut(req.params.id, statut, req.user, { commentaire });
+  res.json(result);
+}));
+
+// GET /communiques/:id/historique — timeline workflow
+router.get('/communiques/:id/historique', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+  const hist = await comm.getWorkflowHistorique(req.params.id);
+  res.json(hist);
+}));
+
+// GET /communiques/categories — catalogue paramétrable
+router.get('/categories', asyncH(async (req, res) => {
+  const cats = await comm.getCategories();
+  res.json(cats);
+}));
+
+// GET /communiques/kpis — indicateurs communication
+router.get('/communiques/kpis', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+  const kpis = await comm.getKpisCommunication();
+  res.json(kpis);
 }));

@@ -32,4 +32,15 @@ function signToken(user) {
   );
 }
 
-module.exports = { authenticate, requireRole, signToken };
+// ── Constantes RBAC centralisées ──
+const ROLES = {
+  CITOYENS:        ['citoyen'],
+  AGENTS:          ['agent', 'operateur'],
+  CAPS:            ['agent'],  // CAP uses agent role for now
+  SUPERVISORS:     ['admin_apc', 'admin_wilaya'],
+  ADMINS:          ['admin_wilaya'],
+  BACKOFFICE:      ['agent', 'operateur', 'admin_apc', 'admin_wilaya'],
+  ALL_STAFF:       ['agent', 'operateur', 'admin_apc', 'admin_wilaya'],
+};
+
+module.exports = { authenticate, requireRole, signToken, ROLES };

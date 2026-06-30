@@ -1,4 +1,4 @@
-const CACHE_NAME = "civismart-v26";
+const CACHE_NAME = "civismart-v77";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -33,7 +33,10 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
 
   // Requêtes API : toujours réseau, pas de cache
-  if (url.pathname.startsWith("/api/")) {
+  // Inclut /api/* ET les chemins OLS proxy (sans /api/ prefix)
+  const apiPaths = ["/api/","/auth/","/infos/","/equipements","/referentiel/","/rdv/","/proprete/","/eau/","/signaler/","/points/","/dashboard/","/notifications/","/participation/","/legal/","/edeval/","/cap/","/civipark/","/patrimoine/","/health"];
+  const isApi = apiPaths.some(p => url.pathname.startsWith(p)) || (e.request.headers.get("accept") || "").includes("application/json");
+  if (isApi) {
     e.respondWith(
       fetch(e.request).catch(() =>
         new Response(JSON.stringify({ erreur: "Hors ligne — vérifiez votre connexion" }), {

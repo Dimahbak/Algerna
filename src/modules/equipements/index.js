@@ -4,28 +4,17 @@ const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH, badRequest, notFound } = require('../../utils/http');
 const router = express.Router();
 
+const equipSvc = require('../../services/equipementService');
+
 // GET / — liste publique, filtrable
 router.get('/', asyncH(async (req, res) => {
-  const { type, commune_id, lat, lng, rayon } = req.query;
-  let sql = `SELECT e.*, c.nom AS commune_nom FROM equipement_public e
-             LEFT JOIN commune c ON c.id = e.commune_id WHERE e.statut != 'hors_service'`;
-  const params = [];
-  if (type) { params.push(type); sql += ` AND e.type = $${params.length}`; }
-  if (commune_id) { params.push(commune_id); sql += ` AND e.commune_id = $${params.length}`; }
-  if (lat && lng) {
-    const r = parseFloat(rayon) || 0.02; // ~2km par défaut
-    params.push(parseFloat(lat), parseFloat(lng), r);
-    sql += ` AND ABS(e.lat - $${params.length-2}) < $${params.length} AND ABS(e.lng - $${params.length-1}) < $${params.length}`;
-  }
-  sql += ' ORDER BY e.type, e.nom LIMIT 200';
-  const { rows } = await query(sql, params);
+  const rows = await equipSvc.lister(req.query);
   res.json(rows);
 }));
 
 // GET /types — liste des types distincts
 router.get('/types', asyncH(async (req, res) => {
-  const { rows } = await query('SELECT DISTINCT type FROM equipement_public ORDER BY type');
-  res.json(rows.map(r => r.type));
+  res.json(await equipSvc.types());
 }));
 
 // GET /:id — détail

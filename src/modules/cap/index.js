@@ -180,5 +180,132 @@ async function statsCAP() {
   return rows[0];
 }
 
+// ══════════════════════════════════════════════════
+// ── MISSIONS CAP — Sprint 3 ──
+// ══════════════════════════════════════════════════
+
+const multer = require('multer');
+const config = require('../../config');
+const upload = multer({ dest: config.upload.dir, limits: { fileSize: config.upload.maxBytes } });
+
+const MISSION_TRANSITIONS = {
+  cree: ['accepte'],
+  accepte: ['en_cours'],
+  en_cours: ['termine', 'bloque'],
+  bloque: ['en_cours', 'termine'],
+};
+
+// GET /missions — missions du CAP connecté (ou toutes pour admin)
+router.get('/missions', authenticate, asyncH(async (req, res) => {
+  const isAdmin = ['admin_apc', 'admin_wilaya', 'agent'].includes(req.user.role);
+  let sql = `SELECT m.*, s.reference AS sig_reference, s.description AS sig_description,
+                    s.lat AS sig_lat, s.lng AS sig_lng, s.photo_path AS sig_photo,
+                    cs.libelle AS sig_categorie, c.nom AS commune_nom,
+                    u.prenom AS createur_prenom, u.nom AS createur_nom
+               FROM mission_cap m
+               LEFT JOIN signalement s ON s.id = m.signalement_id
+               LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+               LEFT JOIN commune c ON c.id = s.commune_id
+               LEFT JOIN utilisateur u ON u.id = m.cree_par
+              WHERE 1=1`;
+  const params = [];
+  if (!isAdmin) {
+    params.push(req.user.id);
+    sql += ` AND m.affecte_a = $${params.length}`;
+  }
+  if (req.query.etat) { params.push(req.query.etat); sql += ` AND m.etat = $${params.length}`; }
+  sql += ' ORDER BY CASE m.priorite WHEN \'urgente\' THEN 0 WHEN \'haute\' THEN 1 ELSE 2 END, m.cree_le DESC LIMIT 100';
+  const { rows } = await query(sql, params);
+  res.json(rows);
+}));
+
+// GET /missions/:id — détail mission
+router.get('/missions/:id', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT m.*, s.reference AS sig_reference, s.description AS sig_description,
+            s.lat AS sig_lat, s.lng AS sig_lng, s.photo_path AS sig_photo,
+            cs.libelle AS sig_categorie, c.nom AS commune_nom,
+            u.prenom AS createur_prenom, u.nom AS createur_nom
+       FROM mission_cap m
+       LEFT JOIN signalement s ON s.id = m.signalement_id
+       LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+       LEFT JOIN commune c ON c.id = s.commune_id
+       LEFT JOIN utilisateur u ON u.id = m.cree_par
+      WHERE m.id = $1`, [req.params.id]);
+  if (!rows.length) throw notFound('Mission introuvable');
+  res.json(rows[0]);
+}));
+
+// PATCH /missions/:id/etat — changer état mission
+router.patch('/missions/:id/etat', authenticate, upload.single('photo'), asyncH(async (req, res) => {
+  const { etat, commentaire, motif_blocage, lat, lng } = req.body;
+  if (!etat) throw badRequest('etat requis');
+
+  const { rows: cur } = await query('SELECT etat, signalement_id FROM mission_cap WHERE id = $1', [req.params.id]);
+  if (!cur.length) throw notFound('Mission introuvable');
+
+  const allowed = MISSION_TRANSITIONS[cur[0].etat] || [];
+  if (!allowed.includes(etat)) throw badRequest(`Transition ${cur[0].etat} → ${etat} non autorisée`);
+
+  // Update mission
+  const updates = ['etat = $2', 'maj_le = NOW()'];
+  const params = [req.params.id, etat];
+  let pi = 3;
+
+  if (commentaire) { updates.push(`commentaire_cap = $${pi}`); params.push(commentaire); pi++; }
+  if (etat === 'bloque' && motif_blocage) { updates.push(`motif_blocage = $${pi}`); params.push(motif_blocage); pi++; }
+  if (etat === 'termine') {
+    updates.push('cloture_le = NOW()');
+    if (lat) { updates.push(`cloture_lat = $${pi}`); params.push(parseFloat(lat)); pi++; }
+    if (lng) { updates.push(`cloture_lng = $${pi}`); params.push(parseFloat(lng)); pi++; }
+    if (req.file) { updates.push(`photo_path = $${pi}`); params.push(req.file.path); pi++; }
+  }
+
+  const { rows } = await query(`UPDATE mission_cap SET ${updates.join(', ')} WHERE id = $1 RETURNING *`, params);
+
+  // Historique
+  await query(
+    'INSERT INTO mission_cap_historique (mission_id, etat, par_utilisateur, commentaire) VALUES ($1, $2, $3, $4)',
+    [req.params.id, etat, req.user.id, commentaire || null]
+  );
+
+  // Si terminée, notifier l'agent créateur
+  if (etat === 'termine' && cur[0].signalement_id) {
+    try {
+      const { rows: sig } = await query('SELECT reference, citoyen_id FROM signalement WHERE id = $1', [cur[0].signalement_id]);
+      if (sig[0]?.citoyen_id) {
+        await query(
+          'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
+          [sig[0].citoyen_id, 'cap', 'Mission terrain terminée',
+           `L'intervention de terrain pour votre signalement #${sig[0].reference} est terminée.`,
+           '/mes-signalements']
+        );
+      }
+    } catch (e) {}
+  }
+
+  res.json(rows[0]);
+}));
+
+// GET /missions/:id/historique — timeline mission
+router.get('/missions/:id/historique', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT h.*, u.prenom, u.nom FROM mission_cap_historique h
+     LEFT JOIN utilisateur u ON u.id = h.par_utilisateur
+     WHERE h.mission_id = $1 ORDER BY h.le ASC`, [req.params.id]);
+  res.json(rows);
+}));
+
+// POST /assistance — action d'assistance citoyenne
+router.post('/assistance', authenticate, asyncH(async (req, res) => {
+  const { type, commentaire, lat, lng } = req.body;
+  if (!type) throw badRequest('type requis');
+  const { rows } = await query(
+    'INSERT INTO cap_assistance (cap_id, type, commentaire, lat, lng) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [req.user.id, type, commentaire || null, lat || null, lng || null]
+  );
+  res.status(201).json(rows[0]);
+}));
+
 module.exports = router;
 module.exports.statsCAP = statsCAP;
