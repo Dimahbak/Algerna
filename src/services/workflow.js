@@ -5,11 +5,13 @@
 const { query, withTransaction } = require('../db/pool');
 
 const VALID_TRANSITIONS = {
-  recu:             ['transmis', 'en_intervention', 'resolu', 'rejete'],
-  transmis:         ['en_intervention', 'resolu', 'rejete'],
-  en_intervention:  ['resolu', 'rejete', 'transmis'],
-  resolu:           [],
-  rejete:           [],
+  recu:              ['transmis', 'en_intervention', 'pris_en_charge', 'resolu', 'rejete'],
+  transmis:          ['pris_en_charge', 'en_intervention', 'resolu', 'rejete', 'recu'],
+  pris_en_charge:    ['en_intervention', 'resolu', 'rejete', 'transmis'],
+  en_intervention:   ['a_valider', 'resolu', 'rejete', 'transmis'],
+  a_valider:         ['resolu', 'rejete', 'en_intervention'],
+  resolu:            [],
+  rejete:            [],
 };
 
 /**
@@ -54,6 +56,11 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
       params.push(opts.transmisA);
       pi++;
     }
+    if (opts.delaiPrevu) {
+      updates.push(`delai_prevu = $${pi}`);
+      params.push(opts.delaiPrevu);
+      pi++;
+    }
     if (user.id) {
       updates.push(`assigne_a = $${pi}`);
       params.push(user.id);
@@ -87,6 +94,7 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
       const messages = {
         transmis:         { titre: 'Signalement pris en charge', message: `Votre signalement #${sig.reference} a été transmis au service compétent.` },
         en_intervention:  { titre: 'Intervention en cours', message: `Une intervention est en cours pour votre signalement #${sig.reference}.` },
+        a_valider:        { titre: 'Intervention terminée', message: `L'intervention pour votre signalement #${sig.reference} est terminée et en attente de validation.` },
         resolu:           { titre: 'Signalement résolu', message: `Votre signalement #${sig.reference} a été résolu. Merci pour votre contribution !` },
         rejete:           { titre: 'Signalement non recevable', message: `Votre signalement #${sig.reference} n'a pas été retenu. Motif : ${opts.motifRejet || 'non précisé'}.` },
       };
@@ -126,22 +134,45 @@ async function creerMissionCap(signalementId, user, opts = {}) {
     if (!sigRows.length) throw new Error('Signalement introuvable');
     const sig = sigRows[0];
 
-    // Créer la mission
+    // Vérifier que le créateur a la capacité reception ou qualification
+    const userCaps = Array.isArray(user.capacites) ? user.capacites : [];
+    if (!userCaps.includes('reception') && !userCaps.includes('qualification') && !userCaps.includes('pilotage')) {
+      throw new Error('Capacité insuffisante pour créer une intervention CAP.');
+    }
+
+    // Si affecte_a est fourni, vérifier que la cible est fonction=cap
+    let affecteA = opts.affecte_a || null;
+    if (affecteA) {
+      const { rows: capCheck } = await client.query(
+        'SELECT id, fonction FROM utilisateur WHERE id = $1 AND actif = true', [affecteA]
+      );
+      if (!capCheck.length) throw new Error('Utilisateur cible introuvable.');
+      if (capCheck[0].fonction !== 'cap') throw new Error('L\'affectation doit cibler un Agent de Proximité (fonction=cap).');
+    }
+
+    // Créer la mission (statut initial : cree = nouveau)
     const { rows } = await client.query(
-      `INSERT INTO mission_cap (signalement_id, type, priorite, commentaire, secteur, lat, lng, cree_par, etat)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'cree') RETURNING *`,
+      `INSERT INTO mission_cap (signalement_id, type, priorite, commentaire, secteur, lat, lng, cree_par, affecte_a, etat)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'cree') RETURNING *`,
       [signalementId, opts.type || 'constat', opts.priorite || 'normale',
        opts.commentaire || null, opts.secteur || null,
-       sig.lat, sig.lng, user.id]
+       sig.lat, sig.lng, user.id, affecteA]
     );
 
-    // Historique — use current signal etat (cap isn't in enum)
+    // Historique signalement
     const { rows: curSig } = await client.query('SELECT etat FROM signalement WHERE id=$1', [signalementId]);
     const curEtat = curSig[0]?.etat || 'recu';
     await client.query(
       `INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
        VALUES ($1, $2, $3, 'mission_cap_cree', $4)`,
-      [signalementId, curEtat, user.id, opts.commentaire || 'Mission CAP créée']
+      [signalementId, curEtat, user.id, opts.commentaire || 'Intervention CAP créée']
+    );
+
+    // Historique mission CAP
+    await client.query(
+      `INSERT INTO mission_cap_historique (mission_id, etat, par_utilisateur, commentaire)
+       VALUES ($1, 'cree', $2, $3)`,
+      [rows[0].id, user.id, 'Intervention créée' + (affecteA ? ' et affectée' : '')]
     );
 
     // Notification citoyen
@@ -150,9 +181,22 @@ async function creerMissionCap(signalementId, user, opts = {}) {
         await client.query(
           `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
            VALUES ($1, 'signalement', $2, $3, $4)`,
-          [sig.citoyen_id, 'Mission terrain créée',
-           `Une mission de terrain a été créée pour votre signalement #${sig.reference}.`,
+          [sig.citoyen_id, 'Intervention terrain créée',
+           `Une intervention de terrain a été créée pour votre signalement #${sig.reference}.`,
            '/mes-signalements']
+        );
+      } catch (e) {}
+    }
+
+    // Notification CAP assigné
+    if (affecteA) {
+      try {
+        await client.query(
+          `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+           VALUES ($1, 'cap', $2, $3, $4)`,
+          [affecteA, 'Nouvelle intervention',
+           `Vous avez une nouvelle intervention : ${opts.type || 'constat'} — ${opts.commentaire || 'Voir les détails'}.`,
+           '/bo-cap']
         );
       } catch (e) {}
     }

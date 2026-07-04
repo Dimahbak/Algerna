@@ -9,7 +9,24 @@ const { z } = require('zod');
 const svc = require('../proprete/signalementService');
 const { validate } = require('../../middleware/validation');
 const { authenticate, requireRole } = require('../../middleware/auth');
-const { asyncH } = require('../../utils/http');
+const { asyncH, unauthorized, forbidden } = require('../../utils/http');
+
+// Phase 4C — middlewares sans fallback
+const STAFF_FONCTIONS = ['agent_traitant', 'cap', 'entite_responsable', 'superviseur'];
+function requireStaff() {
+  return (req, res, next) => {
+    if (!req.user) return next(unauthorized());
+    if (STAFF_FONCTIONS.includes(req.user.fonction)) return next();
+    return next(forbidden());
+  };
+}
+function requireSuperviseur() {
+  return (req, res, next) => {
+    if (!req.user) return next(unauthorized());
+    if (req.user.fonction === 'superviseur') return next();
+    return next(forbidden());
+  };
+}
 const config = require('../../config');
 
 const upload = multer({
@@ -26,7 +43,7 @@ const creerSchema = z.object({
 });
 
 const etatSchema = z.object({
-  etat: z.enum(['recu','transmis','en_intervention','resolu','rejete']),
+  etat: z.enum(['recu','transmis','pris_en_charge','en_intervention','a_valider','resolu','rejete']),
 });
 
 function makeSignalementRouter(domaine) {
@@ -51,13 +68,13 @@ function makeSignalementRouter(domaine) {
       res.status(201).json(result);
     }));
 
-  // GET /signalements/export-csv — doit être AVANT /signalements/:id/historique
+  // GET /signalements/export-csv — superviseurs uniquement
   router.get('/signalements/export-csv',
-    authenticate, requireRole('admin_apc','admin_wilaya'),
+    authenticate, requireSuperviseur(),
     asyncH(async (req, res) => {
       const { query } = require('../../db/pool');
       const { rows } = await query(
-        `SELECT s.reference, s.etat, s.criticite, s.description,
+        `SELECT s.reference, s.etat, cat.criticite, s.description,
                 cat.libelle AS categorie, c.nom AS commune,
                 s.lat, s.lng, s.cree_le, s.resolu_le,
                 u.telephone AS citoyen_tel
@@ -99,9 +116,9 @@ function makeSignalementRouter(domaine) {
     res.json(rows);
   }));
 
-  // GET /signalements (agent/opérateur/wilaya) — filtres en query + pagination
+  // GET /signalements — filtres en query + pagination
   router.get('/signalements',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     asyncH(async (req, res) => {
       const { communeId, etat, operateurId, page, limit } = req.query;
       res.json(await svc.lister(domaine, {
@@ -115,7 +132,7 @@ function makeSignalementRouter(domaine) {
 
   // GET /signalements/:id/historique
   router.get('/signalements/:id/historique',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     asyncH(async (req, res) => {
       const { query } = require('../../db/pool');
       const { rows } = await query(
@@ -130,7 +147,7 @@ function makeSignalementRouter(domaine) {
 
   // PATCH /signalements/:id/etat — workflow engine
   router.patch('/signalements/:id/etat',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     upload.single('preuve'),
     asyncH(async (req, res) => {
       const workflow = require('../../services/workflow');
@@ -148,9 +165,9 @@ function makeSignalementRouter(domaine) {
       res.json(result);
     }));
 
-  // POST /signalements/:id/mission-cap — créer mission CAP
+  // POST /signalements/:id/mission-cap — créer intervention CAP
   router.post('/signalements/:id/mission-cap',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     asyncH(async (req, res) => {
       const workflow = require('../../services/workflow');
       const { type, priorite, commentaire, secteur } = req.body;
@@ -163,7 +180,7 @@ function makeSignalementRouter(domaine) {
 
   // GET /signalements/:id/route — routage automatique
   router.get('/signalements/:id/route',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     asyncH(async (req, res) => {
       const workflow = require('../../services/workflow');
       const service = await workflow.routerSignalement(req.params.id);
@@ -172,7 +189,7 @@ function makeSignalementRouter(domaine) {
 
   // GET /dashboard — vue consolidée (scores, points noirs, délai moyen)
   router.get('/dashboard',
-    authenticate, requireRole('agent','operateur','admin_apc','admin_wilaya'),
+    authenticate, requireStaff(),
     asyncH(async (req, res) => {
       const [scores, noirs, delai] = await Promise.all([
         svc.scoresParCommune(domaine),

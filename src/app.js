@@ -33,6 +33,19 @@ app.use(express.json({ limit: '1mb' }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
 // Fichiers statiques (front-end)
+// index.html : no-cache pour que les mises à jour soient immédiates
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  // sw.js : no-cache pour que le service worker se mette à jour
+  if (req.path === '/sw.js') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname, '../public')));
 
 // CyberPanel/OLS proxy context strips the /api prefix before

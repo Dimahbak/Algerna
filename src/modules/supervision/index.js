@@ -4,17 +4,26 @@
  */
 const express = require('express');
 const { query } = require('../../db/pool');
-const { authenticate, requireRole } = require('../../middleware/auth');
-const { asyncH } = require('../../utils/http');
+const { authenticate, requireRole, hasPerimetre } = require('../../middleware/auth');
+const { asyncH, unauthorized, forbidden } = require('../../utils/http');
 const sla = require('../../services/sla');
 const router = express.Router();
 
-const ROLE_GATE = requireRole('admin_apc', 'admin_wilaya');
+// Phase 4C — sans fallback
+function requireSuperviseur() {
+  return (req, res, next) => {
+    if (!req.user) return next(unauthorized());
+    if (req.user.fonction === 'superviseur') return next();
+    return next(forbidden());
+  };
+}
+const ROLE_GATE = requireSuperviseur();
 const SLA_TARGET_H = sla.DEFAULT_TARGET_H;
 
 // GET /kpis — indicateurs stratégiques
 router.get('/kpis', authenticate, ROLE_GATE, asyncH(async (req, res) => {
-  const communeId = req.query.communeId || (req.user.role === 'admin_apc' ? req.user.commune_id : null);
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeId = req.query.communeId || (isCommune ? req.user.commune_id : null);
   const where = communeId ? ' AND s.commune_id = ' + Number(communeId) : '';
 
   const [ouverts, resolusAuj, tempsAvg, missionsCap, critiques, total, conformes] = await Promise.all([
@@ -133,6 +142,666 @@ router.get('/alertes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
     hors_delai: horsDelai.rows,
     cap_bloque: capBloque.rows,
     hausse_signalements: hausse.rows,
+  });
+}));
+
+// ═══ COCKPIT EXÉCUTIF (Vague 5A) ═══
+
+// Middleware : capacité pilotage uniquement, pas de fallback role
+function requirePilotage() {
+  return (req, res, next) => {
+    if (!req.user) return next(unauthorized());
+    const caps = Array.isArray(req.user.capacites) ? req.user.capacites : [];
+    if (!caps.includes('pilotage')) return next(forbidden());
+    return next();
+  };
+}
+
+// GET /cockpit — données consolidées du cockpit exécutif
+router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  // ── Période ──
+  const periode = req.query.periode || '30j';
+  let intervalSQL;
+  switch (periode) {
+    case 'today':  intervalSQL = "s.cree_le >= CURRENT_DATE"; break;
+    case '7j':     intervalSQL = "s.cree_le >= NOW() - INTERVAL '7 days'"; break;
+    case '30j':    intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'"; break;
+    case 'annee':  intervalSQL = "s.cree_le >= DATE_TRUNC('year', NOW())"; break;
+    case 'custom':
+      const from = req.query.from;
+      const to = req.query.to;
+      if (!from || !to) return res.status(400).json({ erreur: 'Paramètres from et to requis pour la période personnalisée.' });
+      intervalSQL = `s.cree_le >= '${from}'::date AND s.cree_le < ('${to}'::date + INTERVAL '1 day')`;
+      break;
+    default:       intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
+  }
+
+  // ── Périmètre automatique ──
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id
+    ? ` AND s.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+
+  // ── Filtre période pour KPIs "en cours" (pas de filtre date) ──
+  const whereEnCours = `WHERE 1=1${communeFilter}`;
+  const wherePeriode = `WHERE ${intervalSQL}${communeFilter}`;
+
+  // ── KPIs ──
+  const [recus, enCours, enRetard, aValider, tempsMoyen, recusPeriodePrecedente] = await Promise.all([
+    // KPI 1 : Dossiers reçus (pendant la période)
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${wherePeriode}`),
+    // KPI 2 : Dossiers en cours (tous, pas de filtre date)
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${whereEnCours} AND s.etat NOT IN ('resolu','rejete')`),
+    // KPI 3 : En retard (delai_prevu dépassé, non clôturé)
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${whereEnCours} AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu AND s.etat NOT IN ('resolu','rejete')`),
+    // KPI 4 : À valider
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${whereEnCours} AND s.etat = 'a_valider'`),
+    // KPI 5 : Temps moyen (résolu_le - cree_le, en heures)
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le))/3600))::int AS h FROM signalement s ${wherePeriode} AND s.etat = 'resolu' AND s.resolu_le IS NOT NULL`),
+    // Évolution : période précédente pour KPI 1
+    query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE ${intervalSQL.replace(/NOW\(\)|CURRENT_DATE/g, (m) => {
+      if (periode === 'today') return "(CURRENT_DATE - INTERVAL '1 day')";
+      if (periode === '7j') return "(NOW() - INTERVAL '7 days')";
+      if (periode === '30j') return "(NOW() - INTERVAL '30 days')";
+      if (periode === 'annee') return "(DATE_TRUNC('year', NOW()) - INTERVAL '1 year')";
+      return m;
+    })}${communeFilter}`),
+  ]);
+
+  // ── Répartitions ──
+  const [parCommune, parOrganisation, parDomaine] = await Promise.all([
+    query(`SELECT c.id, c.nom, COUNT(s.id)::int AS total
+             FROM signalement s
+             JOIN commune c ON c.id = s.commune_id
+            ${wherePeriode}
+            GROUP BY c.id, c.nom ORDER BY total DESC`),
+    query(`SELECT o.id, o.nom, COUNT(s.id)::int AS total
+             FROM signalement s
+             JOIN utilisateur u ON u.id = s.assigne_a
+             JOIN organisations o ON o.id = u.organisation_id
+            ${wherePeriode}
+            GROUP BY o.id, o.nom ORDER BY total DESC`),
+    query(`SELECT s.domaine, COUNT(*)::int AS total
+             FROM signalement s
+            ${wherePeriode} AND s.domaine IS NOT NULL
+            GROUP BY s.domaine ORDER BY total DESC`),
+  ]);
+
+  res.json({
+    kpis: {
+      recus: recus.rows[0].n,
+      recus_precedent: recusPeriodePrecedente.rows[0].n,
+      en_cours: enCours.rows[0].n,
+      en_retard: enRetard.rows[0].n,
+      a_valider: aValider.rows[0].n,
+      temps_moyen_h: tempsMoyen.rows[0].h || 0,
+    },
+    repartitions: {
+      communes: parCommune.rows,
+      organisations: parOrganisation.rows,
+      domaines: parDomaine.rows,
+    },
+    periode,
+    perimetre: isCommune ? 'commune' : 'wilaya',
+  });
+}));
+
+// ═══ CARTE OPÉRATIONNELLE (Vague 5B) ═══
+// Rayon en km pour le calcul des points critiques (≥3 dossiers ouverts dans ce rayon)
+const CRITICAL_RADIUS_KM = 0.5;
+const CRITICAL_MIN_COUNT = 3;
+
+router.get('/carte', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  // ── Périmètre ──
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id
+    ? ` AND s.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+
+  // ── Filtres optionnels ──
+  const filters = [];
+  const params = [];
+  let pi = 1;
+
+  if (req.query.commune) { filters.push(`s.commune_id = $${pi}`); params.push(Number(req.query.commune)); pi++; }
+  if (req.query.domaine) { filters.push(`s.domaine = $${pi}`); params.push(req.query.domaine); pi++; }
+  if (req.query.etat) { filters.push(`s.etat = $${pi}`); params.push(req.query.etat); pi++; }
+  if (req.query.urgence) { filters.push(`s.gravite = $${pi}`); params.push(req.query.urgence); pi++; }
+  if (req.query.organisation) {
+    filters.push(`s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = $${pi})`);
+    params.push(Number(req.query.organisation));
+    pi++;
+  }
+
+  // Période
+  const periode = req.query.periode || '30j';
+  let intervalSQL;
+  switch (periode) {
+    case 'today':  intervalSQL = "s.cree_le >= CURRENT_DATE"; break;
+    case '7j':     intervalSQL = "s.cree_le >= NOW() - INTERVAL '7 days'"; break;
+    case '30j':    intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'"; break;
+    case 'annee':  intervalSQL = "s.cree_le >= DATE_TRUNC('year', NOW())"; break;
+    case 'custom':
+      if (req.query.from && req.query.to) {
+        intervalSQL = `s.cree_le >= '${req.query.from}'::date AND s.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+      } else { intervalSQL = "1=1"; }
+      break;
+    default: intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
+  }
+
+  const filterSQL = filters.length ? ' AND ' + filters.join(' AND ') : '';
+  const typeFilter = req.query.type; // dossiers, interventions, cap, critiques
+
+  // ── Dossiers ouverts (avec GPS) ──
+  let dossiers = [];
+  let sansGps = [];
+  if (!typeFilter || typeFilter === 'dossiers' || typeFilter === 'interventions' || typeFilter === 'critiques') {
+    const etatFilter = typeFilter === 'interventions'
+      ? "AND s.etat = 'en_intervention'"
+      : "AND s.etat NOT IN ('resolu','rejete')";
+
+    const { rows } = await query(
+      `SELECT s.id, s.reference, s.etat, s.domaine, s.gravite, s.lat, s.lng, s.cree_le,
+              s.equipe_interne, s.responsable_intervention,
+              cs.libelle AS categorie, c.nom AS commune_nom,
+              o.nom AS organisation_nom
+         FROM signalement s
+         LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+         LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur u ON u.id = s.assigne_a
+         LEFT JOIN organisations o ON o.id = u.organisation_id
+        WHERE ${intervalSQL} ${etatFilter}${communeFilter}${filterSQL}
+        ORDER BY s.cree_le DESC LIMIT 500`,
+      params
+    );
+
+    rows.forEach(r => {
+      if (r.lat && r.lng && parseFloat(r.lat) !== 0 && parseFloat(r.lng) !== 0) {
+        r.type_point = r.etat === 'en_intervention' ? 'intervention' : 'dossier';
+        dossiers.push(r);
+      } else {
+        sansGps.push({ id: r.id, reference: r.reference, etat: r.etat, commune_nom: r.commune_nom, categorie: r.categorie, cree_le: r.cree_le });
+      }
+    });
+  }
+
+  // ── Missions CAP actives ──
+  let missions = [];
+  if (!typeFilter || typeFilter === 'cap') {
+    const capCommuneFilter = isCommune && req.user.commune_id
+      ? ` AND s.commune_id = ${Number(req.user.commune_id)}`
+      : '';
+    const { rows: capRows } = await query(
+      `SELECT m.id, m.type, m.priorite, m.etat AS mission_etat, m.lat, m.lng,
+              m.commentaire, m.cree_le,
+              s.reference, s.domaine, s.etat AS signal_etat,
+              c.nom AS commune_nom,
+              ua.prenom AS agent_prenom, ua.nom AS agent_nom
+         FROM mission_cap m
+         JOIN signalement s ON s.id = m.signalement_id
+         LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur ua ON ua.id = m.affecte_a
+        WHERE m.etat NOT IN ('termine','cloture')${capCommuneFilter}
+        ORDER BY m.cree_le DESC LIMIT 200`
+    );
+    capRows.forEach(r => {
+      const lat = r.lat || null;
+      const lng = r.lng || null;
+      if (lat && lng && parseFloat(lat) !== 0 && parseFloat(lng) !== 0) {
+        r.type_point = 'cap';
+        missions.push(r);
+      }
+    });
+  }
+
+  // ── Points critiques (≥3 dossiers ouverts dans un rayon) ──
+  // Calcul SQL via regroupement spatial approximatif (grille ~500m)
+  let critiques = [];
+  if (!typeFilter || typeFilter === 'critiques') {
+    const { rows: critRows } = await query(
+      `SELECT ROUND(CAST(s.lat AS numeric), 2) AS lat_group,
+              ROUND(CAST(s.lng AS numeric), 2) AS lng_group,
+              COUNT(*)::int AS nb,
+              JSON_AGG(s.reference ORDER BY s.cree_le DESC) AS refs,
+              JSON_AGG(DISTINCT s.domaine) AS domaines,
+              MIN(c.nom) AS commune_nom
+         FROM signalement s
+         LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.etat NOT IN ('resolu','rejete')
+          AND s.lat IS NOT NULL AND s.lng IS NOT NULL
+          AND CAST(s.lat AS numeric) != 0${communeFilter}
+        GROUP BY lat_group, lng_group
+       HAVING COUNT(*) >= ${CRITICAL_MIN_COUNT}
+        ORDER BY nb DESC`
+    );
+    critiques = critRows.map(r => ({
+      type_point: 'critique',
+      lat: parseFloat(r.lat_group),
+      lng: parseFloat(r.lng_group),
+      nb: r.nb,
+      refs: (r.refs || []).slice(0, 5),
+      domaines: r.domaines || [],
+      commune_nom: r.commune_nom,
+    }));
+  }
+
+  res.json({
+    dossiers,
+    missions,
+    critiques,
+    sans_gps: sansGps,
+    config: { critical_radius_km: CRITICAL_RADIUS_KM, critical_min_count: CRITICAL_MIN_COUNT },
+    perimetre: isCommune ? 'commune' : 'wilaya',
+  });
+}));
+
+// ═══ PERFORMANCE DES ORGANISATIONS (Vague 5C) ═══
+
+router.get('/organisations-performance', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  // ── Périmètre ──
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id
+    ? ` AND s.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+
+  // ── Période ──
+  const periode = req.query.periode || '30j';
+  let intervalSQL;
+  switch (periode) {
+    case 'today':  intervalSQL = "s.cree_le >= CURRENT_DATE"; break;
+    case '7j':     intervalSQL = "s.cree_le >= NOW() - INTERVAL '7 days'"; break;
+    case '30j':    intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'"; break;
+    case 'annee':  intervalSQL = "s.cree_le >= DATE_TRUNC('year', NOW())"; break;
+    case 'custom':
+      if (req.query.from && req.query.to) {
+        intervalSQL = `s.cree_le >= '${req.query.from}'::date AND s.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+      } else { intervalSQL = "1=1"; }
+      break;
+    default: intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
+  }
+
+  // ── Filtres optionnels ──
+  const filters = [];
+  const params = [];
+  let pi = 1;
+  if (req.query.commune) { filters.push(`s.commune_id = $${pi}`); params.push(Number(req.query.commune)); pi++; }
+  if (req.query.domaine) { filters.push(`s.domaine = $${pi}`); params.push(req.query.domaine); pi++; }
+  if (req.query.etat) { filters.push(`s.etat = $${pi}`); params.push(req.query.etat); pi++; }
+  if (req.query.urgence) { filters.push(`s.gravite = $${pi}`); params.push(req.query.urgence); pi++; }
+  if (req.query.organisation) { filters.push(`o.id = $${pi}`); params.push(Number(req.query.organisation)); pi++; }
+  const filterSQL = filters.length ? ' AND ' + filters.join(' AND ') : '';
+
+  const inclureInactives = req.query.inclure_inactives === 'true';
+
+  // ── Identifier l'organisation exécutante de chaque dossier ──
+  // L'organisation qui a pris en charge ou démarré l'intervention
+  // est celle qui exécute réellement les travaux.
+  // On utilise une sous-requête sur l'historique pour trouver
+  // la PREMIÈRE transition vers pris_en_charge ou en_intervention.
+  // Fallback : assigne_a pour les dossiers sans historique (données de démo).
+  const { rows } = await query(
+    `WITH org_executante AS (
+       SELECT DISTINCT ON (s.id)
+              s.id AS signalement_id,
+              COALESCE(u_exec.organisation_id, u_assigne.organisation_id) AS organisation_id
+         FROM signalement s
+         LEFT JOIN LATERAL (
+           SELECT h.par_utilisateur
+             FROM signalement_historique h
+            WHERE h.signalement_id = s.id
+              AND h.action IN (
+                'transmis_vers_pris_en_charge', 'recu_vers_pris_en_charge',
+                'transmis_vers_en_intervention', 'recu_vers_en_intervention',
+                'pris_en_charge_vers_en_intervention'
+              )
+            ORDER BY h.le ASC LIMIT 1
+         ) h_exec ON true
+         LEFT JOIN utilisateur u_exec ON u_exec.id = h_exec.par_utilisateur
+         LEFT JOIN utilisateur u_assigne ON u_assigne.id = s.assigne_a
+        WHERE ${intervalSQL}${communeFilter}${filterSQL}
+     )
+     SELECT o.id AS organisation_id, o.nom, o.type,
+            COUNT(oe.signalement_id)::int AS dossiers_recus,
+            COUNT(*) FILTER (WHERE s.etat = 'resolu')::int AS resolus,
+            COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
+              AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu)::int AS en_retard
+       FROM organisations o
+       LEFT JOIN org_executante oe ON oe.organisation_id = o.id
+       LEFT JOIN signalement s ON s.id = oe.signalement_id
+      WHERE o.actif = true
+      GROUP BY o.id, o.nom, o.type
+      ${inclureInactives ? '' : 'HAVING COUNT(oe.signalement_id) > 0'}
+      ORDER BY dossiers_recus DESC`,
+    params
+  );
+
+  // ── Temps moyen : prise en charge → résolution (pas cree_le → resolu_le) ──
+  // Calculé par organisation exécutante, via l'historique
+  const orgIds = rows.filter(r => r.dossiers_recus > 0).map(r => r.organisation_id);
+  let tempsMap = {};
+  if (orgIds.length) {
+    const { rows: tempsRows } = await query(
+      `SELECT u_exec.organisation_id,
+              ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - h_debut.le))/3600))::int AS temps_moyen_h
+         FROM signalement s
+         JOIN LATERAL (
+           SELECT h.par_utilisateur, h.le
+             FROM signalement_historique h
+            WHERE h.signalement_id = s.id
+              AND h.action IN (
+                'transmis_vers_pris_en_charge', 'recu_vers_pris_en_charge',
+                'transmis_vers_en_intervention', 'recu_vers_en_intervention',
+                'pris_en_charge_vers_en_intervention'
+              )
+            ORDER BY h.le ASC LIMIT 1
+         ) h_debut ON true
+         JOIN utilisateur u_exec ON u_exec.id = h_debut.par_utilisateur
+        WHERE s.etat = 'resolu' AND s.resolu_le IS NOT NULL
+          AND u_exec.organisation_id = ANY($1::int[])
+        GROUP BY u_exec.organisation_id`,
+      [orgIds]
+    );
+    tempsRows.forEach(r => { tempsMap[r.organisation_id] = r.temps_moyen_h; });
+  }
+
+  // ── Taux de reprise enrichi ──
+  let repriseMap = {};
+  if (orgIds.length) {
+    const { rows: repriseRows } = await query(
+      `SELECT u.organisation_id,
+              COUNT(DISTINCT CASE WHEN h.action = 'en_intervention_vers_a_valider' THEN h.signalement_id END)::int AS soumis,
+              COUNT(DISTINCT CASE WHEN h.action = 'reprise_demandee' THEN h.signalement_id END)::int AS dossiers_repris,
+              COUNT(*) FILTER (WHERE h.action = 'reprise_demandee')::int AS reprises_total
+         FROM signalement_historique h
+         JOIN signalement s ON s.id = h.signalement_id
+         JOIN utilisateur u ON u.id = h.par_utilisateur
+        WHERE u.organisation_id = ANY($1::int[])
+          AND h.action IN ('en_intervention_vers_a_valider', 'reprise_demandee')
+        GROUP BY u.organisation_id`,
+      [orgIds]
+    );
+    repriseRows.forEach(r => { repriseMap[r.organisation_id] = r; });
+  }
+
+  // ── Assembler la réponse ──
+  const result = rows.map(r => {
+    const reprise = repriseMap[r.organisation_id] || { soumis: 0, dossiers_repris: 0, reprises_total: 0 };
+    const moyenneReprises = reprise.dossiers_repris > 0
+      ? Math.round((reprise.reprises_total / reprise.dossiers_repris) * 10) / 10 : 0;
+    return {
+      organisation_id: r.organisation_id,
+      nom: r.nom,
+      type: r.type,
+      dossiers_recus: r.dossiers_recus,
+      temps_moyen_h: tempsMap[r.organisation_id] || 0,
+      taux_resolution: r.dossiers_recus > 0
+        ? Math.round((r.resolus / r.dossiers_recus) * 100) : 0,
+      resolus: r.resolus,
+      en_retard: r.en_retard,
+      taux_reprise: reprise.soumis > 0
+        ? Math.round((reprise.dossiers_repris / reprise.soumis) * 100) : 0,
+      reprises_total: reprise.reprises_total,
+      moyenne_reprises_par_dossier: moyenneReprises,
+      soumissions: reprise.soumis,
+    };
+  });
+
+  res.json({
+    organisations: result,
+    periode,
+    perimetre: isCommune ? 'commune' : 'wilaya',
+  });
+}));
+
+// ═══ PERFORMANCE CAP (Vague 5D) ═══
+
+router.get('/cap-performance', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  // ── Périmètre ──
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id
+    ? ` AND u.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+
+  // ── Période ──
+  const periode = req.query.periode || '30j';
+  let intervalSQL;
+  switch (periode) {
+    case 'today':  intervalSQL = "m.cree_le >= CURRENT_DATE"; break;
+    case '7j':     intervalSQL = "m.cree_le >= NOW() - INTERVAL '7 days'"; break;
+    case '30j':    intervalSQL = "m.cree_le >= NOW() - INTERVAL '30 days'"; break;
+    case 'annee':  intervalSQL = "m.cree_le >= DATE_TRUNC('year', NOW())"; break;
+    case 'custom':
+      if (req.query.from && req.query.to) {
+        intervalSQL = `m.cree_le >= '${req.query.from}'::date AND m.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+      } else { intervalSQL = "1=1"; }
+      break;
+    default: intervalSQL = "m.cree_le >= NOW() - INTERVAL '30 days'";
+  }
+
+  // ── Agents CAP avec leurs indicateurs ──
+  const { rows } = await query(
+    `SELECT u.id AS agent_id,
+            u.prenom, u.nom,
+            c.nom AS commune_nom,
+            COUNT(m.id)::int AS missions_total,
+            COUNT(*) FILTER (WHERE m.etat = 'termine')::int AS missions_realisees,
+            COUNT(*) FILTER (WHERE m.etat = 'bloque')::int AS missions_bloquees,
+            COUNT(*) FILTER (WHERE m.etat IN ('cree','accepte','en_cours'))::int AS missions_en_cours,
+            ROUND(AVG(CASE WHEN m.etat = 'termine' THEN
+              EXTRACT(EPOCH FROM (mh_fin.le - m.cree_le))/60 END))::int AS temps_moyen_min,
+            COUNT(*) FILTER (WHERE m.type = 'constat')::int AS constats,
+            COUNT(*) FILTER (WHERE m.type = 'verification')::int AS verifications,
+            COUNT(*) FILTER (WHERE m.type = 'ronde')::int AS rondes,
+            COUNT(*) FILTER (WHERE m.type = 'signalement_proactif')::int AS signalements_proactifs,
+            COUNT(*) FILTER (WHERE m.type = 'assistance_pmr')::int AS assistance_pmr,
+            COUNT(*) FILTER (WHERE m.type = 'stationnement')::int AS stationnement
+       FROM utilisateur u
+       LEFT JOIN commune c ON c.id = u.commune_id
+       LEFT JOIN mission_cap m ON m.affecte_a = u.id AND ${intervalSQL}
+       LEFT JOIN LATERAL (
+         SELECT mh.le FROM mission_cap_historique mh
+         WHERE mh.mission_id = m.id AND mh.etat = 'termine'
+         ORDER BY mh.le DESC LIMIT 1
+       ) mh_fin ON m.etat = 'termine'
+      WHERE u.fonction = 'cap' AND u.actif = true${communeFilter}
+      GROUP BY u.id, u.prenom, u.nom, c.nom
+      ORDER BY missions_realisees DESC, missions_total DESC`
+  );
+
+  res.json({
+    agents: rows,
+    periode,
+    perimetre: isCommune ? 'commune' : 'wilaya',
+  });
+}));
+
+// ═══ ALERTES STRATÉGIQUES (Vague 5E) ═══
+// Seuils configurables
+const SEUIL_ORG_DOSSIERS_OUVERTS = 10;
+const SEUIL_ORG_DOSSIERS_RETARD = 5;
+
+router.get('/alertes-strategiques', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id
+    ? ` AND s.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+  const communeFilterDirect = isCommune && req.user.commune_id
+    ? ` WHERE s.commune_id = ${Number(req.user.commune_id)}`
+    : '';
+
+  // Filtres optionnels
+  const typeAlerte = req.query.type_alerte; // sla, critique, chaud, saturee
+
+  const alertes = [];
+
+  // ── A. SLA dépassé ──
+  if (!typeAlerte || typeAlerte === 'sla') {
+    const { rows } = await query(
+      `SELECT s.id, s.reference, s.etat, s.gravite, s.domaine, s.delai_prevu, s.cree_le,
+              c.nom AS commune_nom,
+              EXTRACT(EPOCH FROM (NOW() - s.delai_prevu))/3600 AS retard_heures,
+              o.nom AS organisation_nom
+         FROM signalement s
+         LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur u ON u.id = s.assigne_a
+         LEFT JOIN organisations o ON o.id = u.organisation_id
+        WHERE s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu
+          AND s.etat NOT IN ('resolu','rejete')${communeFilter}
+        ORDER BY retard_heures DESC LIMIT 50`
+    );
+    rows.forEach(r => {
+      const retardH = Math.round(parseFloat(r.retard_heures));
+      alertes.push({
+        type: 'sla',
+        gravite: retardH > 72 ? 'critique' : retardH > 24 ? 'elevee' : 'normale',
+        cle: 'sla_' + r.id,
+        signalement_id: r.id,
+        reference: r.reference,
+        commune: r.commune_nom,
+        organisation: r.organisation_nom,
+        domaine: r.domaine,
+        urgence: r.gravite,
+        retard_heures: retardH,
+        retard_label: retardH >= 24 ? Math.round(retardH / 24) + ' jour(s)' : retardH + ' heure(s)',
+        depuis: r.cree_le,
+      });
+    });
+  }
+
+  // ── B. Incidents critiques ──
+  if (!typeAlerte || typeAlerte === 'critique') {
+    const { rows } = await query(
+      `SELECT s.id, s.reference, s.etat, s.gravite, s.domaine, s.lat, s.lng, s.cree_le,
+              c.nom AS commune_nom,
+              EXTRACT(EPOCH FROM (NOW() - s.cree_le))/3600 AS depuis_heures,
+              o.nom AS organisation_nom
+         FROM signalement s
+         LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur u ON u.id = s.assigne_a
+         LEFT JOIN organisations o ON o.id = u.organisation_id
+        WHERE s.gravite IN ('danger_immediat','risque_blessure')
+          AND s.etat IN ('recu','transmis','pris_en_charge')${communeFilter}
+        ORDER BY CASE s.gravite WHEN 'danger_immediat' THEN 0 ELSE 1 END, s.cree_le ASC
+        LIMIT 50`
+    );
+    rows.forEach(r => {
+      alertes.push({
+        type: 'critique',
+        gravite: r.gravite === 'danger_immediat' ? 'critique' : 'elevee',
+        cle: 'critique_' + r.id,
+        signalement_id: r.id,
+        reference: r.reference,
+        commune: r.commune_nom,
+        organisation: r.organisation_nom,
+        domaine: r.domaine,
+        urgence: r.gravite,
+        depuis_heures: Math.round(parseFloat(r.depuis_heures)),
+        depuis: r.cree_le,
+      });
+    });
+  }
+
+  // ── C. Points chauds (réutilise logique 5B — même SQL) ──
+  if (!typeAlerte || typeAlerte === 'chaud') {
+    const { rows } = await query(
+      `SELECT ROUND(CAST(s.lat AS numeric), 2) AS lat_group,
+              ROUND(CAST(s.lng AS numeric), 2) AS lng_group,
+              COUNT(*)::int AS nb,
+              JSON_AGG(s.reference ORDER BY s.cree_le DESC) AS refs,
+              JSON_AGG(DISTINCT s.domaine) AS domaines,
+              MIN(c.nom) AS commune_nom
+         FROM signalement s
+         LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.etat NOT IN ('resolu','rejete')
+          AND s.lat IS NOT NULL AND CAST(s.lat AS numeric) != 0${communeFilter}
+        GROUP BY lat_group, lng_group
+       HAVING COUNT(*) >= ${CRITICAL_MIN_COUNT}
+        ORDER BY nb DESC`
+    );
+    rows.forEach(r => {
+      alertes.push({
+        type: 'chaud',
+        gravite: r.nb >= 6 ? 'critique' : r.nb >= 4 ? 'elevee' : 'normale',
+        cle: 'chaud_' + r.lat_group + '_' + r.lng_group,
+        lat: parseFloat(r.lat_group),
+        lng: parseFloat(r.lng_group),
+        nb: r.nb,
+        refs: (r.refs || []).slice(0, 5),
+        domaines: r.domaines || [],
+        commune: r.commune_nom,
+        domaine_dominant: (r.domaines || [])[0] || null,
+      });
+    });
+  }
+
+  // ── D. Organisations saturées (réutilise même calcul 5C) ──
+  if (!typeAlerte || typeAlerte === 'saturee') {
+    const { rows } = await query(
+      `SELECT o.id AS organisation_id, o.nom, o.type,
+              COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS ouverts,
+              COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
+                AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu)::int AS en_retard
+         FROM organisations o
+         LEFT JOIN utilisateur u ON u.organisation_id = o.id
+         LEFT JOIN signalement s ON s.assigne_a = u.id${communeFilter.replace(/AND/,'AND')}
+        WHERE o.actif = true
+        GROUP BY o.id, o.nom, o.type
+       HAVING COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete')) >= ${SEUIL_ORG_DOSSIERS_OUVERTS}
+           OR COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
+                AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu) >= ${SEUIL_ORG_DOSSIERS_RETARD}
+        ORDER BY en_retard DESC, ouverts DESC`
+    );
+    rows.forEach(r => {
+      const tauxRetard = r.ouverts > 0 ? Math.round((r.en_retard / r.ouverts) * 100) : 0;
+      alertes.push({
+        type: 'saturee',
+        gravite: r.en_retard >= SEUIL_ORG_DOSSIERS_RETARD ? 'critique' : 'elevee',
+        cle: 'saturee_' + r.organisation_id,
+        organisation_id: r.organisation_id,
+        organisation: r.nom,
+        type_org: r.type,
+        ouverts: r.ouverts,
+        en_retard: r.en_retard,
+        taux_retard: tauxRetard,
+      });
+    });
+  }
+
+  // ── Tri : critique > elevee > normale, puis ancienneté ──
+  const ordreGravite = { critique: 0, elevee: 1, normale: 2 };
+  alertes.sort((a, b) => {
+    const ga = ordreGravite[a.gravite] ?? 2;
+    const gb = ordreGravite[b.gravite] ?? 2;
+    if (ga !== gb) return ga - gb;
+    // Ancienneté : plus ancien en premier
+    const da = a.depuis ? new Date(a.depuis) : new Date();
+    const db = b.depuis ? new Date(b.depuis) : new Date();
+    return da - db;
+  });
+
+  // ── Déduplication par clé ──
+  const seen = new Set();
+  const deduped = alertes.filter(a => {
+    if (seen.has(a.cle)) return false;
+    seen.add(a.cle);
+    return true;
+  });
+
+  res.json({
+    alertes: deduped,
+    total: deduped.length,
+    par_type: {
+      sla: deduped.filter(a => a.type === 'sla').length,
+      critique: deduped.filter(a => a.type === 'critique').length,
+      chaud: deduped.filter(a => a.type === 'chaud').length,
+      saturee: deduped.filter(a => a.type === 'saturee').length,
+    },
+    seuils: {
+      org_dossiers_ouverts: SEUIL_ORG_DOSSIERS_OUVERTS,
+      org_dossiers_retard: SEUIL_ORG_DOSSIERS_RETARD,
+      points_chauds_min: CRITICAL_MIN_COUNT,
+    },
+    perimetre: isCommune ? 'commune' : 'wilaya',
   });
 }));
 

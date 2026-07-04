@@ -92,13 +92,86 @@ router.post('/register', async (req, res, next) => {
 
   const hash = await bcrypt.hash(motDePasse, config.bcryptRounds);
   const { rows } = await query(
-    `INSERT INTO utilisateur(telephone,email,nom,prenom,mot_de_passe,commune_id,role)
-     VALUES ($1,$2,$3,$4,$5,$6,'citoyen')
-     RETURNING id, telephone, nom, prenom, role, commune_id, points`,
+    `INSERT INTO utilisateur(telephone,email,nom,prenom,mot_de_passe,commune_id,role,fonction,niveau_perimetre,capacites)
+     VALUES ($1,$2,$3,$4,$5,$6,'citoyen','citoyen','commune','{}')
+     RETURNING id, telephone, nom, prenom, role, commune_id, points,
+               fonction, niveau_perimetre, perimetre_id, organisation_id, capacites`,
     [telephone, email || null, nom || null, prenom || null, hash, communeId || null]
   );
   const user = rows[0];
-  res.status(201).json({ token: signToken(user), utilisateur: user });
+
+  // Générer code de confirmation 6 chiffres
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expireAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min
+
+  // Marquer le compte comme non confirmé et stocker le code
+  await query(
+    'UPDATE utilisateur SET email_confirme = false, code_confirmation = $1, code_expire_le = $2 WHERE id = $3',
+    [code, expireAt.toISOString(), user.id]);
+
+  // Envoyer email de bienvenue avec le code
+  if (email) {
+    try {
+      const { sendWelcomeEmail } = require('../../services/emailService');
+      await sendWelcomeEmail(email, prenom || nom || '', code);
+      await query(
+        'INSERT INTO citizen_email_list (citizen_id, email, quartier) VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING',
+        [user.id, email, null]);
+    } catch(e) { console.warn('[register] email send failed:', e.message); }
+  }
+
+  // Ne PAS renvoyer de token — l'utilisateur doit confirmer d'abord
+  res.status(201).json({ confirmation_requise: true, telephone: telephone, message: 'Entrez le code reçu par email pour activer votre compte.' });
+}));
+
+// POST /confirm — vérifier le code de confirmation
+router.post('/confirm', asyncH(async (req, res) => {
+  const { telephone, code } = req.body;
+  if (!telephone || !code) throw badRequest('telephone et code requis');
+
+  const { rows } = await query(
+    'SELECT id, telephone, nom, prenom, role, commune_id, points, fonction, niveau_perimetre, perimetre_id, organisation_id, capacites, code_confirmation, code_expire_le, email_confirme FROM utilisateur WHERE telephone = $1',
+    [telephone]);
+  if (!rows.length) throw badRequest('Compte introuvable.');
+  const user = rows[0];
+
+  if (user.email_confirme) throw badRequest('Ce compte est déjà confirmé. Connectez-vous directement.');
+  if (user.code_confirmation !== code) throw badRequest('Code incorrect.');
+  if (new Date(user.code_expire_le) < new Date()) throw badRequest('Code expiré. Veuillez vous réinscrire.');
+
+  // Confirmer le compte
+  await query('UPDATE utilisateur SET email_confirme = true, code_confirmation = NULL, code_expire_le = NULL WHERE id = $1', [user.id]);
+
+  // Envoyer email de confirmation
+  try {
+    const { sendConfirmationEmail } = require('../../services/emailService');
+    const { rows: u2 } = await query('SELECT email, prenom FROM utilisateur WHERE id = $1', [user.id]);
+    if (u2[0]?.email) await sendConfirmationEmail(u2[0].email, u2[0].prenom || '');
+  } catch(e) {}
+
+  // Maintenant connecter l'utilisateur
+  res.json({ token: signToken(user), utilisateur: { id: user.id, telephone: user.telephone, nom: user.nom, prenom: user.prenom, role: user.role, fonction: user.fonction } });
+}));
+
+// POST /resend-code — renvoyer un nouveau code de confirmation
+router.post('/resend-code', asyncH(async (req, res) => {
+  const { telephone } = req.body;
+  if (!telephone) throw badRequest('telephone requis');
+  const { rows } = await query('SELECT id, email, prenom, email_confirme FROM utilisateur WHERE telephone = $1', [telephone]);
+  if (!rows.length) throw badRequest('Compte introuvable.');
+  if (rows[0].email_confirme) throw badRequest('Ce compte est déjà confirmé.');
+  if (!rows[0].email) throw badRequest('Aucun email associé à ce compte.');
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expireAt = new Date(Date.now() + 30 * 60 * 1000);
+  await query('UPDATE utilisateur SET code_confirmation = $1, code_expire_le = $2 WHERE id = $3', [code, expireAt.toISOString(), rows[0].id]);
+
+  try {
+    const { sendWelcomeEmail } = require('../../services/emailService');
+    await sendWelcomeEmail(rows[0].email, rows[0].prenom || '', code);
+  } catch(e) { console.warn('[resend-code] email failed:', e.message); }
+
+  res.json({ ok: true, message: 'Un nouveau code a été envoyé à votre email.' });
 }));
 
 // Gateway route — intercepts _proxy before login validation
@@ -122,12 +195,19 @@ router.post('/login', async (req, res, next) => {
 router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
   const { telephone, motDePasse } = req.body;
   const { rows } = await query(
-    'SELECT * FROM utilisateur WHERE telephone=$1 AND actif=TRUE', [telephone]);
+    `SELECT u.*, o.nom AS organisation_nom
+     FROM utilisateur u LEFT JOIN organisations o ON o.id = u.organisation_id
+     WHERE u.telephone=$1 AND u.actif=TRUE`, [telephone]);
   if (!rows.length) throw unauthorized('Identifiants incorrects.');
 
   const user = rows[0];
   const ok = await bcrypt.compare(motDePasse, user.mot_de_passe);
   if (!ok) throw unauthorized('Identifiants incorrects.');
+
+  // Bloquer si le compte n'est pas confirmé
+  if (user.email_confirme === false) {
+    return res.status(403).json({ confirmation_requise: true, telephone: telephone, erreur: 'Votre compte n\'est pas encore confirmé. Entrez le code reçu par email.' });
+  }
 
   delete user.mot_de_passe;
   res.json({ token: signToken(user), utilisateur: user });
@@ -136,7 +216,14 @@ router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
 // GET /api/auth/me — profil courant
 router.get('/me', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
-    'SELECT id,telephone,nom,prenom,email,role,commune_id,operateur_id,points FROM utilisateur WHERE id=$1',
+    `SELECT u.id, u.telephone, u.nom, u.prenom, u.email, u.role,
+            u.commune_id, u.operateur_id, u.points,
+            u.fonction, u.niveau_perimetre, u.perimetre_id,
+            u.organisation_id, u.capacites,
+            o.nom AS organisation_nom
+     FROM utilisateur u
+     LEFT JOIN organisations o ON o.id = u.organisation_id
+     WHERE u.id = $1`,
     [req.user.id]);
   res.json(rows[0]);
 }));
@@ -154,7 +241,8 @@ router.patch('/preferences', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(`UPDATE utilisateur SET ${sets.join(',')} WHERE id=$${i} RETURNING
     id,telephone,nom,prenom,email,role,commune_id,points,langue,
     notifications_push,notifications_sms,notifications_email,
-    consentement_wilaya,consentement_cgu,consentement_geo,quartier,adresse`, vals);
+    consentement_wilaya,consentement_cgu,consentement_geo,quartier,adresse,
+    fonction,niveau_perimetre,perimetre_id,organisation_id,capacites`, vals);
   res.json(rows[0]);
 }));
 

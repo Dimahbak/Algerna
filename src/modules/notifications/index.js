@@ -37,4 +37,16 @@ router.patch('/lire-tout', authenticate, asyncH(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// DELETE /api/notifications/:id — supprimer une notification
+router.delete('/:id', authenticate, asyncH(async (req, res) => {
+  await query('DELETE FROM notification WHERE id=$1 AND utilisateur_id=$2', [req.params.id, req.user.id]);
+  res.json({ ok: true });
+}));
+
+// DELETE /api/notifications — tout effacer
+router.delete('/', authenticate, asyncH(async (req, res) => {
+  await query('DELETE FROM notification WHERE utilisateur_id=$1', [req.user.id]);
+  res.json({ ok: true });
+}));
+
 module.exports = router;

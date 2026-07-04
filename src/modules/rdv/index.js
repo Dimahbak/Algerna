@@ -196,6 +196,339 @@ router.patch('/:id/evaluer', authenticate, asyncH(async (req, res) => {
   res.json(rows[0]);
 }));
 
+// ═══════════════════════════════════════════════════
+// GUICHETS & CRÉNEAUX DYNAMIQUES (Temps 2)
+// ═══════════════════════════════════════════════════
+
+// GET /api/rdv/guichets?serviceId= — guichets offrant un service donné
+router.get('/guichets', asyncH(async (req, res) => {
+  const { serviceId, communeId } = req.query;
+  let sql = `SELECT g.id, g.nom, g.adresse, g.commune_id, c.nom AS commune_nom,
+                    g.horaire_debut, g.horaire_fin, g.duree_creneau_min
+               FROM guichet g
+               JOIN commune c ON c.id = g.commune_id
+              WHERE g.actif = true`;
+  const params = [];
+  if (serviceId) {
+    params.push(Number(serviceId));
+    sql += ` AND g.id IN (SELECT guichet_id FROM guichet_service WHERE service_id = $${params.length})`;
+  }
+  if (communeId) {
+    params.push(Number(communeId));
+    sql += ` AND g.commune_id = $${params.length}`;
+  }
+  sql += ' ORDER BY c.nom, g.nom';
+  const { rows } = await query(sql, params);
+  res.json(rows);
+}));
+
+// GET /api/rdv/guichets/:id/creneaux?serviceId=&from=&to=
+// Génère les créneaux dynamiquement à partir des horaires
+router.get('/guichets/:id/creneaux', asyncH(async (req, res) => {
+  const guichetId = Number(req.params.id);
+  const serviceId = req.query.serviceId ? Number(req.query.serviceId) : null;
+
+  // Charger le guichet
+  const { rows: gRows } = await query(
+    'SELECT * FROM guichet WHERE id = $1 AND actif = true', [guichetId]);
+  if (!gRows.length) throw notFound('Guichet introuvable.');
+  const g = gRows[0];
+
+  // Vérifier que le guichet offre ce service
+  if (serviceId) {
+    const { rowCount } = await query(
+      'SELECT 1 FROM guichet_service WHERE guichet_id = $1 AND service_id = $2',
+      [guichetId, serviceId]);
+    if (!rowCount) throw badRequest('Ce guichet ne propose pas ce service.');
+  }
+
+  // Période : 14 jours à partir de demain
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() + 1);
+  fromDate.setHours(0, 0, 0, 0);
+  const toDate = new Date(fromDate);
+  toDate.setDate(toDate.getDate() + 14);
+
+  // Charger les jours fériés
+  const { rows: feries } = await query(
+    'SELECT date FROM jour_ferie WHERE date >= $1 AND date <= $2',
+    [fromDate.toISOString().slice(0, 10), toDate.toISOString().slice(0, 10)]);
+  const ferieSet = new Set(feries.map(f => f.date.toISOString().slice(0, 10)));
+
+  // Charger les RDV existants pour anti-double
+  const { rows: rdvExistants } = await query(
+    `SELECT r.creneau_id, COUNT(*)::int AS nb
+       FROM rdv r
+       JOIN creneau c ON c.id = r.creneau_id
+      WHERE c.commune_id = $1 AND r.statut IN ('reserve','present')
+        AND c.debut >= $2
+      GROUP BY r.creneau_id`,
+    [g.commune_id, fromDate.toISOString()]);
+  const rdvMap = {};
+  rdvExistants.forEach(r => { rdvMap[r.creneau_id] = r.nb; });
+
+  // Charger créneaux existants dans la période (pour les rattacher)
+  const { rows: creneauxExistants } = await query(
+    `SELECT id, debut FROM creneau
+      WHERE commune_id = $1 AND debut >= $2 AND debut < $3
+        ${serviceId ? 'AND service_id = ' + serviceId : ''}`,
+    [g.commune_id, fromDate.toISOString(), toDate.toISOString()]);
+  const creneauxMap = {};
+  creneauxExistants.forEach(c => {
+    creneauxMap[new Date(c.debut).toISOString()] = c.id;
+  });
+
+  // Générer les créneaux
+  const jours = g.jours_ouverture || [0, 1, 2, 3, 4]; // dim=0..sam=6
+  const duree = g.duree_creneau_min || 30;
+  const creneaux = [];
+
+  for (let d = new Date(fromDate); d < toDate; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayOfWeek = d.getDay();
+
+    // Jour ouvré ?
+    if (!jours.includes(dayOfWeek)) continue;
+    // Jour férié ?
+    if (ferieSet.has(dateStr)) continue;
+
+    // Créneaux de la journée
+    const [dh, dm] = g.horaire_debut.split(':').map(Number);
+    const [fh, fm] = g.horaire_fin.split(':').map(Number);
+    const ph = g.pause_debut ? g.pause_debut.split(':').map(Number) : null;
+    const pf = g.pause_fin ? g.pause_fin.split(':').map(Number) : null;
+
+    let startMin = dh * 60 + dm;
+    const endMin = fh * 60 + fm;
+    const pauseStart = ph ? ph[0] * 60 + ph[1] : null;
+    const pauseEnd = pf ? pf[0] * 60 + pf[1] : null;
+
+    while (startMin + duree <= endMin) {
+      // Pause ?
+      if (pauseStart !== null && pauseEnd !== null) {
+        if (startMin >= pauseStart && startMin < pauseEnd) {
+          startMin = pauseEnd;
+          continue;
+        }
+      }
+
+      const debut = new Date(dateStr + 'T' +
+        String(Math.floor(startMin / 60)).padStart(2, '0') + ':' +
+        String(startMin % 60).padStart(2, '0') + ':00');
+
+      const isoKey = debut.toISOString();
+      const creneauId = creneauxMap[isoKey] || null;
+      const reserves = creneauId ? (rdvMap[creneauId] || 0) : 0;
+      const restants = g.capacite_par_creneau - reserves;
+
+      creneaux.push({
+        debut: debut.toISOString(),
+        heure: String(Math.floor(startMin / 60)).padStart(2, '0') + ':' + String(startMin % 60).padStart(2, '0'),
+        date: dateStr,
+        creneau_id: creneauId,
+        capacite: g.capacite_par_creneau,
+        restants: restants > 0 ? restants : 0,
+        disponible: restants > 0,
+      });
+
+      startMin += duree;
+    }
+  }
+
+  res.json({
+    guichet: { id: g.id, nom: g.nom, adresse: g.adresse, commune: g.commune_id },
+    creneaux,
+    jours_feries: Array.from(ferieSet),
+  });
+}));
+
+// POST /api/rdv/guichets/reserver — réserver un créneau dynamique
+router.post('/guichets/reserver', authenticate, asyncH(async (req, res) => {
+  const { guichetId, serviceId, debut } = req.body;
+  if (!guichetId || !serviceId || !debut) throw badRequest('guichetId, serviceId et debut requis.');
+
+  // Vérifier anti-double : le citoyen n'a pas déjà un RDV actif pour ce service
+  const { rows: existing } = await query(
+    `SELECT r.id FROM rdv r
+       JOIN creneau c ON c.id = r.creneau_id
+      WHERE r.citoyen_id = $1 AND c.service_id = $2 AND r.statut = 'reserve'`,
+    [req.user.id, serviceId]);
+  if (existing.length) throw badRequest('Vous avez déjà un RDV actif pour cette démarche.');
+
+  const result = await withTransaction(async (client) => {
+    // Charger ou créer le créneau
+    const { rows: gRows } = await client.query(
+      'SELECT * FROM guichet WHERE id = $1 AND actif = true', [guichetId]);
+    if (!gRows.length) throw notFound('Guichet introuvable.');
+    const g = gRows[0];
+
+    // Vérifier jour férié
+    const dateStr = new Date(debut).toISOString().slice(0, 10);
+    const { rowCount: isFerie } = await client.query(
+      'SELECT 1 FROM jour_ferie WHERE date = $1', [dateStr]);
+    if (isFerie) throw badRequest('Ce jour est férié.');
+
+    // Chercher ou créer le créneau dans la table creneau
+    let creneauId;
+    const { rows: existingCr } = await client.query(
+      'SELECT id FROM creneau WHERE commune_id = $1 AND service_id = $2 AND debut = $3 FOR UPDATE',
+      [g.commune_id, serviceId, debut]);
+
+    if (existingCr.length) {
+      creneauId = existingCr[0].id;
+    } else {
+      const { rows: newCr } = await client.query(
+        'INSERT INTO creneau (commune_id, service_id, debut, capacite) VALUES ($1, $2, $3, $4) RETURNING id',
+        [g.commune_id, serviceId, debut, g.capacite_par_creneau]);
+      creneauId = newCr[0].id;
+    }
+
+    // Vérifier capacité
+    const { rows: pris } = await client.query(
+      `SELECT COUNT(*)::int AS n FROM rdv WHERE creneau_id = $1 AND statut IN ('reserve','present')`,
+      [creneauId]);
+    if (Number(pris[0].n) >= g.capacite_par_creneau) throw badRequest('Ce créneau est complet.');
+
+    const numero = Number(pris[0].n) + 1;
+    const qrCode = 'RDV-' + require('crypto').randomBytes(6).toString('hex').toUpperCase();
+    const { rows: rdvRows } = await client.query(
+      `INSERT INTO rdv (creneau_id, citoyen_id, numero_ticket, statut, qr_code)
+       VALUES ($1, $2, $3, 'reserve', $4) RETURNING *`,
+      [creneauId, req.user.id, numero, qrCode]);
+
+    // Charger les infos pour la confirmation (service + commune + pièces)
+    const { rows: info } = await client.query(
+      `SELECT s.nom AS service_nom, s.pieces_requises, cm.nom AS commune_nom
+         FROM service s, commune cm
+        WHERE s.id = $1 AND cm.id = $2`,
+      [serviceId, g.commune_id]);
+
+    // Notification in-app
+    const dateLabel = new Date(debut).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const heureLabel = new Date(debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    try {
+      await client.query(
+        `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+         VALUES ($1, 'rdv', $2, $3, $4)`,
+        [req.user.id,
+         'RDV confirmé — ' + info[0].service_nom,
+         dateLabel + ' à ' + heureLabel + ' · ' + g.nom + ' · ' + info[0].commune_nom + ' · N° ' + qrCode,
+         '/civiadmin']);
+    } catch(e) { /* notification non bloquante */ }
+
+    return {
+      rdv: rdvRows[0],
+      confirmation: {
+        numero_rdv: qrCode,
+        numero_ticket: numero,
+        service: info[0].service_nom,
+        guichet: g.nom,
+        adresse: g.adresse,
+        commune: info[0].commune_nom,
+        date: dateStr,
+        heure: heureLabel,
+        qr_code: qrCode,
+        pieces_requises: info[0].pieces_requises || [],
+      }
+    };
+  });
+
+  res.status(201).json(result);
+}));
+
+// PATCH /api/rdv/:id/modifier — modifier un RDV (max 2 fois)
+router.patch('/:id/modifier', authenticate, asyncH(async (req, res) => {
+  const { guichetId, serviceId, debut } = req.body;
+  if (!guichetId || !serviceId || !debut) throw badRequest('guichetId, serviceId et debut requis.');
+
+  const result = await withTransaction(async (client) => {
+    // Charger le RDV existant
+    const { rows: rdvRows } = await client.query(
+      'SELECT * FROM rdv WHERE id = $1 AND citoyen_id = $2 FOR UPDATE',
+      [req.params.id, req.user.id]);
+    if (!rdvRows.length) throw notFound('RDV introuvable.');
+    const rdv = rdvRows[0];
+    if (rdv.statut !== 'reserve') throw badRequest('Seul un RDV en attente peut être modifié.');
+    if (rdv.nb_modifications >= 2) throw badRequest('Vous avez atteint le nombre maximum de modifications (2).');
+
+    // Libérer l'ancien créneau (annuler le RDV)
+    const ancienCreneauId = rdv.creneau_id;
+
+    // Charger le guichet
+    const { rows: gRows } = await client.query(
+      'SELECT * FROM guichet WHERE id = $1 AND actif = true', [guichetId]);
+    if (!gRows.length) throw notFound('Guichet introuvable.');
+    const g = gRows[0];
+
+    // Vérifier jour férié
+    const dateStr = new Date(debut).toISOString().slice(0, 10);
+    const { rowCount: isFerie } = await client.query(
+      'SELECT 1 FROM jour_ferie WHERE date = $1', [dateStr]);
+    if (isFerie) throw badRequest('Ce jour est férié.');
+
+    // Chercher ou créer le nouveau créneau
+    let newCreneauId;
+    const { rows: existingCr } = await client.query(
+      'SELECT id FROM creneau WHERE commune_id = $1 AND service_id = $2 AND debut = $3 FOR UPDATE',
+      [g.commune_id, serviceId, debut]);
+    if (existingCr.length) {
+      newCreneauId = existingCr[0].id;
+    } else {
+      const { rows: newCr } = await client.query(
+        'INSERT INTO creneau (commune_id, service_id, debut, capacite) VALUES ($1, $2, $3, $4) RETURNING id',
+        [g.commune_id, serviceId, debut, g.capacite_par_creneau]);
+      newCreneauId = newCr[0].id;
+    }
+
+    // Vérifier capacité du nouveau créneau
+    const { rows: pris } = await client.query(
+      `SELECT COUNT(*)::int AS n FROM rdv WHERE creneau_id = $1 AND statut IN ('reserve','present')`,
+      [newCreneauId]);
+    if (Number(pris[0].n) >= g.capacite_par_creneau) throw badRequest('Ce créneau est complet.');
+
+    const newNumero = Number(pris[0].n) + 1;
+
+    // Mettre à jour le RDV
+    await client.query(
+      `UPDATE rdv SET creneau_id = $1, numero_ticket = $2, nb_modifications = nb_modifications + 1, maj_le = NOW()
+       WHERE id = $3`,
+      [newCreneauId, newNumero, req.params.id]);
+
+    // Notification
+    const heureLabel = new Date(debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const dateLabel = new Date(debut).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    try {
+      await client.query(
+        `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+         VALUES ($1, 'rdv', $2, $3, $4)`,
+        [req.user.id,
+         'RDV modifié',
+         'Nouveau créneau : ' + dateLabel + ' à ' + heureLabel + ' · ' + g.nom,
+         '/civiadmin']);
+    } catch(e) {}
+
+    return { ok: true, modifications_restantes: 2 - (rdv.nb_modifications + 1) };
+  });
+
+  res.json(result);
+}));
+
+// GET /api/rdv/verification/:qr — vérifier un QR code (pour l'agent)
+router.get('/verification/:qr', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT r.*, c.debut, s.nom AS service, cm.nom AS commune, g.nom AS guichet, g.adresse
+       FROM rdv r
+       JOIN creneau c ON c.id = r.creneau_id
+       JOIN service s ON s.id = c.service_id
+       JOIN commune cm ON cm.id = c.commune_id
+       LEFT JOIN guichet g ON g.commune_id = c.commune_id
+      WHERE r.qr_code = $1
+      LIMIT 1`,
+    [req.params.qr]);
+  if (!rows.length) throw notFound('QR code invalide ou RDV introuvable.');
+  res.json(rows[0]);
+}));
+
 // Score satisfaction RDV pour l'ICUA (dimension Fluidité)
 async function scoreSatisfactionRDV() {
   const { rows } = await query(

@@ -1,6 +1,22 @@
 const express = require('express');
 const { query } = require('../../db/pool');
-const { authenticate, requireRole } = require('../../middleware/auth');
+const { authenticate, requireRole, hasFonction, hasCapacite, hasPerimetre } = require('../../middleware/auth');
+
+// Phase 4C — sans fallback
+function requireSuperviseur() {
+  return (req, res, next) => {
+    if (!req.user) return next(require('../../utils/http').unauthorized());
+    if (req.user.fonction === 'superviseur') return next();
+    return next(require('../../utils/http').forbidden());
+  };
+}
+function requireAgentOrSuperviseur() {
+  return (req, res, next) => {
+    if (!req.user) return next(require('../../utils/http').unauthorized());
+    if (req.user.fonction === 'agent_traitant' || req.user.fonction === 'superviseur') return next();
+    return next(require('../../utils/http').forbidden());
+  };
+}
 const { asyncH, badRequest, notFound } = require('../../utils/http');
 
 const router = express.Router();
@@ -17,7 +33,7 @@ router.get('/contacts', asyncH(async (req, res) => {
 }));
 
 // POST /contacts — admin
-router.post('/contacts', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.post('/contacts', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   const { nom, categorie, telephone, email, adresse, commune_id, horaires, lat, lng, niveau } = req.body;
   if (!nom || !categorie) throw badRequest('nom et categorie requis');
   const { rows } = await query(
@@ -28,7 +44,7 @@ router.post('/contacts', authenticate, requireRole('admin_apc','admin_wilaya'), 
 }));
 
 // PATCH /contacts/:id — admin
-router.patch('/contacts/:id', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/contacts/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   const fields = ['nom','categorie','telephone','email','adresse','commune_id','horaires','lat','lng','niveau','actif','ordre'];
   const sets = []; const vals = []; let i = 1;
   for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
@@ -40,10 +56,24 @@ router.patch('/contacts/:id', authenticate, requireRole('admin_apc','admin_wilay
 }));
 
 // DELETE /contacts/:id — admin
-router.delete('/contacts/:id', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.delete('/contacts/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   const { rows } = await query('DELETE FROM contact_utile WHERE id=$1 RETURNING id', [req.params.id]);
   if (!rows.length) throw notFound('Contact introuvable');
   res.json({ deleted: rows[0].id });
+}));
+
+// POST /api/infos/contact — formulaire de contact citoyen (auth optionnelle)
+router.post('/contact', function(req, res, next) {
+  // Auth optionnelle : tente d'extraire l'utilisateur sans bloquer
+  try { authenticate(req, res, function(err) { next(); }); } catch(e) { next(); }
+}, asyncH(async (req, res) => {
+  const { nom, contact, sujet, message } = req.body;
+  if (!sujet || !message) throw badRequest('Sujet et message requis.');
+  const userId = req.user ? req.user.id : null;
+  const { rows } = await query(
+    'INSERT INTO message_contact (utilisateur_id, nom, contact, sujet, message) VALUES ($1,$2,$3,$4,$5) RETURNING id',
+    [userId, nom || null, contact || null, sujet, message]);
+  res.status(201).json({ ok: true, id: rows[0].id, message: 'Votre message a été envoyé.' });
 }));
 
 module.exports = router;
@@ -58,7 +88,7 @@ router.get('/communiques', asyncH(async (req, res) => {
   if (admin === 'true') {
     // vérifier auth manuellement
     return authenticate(req, res, () => {
-      requireRole('admin_apc','admin_wilaya')(req, res, async () => {
+      requireSuperviseur()(req, res, async () => {
         try {
           let sql = `SELECT c.*, cm.nom AS commune_nom
                        FROM communique c
@@ -67,8 +97,9 @@ router.get('/communiques', asyncH(async (req, res) => {
           if (statut) { params.push(statut); sql += ` AND c.statut = $${params.length}`; }
           if (qPriorite) { params.push(qPriorite); sql += ` AND c.priorite = $${params.length}`; }
           if (qCommune) { params.push(qCommune); sql += ` AND c.commune_id = $${params.length}`; }
-          // admin_apc : restreindre à sa commune ou wilaya-wide
-          if (req.user.role === 'admin_apc' && req.user.commune_id) {
+          // Superviseur communal : restreindre à sa commune ou wilaya-wide
+          var isCommune = hasPerimetre(req.user, 'commune');
+          if (isCommune && req.user.commune_id) {
             params.push(req.user.commune_id);
             sql += ` AND (c.commune_id = $${params.length} OR c.commune_id IS NULL)`;
           }
@@ -94,7 +125,7 @@ router.get('/communiques', asyncH(async (req, res) => {
 }));
 
 // POST /communiques — admin
-router.post('/communiques', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.post('/communiques', authenticate, requireAgentOrSuperviseur(), asyncH(async (req, res) => {
   const { titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, statut, priorite,
           titre_ar, message_ar, detail_ar, service } = req.body;
   if (!titre || !message) throw badRequest('titre et message requis');
@@ -122,7 +153,7 @@ router.post('/communiques', authenticate, requireRole('agent','admin_apc','admin
 }));
 
 // PATCH /communiques/:id — admin
-router.patch('/communiques/:id', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/communiques/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   const fields = ['titre','message','detail','categorie','niveau','commune_id','zone','date_debut','date_fin','actif','canal','statut','priorite'];
   const sets = []; const vals = []; let i = 1;
   for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
@@ -140,7 +171,7 @@ router.patch('/communiques/:id', authenticate, requireRole('admin_apc','admin_wi
 }));
 
 // DELETE /communiques/:id — admin
-router.delete('/communiques/:id', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.delete('/communiques/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   // Audit avant suppression (cascade supprimera l'audit aussi, donc on log d'abord)
   try {
     await query(`INSERT INTO communique_audit (communique_id, action, par_utilisateur, details)
@@ -155,19 +186,25 @@ router.delete('/communiques/:id', authenticate, requireRole('admin_apc','admin_w
 const comm = require('../../services/communication');
 
 // PATCH /communiques/:id/workflow — transition de statut
-router.patch('/communiques/:id/workflow', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/communiques/:id/workflow', authenticate, requireAgentOrSuperviseur(), asyncH(async (req, res) => {
   const { statut, commentaire } = req.body;
   if (!statut) throw badRequest('statut requis');
-  // Agents can only send to en_revision
-  if (req.user.role === 'agent' && !['en_revision'].includes(statut)) {
+  // Agent traitant : ne peut qu'envoyer en révision (pas publier)
+  var isAgentOnly = hasFonction(req.user, 'agent_traitant');
+  if (isAgentOnly && !['en_revision'].includes(statut)) {
     throw badRequest('Les agents ne peuvent qu\'envoyer en révision.');
+  }
+  // Superviseur communal : ne peut pas publier (réservé Wilaya / capacité publication)
+  var canPublish = hasCapacite(req.user, 'publication') || (hasCapacite(req.user, 'validation') && hasPerimetre(req.user, 'wilaya'));
+  if (['publie'].includes(statut) && !canPublish) {
+    throw badRequest('La publication est réservée à l\'autorité compétente.');
   }
   const result = await comm.transitionStatut(req.params.id, statut, req.user, { commentaire });
   res.json(result);
 }));
 
 // GET /communiques/:id/historique — timeline workflow
-router.get('/communiques/:id/historique', authenticate, requireRole('agent','admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.get('/communiques/:id/historique', authenticate, requireAgentOrSuperviseur(), asyncH(async (req, res) => {
   const hist = await comm.getWorkflowHistorique(req.params.id);
   res.json(hist);
 }));
@@ -179,7 +216,7 @@ router.get('/categories', asyncH(async (req, res) => {
 }));
 
 // GET /communiques/kpis — indicateurs communication
-router.get('/communiques/kpis', authenticate, requireRole('admin_apc','admin_wilaya'), asyncH(async (req, res) => {
+router.get('/communiques/kpis', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
   const kpis = await comm.getKpisCommunication();
   res.json(kpis);
 }));
