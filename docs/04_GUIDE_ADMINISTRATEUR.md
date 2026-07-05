@@ -487,5 +487,67 @@ pm2 logs civismart --lines 200
 
 ---
 
-*Document genere le 30 juin 2026 — ALGERNA v1.0.0-alpha.2*
+## 11. Architecture metier RC1 (gel du 2 juillet 2026)
+
+### 11.1 Postes de travail
+
+| Poste | Role RBAC | Service | Menus sidebar |
+|-------|-----------|---------|---------------|
+| Agent de reception et de coordination | `agent` | Centre de Reception et de Coordination | Mes dossiers |
+| Agent de Proximite (CAP) | `agent` (via `agent_cap`) | Corps des Agents de Proximite | Mes interventions |
+| Responsable — {Service} | `operateur` | Voirie, Hygiene, Eclairage, etc. | Mes dossiers |
+| Centre Operationnel | `admin_apc` | Coordination operationnelle | Centre Operationnel, Mes dossiers, Interventions CAP, Communiques, PatriLocal, CiviPark |
+| Pilotage strategique | `admin_wilaya` | Cabinet — Secretariat General | Pilotage strategique, Indicateurs ICUA, Communiques, Administration |
+
+### 11.2 Chaine de traitement
+
+Chaine operationnelle (flux du dossier) :
+```
+Citoyen
+  --> Centre de Reception (qualification, routage)
+  --> [Optionnel] Agent de Proximite CAP (rapport terrain)
+  --> Service competent (traitement, resolution)
+  --> Retour au Centre de Reception
+  --> Cloture administrative --> Information citoyen
+```
+
+Le dossier ne transite jamais par le Centre Operationnel ni le Pilotage strategique.
+
+Supervision permanente (en parallele) :
+```
+Centre Operationnel : observe, coordonne, relance, alerte
+Pilotage strategique : arbitre, valide, decide
+```
+
+### 11.3 Cycle du Board Kanban
+
+Recu --> A qualifier --> Transmis --> Pris en charge --> En cours --> En attente --> Resolu --> Clos
+
+### 11.4 Communiques -- workflow a deux niveaux
+
+- Centre Operationnel : rediger, modifier, enregistrer en brouillon, envoyer en revision
+- Pilotage strategique : valider, publier, archiver, supprimer
+
+### 11.5 Interventions CAP
+
+Le terme "Mission" est remplace par "Intervention" dans toutes les interfaces.
+Le CAP intervient uniquement sur decision de la Wilaya.
+Le CAP est hierarchiquement rattache a la Wilaya.
+
+### 11.6 Regles de gel
+
+A compter du 2 juillet 2026 :
+- Plus aucun nouveau profil
+- Plus aucun nouveau module
+- Plus aucune refonte d'architecture
+- Les evolutions portent sur : ergonomie, performances, corrections, recette, documentation
+
+### 11.7 Dettes techniques RC2
+
+- **DEBT-019** : Creer un role RBAC dedie `cap`
+- **DEBT-020** : Enrichir le referentiel des services
+
+---
+
+*Document mis a jour le 2 juillet 2026 — ALGERNA v1.0.0-rc1*
 *Usage reserve aux administrateurs techniques de la plateforme.*

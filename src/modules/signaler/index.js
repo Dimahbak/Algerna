@@ -6,17 +6,17 @@
  *
  * Le routage catégorie → EPIC est invisible pour le citoyen.
  * Mapping :
- *   eau            → SEAAL (epic 17)
- *   espaces_verts  → EDEVAL (epic 3)
- *   eclairage      → ERMA (epic 8)
- *   voirie         → EGCTU (epic 30)
- *   proprete       → NETCOM (epic 1) si commune.zone='centre',
- *                    EXTRANET (epic 2) si commune.zone='peripherie'
+ *   eau            → Direction Eau (epic 17)
+ *   espaces_verts  → Direction Espaces Verts (epic 3)
+ *   eclairage      → Direction Éclairage (epic 8)
+ *   voirie         → Direction Voirie (epic 30)
+ *   proprete       → Dir. Propreté Centre (epic 1) si commune.zone='centre',
+ *                    Dir. Propreté Périph. (epic 2) si commune.zone='peripherie'
  *   stationnement  → EPIC Parkings (epic 31)
  *   autre          → file de TRI HUMAIN (epic_id = NULL)
  *
  * Le champ commune.zone contrôle le routage déchets/propreté.
- * Par défaut toutes les communes sont en 'centre' (→ NETCOM).
+ * Par défaut toutes les communes sont en 'centre' (→ Dir. Propreté Centre).
  * Pour ajuster :
  *   UPDATE commune SET zone='peripherie' WHERE nom IN ('Baraki','Birtouta',...);
  */
@@ -43,23 +43,23 @@ function requireStaff() {
 }
 
 // ── EPIC IDs (doit correspondre à la table epic) ──
-const EPIC_SEAAL    = 17;
-const EPIC_EDEVAL   = 3;
-const EPIC_ERMA     = 8;
-const EPIC_EGCTU    = 30;
-const EPIC_NETCOM   = 1;
-const EPIC_EXTRANET = 2;
+const EPIC_EAU      = 17;
+const EPIC_VERTS    = 3;
+const EPIC_ECLAIRAGE = 8;
+const EPIC_VOIRIE   = 30;
+const EPIC_PRO_CENTRE   = 1;
+const EPIC_PRO_PERIPH = 2;
 const EPIC_PARKINGS = 31;
 // CET = 32, utilisé par les catégories directement (epic_id sur categorie_signal)
 
 // Mapping famille → EPIC (sauf propreté qui dépend de la zone commune)
 const FAMILLE_EPIC = {
-  eau:            EPIC_SEAAL,
-  espaces_verts:  EPIC_EDEVAL,
-  eclairage:      EPIC_ERMA,
-  voirie:         EPIC_EGCTU,
+  eau:            EPIC_EAU,
+  espaces_verts:  EPIC_VERTS,
+  eclairage:      EPIC_ECLAIRAGE,
+  voirie:         EPIC_VOIRIE,
   stationnement:  EPIC_PARKINGS,
-  // proprete: dynamique (centre→NETCOM, periph→EXTRANET)
+  // proprete: dynamique (centre→Dir. Propreté Centre, periph→Dir. Propreté Périph.)
   // autre: null (tri humain)
 };
 
@@ -91,7 +91,7 @@ router.get('/epics', asyncH(async (req, res) => {
   const { rows } = await query(
     `SELECT id, sigle, nom, categorie, description
        FROM epic WHERE actif = TRUE
-        AND sigle IN ('NETCOM','EXTRANET','EDEVAL','ERMA','EGCTU','EPIC-PARKINGS','CET')
+        AND sigle IN ('DIR-PRO','DIR-PRO-P','DIR-EVT','DIR-ECL','DIR-CIRC','DIR-PARK','DIR-CET')
       ORDER BY sigle`
   );
   res.json(rows);
@@ -106,7 +106,7 @@ async function routerEpic(categorieId, communeId) {
 
   const cat = catRows[0];
 
-  // Si la catégorie a déjà un epic_id assigné (ex: EDEVAL, ERMA, EGCTU, CET, Parkings)
+  // Si la catégorie a déjà un epic_id assigné (Direction Espaces Verts, Éclairage, Voirie, CET, Parkings)
   if (cat.epic_id) return { epicId: cat.epic_id, triHumain: false };
 
   // 2. Famille "autre" → tri humain
@@ -115,19 +115,19 @@ async function routerEpic(categorieId, communeId) {
   // 3. Famille propreté sans epic_id → routage par zone commune
   if (cat.famille === 'proprete') {
     if (!communeId) {
-      // Pas de commune → fallback NETCOM + log
-      console.warn(`[ROUTAGE] Commune absente pour catégorie ${categorieId} — fallback NETCOM`);
-      return { epicId: EPIC_NETCOM, triHumain: false };
+      // Pas de commune → fallback Direction Propreté + log
+      console.warn(`[ROUTAGE] Commune absente pour catégorie ${categorieId} — fallback Direction Propreté`);
+      return { epicId: EPIC_PRO_CENTRE, triHumain: false };
     }
     const { rows: comRows } = await query(
       'SELECT zone FROM commune WHERE id = $1', [communeId]);
     const zone = comRows.length ? comRows[0].zone : 'centre';
-    if (!zone || zone === 'centre') return { epicId: EPIC_NETCOM, triHumain: false };
-    return { epicId: EPIC_EXTRANET, triHumain: false };
+    if (!zone || zone === 'centre') return { epicId: EPIC_PRO_CENTRE, triHumain: false };
+    return { epicId: EPIC_PRO_PERIPH, triHumain: false };
   }
 
-  // 4. Famille eau sans epic_id → SEAAL
-  if (cat.famille === 'eau') return { epicId: EPIC_SEAAL, triHumain: false };
+  // 4. Famille eau sans epic_id → Direction Eau
+  if (cat.famille === 'eau') return { epicId: EPIC_EAU, triHumain: false };
 
   // 5. Lookup par famille dans le mapping statique
   const epicId = FAMILLE_EPIC[cat.famille] || null;
@@ -144,6 +144,86 @@ const creerSchema = z.object({
   gravite: z.enum(['danger_immediat', 'risque_blessure', 'degradation']).optional(),
 });
 
+// GET /doublons — détection de signalement similaire à proximité
+router.get('/doublons', authenticate, asyncH(async (req, res) => {
+  const { famille, lat, lng } = req.query;
+  if (!famille || !lat || !lng) return res.json({ doublon: null });
+  const fLat = parseFloat(lat); const fLng = parseFloat(lng);
+  if (!fLat || !fLng) return res.json({ doublon: null });
+  // Chercher un signalement de la même famille dans un rayon ~100m (0.001 degré ≈ 111m)
+  const { rows } = await query(
+    `SELECT s.id, s.reference, s.description, s.etat, s.cree_le, cs.libelle AS categorie,
+            c.nom AS commune_nom, s.photo_path
+       FROM signalement s
+       JOIN categorie_signal cs ON cs.id = s.categorie_id
+       LEFT JOIN commune c ON c.id = s.commune_id
+      WHERE cs.famille = $1
+        AND s.etat NOT IN ('resolu','rejete')
+        AND ABS(s.lat - $2) < 0.001 AND ABS(s.lng - $3) < 0.001
+      ORDER BY s.cree_le DESC LIMIT 1`,
+    [famille, fLat, fLng]);
+  res.json({ doublon: rows[0] || null });
+}));
+
+// POST /signalements/rapide — parcours simplifié (famille au lieu de categorieId)
+router.post('/signalements/rapide',
+  authenticate,
+  upload.single('photo'),
+  asyncH(async (req, res) => {
+    const { famille, lat, lng, communeId, description } = req.body;
+    if (!famille) throw badRequest('famille requis');
+    const citoyenId = req.user.id;
+    const photoPath = req.file ? req.file.path : null;
+
+    // Filet de sécurité anti-abus
+    if (req.user.fonction === 'citoyen' || req.user.role === 'citoyen') {
+      const { rows: countRows } = await query(
+        "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
+        [citoyenId]);
+      if (countRows[0].n >= 15) {
+        return res.status(500).json({ erreur: 'Une erreur est survenue, veuillez réessayer plus tard.' });
+      }
+    }
+
+    // Trouver la première catégorie de la famille (l'agent affinera ensuite)
+    const { rows: catRows } = await query(
+      'SELECT id, famille FROM categorie_signal WHERE famille = $1 ORDER BY id LIMIT 1', [famille]);
+    if (!catRows.length) throw badRequest('Famille inconnue.');
+    const categorieId = catRows[0].id;
+
+    // Domaine depuis la famille
+    const domaineMap = { proprete:'proprete', eau:'eau', assainissement:'assainissement', voirie:'voirie', eclairage:'eclairage', espaces_verts:'espaces_verts', securite:'general', stationnement:'general', autre:'general', animaux:'general', nuisances:'general', mobilier_urbain:'general', batiments:'general', environnement:'general', transport:'general', accessibilite:'general' };
+    const domaine = domaineMap[famille] || 'general';
+
+    // Routage EPIC
+    const { epicId, triHumain } = await routerEpic(categorieId, communeId);
+    let operateurId = null;
+    if (!epicId && !triHumain && communeId) {
+      try { const svc = require('../proprete/signalementService'); operateurId = await svc.resoudreOperateur(communeId, domaine === 'general' ? 'proprete' : domaine); } catch(e) {}
+    }
+
+    const prefixMap = { proprete:'PRO', eau:'EAU', voirie:'VOR', eclairage:'ECL', espaces_verts:'EVT', assainissement:'ASS' };
+    const reference = makeReference(prefixMap[domaine] || 'SIG');
+
+    const result = await withTransaction(async (c) => {
+      const { rows } = await c.query(
+        `INSERT INTO signalement (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, sous_categorie_a_affiner)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',true) RETURNING *`,
+        [reference, domaine, categorieId, citoyenId, communeId || null, operateurId, epicId, parseFloat(lat) || 0, parseFloat(lng) || 0, description || null, photoPath]);
+      // Historique
+      await c.query('INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action) VALUES ($1,$2,$3,$4)',
+        [rows[0].id, 'recu', citoyenId, 'signalement_cree']);
+      // Points
+      try { const { awardPoints } = require('../../utils/points'); await awardPoints(citoyenId, 'signalement', 'signalement', rows[0].id); } catch(e) {}
+      // Notification
+      try { await c.query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
+        [citoyenId, 'signalement', 'Signalement enregistré', 'Votre signalement #' + reference + ' a été transmis.', '/mes-signalements']); } catch(e) {}
+      return rows[0];
+    });
+
+    res.status(201).json({ signalement: result });
+  }));
+
 router.post('/signalements',
   authenticate,
   upload.single('photo'),
@@ -153,13 +233,13 @@ router.post('/signalements',
     const citoyenId = req.user.id;
     const photoPath = req.file ? req.file.path : null;
 
-    // Limite : 4 signalements par jour par citoyen
+    // Filet de sécurité anti-abus (invisible)
     if (req.user.fonction === 'citoyen' || req.user.role === 'citoyen') {
       const { rows: countRows } = await query(
         "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
         [citoyenId]);
-      if (countRows[0].n >= 4) {
-        return res.status(429).json({ erreur: 'Vous avez atteint la limite de 4 signalements par jour. Réessayez demain.' });
+      if (countRows[0].n >= 15) {
+        return res.status(500).json({ erreur: 'Une erreur est survenue, veuillez réessayer plus tard.' });
       }
     }
 
@@ -347,8 +427,8 @@ router.get('/board',
                       s.assigne_a, s.transmis_a, s.motif_rejet, s.nb_confirmations,
                       s.delai_prevu, s.equipe_interne, s.responsable_intervention,
                       s.compte_rendu_description, s.compte_rendu_resultat, s.compte_rendu_date_fin, s.compte_rendu_observation,
-                      cs.libelle AS categorie_nom, cs.famille AS categorie_famille,
-                      c.nom AS commune_nom, s.commune_id,
+                      cs.libelle AS categorie_nom, cs.libelle_ar AS categorie_nom_ar, cs.famille AS categorie_famille, s.sous_categorie_a_affiner,
+                      c.nom AS commune_nom, c.nom_ar AS commune_nom_ar, s.commune_id,
                       u.prenom AS citoyen_prenom, u.nom AS citoyen_nom, u.telephone AS citoyen_tel
                  FROM signalement s
                  LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
@@ -651,8 +731,8 @@ router.post('/board/:id/reprise',
           `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
            VALUES ($1, 'signalement', $2, $3, $4)`,
           [sig[0].assigne_a, 'Reprise demandée',
-           'Le superviseur demande une reprise : ' + motif.trim(),
-           '/workspace']
+           motif.trim(),
+           '/bo-agent#' + req.params.id]
         );
       } catch(e) { /* notification non bloquante */ }
     }
@@ -683,6 +763,23 @@ router.get('/board/:id/historique',
          LEFT JOIN utilisateur u ON u.id = h.par_utilisateur
         WHERE h.signalement_id = $1
         ORDER BY h.le ASC`,
+      [req.params.id]);
+    res.json(rows);
+  }));
+
+// GET /board/:id/missions-cap — rapports CAP liés au signalement
+router.get('/board/:id/missions-cap',
+  authenticate, requireStaff(),
+  asyncH(async (req, res) => {
+    const { rows } = await query(
+      `SELECT m.id, m.type, m.etat, m.priorite, m.constat_visuel, m.constat_temoignages,
+              m.decision, m.motif_decision, m.photo_path, m.cloture_lat, m.cloture_lng,
+              m.cloture_le, m.cree_le, m.commentaire,
+              ua.prenom AS agent_prenom, ua.nom AS agent_nom, ua.telephone AS agent_tel
+         FROM mission_cap m
+         LEFT JOIN utilisateur ua ON ua.id = m.affecte_a
+        WHERE m.signalement_id = $1
+        ORDER BY m.cree_le DESC`,
       [req.params.id]);
     res.json(rows);
   }));

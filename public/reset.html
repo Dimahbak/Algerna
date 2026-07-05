@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html><head><title>ALGERNA Reset</title></head>
+<body style="font-family:sans-serif;padding:40px;text-align:center;">
+<h1>ALGERNA — Reset Cache</h1>
+<p id="status">Nettoyage en cours...</p>
+<script>
+(async function() {
+  var s = document.getElementById('status');
+  try {
+    // Unregister all service workers
+    var regs = await navigator.serviceWorker.getRegistrations();
+    for (var r of regs) { await r.unregister(); }
+    s.textContent = regs.length + ' Service Worker(s) supprime(s).';
+    
+    // Clear all caches
+    var keys = await caches.keys();
+    for (var k of keys) { await caches.delete(k); }
+    s.textContent += ' ' + keys.length + ' cache(s) vide(s).';
+    
+    // Clear localStorage
+    localStorage.clear();
+    s.textContent += ' localStorage vide.';
+    
+    s.textContent += ' TERMINE. Redirection dans 3s...';
+    setTimeout(function() { window.location.href = '/'; }, 3000);
+  } catch(e) {
+    s.textContent = 'Erreur: ' + e.message;
+  }
+})();
+</script>
+</body></html>

@@ -194,9 +194,9 @@ async function creerMissionCap(signalementId, user, opts = {}) {
         await client.query(
           `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
            VALUES ($1, 'cap', $2, $3, $4)`,
-          [affecteA, 'Nouvelle intervention',
-           `Vous avez une nouvelle intervention : ${opts.type || 'constat'} — ${opts.commentaire || 'Voir les détails'}.`,
-           '/bo-cap']
+          [affecteA, 'Mission terrain',
+           (opts.type || 'constat') + ' — ' + (sig.reference || ''),
+           '/bo-cap#' + signalementId]
         );
       } catch (e) {}
     }
@@ -227,12 +227,12 @@ async function routerSignalement(signalementId) {
   }
   if (!service && sig.famille) {
     const familleMap = {
-      proprete: sig.zone === 'peripherie' ? 'EXTRANET' : 'NETCOM',
-      eau: 'SEAAL',
-      eclairage: 'ERMA',
-      voirie: 'EGCTU',
-      espaces_verts: 'EDEVAL',
-      stationnement: 'EPIC Parkings',
+      proprete: sig.zone === 'peripherie' ? 'Direction Propreté (Périphérie)' : 'Direction Propreté (Centre)',
+      eau: 'Direction Eau et Assainissement',
+      eclairage: 'Direction Éclairage Public',
+      voirie: 'Direction Voirie et Trottoirs',
+      espaces_verts: 'Direction Espaces Verts',
+      stationnement: 'Direction Stationnement',
     };
     service = familleMap[sig.famille] || 'Tri humain';
   }

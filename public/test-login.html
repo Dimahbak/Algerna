@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><head><title>Test Login</title></head>
+<body>
+<h1>Test Login ALGERNA</h1>
+<input id="tel" value="0550000001" />
+<input id="mdp" value="admin1234" />
+<button onclick="doLogin()">Login</button>
+<pre id="result"></pre>
+<script>
+async function doLogin() {
+  var r = document.getElementById('result');
+  r.textContent = 'Logging in...';
+  try {
+    var res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telephone: document.getElementById('tel').value, motDePasse: document.getElementById('mdp').value })
+    });
+    var data = await res.json();
+    r.textContent = 'Status: ' + res.status + '\nRole: ' + (data.utilisateur ? data.utilisateur.role : 'N/A') + '\nToken: ' + (data.token ? data.token.substring(0,30) + '...' : 'none') + '\nFull: ' + JSON.stringify(data, null, 2);
+  } catch(e) {
+    r.textContent = 'ERROR: ' + e.message;
+  }
+}
+</script>
+</body></html>

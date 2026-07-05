@@ -267,8 +267,12 @@ router.patch('/missions/:id/etat', authenticate, upload.single('photo'), asyncH(
           constat_visuel, constat_temoignages, decision, motif_decision } = req.body;
   if (!etat) throw badRequest('etat requis');
 
-  const { rows: cur } = await query('SELECT etat, signalement_id, cree_par FROM mission_cap WHERE id = $1', [req.params.id]);
+  const { rows: cur } = await query(
+    `SELECT m.etat, m.signalement_id, m.cree_par, s.reference AS sig_reference
+       FROM mission_cap m LEFT JOIN signalement s ON s.id = m.signalement_id
+      WHERE m.id = $1`, [req.params.id]);
   if (!cur.length) throw notFound('Mission introuvable');
+  const sigRef = cur[0].sig_reference || '';
 
   const allowed = MISSION_TRANSITIONS[cur[0].etat] || [];
   if (!allowed.includes(etat)) throw badRequest(`Transition ${cur[0].etat} → ${etat} non autorisée`);
@@ -309,22 +313,22 @@ router.patch('/missions/:id/etat', authenticate, upload.single('photo'), asyncH(
   if (etat === 'accepte' && cur[0].cree_par) {
     try {
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
-        [cur[0].cree_par, 'cap', 'Mission acceptée par l\'agent CAP',
-         'Votre demande de vérification terrain a été acceptée.', '/bo-agent']);
+        [cur[0].cree_par, 'cap', 'Mission acceptée',
+         '#' + sigRef, '/bo-agent#' + cur[0].signalement_id]);
     } catch(e) {}
   }
   if (etat === 'en_cours' && cur[0].cree_par) {
     try {
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
-        [cur[0].cree_par, 'cap', 'Agent CAP en déplacement',
-         'L\'agent se rend sur le site pour la vérification terrain.', '/bo-agent']);
+        [cur[0].cree_par, 'cap', 'Agent en déplacement',
+         '#' + sigRef, '/bo-agent#' + cur[0].signalement_id]);
     } catch(e) {}
   }
   if (etat === 'bloque' && cur[0].cree_par) {
     try {
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
         [cur[0].cree_par, 'cap', 'Mission bloquée',
-         'La mission terrain est bloquée — motif : ' + (motif_blocage || 'non précisé'), '/bo-agent']);
+         '#' + sigRef + (motif_blocage ? ' — ' + motif_blocage : ''), '/bo-agent#' + cur[0].signalement_id]);
     } catch(e) {}
   }
   // Si terminée, notifier l'agent créateur + le citoyen
@@ -335,9 +339,9 @@ router.patch('/missions/:id/etat', authenticate, upload.single('photo'), asyncH(
         const decisionLabel = {valider:'confirmé',amender:'partiellement confirmé',rejeter:'non fondé'}[decision] || decision;
         await query(
           'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
-          [cur[0].cree_par, 'cap', 'Rapport terrain reçu',
-           'Mission terminée — Signalement ' + decisionLabel + '. ' + (constat_visuel || '').substring(0, 100),
-           '/bo-agent']
+          [cur[0].cree_par, 'cap', 'Rapport reçu',
+           '#' + sigRef,
+           '/bo-agent#' + cur[0].signalement_id]
         );
       }
       // Notifier le citoyen

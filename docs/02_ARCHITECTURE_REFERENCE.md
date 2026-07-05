@@ -297,23 +297,33 @@ Les tables sont creees par les migrations successives. Parmi les tables principa
 
 ---
 
-## 8. RBAC -- Controle d'acces base sur les roles
+## 8. RBAC -- Controle d'acces base sur les roles (RC1)
 
-### 8.1 Roles
+### 8.1 Postes de travail et roles
 
-L'application definit 5 roles, organises hierarchiquement :
+L'architecture RC1 definit 5 postes de travail, chacun lie a un role RBAC :
 
-| Role | Description | Perimetre |
-|------|-------------|-----------|
-| `citoyen` | Habitant de la Wilaya | Ses propres signalements, son quartier, les informations publiques |
-| `agent` | Agent municipal ou CAP | Signalements de sa commune, missions CAP |
-| `operateur` | Agent d'un operateur (EPIC) | Signalements transmis a son operateur |
-| `admin_apc` | Administrateur communal | Toutes les donnees de sa commune, supervision locale |
-| `admin_wilaya` | Administrateur Wilaya | Toutes les donnees, configuration systeme, intelligence operationnelle |
+| Poste de travail | Role RBAC | Service | Mission |
+|-----------------|-----------|---------|---------|
+| Agent de reception et de coordination | `agent` | Centre de Reception et de Coordination | Recevoir, qualifier, orienter |
+| Agent de Proximite (CAP) | `agent` (detecte via `agent_cap`) | Corps des Agents de Proximite | Interventions terrain, constats, assistance |
+| Responsable — {Nom du service} | `operateur` | Service technique (Voirie, Hygiene, etc.) | Organiser et suivre la resolution |
+| Centre Operationnel | `admin_apc` | Coordination operationnelle | Controler, coordonner, relancer |
+| Pilotage strategique | `admin_wilaya` | Cabinet — Secretariat General | Piloter, arbitrer, decider |
 
-### 8.2 Groupes de roles
+### 8.2 Groupes de roles (front-end RC1)
 
-Le middleware `auth.js` definit des groupes pre-configures pour simplifier le controle d'acces :
+| Groupe | Roles inclus | Usage |
+|--------|-------------|-------|
+| `ADMIN_ROLES` | admin_apc, admin_wilaya | Supervision, export CSV |
+| `SUPER_ADMIN_ROLES` | admin_wilaya | Administration, ICUA, gestion agents CAP |
+| `isAgent()` | agent, operateur, admin_apc, admin_wilaya | Detection role interne |
+| `canManagePatrimoine()` | admin_apc, admin_wilaya | PatriLocal statut/contrats |
+| `canCreateCapIntervention()` | admin_apc, admin_wilaya | Interventions CAP admin |
+| `canManageCapAgents()` | admin_wilaya | Creer/modifier agents CAP |
+| `canPublishCommunique()` | admin_wilaya | Valider/publier communiques |
+
+### 8.2b Groupes de roles (middleware serveur -- inchanges)
 
 | Groupe | Roles inclus | Usage |
 |--------|-------------|-------|
@@ -324,6 +334,30 @@ Le middleware `auth.js` definit des groupes pre-configures pour simplifier le co
 | `ADMINS` | admin_wilaya | Administration systeme |
 | `BACKOFFICE` | agent, operateur, admin_apc, admin_wilaya | Toutes les routes back office |
 | `ALL_STAFF` | agent, operateur, admin_apc, admin_wilaya | Tout le personnel |
+
+### 8.3 Chaine de traitement officielle (RC1)
+
+Chaine operationnelle (flux du dossier) :
+```
+Citoyen --> Centre de Reception (qualification, routage)
+        --> [Optionnel] Agent de Proximite CAP (rapport terrain)
+        --> Service competent (traitement, resolution)
+        --> Retour au Centre de Reception
+        --> Cloture administrative --> Information citoyen
+```
+
+Le dossier ne transite jamais par le Centre Operationnel ni le Pilotage strategique.
+
+Supervision permanente (en parallele) :
+```
+Centre Operationnel : observe, coordonne, relance, alerte
+Pilotage strategique : arbitre, valide, decide (lecture decisionnelle)
+```
+
+### 8.4 Dettes techniques RC2
+
+- **DEBT-019** : Creer un role RBAC dedie `cap` (priorite RC2)
+- **DEBT-020** : Enrichir le referentiel des services (priorite RC2)
 
 ### 8.3 Mecanisme d'authentification
 - Authentification par JWT (Bearer token)

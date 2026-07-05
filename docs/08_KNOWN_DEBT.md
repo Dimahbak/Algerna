@@ -258,19 +258,102 @@
 
 ---
 
+### DEBT-019 — Role RBAC CAP dedie
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-019                                                               |
+| **Description** | L'Agent de Proximite (CAP) ne dispose pas d'un role RBAC dedie en base de donnees. La detection se fait via la table `agent_cap` cote front-end. Cela cree une logique de routage fragile et empeche un controle d'acces propre cote serveur. |
+| **Impact**  | Logique de detection CAP fragile, permissions non verifiees cote API, maintenance complexe |
+| **Priorite**| P2 — RC2                                                               |
+| **Estimation** | 1 sprint (creation du role `cap` en base, migration des utilisateurs, mise a jour des gardes API et front-end) |
+| **Statut**  | planifie                                                               |
+| **Origine** | Sprint 98 — Gel d'architecture RC1                                     |
+
+---
+
+### DEBT-020 — Referentiel des services enrichi
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-020                                                               |
+| **Description** | Le referentiel actuel des operateurs ne porte pas toutes les informations necessaires au routage intelligent des signalements. Il manque : l'administration de rattachement (Wilaya, APC, etablissement public, direction), le territoire couvert, les categories de signalements prises en charge, les engagements de service et le responsable designe. |
+| **Impact**  | Routage manuel par l'agent de reception, pas d'affectation automatique, libelle generique "Service concerne" au lieu du vrai nom de service |
+| **Priorite**| P2 — RC2                                                               |
+| **Estimation** | 2 sprints (extension du schema, migration des donnees, integration front-end, logique de routage) |
+| **Statut**  | planifie                                                               |
+| **Origine** | Sprint 99 — Gel d'architecture RC1                                     |
+
+---
+
+### DEBT-021 — Permissions CAP separees
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-021                                                               |
+| **Description** | Separer les 4 permissions CAP (demander, planifier, affecter, valider) actuellement portees par les memes gardes RBAC. |
+| **Priorite**| P3 — RC2                                                               |
+| **Statut**  | planifie                                                               |
+
+---
+
+### DEBT-022 — Etats de disponibilite CAP
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-022                                                               |
+| **Description** | Implementer les etats de disponibilite des agents CAP (Disponible, En intervention, En deplacement, En pause, Hors service). |
+| **Priorite**| P3 — RC2                                                               |
+| **Statut**  | planifie                                                               |
+
+---
+
+### DEBT-023 — Ciblage multi-communes et audiences
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-023                                                               |
+| **Description** | Ciblage multi-communes et par categorie d'usagers pour la communication institutionnelle. |
+| **Priorite**| P3 — RC2                                                               |
+| **Statut**  | planifie                                                               |
+
+---
+
+### DEBT-024 — Publication programmee
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-024                                                               |
+| **Description** | Etat "Programme" avec publication differee necessitant un mecanisme de type cron/scheduler. |
+| **Priorite**| P3 — RC2                                                               |
+| **Statut**  | planifie                                                               |
+
+---
+
+### DEBT-025 — Indice territorial enrichi
+
+| Champ       | Valeur                                                                 |
+|-------------|------------------------------------------------------------------------|
+| **ID**      | DEBT-025                                                               |
+| **Description** | Indice de situation territoriale base sur des regles metier (evenements majeurs, communes en difficulte, services degrades, tendances). Doit produire une interpretation, pas un score numerique. Necessite historique J-1 et 7 jours. |
+| **Priorite**| P2 — RC2                                                               |
+| **Statut**  | planifie                                                               |
+
+---
+
 ## Synthese par priorite
 
 | Priorite | Nombre | IDs                                                    |
 |----------|--------|--------------------------------------------------------|
 | P1       | 2      | DEBT-003, DEBT-010                                     |
-| P2       | 8      | DEBT-001, DEBT-002, DEBT-004, DEBT-008, DEBT-009, DEBT-011, DEBT-016, DEBT-018 |
-| P3       | 7      | DEBT-005, DEBT-006, DEBT-007, DEBT-012, DEBT-013, DEBT-014, DEBT-017 |
+| P2       | 11     | DEBT-001, DEBT-002, DEBT-004, DEBT-008, DEBT-009, DEBT-011, DEBT-016, DEBT-018, DEBT-019, DEBT-020, DEBT-025 |
+| P3       | 11     | DEBT-005, DEBT-006, DEBT-007, DEBT-012, DEBT-013, DEBT-014, DEBT-017, DEBT-021, DEBT-022, DEBT-023, DEBT-024 |
 | P4       | 1      | DEBT-015                                               |
 
 ## Estimation globale
 
-La remediation complete de l'ensemble de la dette identifiee represente une charge estimee entre **20 et 30 sprints**. Les elements P1 (DEBT-003 et DEBT-010) doivent etre traites en priorite absolue avant toute mise en production.
+La remediation complete de l'ensemble de la dette identifiee represente une charge estimee entre **23 et 33 sprints**. Les elements P1 (DEBT-003 et DEBT-010) doivent etre traites en priorite absolue avant toute mise en production. Les elements DEBT-019 et DEBT-020 sont planifies pour RC2.
 
 ---
 
-*Document genere dans le cadre du projet ALGERNA — v1.0.0-alpha.2*
+*Document mis a jour dans le cadre du gel d'architecture RC1 — v1.0.0-rc1 — 2 juillet 2026*
