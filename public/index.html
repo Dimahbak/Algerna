@@ -4993,88 +4993,28 @@
       <div id="view-civipark" class="view">
         <button class="btn-back" onclick="showView('bo-admin')">← Retour</button>
         <div class="page-header">
-          <h2 data-i18n="civipark.titre">CiviPark — Stationnement</h2>
-          <p data-i18n="civipark.sous_titre">Stationnement intelligent et traçable — Wilaya d'Alger</p>
-        </div>
-        <div class="module-identity">
-          <div class="module-identity-subtitle" data-i18n="mod.civipark_sub">Gestion des zones de stationnement</div>
-          <div class="module-identity-desc" data-i18n="mod.civipark_desc">Pilotage des zones réglementées, des autorisations, de l'exploitation et du suivi opérationnel.</div>
+          <h2>CiviPark — Stationnement</h2>
+          <p>Parkings, cartes résident et registre des encaissements</p>
         </div>
 
         <!-- Onglets CiviPark -->
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:180px;cursor:pointer;" onclick="cpShowTab('zones')">
-            <button class="btn btn-sm btn-primary" id="cp-tab-zones" style="width:100;pointer-events:none;" data-i18n="civipark.zones">Zones de stationnement</button>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">Les rues et zones payantes de la ville, leurs tarifs et leurs places.</div>
-          </div>
-          <div style="flex:1;min-width:180px;cursor:pointer;" onclick="cpShowTab('cartes')">
-            <button class="btn btn-sm btn-outline" id="cp-tab-cartes" style="width:100;pointer-events:none;" data-i18n="civipark.cartes">Cartes résident</button>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">Les abonnements des habitants pour se garer dans leur propre quartier à tarif réduit.</div>
-          </div>
-          <div style="flex:1;min-width:180px;cursor:pointer;" onclick="cpShowTab('encaissements')">
-            <button class="btn btn-sm btn-outline" id="cp-tab-encaissements" style="width:100;pointer-events:none;" data-i18n="civipark.encaissements">Registre des encaissements</button>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">L'historique tracé de tous les paiements : montant, plaque, ticket, date, agent. Chaque dinar est traçable.</div>
-          </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" id="cp-tab-parkings" onclick="cpShowTab('parkings')">Parkings</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-cartes" onclick="cpShowTab('cartes')">Cartes résident</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-encaissements" onclick="cpShowTab('encaissements')">Registre</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-clotures" onclick="cpShowTab('clotures')">Clôtures</button>
         </div>
 
-        <!-- Tab zones -->
-        <div id="cp-panel-zones"></div>
-        <!-- Tab cartes -->
+        <!-- Panel parkings -->
+        <div id="cp-panel-parkings"></div>
+        <!-- Panel cartes -->
         <div id="cp-panel-cartes" class="hidden"></div>
-        <!-- Tab encaissements -->
+        <!-- Panel encaissements -->
         <div id="cp-panel-encaissements" class="hidden"></div>
-
-        <!-- Formulaire encaissement (admin/agent) -->
-        <div id="cp-form-encaissement" class="hidden" style="margin-top:16px;">
-          <div class="card" style="padding:16px;">
-            <h4 data-i18n="civipark.encaisser">Enregistrer un encaissement</h4>
-            <form onsubmit="cpCreateEncaissement(event)">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.zones">Zone</label>
-                  <select id="cp-enc-zone" required></select>
-                </div>
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.montant">Montant (DA)</label>
-                  <input type="number" id="cp-enc-montant" required min="0" step="10">
-                </div>
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.duree">Durée (min)</label>
-                  <input type="number" id="cp-enc-duree" min="0">
-                </div>
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.plaque">Plaque</label>
-                  <input type="text" id="cp-enc-plaque" placeholder="Ex: 16-12345-01">
-                </div>
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.type_encaisseur">Dispositif</label>
-                  <select id="cp-enc-type">
-                    <option value="kiosque" data-i18n="civipark.enc_kiosque">Kiosque</option>
-                    <option value="buraliste" data-i18n="civipark.enc_buraliste">Buraliste</option>
-                    <option value="agent_tpe" data-i18n="civipark.enc_agent_tpe">Agent TPE</option>
-                    <option value="mobile" data-i18n="civipark.enc_mobile">Mobile</option>
-                    <option value="autre" data-i18n="civipark.enc_autre">Autre</option>
-                  </select>
-                </div>
-                <div class="form-group" style="margin:0;"><label data-i18n="civipark.justificatif">Justificatif</label>
-                  <select id="cp-enc-justif">
-                    <option value="ticket" data-i18n="civipark.just_ticket">Ticket</option>
-                    <option value="bon" data-i18n="civipark.just_bon">Bon</option>
-                    <option value="facture" data-i18n="civipark.just_facture">Facture</option>
-                    <option value="recu_mobile" data-i18n="civipark.just_recu_mobile">Reçu mobile</option>
-                  </select>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;" data-i18n="civipark.enregistrer">Enregistrer</button>
-            </form>
-          </div>
-        </div>
-
-        <!-- Recherche encaissements -->
-        <div id="cp-search-encaissements" class="hidden" style="margin-top:12px;">
-          <div class="card" style="padding:12px;">
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input type="text" id="cp-search-plaque" placeholder="" data-i18n-placeholder="civipark.filtre_plaque" style="flex:1;min-width:120px;padding:6px;font-size:13px;">
-              <input type="text" id="cp-search-ticket" placeholder="" data-i18n-placeholder="civipark.filtre_ticket" style="flex:1;min-width:120px;padding:6px;font-size:13px;">
-              <button class="btn btn-sm btn-primary" onclick="cpLoadEncaissements()" data-i18n="civipark.rechercher">Rechercher</button>
-            </div>
-          </div>
-        </div>
+        <!-- Panel clotures -->
+        <div id="cp-panel-clotures" class="hidden"></div>
+        <!-- Detail panel (fiche parking / carte) -->
+        <div id="cp-detail" class="hidden"></div>
       </div>
 
       <!-- ══ ÉQUIPEMENTS PUBLICS ══ -->
@@ -7976,163 +7916,439 @@ async function capLoadAlertes() {
 const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge:'#ef4444' };
 let cpZones = [];
 
+var _cpZones = [], _cpTarif = 5000;
+
 function cpShowTab(tab) {
-  ['zones','cartes','encaissements'].forEach(t => {
-    const panel = document.getElementById('cp-panel-' + t);
-    const btn = document.getElementById('cp-tab-' + t);
+  ['parkings','cartes','encaissements','clotures'].forEach(function(t) {
+    var panel = document.getElementById('cp-panel-' + t);
+    var btn = document.getElementById('cp-tab-' + t);
     if (panel) panel.classList.toggle('hidden', t !== tab);
-    if (btn) { btn.className = t === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline'; }
+    if (btn) btn.className = t === tab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
   });
-  document.getElementById('cp-form-encaissement').classList.add('hidden');
-  document.getElementById('cp-search-encaissements').classList.toggle('hidden', tab !== 'encaissements');
-  if (tab === 'zones') cpLoadZones();
+  document.getElementById('cp-detail').classList.add('hidden');
+  if (tab === 'parkings') cpLoadParkings();
   if (tab === 'cartes') cpLoadCartes();
   if (tab === 'encaissements') cpLoadEncaissements();
+  if (tab === 'clotures') cpLoadClotures();
 }
 
 async function initCivipark() {
-  cpShowTab('zones');
+  try { var r = await safeFetchJSON('/api/civipark/config/tarif'); _cpTarif = r.tarif || 5000; } catch(e) {}
+  try { _cpZones = await safeFetchJSON('/api/civipark/zones'); } catch(e) {}
+  cpShowTab('parkings');
 }
 
-async function cpLoadZones() {
-  const el = document.getElementById('cp-panel-zones');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+// ── PARKINGS ──
+async function cpLoadParkings() {
+  var el = document.getElementById('cp-panel-parkings');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement...</div>';
   try {
-    cpZones = await safeFetchJSON('/api/civipark/zones');
-    if (!cpZones.length) {
-      el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucune_zone') + '</p></div>';
-      return;
-    }
-    el.innerHTML = cpZones.map(z => {
-      const color = ZONE_COLORS[z.type] || '#94a3b8';
-      const typeLabel = t('civipark.zone_' + z.type);
-      return `<div class="card" style="margin-bottom:8px;padding:12px;border-left:4px solid ${color};">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-          <div style="flex:1;min-width:180px;">
-            <div style="font-weight:700;color:var(--navy);">${escHtml(z.nom)}</div>
-            <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(z.commune_nom||'—')}</div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${color}22;color:${color};font-weight:600;">${typeLabel}</span>
-            ${z.places_total ? `<span style="font-size:11px;color:var(--muted);">${z.places_total} ${t('civipark.places')}</span>` : ''}
-            ${z.tarif_horaire ? `<span style="font-size:11px;font-weight:600;color:var(--navy);">${z.tarif_horaire} ${t('civipark.da_h')}</span>` : ''}
-            ${z.places_pmr ? `<span style="font-size:10px;color:#7c3aed;">♿ ${z.places_pmr}</span>` : ''}
-          </div>
-        </div>
-      </div>`;
+    _cpZones = await safeFetchJSON('/api/civipark/zones');
+    var isAdmin = currentUser && isGest();
+    var html = '';
+    if (isAdmin) html += '<button class="btn btn-primary btn-sm" style="margin-bottom:10px;" onclick="cpParkingForm()">+ Nouveau parking</button>';
+    if (!_cpZones.length) { el.innerHTML = html + '<div class="empty-state"><p>Aucun parking enregistré.</p></div>'; return; }
+    html += _cpZones.map(function(z) {
+      var statColor = z.statut==='actif'?'#16a34a':z.statut==='travaux'?'#f59e0b':'#ef4444';
+      return '<div class="card" style="margin-bottom:8px;padding:12px;border-left:4px solid '+statColor+';cursor:pointer;" onclick="cpParkingDetail('+z.id+')">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+        '<div style="flex:1;min-width:180px;">' +
+          '<div style="font-weight:700;color:var(--navy);">' + escHtml(z.reference||'') + ' — ' + escHtml(z.nom) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);">' + escHtml(z.commune_nom||'—') + (z.adresse?' · '+escHtml(z.adresse):'') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+statColor+'22;color:'+statColor+';font-weight:600;">' + (z.statut||'actif') + '</span>' +
+          (z.places_total?'<span style="font-size:11px;color:var(--muted);">'+z.places_total+' places</span>':'') +
+          (z.places_pmr?'<span style="font-size:10px;color:#7c3aed;">♿ '+z.places_pmr+'</span>':'') +
+          (z.tarif_horaire?'<span style="font-size:11px;font-weight:600;color:var(--navy);">'+z.tarif_horaire+' DA/h</span>':'') +
+        '</div></div></div>';
     }).join('');
-  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">Erreur de chargement</p>'; }
 }
 
+function isGest() { return currentUser && ['admin_apc','admin_wilaya'].includes(currentUser.role); }
+
+async function cpParkingDetail(id) {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  try {
+    var z = await safeFetchJSON('/api/civipark/zones/' + id, { headers: authHeaders() });
+    var html = '<button class="btn-back" onclick="document.getElementById(\'cp-detail\').classList.add(\'hidden\')">← Retour à la liste</button>';
+    html += '<div class="card" style="padding:16px;margin-top:8px;">';
+    html += '<h3 style="margin:0 0 8px;">' + escHtml(z.reference||'') + ' — ' + escHtml(z.nom) + '</h3>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">';
+    html += '<div><strong>Commune :</strong> ' + escHtml(z.commune_nom||'—') + '</div>';
+    html += '<div><strong>Adresse :</strong> ' + escHtml(z.adresse||'—') + '</div>';
+    html += '<div><strong>Capacité :</strong> ' + (z.places_total||0) + ' places (PMR: ' + (z.places_pmr||0) + ')</div>';
+    html += '<div><strong>Tarif :</strong> ' + (z.tarif_horaire||0) + ' DA/h</div>';
+    html += '<div><strong>Horaires :</strong> ' + escHtml(z.horaires||'—') + '</div>';
+    html += '<div><strong>Statut :</strong> ' + (z.statut||'actif') + '</div>';
+    html += '</div>';
+    if (isGest()) {
+      html += '<div style="display:flex;gap:6px;margin-top:12px;">';
+      html += '<button class="btn btn-sm btn-outline" onclick="cpParkingForm('+z.id+')">Modifier</button>';
+      html += '<button class="btn btn-sm" style="background:#ef4444;color:white;" onclick="cpDeleteParking('+z.id+')">Supprimer</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+    // Journal d'audit
+    if (z.journal && z.journal.length) {
+      html += '<div class="card" style="padding:12px;margin-top:10px;"><h4 style="margin:0 0 8px;">Journal d\'audit</h4>';
+      html += '<div style="max-height:200px;overflow-y:auto;">';
+      z.journal.forEach(function(j) {
+        html += '<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--line);">' +
+          '<span style="color:var(--muted);">' + fmtDateTime(j.cree_le) + '</span> · ' +
+          '<strong>' + escHtml((j.prenom||'')+' '+(j.nom_u||'')) + '</strong> · ' +
+          escHtml(j.action) + (j.champ?' — '+escHtml(j.champ)+': '+escHtml(j.ancienne_valeur||'∅')+' → '+escHtml(j.nouvelle_valeur||'∅'):'') +
+          '</div>';
+      });
+      html += '</div></div>';
+    }
+    det.innerHTML = html;
+  } catch(e) { det.innerHTML = '<p style="color:var(--red);">Erreur</p>'; }
+}
+
+function cpParkingForm(editId) {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  var z = editId ? _cpZones.find(function(x){return x.id===editId;}) : {};
+  det.innerHTML = '<div class="card" style="padding:16px;"><h4>' + (editId?'Modifier':'Nouveau') + ' parking</h4>' +
+    '<form onsubmit="cpSaveParking(event,' + (editId||'null') + ')">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+    '<div class="form-group" style="margin:0;"><label>Nom</label><input type="text" id="cp-pk-nom" required value="' + escHtml((z&&z.nom)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Commune</label><select id="cp-pk-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(z&&z.commune_id==c.id?' selected':'')+'>'+escHtml(c.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Adresse</label><input type="text" id="cp-pk-adresse" value="' + escHtml((z&&z.adresse)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Capacité</label><input type="number" id="cp-pk-places" min="0" value="' + ((z&&z.places_total)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Places PMR</label><input type="number" id="cp-pk-pmr" min="0" value="' + ((z&&z.places_pmr)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Tarif (DA/h)</label><input type="number" id="cp-pk-tarif" min="0" value="' + ((z&&z.tarif_horaire)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Horaires</label><input type="text" id="cp-pk-horaires" value="' + escHtml((z&&z.horaires)||'') + '" placeholder="Ex: 7h-22h"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Statut</label><select id="cp-pk-statut"><option value="actif"'+(z&&z.statut==='actif'?' selected':'')+'>Actif</option><option value="travaux"'+(z&&z.statut==='travaux'?' selected':'')+'>Travaux</option><option value="ferme"'+(z&&z.statut==='ferme'?' selected':'')+'>Fermé</option></select></div>' +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">Enregistrer</button></form></div>';
+}
+
+async function cpSaveParking(e, editId) {
+  e.preventDefault();
+  var body = { nom: document.getElementById('cp-pk-nom').value, commune_id: Number(document.getElementById('cp-pk-commune').value),
+    adresse: document.getElementById('cp-pk-adresse').value, places_total: Number(document.getElementById('cp-pk-places').value),
+    places_pmr: Number(document.getElementById('cp-pk-pmr').value), tarif_horaire: Number(document.getElementById('cp-pk-tarif').value),
+    horaires: document.getElementById('cp-pk-horaires').value, statut: document.getElementById('cp-pk-statut').value };
+  try {
+    var url = editId ? '/api/civipark/zones/' + editId : '/api/civipark/zones';
+    var res = await apiFetch(url, { method: editId ? 'PATCH' : 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.ok) { showToast('Parking enregistré.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadParkings(); }
+    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpDeleteParking(id) {
+  if (!confirm('Supprimer ce parking ?')) return;
+  try {
+    var res = await apiFetch('/api/civipark/zones/' + id, { method: 'DELETE', headers: authHeaders() });
+    var d = await res.json();
+    if (res.ok) { showToast('Parking supprimé.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadParkings(); }
+    else showToast(d.erreur || 'Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+// ── CARTES RÉSIDENT ──
 async function cpLoadCartes() {
-  const el = document.getElementById('cp-panel-cartes');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+  var el = document.getElementById('cp-panel-cartes');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement...</div>';
   try {
-    const res = await apiFetch('/api/civipark/cartes', { headers: authHeaders() });
-    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
-    const cartes = await res.json();
-    if (!cartes.length) {
-      el.innerHTML = '<div class="empty-state"><p>—</p></div>';
-      return;
-    }
-    el.innerHTML = cartes.map(c => {
-      const statutColor = {active:'#16a34a',expiree:'#94a3b8',revoquee:'#ef4444'}[c.statut]||'#94a3b8';
-      return `<div class="card" style="margin-bottom:8px;padding:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-          <div>
-            <div style="font-weight:600;color:var(--navy);">${t('civipark.carte_resident')} #${c.id}</div>
-            ${c.nom ? `<div style="font-size:12px;color:var(--muted);">${escHtml((c.prenom||'')+' '+(c.nom||''))}</div>` : ''}
-            <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(c.commune_nom||'—')} ${c.plaque?'· 🚗 '+escHtml(c.plaque):''}</div>
-          </div>
-          <div style="display:flex;gap:4px;align-items:center;">
-            <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${statutColor}22;color:${statutColor};font-weight:600;">${t('civipark.statut_'+c.statut)}</span>
-            <span style="font-size:11px;color:var(--muted);">${t('civipark.valide_jusqua')}: ${fmtDate(c.valide_jusqu_a)}</span>
-          </div>
-        </div>
-      </div>`;
+    var res = await apiFetch('/api/civipark/cartes', { headers: authHeaders() });
+    var cartes = await res.json();
+    var isAdmin = isGest();
+    var html = '';
+    if (isAdmin) html += '<div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">' +
+      '<button class="btn btn-primary btn-sm" onclick="cpCarteForm()">+ Nouvelle carte</button>' +
+      '<span style="font-size:12px;color:var(--muted);">Tarif carte résident : <strong>' + _cpTarif + ' DA</strong></span>' +
+      (isAdmin ? ' <button class="btn btn-sm btn-outline" onclick="cpEditTarif()" style="font-size:11px;">Modifier tarif</button>' : '') +
+      '</div>';
+    if (!cartes.length) { el.innerHTML = html + '<div class="empty-state"><p>Aucune carte résident.</p></div>'; return; }
+    var statutColors = {en_attente:'#f59e0b',validee_attente_paiement:'#3b82f6',active:'#16a34a',expiree:'#94a3b8',suspendue:'#ef4444',revoquee:'#991b1b'};
+    var statutLabels = {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
+    html += cartes.map(function(c) {
+      var sc = statutColors[c.statut]||'#94a3b8';
+      return '<div class="card" style="margin-bottom:8px;padding:12px;cursor:pointer;" onclick="cpCarteDetail('+c.id+')">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+        '<div>' +
+          '<div style="font-weight:600;color:var(--navy);">' + escHtml(c.numero||'CR-?') + '</div>' +
+          (c.nom?'<div style="font-size:12px;color:var(--muted);">'+escHtml((c.prenom||'')+' '+(c.nom||''))+'</div>':'') +
+          '<div style="font-size:12px;color:var(--muted);">' + escHtml(c.commune_nom||'—') + (c.plaque?' · '+escHtml(c.plaque):'') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+sc+'22;color:'+sc+';font-weight:600;">' + (statutLabels[c.statut]||c.statut) + '</span>' +
+          (c.statut==='validee_attente_paiement'?'<span style="font-size:11px;font-weight:600;color:#3b82f6;">'+_cpTarif+' DA</span>':'') +
+          (c.recu_numero?'<span style="font-size:11px;color:var(--muted);">Reçu: '+escHtml(c.recu_numero)+'</span>':'') +
+          (c.valide_jusqu_a?'<span style="font-size:11px;color:var(--muted);">→ '+fmtDate(c.valide_jusqu_a)+'</span>':'') +
+        '</div></div></div>';
     }).join('');
-  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);">Erreur</p>'; }
 }
 
-async function cpLoadEncaissements() {
-  const el = document.getElementById('cp-panel-encaissements');
-  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('civipark.chargement') + '</div>';
+async function cpCarteDetail(id) {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
   try {
-    let url = '/api/civipark/encaissements';
-    const params = [];
-    const plaque = document.getElementById('cp-search-plaque')?.value;
-    const ticket = document.getElementById('cp-search-ticket')?.value;
-    if (plaque) params.push('plaque=' + encodeURIComponent(plaque));
-    if (ticket) params.push('ticket=' + encodeURIComponent(ticket));
-    if (params.length) url += '?' + params.join('&');
-    const res = await apiFetch(url, { headers: authHeaders() });
-    if (!res.ok) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_chargement') + '</p>'; return; }
-    const list = await res.json();
-    if (!list.length) {
-      el.innerHTML = '<div class="empty-state"><p>' + t('civipark.aucun_encaissement') + '</p></div>';
-    } else {
-      el.innerHTML = list.map(e => {
-        const color = ZONE_COLORS[e.zone_type] || '#94a3b8';
-        return `<div class="card" style="margin-bottom:6px;padding:10px;border-left:3px solid ${color};">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
-            <div style="flex:1;min-width:160px;">
-              <div style="font-size:11px;color:var(--muted);">${fmtDateTime(e.date_heure)} · ${escHtml(e.zone_nom)}</div>
-              <div style="font-weight:600;color:var(--navy);">${e.montant} DA ${e.duree_minutes ? '· '+e.duree_minutes+' min' : ''}</div>
-              ${e.plaque ? `<div style="font-size:11px;color:var(--muted);">🚗 ${escHtml(e.plaque)}</div>` : ''}
-            </div>
-            <div style="text-align:right;font-size:11px;">
-              <div style="font-weight:600;color:var(--navy);">🎫 ${escHtml(e.justificatif_numero)}</div>
-              <div style="color:var(--muted);">${t('civipark.enc_'+e.type_encaisseur)} · ${t('civipark.just_'+e.justificatif_type)}</div>
-            </div>
-          </div>
-        </div>`;
-      }).join('');
+    var c = await safeFetchJSON('/api/civipark/cartes/' + id, { headers: authHeaders() });
+    var statutLabels = {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
+    var html = '<button class="btn-back" onclick="document.getElementById(\'cp-detail\').classList.add(\'hidden\')">← Retour</button>';
+    html += '<div class="card" style="padding:16px;margin-top:8px;">';
+    html += '<h3 style="margin:0 0 8px;">Carte ' + escHtml(c.numero||'') + '</h3>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">';
+    html += '<div><strong>Titulaire :</strong> ' + escHtml((c.prenom||'')+' '+(c.nom||'')) + '</div>';
+    html += '<div><strong>Téléphone :</strong> ' + escHtml(c.telephone||'—') + '</div>';
+    html += '<div><strong>Commune :</strong> ' + escHtml(c.commune_nom||'—') + '</div>';
+    html += '<div><strong>Plaque :</strong> ' + escHtml(c.plaque||'—') + '</div>';
+    html += '<div><strong>Statut :</strong> ' + (statutLabels[c.statut]||c.statut) + '</div>';
+    html += '<div><strong>Validité :</strong> ' + (c.valide_jusqu_a?fmtDate(c.valide_jusqu_a):'—') + '</div>';
+    if (c.recu_numero) html += '<div><strong>Reçu :</strong> ' + escHtml(c.recu_numero) + ' (' + (c.recu_montant||'') + ' DA)</div>';
+    html += '</div>';
+    // Actions admin
+    if (isGest()) {
+      html += '<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">';
+      if (c.statut === 'en_attente') html += '<button class="btn btn-sm btn-primary" onclick="cpChangeCarteStatut('+c.id+',\'validee_attente_paiement\')">Valider → Attente paiement</button>';
+      if (c.statut === 'validee_attente_paiement') html += '<button class="btn btn-sm btn-primary" onclick="cpEncaisserCarte('+c.id+')">Encaisser ('+_cpTarif+' DA)</button>';
+      if (c.statut === 'active') html += '<button class="btn btn-sm btn-primary" onclick="cpEncaisserCarte('+c.id+')">Renouveler ('+_cpTarif+' DA)</button>';
+      if (c.statut !== 'revoquee' && c.statut !== 'suspendue') html += '<button class="btn btn-sm" style="background:#ef4444;color:white;" onclick="cpSuspendCarte('+c.id+')">Suspendre</button>';
+      html += '</div>';
     }
-    // Bouton encaisser (Centre Opérationnel uniquement)
-    if (currentUser && currentUser.role === 'admin_apc') {
-      el.innerHTML += `<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="cpShowEncForm()" data-i18n="civipark.encaisser">+ Encaisser</button>`;
+    html += '</div>';
+    // Journal
+    if (c.journal && c.journal.length) {
+      html += '<div class="card" style="padding:12px;margin-top:10px;"><h4 style="margin:0 0 8px;">Journal d\'audit</h4>';
+      html += '<div style="max-height:200px;overflow-y:auto;">';
+      c.journal.forEach(function(j) {
+        html += '<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--line);">' +
+          '<span style="color:var(--muted);">' + fmtDateTime(j.cree_le) + '</span> · ' +
+          '<strong>' + escHtml((j.prenom||'')+' '+(j.nom_u||'')) + '</strong> · ' + escHtml(j.action) +
+          (j.champ?' — '+escHtml(j.champ)+': '+escHtml(j.ancienne_valeur||'∅')+' → '+escHtml(j.nouvelle_valeur||'∅'):'') + '</div>';
+      });
+      html += '</div></div>';
     }
-  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('global.erreur_reseau') + '</p>'; }
+    det.innerHTML = html;
+  } catch(e) { det.innerHTML = '<p style="color:var(--red);">Erreur</p>'; }
 }
 
-async function cpShowEncForm() {
-  const wrap = document.getElementById('cp-form-encaissement');
-  wrap.classList.remove('hidden');
-  // Charger zones dans le select
-  const sel = document.getElementById('cp-enc-zone');
-  if (sel.options.length <= 1) {
-    try {
-      const res = await fetch('/api/civipark/zones');
-      if (res.ok) {
-        const zones = await res.json();
-        sel.innerHTML = zones.filter(z => z.type === 'bleue' || z.type === 'jaune')
-          .map(z => `<option value="${z.id}">${escHtml(z.nom)} (${z.tarif_horaire||'—'} DA/h)</option>`).join('');
-      }
-    } catch(e) {}
-  }
+async function cpChangeCarteStatut(id, statut) {
+  try {
+    var res = await apiFetch('/api/civipark/cartes/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ statut: statut }) });
+    if (res.ok) { showToast('Statut mis à jour.'); cpCarteDetail(id); cpLoadCartes(); } else showToast('Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
 }
 
-async function cpCreateEncaissement(e) {
+async function cpEncaisserCarte(carteId) {
+  if (!_cpZones.length) { showToast('Aucun parking configuré', 'error'); return; }
+  var zoneId = _cpZones[0].id; // Default first parking
+  try {
+    var res = await apiFetch('/api/civipark/encaissements', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parking_zone_id: zoneId, montant: _cpTarif, type_paiement: 'carte_resident', mode_paiement: 'especes', carte_resident_id: carteId }) });
+    if (res.ok) { var d = await res.json(); showToast('Carte activée. Reçu : ' + d.justificatif_numero); cpCarteDetail(carteId); cpLoadCartes(); }
+    else { var d2 = await res.json(); showToast(d2.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpSuspendCarte(id) {
+  var motif = prompt('Motif de suspension :');
+  if (!motif) return;
+  try {
+    var res = await apiFetch('/api/civipark/cartes/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ statut: 'suspendue', motif_suspension: motif }) });
+    if (res.ok) { showToast('Carte suspendue.'); cpCarteDetail(id); cpLoadCartes(); } else showToast('Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+function cpCarteForm() {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  det.innerHTML = '<div class="card" style="padding:16px;"><h4>Nouvelle carte résident</h4>' +
+    '<form onsubmit="cpCreateCarte(event)">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+    '<div class="form-group" style="margin:0;"><label>Commune</label><select id="cp-cr-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'">'+escHtml(c.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Plaque</label><input type="text" id="cp-cr-plaque" required placeholder="Ex: 16-12345-01"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Adresse</label><input type="text" id="cp-cr-adresse" placeholder="Adresse du résident"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Tél. citoyen</label><input type="tel" id="cp-cr-tel" placeholder="0550000000"></div>' +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">Créer la demande</button></form></div>';
+}
+
+async function cpCreateCarte(e) {
+  e.preventDefault();
+  var tel = document.getElementById('cp-cr-tel').value;
+  // Find citoyen by tel
+  var citoyenId = null;
+  if (tel) { try { var r = await safeFetchJSON('/api/auth/users?telephone=' + encodeURIComponent(tel), { headers: authHeaders() }); if (r && r.length) citoyenId = r[0].id; } catch(e2) {} }
+  if (!citoyenId) { showToast('Citoyen non trouvé avec ce numéro', 'error'); return; }
+  try {
+    var res = await apiFetch('/api/civipark/cartes', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commune_id: Number(document.getElementById('cp-cr-commune').value), plaque: document.getElementById('cp-cr-plaque').value,
+        adresse: document.getElementById('cp-cr-adresse').value, citoyen_id: citoyenId }) });
+    if (res.ok) { showToast('Carte créée.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadCartes(); }
+    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpEditTarif() {
+  var nv = prompt('Nouveau tarif carte résident (DA) :', _cpTarif);
+  if (!nv || isNaN(nv)) return;
+  try {
+    var res = await apiFetch('/api/civipark/config/tarif', { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tarif: Number(nv) }) });
+    if (res.ok) { _cpTarif = Number(nv); showToast('Tarif mis à jour : ' + nv + ' DA'); cpLoadCartes(); } else showToast('Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+// ── REGISTRE DES ENCAISSEMENTS ──
+async function cpLoadEncaissements() {
+  var el = document.getElementById('cp-panel-encaissements');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement...</div>';
+  try {
+    var res = await apiFetch('/api/civipark/encaissements', { headers: authHeaders() });
+    var data = await res.json();
+    var lignes = data.lignes || data; var totaux = data.totaux || {};
+    var isAdmin = isGest();
+    var html = '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">';
+    if (isAdmin) html += '<button class="btn btn-primary btn-sm" onclick="cpEncForm()">+ Encaisser</button>';
+    html += '<button class="btn btn-sm btn-outline" onclick="cpGenPdfEnc()">PDF Encaissements</button>';
+    html += '</div>';
+    if (totaux.nb) html += '<div class="card" style="padding:10px;margin-bottom:10px;display:flex;gap:20px;font-size:13px;"><strong>Total :</strong> ' + totaux.nb + ' opérations · <strong>' + totaux.total + ' DA</strong></div>';
+    if (!lignes.length) { el.innerHTML = html + '<div class="empty-state"><p>Aucun encaissement.</p></div>'; return; }
+    html += '<div style="overflow-x:auto;"><table class="ops-table" style="width:100%;font-size:12px;border-collapse:collapse;">';
+    html += '<thead><tr style="background:var(--navy);color:white;"><th style="padding:6px;">Date</th><th>Reçu</th><th>Parking</th><th>Type</th><th>Montant</th><th>Mode</th><th>Agent</th><th>Carte</th><th></th></tr></thead><tbody>';
+    lignes.forEach(function(l) {
+      var isAnn = l.montant < 0;
+      var rowStyle = isAnn ? 'background:#fef2f2;color:#991b1b;' : '';
+      html += '<tr style="border-bottom:1px solid var(--line);' + rowStyle + '">';
+      html += '<td style="padding:5px;white-space:nowrap;">' + fmtDateTime(l.date_heure) + '</td>';
+      html += '<td style="font-weight:600;">' + escHtml(l.justificatif_numero||'—') + '</td>';
+      html += '<td>' + escHtml((l.zone_ref||'')+' '+(l.zone_nom||'')) + '</td>';
+      html += '<td>' + escHtml(l.type_paiement||'—') + '</td>';
+      html += '<td style="font-weight:700;">' + l.montant + ' DA</td>';
+      html += '<td>' + escHtml(l.mode_paiement||'—') + '</td>';
+      html += '<td style="font-size:11px;">' + escHtml((l.agent_prenom||'')+' '+(l.agent_nom||'')) + '</td>';
+      html += '<td style="font-size:11px;">' + (l.carte_numero?escHtml(l.carte_numero):'—') + '</td>';
+      html += '<td>';
+      if (isAdmin && l.valide && !isAnn && !l.annulation_de) html += '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:#ef4444;color:white;" onclick="cpAnnulerEnc('+l.id+')">Annuler</button>';
+      if (isAnn) html += '<span style="font-size:10px;">Annulation de ' + escHtml(l.annule_recu||'') + (l.motif_annulation?' — '+escHtml(l.motif_annulation):'') + '</span>';
+      html += '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);">Erreur</p>'; }
+}
+
+function cpEncForm() {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  det.innerHTML = '<div class="card" style="padding:16px;"><h4>Enregistrer un encaissement</h4>' +
+    '<form onsubmit="cpCreateEnc(event)">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+    '<div class="form-group" style="margin:0;"><label>Parking</label><select id="cp-enc-zone" required>' + _cpZones.map(function(z){return '<option value="'+z.id+'">'+escHtml(z.reference+' — '+z.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Type</label><select id="cp-enc-type"><option value="horaire">Horaire</option><option value="abonnement">Abonnement</option><option value="carte_resident">Carte résident</option></select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Montant (DA)</label><input type="number" id="cp-enc-montant" required min="0"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Mode</label><select id="cp-enc-mode"><option value="especes">Espèces</option><option value="carte">Carte</option><option value="mobile">Mobile</option></select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Plaque</label><input type="text" id="cp-enc-plaque"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Durée (min)</label><input type="number" id="cp-enc-duree" min="0"></div>' +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">Enregistrer</button></form></div>';
+}
+
+async function cpCreateEnc(e) {
   e.preventDefault();
   try {
-    const res = await apiFetch('/api/civipark/encaissements', {
-      method: 'POST',
-      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parking_zone_id: Number(document.getElementById('cp-enc-zone').value),
-        montant: Number(document.getElementById('cp-enc-montant').value),
-        duree_minutes: Number(document.getElementById('cp-enc-duree').value) || null,
-        plaque: document.getElementById('cp-enc-plaque').value || null,
-        type_encaisseur: document.getElementById('cp-enc-type').value,
-        justificatif_type: document.getElementById('cp-enc-justif').value,
-      })
+    var res = await apiFetch('/api/civipark/encaissements', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parking_zone_id: Number(document.getElementById('cp-enc-zone').value), montant: Number(document.getElementById('cp-enc-montant').value),
+        type_paiement: document.getElementById('cp-enc-type').value, mode_paiement: document.getElementById('cp-enc-mode').value,
+        plaque: document.getElementById('cp-enc-plaque').value || null, duree_minutes: Number(document.getElementById('cp-enc-duree').value) || null }) });
+    if (res.ok) { var d = await res.json(); showToast('Reçu : ' + d.justificatif_numero); document.getElementById('cp-detail').classList.add('hidden'); cpLoadEncaissements(); }
+    else showToast('Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpAnnulerEnc(id) {
+  var motif = prompt('Motif d\'annulation :');
+  if (!motif) return;
+  try {
+    var res = await apiFetch('/api/civipark/encaissements/' + id + '/annuler', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ motif: motif }) });
+    if (res.ok) { showToast('Annulation enregistrée.'); cpLoadEncaissements(); }
+    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpGenPdfEnc() {
+  try {
+    var res = await apiFetch('/api/rapports/encaissements', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ periode: '30j', lang: currentLang }) });
+    var d = await res.json();
+    if (d.ok && d.url) { showToast('PDF généré.'); window.open(d.url, '_blank'); } else showToast(d.erreur || 'Erreur', 'error');
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+// ── CLÔTURES ──
+async function cpLoadClotures() {
+  var el = document.getElementById('cp-panel-clotures');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement...</div>';
+  try {
+    var clotures = await safeFetchJSON('/api/civipark/clotures', { headers: authHeaders() });
+    var isAdmin = isGest();
+    var html = '';
+    if (isAdmin) html += '<button class="btn btn-primary btn-sm" style="margin-bottom:10px;" onclick="cpClotureForm()">+ Clôturer une journée</button>';
+    if (!clotures.length) { el.innerHTML = html + '<div class="empty-state"><p>Aucune clôture.</p></div>'; return; }
+    html += '<div style="overflow-x:auto;"><table class="ops-table" style="width:100%;font-size:12px;border-collapse:collapse;">';
+    html += '<thead><tr style="background:var(--navy);color:white;"><th style="padding:6px;">Date</th><th>Parking</th><th>Système</th><th>Déclaré</th><th>Écart</th><th>Clôturé par</th><th>Validée</th><th></th></tr></thead><tbody>';
+    clotures.forEach(function(cl) {
+      var ecartStyle = cl.ecart != 0 ? 'color:#ef4444;font-weight:700;' : 'color:#16a34a;';
+      html += '<tr style="border-bottom:1px solid var(--line);">';
+      html += '<td style="padding:5px;">' + fmtDate(cl.date_cloture) + '</td>';
+      html += '<td>' + escHtml((cl.zone_ref||'')+' '+(cl.zone_nom||'')) + '</td>';
+      html += '<td style="font-weight:600;">' + cl.total_systeme + ' DA</td>';
+      html += '<td>' + cl.total_declare + ' DA</td>';
+      html += '<td style="' + ecartStyle + '">' + (cl.ecart>0?'+':'') + cl.ecart + ' DA</td>';
+      html += '<td style="font-size:11px;">' + escHtml((cl.cloture_prenom||'')+' '+(cl.cloture_nom||'')) + '</td>';
+      html += '<td>' + (cl.validee?'<span style="color:#16a34a;font-weight:600;">Validée</span>':'<span style="color:#f59e0b;">En attente</span>') + '</td>';
+      html += '<td>';
+      if (isAdmin && !cl.validee) html += '<button class="btn btn-sm btn-primary" style="font-size:10px;padding:2px 6px;" onclick="cpValiderCloture('+cl.id+')">Valider</button>';
+      html += '</td></tr>';
     });
-    if (res.ok) {
-      showToast(t('civipark.succes_encaissement'));
-      document.getElementById('cp-form-encaissement').classList.add('hidden');
-      cpLoadEncaissements();
-    } else showToast(t('civipark.erreur'), 'error');
-  } catch(e) { showToast(t('global.erreur_reseau'), 'error'); }
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);">Erreur</p>'; }
+}
+
+function cpClotureForm() {
+  var det = document.getElementById('cp-detail');
+  det.classList.remove('hidden');
+  det.innerHTML = '<div class="card" style="padding:16px;"><h4>Clôture quotidienne</h4>' +
+    '<form onsubmit="cpCreateCloture(event)">' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+    '<div class="form-group" style="margin:0;"><label>Parking</label><select id="cp-cl-zone" required>' + _cpZones.map(function(z){return '<option value="'+z.id+'">'+escHtml(z.reference+' — '+z.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>Date</label><input type="date" id="cp-cl-date" required value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Total déclaré (DA)</label><input type="number" id="cp-cl-declare" required min="0"></div>' +
+    '<div class="form-group" style="margin:0;"><label>Commentaire</label><input type="text" id="cp-cl-comment"></div>' +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">Clôturer</button></form></div>';
+}
+
+async function cpCreateCloture(e) {
+  e.preventDefault();
+  try {
+    var res = await apiFetch('/api/civipark/clotures', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parking_zone_id: Number(document.getElementById('cp-cl-zone').value), date_cloture: document.getElementById('cp-cl-date').value,
+        total_declare: Number(document.getElementById('cp-cl-declare').value), commentaire: document.getElementById('cp-cl-comment').value || null }) });
+    if (res.ok) { var d = await res.json(); showToast('Clôture créée. Écart : ' + d.ecart + ' DA'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadClotures(); }
+    else { var d2 = await res.json(); showToast(d2.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
+}
+
+async function cpValiderCloture(id) {
+  try {
+    var res = await apiFetch('/api/civipark/clotures/' + id + '/valider', { method: 'PATCH', headers: authHeaders() });
+    if (res.ok) { showToast('Clôture validée.'); cpLoadClotures(); }
+    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast('Erreur réseau', 'error'); }
 }
 
 // ─── PARKZONES — CiviPark citoyen (lecture seule) ────────────

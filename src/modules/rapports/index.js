@@ -372,4 +372,136 @@ router.post('/dossier/:id', authenticate, requirePilotage(), asyncH(async (req, 
   res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
 }));
 
+// ═══ POST /encaissements — rapport PDF encaissements CiviPark ═══
+router.post('/encaissements', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { periode, from, to, commune_id, parking_zone_id, lang } = req.body;
+  const isAr = lang === 'ar';
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const effectiveCommune = commune_id || (isCommune ? req.user.commune_id : null);
+
+  // Period filter (reuse s alias trick — alias pe as s for periodeSQL compat)
+  const pRaw = periodeSQL(periode, from, to);
+  const pSql = pRaw.sql.replace(/s\./g, 'pe.');
+
+  let where = `WHERE ${pSql} AND pe.valide = TRUE`;
+  const params = [];
+  if (effectiveCommune) { params.push(Number(effectiveCommune)); where += ` AND pz.commune_id = $${params.length}`; }
+  if (parking_zone_id) { params.push(Number(parking_zone_id)); where += ` AND pe.parking_zone_id = $${params.length}`; }
+
+  let communeNom = 'Wilaya d\'Alger';
+  if (effectiveCommune) {
+    const { rows: cR } = await query('SELECT nom FROM commune WHERE id=$1', [effectiveCommune]);
+    if (cR.length) communeNom = cR[0].nom;
+  }
+
+  // Data
+  const { rows: lignes } = await query(
+    `SELECT pe.*, pz.nom AS zone_nom, pz.reference AS zone_ref, c.nom AS commune_nom,
+       cr.numero AS carte_numero, u.prenom AS agent_prenom, u.nom AS agent_nom,
+       ann.justificatif_numero AS annule_recu
+     FROM parking_encaissement pe
+     JOIN parking_zone pz ON pz.id = pe.parking_zone_id
+     LEFT JOIN commune c ON c.id = pz.commune_id
+     LEFT JOIN carte_resident cr ON cr.id = pe.carte_resident_id
+     LEFT JOIN utilisateur u ON u.id = pe.agent_id
+     LEFT JOIN parking_encaissement ann ON ann.id = pe.annulation_de
+     ${where} ORDER BY pe.date_heure DESC LIMIT 500`, params);
+
+  // Totaux
+  const { rows: totR } = await query(
+    `SELECT COUNT(*)::int AS nb, COALESCE(SUM(pe.montant),0)::numeric AS total,
+       COUNT(*) FILTER (WHERE pe.type_paiement='carte_resident')::int AS nb_cartes,
+       COALESCE(SUM(pe.montant) FILTER (WHERE pe.type_paiement='carte_resident'),0)::numeric AS total_cartes
+     FROM parking_encaissement pe JOIN parking_zone pz ON pz.id=pe.parking_zone_id ${where}`, params);
+  const tot = totR[0];
+
+  // Par parking
+  const { rows: parPk } = await query(
+    `SELECT pz.reference, pz.nom, COUNT(pe.id)::int AS nb, COALESCE(SUM(pe.montant),0)::numeric AS total
+     FROM parking_encaissement pe JOIN parking_zone pz ON pz.id=pe.parking_zone_id ${where}
+     GROUP BY pz.reference, pz.nom ORDER BY total DESC`, params);
+
+  // Par mode
+  const { rows: parMode } = await query(
+    `SELECT pe.mode_paiement, COUNT(*)::int AS nb, COALESCE(SUM(pe.montant),0)::numeric AS total
+     FROM parking_encaissement pe JOIN parking_zone pz ON pz.id=pe.parking_zone_id ${where}
+     GROUP BY pe.mode_paiement ORDER BY total DESC`, params);
+
+  // PDF
+  const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
+  const fonts = setupDoc(doc, isAr);
+  const filename = `encaissements_${Date.now()}.pdf`;
+  const filepath = path.join(UPLOAD_DIR, filename);
+  const stream = fs.createWriteStream(filepath);
+  doc.pipe(stream);
+
+  const title = `Rapport Encaissements — ${communeNom}`;
+  const subtitle = `Période : ${pRaw.label}`;
+  let y = drawHeader(doc, fonts, title, subtitle, isAr);
+
+  // Synthèse
+  y = sectionTitle(doc, fonts, y, 'Synthèse');
+  y = kpiRow(doc, fonts, y, 'Total encaissements', tot.nb);
+  y = kpiRow(doc, fonts, y, 'Montant total', tot.total + ' DA');
+  y = kpiRow(doc, fonts, y, 'Paiements cartes résident', tot.nb_cartes + ' (' + tot.total_cartes + ' DA)');
+  y += 10;
+
+  // Par parking
+  if (parPk.length) {
+    y = sectionTitle(doc, fonts, y, 'Par parking');
+    doc.font(fonts.fontB).fontSize(8).fillColor('#666');
+    doc.text('Réf.', 50, y); doc.text('Nom', 130, y); doc.text('Nb', 350, y); doc.text('Total', 400, y);
+    y += 14;
+    parPk.forEach(p => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      doc.font(fonts.fontR).fontSize(9).fillColor('#333');
+      doc.text(p.reference || '—', 50, y); doc.text(p.nom, 130, y, { width: 210 }); doc.text(String(p.nb), 350, y); doc.text(p.total + ' DA', 400, y);
+      y += 14;
+    });
+    y += 6;
+  }
+
+  // Par mode
+  if (parMode.length) {
+    y = sectionTitle(doc, fonts, y, 'Par mode de paiement');
+    const modeLabels = { especes: 'Espèces', carte: 'Carte bancaire', mobile: 'Paiement mobile' };
+    parMode.forEach(m => {
+      doc.font(fonts.fontR).fontSize(9).fillColor('#333');
+      doc.text((modeLabels[m.mode_paiement] || m.mode_paiement) + ' : ' + m.nb + ' (' + m.total + ' DA)', 50, y);
+      y += 14;
+      if (y > 720) { doc.addPage(); y = 40; }
+    });
+    y += 6;
+  }
+
+  // Détail des lignes (top 50)
+  y = sectionTitle(doc, fonts, y, 'Détail des encaissements');
+  doc.font(fonts.fontB).fontSize(7).fillColor('#666');
+  doc.text('Date', 50, y); doc.text('Reçu', 130, y); doc.text('Parking', 220, y); doc.text('Type', 320, y); doc.text('Montant', 380, y); doc.text('Mode', 440, y);
+  y += 12;
+  lignes.slice(0, 50).forEach(l => {
+    if (y > 720) { doc.addPage(); y = 40; }
+    doc.font(fonts.fontR).fontSize(7).fillColor(l.montant < 0 ? '#EF4444' : '#333');
+    doc.text(fmtDateTime(l.date_heure), 50, y);
+    doc.text(l.justificatif_numero || '—', 130, y);
+    doc.text((l.zone_ref || '') + ' ' + (l.zone_nom || ''), 220, y, { width: 95 });
+    doc.text(l.type_paiement || '—', 320, y);
+    doc.text(l.montant + ' DA', 380, y);
+    doc.text(l.mode_paiement || '—', 440, y);
+    y += 11;
+  });
+
+  // Footer
+  doc.font(fonts.fontR).fontSize(7).fillColor('#999');
+  const pc = doc.bufferedPageRange().count;
+  for (let i = 0; i < pc; i++) {
+    doc.switchToPage(i);
+    doc.text(`ALGERNA — Rapport Encaissements — Page ${i+1}/${pc}`, 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center' });
+  }
+
+  doc.end();
+  await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
+  res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
+}));
+
 module.exports = router;
