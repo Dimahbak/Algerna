@@ -1,13 +1,8 @@
-const CACHE_NAME = "civismart-v258";
+const CACHE_NAME = "civismart-v259";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
-  "/icons/icon-192.svg",
-  "/icons/icon-512.svg",
-  "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
-  "https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"
+  "/i18n.js"
 ];
 
 self.addEventListener("install", e => {
@@ -28,14 +23,15 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
-  const apiPaths = ["/api/","/auth/","/infos/","/equipements","/referentiel/","/rdv/","/proprete/","/eau/","/signaler/","/points/","/dashboard/","/notifications/","/participation/","/legal/","/edeval/","/cap/","/civipark/","/patrimoine/","/health"];
+  // API & mutations: network-only
+  const apiPaths = ["/api/","/auth/","/infos/","/equipements","/referentiel/","/rdv/","/proprete/","/eau/","/signaler/","/points/","/dashboard/","/notifications/","/participation/","/legal/","/edeval/","/cap/","/civipark/","/patrimoine/","/health","/rapports/"];
   const isApi = apiPaths.some(p => url.pathname.startsWith(p)) || (e.request.headers.get("accept") || "").includes("application/json");
   if (isApi) {
     e.respondWith(fetch(e.request).catch(() => new Response(JSON.stringify({ erreur: "Hors ligne" }), { status: 503, headers: { "Content-Type": "application/json" } })));
     return;
   }
   if (e.request.method !== "GET") return;
-  // Documents HTML : network-first (toujours chercher la dernière version)
+  // HTML documents: network-first
   if (e.request.destination === "document" || e.request.mode === "navigate") {
     e.respondWith(
       fetch(e.request).then(response => {
@@ -48,7 +44,7 @@ self.addEventListener("fetch", e => {
     );
     return;
   }
-  // Autres ressources (CSS, JS, images) : cache-first
+  // Other resources: cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
