@@ -48,7 +48,15 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: '30d',
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html') || filePath.endsWith('sw.js') || filePath.endsWith('i18n.js')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // CyberPanel/OLS proxy context strips the /api prefix before

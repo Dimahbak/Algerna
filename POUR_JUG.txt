@@ -1,0 +1,45 @@
+═══════════════════════════════════════════════════════════
+  POUR JUG — Config OLS à vérifier (civismart.pylcom.app)
+  Généré le 6 juillet 2026
+═══════════════════════════════════════════════════════════
+
+PROBLÈME : le débit semble bridé côté OLS (outBandwidth / perClientConnLimit).
+
+VALEURS ACTUELLES : ILLISIBLES (Permission denied sur /usr/local/lsws/conf/).
+
+FICHIERS À VÉRIFIER :
+  /usr/local/lsws/conf/httpd_config.conf
+  /usr/local/lsws/conf/vhosts/civismart.pylcom.app/vhconf.conf
+
+VALEURS À CHERCHER ET CORRIGER :
+  ┌───────────────────────┬──────────────┬────────────────────┐
+  │ Directive             │ Valeur cible │ Commentaire        │
+  ├───────────────────────┼──────────────┼────────────────────┤
+  │ outBandwidth          │ 0            │ 0 = illimité       │
+  │ inBandwidth           │ 0            │ 0 = illimité       │
+  │ perClientConnLimit    │ 500          │ ou plus            │
+  │ staticReqPerSec       │ 0            │ 0 = illimité       │
+  │ dynReqPerSec          │ 0            │ 0 = illimité       │
+  │ enableGzipCompress    │ 1            │ compression gzip   │
+  │ compressibleTypes     │ text/*, application/javascript, application/json │
+  │ gzipCompressLevel     │ 6            │ bon compromis      │
+  └───────────────────────┴──────────────┴────────────────────┘
+
+GZIP : Express compresse déjà (middleware compression), mais OLS doit
+aussi compresser si le proxied upstream ne le fait pas. Vérifier que
+enableGzipCompress = 1 dans httpd_config.conf.
+
+COMMANDES À EXÉCUTER :
+  1. Modifier les valeurs ci-dessus dans les fichiers .conf
+  2. sudo systemctl restart lsws
+
+TEST APRÈS CORRECTION :
+  curl -s --compressed -o /dev/null -w "taille: %{size_download} octets | temps: %{time_total}s\n" https://civismart.pylcom.app/speedtest.bin
+  → Attendu : ~5 Mo en < 5 secondes
+
+CE QUI A DÉJÀ ÉTÉ CORRIGÉ CÔTÉ APPLICATION :
+  - .htaccess : ne bloque plus le cache navigateur sur les assets statiques
+  - Express : Cache-Control immutable 30j sur images/JS/CSS
+  - Express : middleware compression (gzip) activé
+  - Scripts lucide/leaflet/chart.js en defer (non-bloquants)
+  - Service Worker allégé (3 assets locaux seulement)

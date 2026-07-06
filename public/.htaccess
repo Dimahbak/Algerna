@@ -1,21 +1,29 @@
-# Disable ALL LiteSpeed cache
+# Disable LiteSpeed page cache (Express gère le contenu dynamique)
 CacheDisable public /
 CacheDisable private /
 
 <IfModule LiteSpeed>
   CacheLookup off
-  CacheEnable off
 </IfModule>
 
-# Force no-cache on ALL responses
+# HTML et SW : no-cache (mises à jour immédiates)
 <IfModule mod_headers.c>
-  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-  Header always set Pragma "no-cache"
-  Header always set Expires "0"
+  <FilesMatch "\.(html|json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+  <Files "sw.js">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </Files>
 </IfModule>
 
-# Also try LSCache directives
-<IfModule LiteSpeed>
-  RewriteEngine On
-  RewriteRule .* - [E=Cache-Control:no-cache]
+# Images, polices, JS, CSS : cache navigateur 30 jours immutable
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|webp|svg|gif|ico|woff2|woff|ttf|eot|css|js)$">
+    Header set Cache-Control "public, max-age=2592000, immutable"
+  </FilesMatch>
+  # Sauf i18n.js (contenu peut changer)
+  <Files "i18n.js">
+    Header set Cache-Control "no-cache"
+  </Files>
 </IfModule>
