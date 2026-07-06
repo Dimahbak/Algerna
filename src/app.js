@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 const config = require('./config');
@@ -9,6 +10,7 @@ const { errorHandler } = require('./middleware/validation');
 const app = express();
 app.set('trust proxy', 1);
 app.set('etag', false);  // Disable ETag — OLS uses it for caching
+app.use(compression());
 
 // No-cache headers for ALL API responses (prevents OLS/CDN proxy caching)
 app.use((req, res, next) => {
