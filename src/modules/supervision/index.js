@@ -78,6 +78,9 @@ router.get('/activite', authenticate, ROLE_GATE, asyncH(async (req, res) => {
 
 // GET /services — performance par service/EPIC
 router.get('/services', authenticate, ROLE_GATE, asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeId = req.query.communeId || (isCommune ? req.user.commune_id : null);
+  const cf = communeId ? ` AND s.commune_id = ${Number(communeId)}` : '';
   const { rows } = await query(`
     SELECT e.sigle AS service, e.nom,
            COUNT(s.id)::int AS signalements,
@@ -87,6 +90,7 @@ router.get('/services', authenticate, ROLE_GATE, asyncH(async (req, res) => {
            COUNT(*) FILTER (WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours')::int AS en_retard
       FROM signalement s
       JOIN epic e ON e.id = s.epic_id
+     WHERE 1=1${cf}
      GROUP BY e.sigle, e.nom
      ORDER BY signalements DESC
   `);
@@ -120,21 +124,25 @@ router.get('/communes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
 
 // GET /alertes — alertes prioritaires
 router.get('/alertes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeId = req.query.communeId || (isCommune ? req.user.commune_id : null);
+  const cf = communeId ? ` AND s.commune_id = ${Number(communeId)}` : '';
+
   const [horsDelai, capBloque, hausse] = await Promise.all([
     query(`SELECT s.id, s.reference, s.cree_le, cs.libelle AS categorie, c.nom AS commune
              FROM signalement s
              LEFT JOIN categorie_signal cs ON cs.id=s.categorie_id
              LEFT JOIN commune c ON c.id=s.commune_id
-            WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours'
+            WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours'${cf}
             ORDER BY s.cree_le ASC LIMIT 10`),
     query(`SELECT m.id, m.type, m.motif_blocage, s.reference, c.nom AS commune
              FROM mission_cap m
              JOIN signalement s ON s.id=m.signalement_id
              LEFT JOIN commune c ON c.id=s.commune_id
-            WHERE m.etat='bloque' LIMIT 10`),
+            WHERE m.etat='bloque'${cf} LIMIT 10`),
     query(`SELECT c.nom AS commune, COUNT(*)::int AS n
              FROM signalement s JOIN commune c ON c.id=s.commune_id
-            WHERE s.cree_le >= NOW()-INTERVAL '7 days'
+            WHERE s.cree_le >= NOW()-INTERVAL '7 days'${cf}
             GROUP BY c.nom HAVING COUNT(*)>=5
             ORDER BY n DESC LIMIT 5`),
   ]);
@@ -803,6 +811,248 @@ router.get('/alertes-strategiques', authenticate, requirePilotage(), asyncH(asyn
     },
     perimetre: isCommune ? 'commune' : 'wilaya',
   });
+}));
+
+// ═══ DEMANDES D'EXPLICATION ═══
+
+// POST /demandes-explication — créer une demande
+router.post('/demandes-explication', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { signalement_id, message, delai_heures } = req.body;
+  if (!signalement_id || !message) return res.status(400).json({ erreur: 'signalement_id et message requis.' });
+  const delai = [24, 48, 72].includes(Number(delai_heures)) ? Number(delai_heures) : 48;
+  const echeance = new Date(Date.now() + delai * 3600 * 1000);
+
+  // Trouver l'organisation assignée au dossier
+  const { rows: sig } = await query(
+    `SELECT s.id, s.reference, s.assigne_a, u.organisation_id
+       FROM signalement s LEFT JOIN utilisateur u ON u.id = s.assigne_a WHERE s.id = $1`, [signalement_id]);
+  if (!sig.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
+  const orgId = sig[0].organisation_id || null;
+
+  const { rows } = await query(
+    `INSERT INTO demande_explication (signalement_id, demandeur_id, organisation_id, message, delai_heures, echeance)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, echeance, statut`,
+    [signalement_id, req.user.id, orgId, message.trim(), delai, echeance]);
+
+  // Historique
+  const auteur = (req.user.prenom || '') + ' ' + (req.user.nom || '');
+  await query(
+    `INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+     VALUES ($1, (SELECT etat FROM signalement WHERE id=$1), $2, 'demande_explication', $3)`,
+    [signalement_id, req.user.id, 'Demande d\'explication de ' + auteur.trim() + ' — délai ' + delai + 'h : ' + message.trim()]);
+
+  res.json({ ok: true, demande: rows[0] });
+}));
+
+// GET /demandes-explication — lister (avec filtrage statut)
+router.get('/demandes-explication', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { statut, signalement_id } = req.query;
+
+  // Auto-update expired ones
+  await query(`UPDATE demande_explication SET statut = 'en_retard' WHERE statut = 'en_attente' AND echeance < NOW()`);
+
+  let sql = `SELECT de.*, s.reference, o.nom AS organisation_nom
+               FROM demande_explication de
+               LEFT JOIN signalement s ON s.id = de.signalement_id
+               LEFT JOIN organisations o ON o.id = de.organisation_id
+              WHERE 1=1`;
+  const params = [];
+  if (statut) { params.push(statut); sql += ` AND de.statut = $${params.length}`; }
+  if (signalement_id) { params.push(signalement_id); sql += ` AND de.signalement_id = $${params.length}`; }
+
+  // Périmètre commune
+  const isCommune = hasPerimetre(req.user, 'commune');
+  if (isCommune && req.user.commune_id) {
+    sql += ` AND s.commune_id = ${Number(req.user.commune_id)}`;
+  }
+
+  sql += ` ORDER BY de.cree_le DESC LIMIT 50`;
+  const { rows } = await query(sql, params);
+  res.json(rows);
+}));
+
+// PATCH /demandes-explication/:id/repondre — répondre (EPIC/agent)
+router.patch('/demandes-explication/:id/repondre', authenticate, asyncH(async (req, res) => {
+  const { reponse } = req.body;
+  if (!reponse || !reponse.trim()) return res.status(400).json({ erreur: 'Réponse requise.' });
+
+  const { rows } = await query(
+    `UPDATE demande_explication SET statut = 'repondu', reponse = $1, repondu_par = $2, repondu_le = NOW()
+     WHERE id = $3 AND statut IN ('en_attente','en_retard') RETURNING id, signalement_id`,
+    [reponse.trim(), req.user.id, req.params.id]);
+  if (!rows.length) return res.status(404).json({ erreur: 'Demande introuvable ou déjà répondue.' });
+
+  // Historique
+  const auteur = (req.user.prenom || '') + ' ' + (req.user.nom || '');
+  await query(
+    `INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+     VALUES ($1, (SELECT etat FROM signalement WHERE id=$1), $2, 'reponse_explication', $3)`,
+    [rows[0].signalement_id, req.user.id, 'Réponse de ' + auteur.trim() + ' : ' + reponse.trim()]);
+
+  res.json({ ok: true });
+}));
+
+// ═══ ANNUAIRE ═══
+router.get('/annuaire', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { fonction, organisation_id, commune_id, q, inclure_inactifs } = req.query;
+  const isCommune = hasPerimetre(req.user, 'commune');
+
+  let sql = `SELECT u.id, u.prenom, u.nom, u.telephone, u.email, u.fonction, u.role,
+                    u.niveau_perimetre, u.commune_id, u.organisation_id, u.actif,
+                    c.nom AS commune_nom, o.nom AS organisation_nom,
+                    (SELECT COUNT(*)::int FROM signalement s WHERE s.assigne_a=u.id AND s.etat NOT IN ('resolu','rejete')) AS dossiers_en_cours,
+                    (SELECT COUNT(*)::int FROM mission_cap m WHERE m.affecte_a=u.id AND m.etat NOT IN ('termine')) AS missions_en_cours
+               FROM utilisateur u
+               LEFT JOIN commune c ON c.id = u.commune_id
+               LEFT JOIN organisations o ON o.id = u.organisation_id
+              WHERE u.fonction != 'citoyen'` + (inclure_inactifs ? '' : ' AND u.actif = true');
+  const params = [];
+
+  // Périmètre commune
+  if (isCommune && req.user.commune_id) {
+    params.push(Number(req.user.commune_id));
+    sql += ` AND u.commune_id = $${params.length}`;
+  }
+
+  if (fonction) { params.push(fonction); sql += ` AND u.fonction = $${params.length}`; }
+  if (organisation_id) { params.push(Number(organisation_id)); sql += ` AND u.organisation_id = $${params.length}`; }
+  if (commune_id) { params.push(Number(commune_id)); sql += ` AND u.commune_id = $${params.length}`; }
+  if (q) { params.push('%' + q.toLowerCase() + '%'); sql += ` AND (LOWER(u.prenom || ' ' || u.nom) LIKE $${params.length} OR u.telephone LIKE $${params.length})`; }
+
+  sql += ` ORDER BY u.fonction, u.nom ASC`;
+  const { rows } = await query(sql, params);
+
+  // Déduire le supérieur hiérarchique
+  const all = rows;
+  rows.forEach(u => {
+    u.superieur = null;
+    if (u.fonction === 'cap' || u.fonction === 'agent_traitant') {
+      // → superviseur commune
+      const sup = all.find(s => s.fonction === 'superviseur' && s.niveau_perimetre === 'commune' && s.commune_id === u.commune_id);
+      if (sup) u.superieur = { id: sup.id, nom: (sup.prenom||'') + ' ' + (sup.nom||''), fonction: 'superviseur' };
+      else {
+        const supW = all.find(s => s.fonction === 'superviseur' && s.niveau_perimetre === 'wilaya');
+        if (supW) u.superieur = { id: supW.id, nom: (supW.prenom||'') + ' ' + (supW.nom||''), fonction: 'superviseur' };
+      }
+    } else if (u.fonction === 'entite_responsable') {
+      const supW = all.find(s => s.fonction === 'superviseur' && s.niveau_perimetre === 'wilaya');
+      if (supW) u.superieur = { id: supW.id, nom: (supW.prenom||'') + ' ' + (supW.nom||''), fonction: 'superviseur' };
+    } else if (u.fonction === 'superviseur' && u.niveau_perimetre === 'commune') {
+      const supW = all.find(s => s.fonction === 'superviseur' && s.niveau_perimetre === 'wilaya');
+      if (supW) u.superieur = { id: supW.id, nom: (supW.prenom||'') + ' ' + (supW.nom||''), fonction: 'superviseur' };
+    }
+  });
+
+  res.json(rows);
+}));
+
+// POST /annuaire — créer un contact (superviseur wilaya seulement)
+router.post('/annuaire', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  if (!req.user.niveau_perimetre || req.user.niveau_perimetre !== 'wilaya') {
+    // Commune supervisor can only create in their commune
+    if (req.user.niveau_perimetre === 'commune') {
+      req.body.commune_id = req.user.commune_id;
+    } else {
+      return res.status(403).json({ erreur: 'Réservé au superviseur.' });
+    }
+  }
+  const { prenom, nom, fonction, organisation_id, commune_id, telephone, email, creer_compte, mot_de_passe } = req.body;
+  if (!prenom || !nom) return res.status(400).json({ erreur: 'Prénom et nom requis.' });
+
+  if (creer_compte && telephone) {
+    // Create user account — reuse admin logic
+    const bcrypt = require('bcryptjs');
+    const pwd = mot_de_passe || Math.random().toString(36).substring(2, 10);
+    const hash = await bcrypt.hash(pwd, 12);
+    const roleMap = { citoyen:'citoyen', agent_traitant:'agent', cap:'agent', entite_responsable:'operateur', superviseur:'admin_apc' };
+    const niveauMap = { agent_traitant:'wilaya', cap:'quartier', entite_responsable:'entite', superviseur:'commune' };
+    const capsMap = { agent_traitant:['reception'], cap:['terrain'], entite_responsable:['traitement'], superviseur:['pilotage'] };
+    const { rows } = await query(
+      `INSERT INTO utilisateur (telephone, prenom, nom, email, role, commune_id, mot_de_passe, fonction, niveau_perimetre, organisation_id, capacites)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, telephone, prenom, nom, fonction`,
+      [telephone, prenom, nom, email||null, roleMap[fonction]||'agent', commune_id||null, hash,
+       fonction||'agent_traitant', niveauMap[fonction]||'wilaya', organisation_id||null, capsMap[fonction]||[]]);
+    // Journal
+    await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+      SELECT id, etat, $1, 'annuaire_creation', $2 FROM signalement LIMIT 1`,
+      [req.user.id, 'Compte créé : ' + prenom + ' ' + nom + ' (' + (fonction||'') + ')']);
+    res.status(201).json({ ok: true, utilisateur: rows[0], mot_de_passe_provisoire: pwd });
+  } else {
+    // Contact simple (dans la table utilisateur mais sans mot de passe exploitable)
+    const bcrypt = require('bcryptjs');
+    const hash = await bcrypt.hash(Math.random().toString(36), 12); // unusable password
+    const { rows } = await query(
+      `INSERT INTO utilisateur (telephone, prenom, nom, email, role, commune_id, mot_de_passe, fonction, niveau_perimetre, organisation_id, actif)
+       VALUES ($1,$2,$3,$4,'agent',$5,$6,$7,'wilaya',$8,true) RETURNING id, prenom, nom, fonction`,
+      [telephone||('contact-'+Date.now()), prenom, nom, email||null, commune_id||null, hash, fonction||'agent_traitant', organisation_id||null]);
+    await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+      SELECT id, etat, $1, 'annuaire_creation', $2 FROM signalement LIMIT 1`,
+      [req.user.id, 'Contact créé : ' + prenom + ' ' + nom]);
+    res.status(201).json({ ok: true, utilisateur: rows[0] });
+  }
+}));
+
+// PATCH /annuaire/:id — modifier un contact
+router.patch('/annuaire/:id', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { prenom, nom, telephone, email, fonction, organisation_id, commune_id } = req.body;
+  // Commune supervisor can only edit contacts in their commune
+  if (hasPerimetre(req.user, 'commune')) {
+    const { rows: check } = await query('SELECT commune_id FROM utilisateur WHERE id=$1', [req.params.id]);
+    if (check.length && check[0].commune_id !== req.user.commune_id) return res.status(403).json({ erreur: 'Hors de votre périmètre.' });
+  }
+  const sets = []; const params = [req.params.id]; let pi = 2;
+  if (prenom !== undefined) { sets.push(`prenom=$${pi}`); params.push(prenom); pi++; }
+  if (nom !== undefined) { sets.push(`nom=$${pi}`); params.push(nom); pi++; }
+  if (telephone !== undefined) { sets.push(`telephone=$${pi}`); params.push(telephone); pi++; }
+  if (email !== undefined) { sets.push(`email=$${pi}`); params.push(email); pi++; }
+  if (fonction !== undefined) { sets.push(`fonction=$${pi}`); params.push(fonction); pi++; }
+  if (organisation_id !== undefined) { sets.push(`organisation_id=$${pi}`); params.push(organisation_id); pi++; }
+  if (commune_id !== undefined) { sets.push(`commune_id=$${pi}`); params.push(commune_id); pi++; }
+  if (!sets.length) return res.status(400).json({ erreur: 'Aucun champ à modifier.' });
+  await query(`UPDATE utilisateur SET ${sets.join(',')} WHERE id=$1`, params);
+  // Journal
+  await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+    SELECT id, etat, $1, 'annuaire_modification', $2 FROM signalement LIMIT 1`,
+    [req.user.id, 'Contact modifié : ' + (prenom||'') + ' ' + (nom||'') + ' (id: ' + req.params.id.substring(0,8) + ')']);
+  res.json({ ok: true });
+}));
+
+// DELETE /annuaire/:id — désactiver ou supprimer
+router.delete('/annuaire/:id', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  // Only wilaya supervisor can delete
+  if (!hasPerimetre(req.user, 'wilaya')) return res.status(403).json({ erreur: 'Suppression réservée au superviseur wilaya.' });
+  const { action } = req.query; // 'desactiver' or 'supprimer' or 'reactiver'
+  const uid = req.params.id;
+
+  if (action === 'reactiver') {
+    await query('UPDATE utilisateur SET actif=true WHERE id=$1', [uid]);
+    await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+      SELECT id, etat, $1, 'annuaire_reactivation', $2 FROM signalement LIMIT 1`,
+      [req.user.id, 'Contact réactivé : ' + uid.substring(0,8)]);
+    return res.json({ ok: true, action: 'reactiver' });
+  }
+
+  // Check if user has active dossiers/missions
+  const { rows: charge } = await query(
+    `SELECT (SELECT COUNT(*)::int FROM signalement WHERE assigne_a=$1 AND etat NOT IN ('resolu','rejete')) AS dossiers,
+            (SELECT COUNT(*)::int FROM mission_cap WHERE affecte_a=$1 AND etat NOT IN ('termine')) AS missions`, [uid]);
+  const hasCharge = (charge[0].dossiers + charge[0].missions) > 0;
+
+  if (action === 'supprimer') {
+    if (hasCharge) return res.status(409).json({ erreur: 'Impossible de supprimer : ' + charge[0].dossiers + ' dossier(s) et ' + charge[0].missions + ' mission(s) en cours. Désactivez plutôt.', dossiers: charge[0].dossiers, missions: charge[0].missions });
+    await query('DELETE FROM utilisateur WHERE id=$1', [uid]);
+    await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+      SELECT id, etat, $1, 'annuaire_suppression', $2 FROM signalement LIMIT 1`,
+      [req.user.id, 'Contact supprimé : ' + uid.substring(0,8)]);
+    return res.json({ ok: true, action: 'supprimer' });
+  }
+
+  // Default: désactiver
+  await query('UPDATE utilisateur SET actif=false WHERE id=$1', [uid]);
+  await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+    SELECT id, etat, $1, 'annuaire_desactivation', $2 FROM signalement LIMIT 1`,
+    [req.user.id, 'Contact désactivé : ' + uid.substring(0,8)]);
+  res.json({ ok: true, action: 'desactiver' });
 }));
 
 module.exports = router;

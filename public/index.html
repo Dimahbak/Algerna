@@ -407,7 +407,7 @@
 
     /* Infobulles acronymes */
     .acro { position:relative; cursor:help; border-bottom:1px dotted var(--muted); }
-    .acro::after { content:attr(data-def); position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:4px 10px; border-radius:6px; font-size:11px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s; z-index:100; }
+    .acro::after { content:attr(data-def); position:absolute; top:calc(100% + 4px); left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:4px 10px; border-radius:6px; font-size:11px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s; z-index:1000; }
     .acro:hover::after, .acro:focus::after { opacity:1; }
 
     .section-subheading {
@@ -664,6 +664,7 @@
         width: 400px;
       }
     }
+
 
 
     /* #19 Animation */
@@ -1708,16 +1709,43 @@
     .empty-state p { margin-top: 12px; font-size: 14px; line-height: 1.5; }
 
     /* ─── RESPONSIVE ─── */
+    /* Hamburger button */
+    .hamburger-btn { display:none; background:none; border:none; color:var(--navy); font-size:24px; cursor:pointer; padding:8px; line-height:1; }
+    /* Sidebar mobile drawer */
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
+    .sidebar-overlay.active { display:block; }
+
     @media (max-width: 768px) {
-      .sidebar { display: none; }
+      .sidebar { display: none; position:fixed; top:0; left:0; bottom:0; z-index:1000; width:270px; transform:translateX(-100%); transition:transform 0.3s ease; }
+      .sidebar.mobile-open { display:flex; transform:translateX(0); }
+      [dir="rtl"] .sidebar { left:auto; right:0; transform:translateX(100%); }
+      [dir="rtl"] .sidebar.mobile-open { transform:translateX(0); }
+      .hamburger-btn { display:block; }
       .bottom-nav { display: block; }
-      .main-content { padding: 16px 16px 80px; max-width: 100%; }
+      .main-content { padding: 16px 12px 80px; max-width: 100%; overflow-x:hidden; }
       .form-row { grid-template-columns: 1fr; }
       .module-grid { grid-template-columns: repeat(2, 1fr); }
-      .navbar { padding: 0 16px; }
+      .navbar { padding: 0 12px; }
       .user-badge span { display: none; }
       .app-body { flex-direction: column; }
       .icua-score { font-size: 56px; }
+      /* Bandeaux de rôle contenus */
+      .wb-header { padding:12px 14px !important; }
+      .wb-header-inner { flex-direction:column; gap:8px; }
+      .wb-greeting { font-size:16px !important; word-wrap:break-word; overflow-wrap:break-word; }
+      .wb-subtitle { font-size:11px !important; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      /* ICUA gauge compact on mobile */
+      #exec-icua-card { padding:10px !important; }
+      #exec-icua-gauge { width:60px !important; height:60px !important; }
+      #exec-icua-gauge svg { width:60px !important; height:60px !important; }
+      #exec-icua-score { font-size:16px !important; }
+      /* SdC repartitions grid → 1 col */
+      #sdc-repartitions-grid { grid-template-columns:1fr !important; }
+      /* Tables scroll internal */
+      .ops-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      /* Buttons min touch target */
+      .btn { min-height:44px; }
+      .btn-sm { min-height:36px; }
     }
 
     @media (max-width: 400px) {
@@ -2082,6 +2110,7 @@
   <div id="pwa-banner" class="hidden"><div class="bi">&#x1F4F1;</div><div class="bt"><strong data-i18n="pwa.installer_titre">Installer ALGERNA</strong><span data-i18n="pwa.installer_desc">Acc&#232;s rapide depuis votre &#233;cran d'accueil</span></div><div class="ba"><button class="btn-install" onclick="pwaInstall()" data-i18n="pwa.installer_btn">Installer</button><button class="btn-dismiss" onclick="pwaDismiss()">&#x2715;</button></div></div>
   <div id="pwa-update-toast" class="hidden"><span data-i18n="pwa.maj_dispo">&#x1F504; Nouvelle version disponible</span><button onclick="pwaUpdate()" data-i18n="pwa.maj_btn">Mettre &#224; jour</button></div>
 
+
 <!-- ═══════════════════════════════════════════════════════
      AUTH PAGE
 ══════════════════════════════════════════════════════════ -->
@@ -2198,9 +2227,13 @@
 <!-- ═══════════════════════════════════════════════════════
      MAIN APP
 ══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════════════════ -->
 <div id="app" style="display:none;">
   <!-- NAVBAR -->
   <nav class="navbar">
+    <button class="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu">☰</button>
     <div class="navbar-brand">
       <div class="navbar-brand-icon">
         <img src="/assets/logo/algerna_icon.png" alt="ALGERNA" height="48" style="border-radius:8px;" />
@@ -2266,6 +2299,7 @@
 
   <div class="app-body">
     <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
     <aside class="sidebar" id="sidebar">
       <div style="text-align:center;padding:8px 12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:10px;">
         <div id="sidebar-slogan" style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:1px;margin-bottom:10px;" data-i18n="sidebar.slogan">MA VILLE, MA VIE</div>
@@ -2312,11 +2346,15 @@
       <div class="nav-label hidden" id="admin-nav-label" data-i18n="bo.operations">Opérations</div>
       <button class="nav-item hidden" onclick="showView('bo-executive')" data-view="bo-executive" id="nav-bo-executive">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Pilotage stratégique
+        <span data-i18n="sup.sdc">Salle de Commandement</span>
       </button>
-      <button class="nav-item hidden" onclick="showView('cockpit')" data-view="cockpit" id="nav-cockpit">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-        Cockpit exécutif
+      <button class="nav-item hidden" onclick="showView('rapports')" data-view="rapports" id="nav-rapports">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span data-i18n="sup.rapports">Rapports</span>
+      </button>
+      <button class="nav-item hidden" onclick="showView('annuaire')" data-view="annuaire" id="nav-annuaire">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span data-i18n="sup.annuaire">Annuaire</span>
       </button>
       <button class="nav-item hidden" onclick="showView('bo-responsable')" data-view="bo-responsable" id="nav-bo-responsable">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -4142,86 +4180,281 @@
         </div>
       </div>
 
-      <!-- ══ EXECUTIVE WORKBENCH WILAYA ══ -->
+      <!-- ══ SALLE DE COMMANDEMENT ══ -->
       <div id="view-bo-executive" class="view">
-        <!-- Bloc 1 — Mon rôle -->
+        <!-- Bandeau titre -->
         <div class="wb-header" style="background:linear-gradient(135deg,#041F38,#063B5A,#0B6078);">
           <div class="wb-header-inner">
-            <div style="flex:1;"><div class="wb-greeting" id="exec-name">Pilotage stratégique</div><div class="wb-subtitle" id="exec-subtitle">Vision consolidée du territoire — aide à la décision.</div><div class="wb-meta" id="exec-date"></div></div>
+            <div style="flex:1;">
+              <div class="wb-greeting" id="exec-name" data-i18n="sup.sdc">Salle de Commandement</div>
+              <div class="wb-subtitle" id="exec-subtitle">Vision consolidée du territoire — aide à la décision.</div>
+              <div class="wb-meta" id="exec-date"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="exec-filter-commune" onchange="execLoad()" style="padding:8px 12px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:12px;background:rgba(255,255,255,0.15);color:white;"><option value="">Toutes communes</option></select>
+              <span style="font-size:11px;color:rgba(255,255,255,0.7);" id="exec-last-updated"></span>
+            </div>
           </div>
         </div>
 
-        <!-- ═══ POSTE DE COMMANDE TERRITORIAL ═══ -->
-
-        <!-- Barre de synthèse -->
-        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-          <div id="exec-situation-indicator" style="padding:10px 16px;border-radius:10px;font-size:14px;font-weight:700;background:#f0fdf4;color:#16a34a;flex:1;min-width:200px;">🟢 Situation maîtrisée</div>
-          <select id="exec-filter-commune" onchange="execLoad()" style="padding:8px 12px;border:1px solid var(--ops-border);border-radius:8px;font-size:12px;"><option value="">Toutes communes</option></select>
-          <span style="font-size:11px;color:var(--muted);" id="exec-last-updated"></span>
+        <!-- Badge filtre périmètre -->
+        <div id="exec-filter-badge" style="display:none;margin-bottom:10px;">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;">
+            <span id="exec-filter-badge-text"></span>
+            <span onclick="document.getElementById('exec-filter-commune').value='';execLoad();" style="cursor:pointer;font-size:14px;line-height:1;">✕</span>
+          </span>
         </div>
 
-        <!-- Layout principal : Carte (60%) + Panneaux (40%) -->
-        <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:16px;min-height:500px;" id="exec-main-layout">
-          <!-- COLONNE GAUCHE — Carte -->
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <!-- Carte Leaflet -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);overflow:hidden;flex:1;min-height:420px;position:relative;">
-              <div id="exec-map" style="width:100%;height:100%;min-height:420px;"></div>
-              <!-- Couches toggle -->
-              <div style="position:absolute;top:10px;right:10px;z-index:500;background:white;border-radius:8px;box-shadow:var(--shadow-sm);padding:6px 8px;font-size:11px;">
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-urgences" checked onchange="execToggleLayer('urgences')"> Urgences</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-horsdelai" checked onchange="execToggleLayer('horsdelai')"> Hors délai</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-cap" onchange="execToggleLayer('cap')"> CAP</label>
-                <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-tous" onchange="execToggleLayer('tous')"> Tous signalements</label>
+        <!-- ═══ BLOC 1 — Feu tricolore + phrase ═══ -->
+        <div id="exec-situation-indicator" style="padding:14px 20px;border-radius:12px;font-size:15px;font-weight:700;background:#f0fdf4;color:#16a34a;margin-bottom:14px;display:flex;align-items:center;gap:12px;border:1px solid #bbf7d0;">
+          <span id="exec-feu" style="font-size:28px;">🟢</span>
+          <div>
+            <div id="exec-situation-label">Situation maîtrisée</div>
+            <div id="exec-situation-causes" style="font-size:12px;font-weight:400;color:var(--gray-700);line-height:1.5;margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <!-- ═══ BLOC 2 — Situations prioritaires (3-5 cartes) ═══ -->
+        <div id="exec-situations-section" style="margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;" data-i18n="sup.situations_prioritaires">Situations prioritaires</div>
+          <div id="exec-situations-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
+        <!-- ═══ BLOC 3 — Compteurs + ICUA gauge + Carte ═══ -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:16px;min-height:380px;" id="exec-main-layout">
+          <!-- Gauche : 4 compteurs + ICUA gauge -->
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div id="exec-kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+            <!-- ICUA Gauge -->
+            <div id="exec-icua-card" onclick="sdcToggle('sdc-icua-body');document.getElementById('sdc-icua-section').scrollIntoView({behavior:'smooth',block:'start'});" style="background:white;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">ICUA</div>
+              <div id="exec-icua-gauge" style="position:relative;width:110px;height:110px;margin:0 auto;">
+                <svg viewBox="0 0 120 120" width="110" height="110">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                  <circle id="exec-icua-arc" cx="60" cy="60" r="52" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 0.8s ease;"/>
+                </svg>
+                <div id="exec-icua-score" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:800;color:var(--navy);">—</div>
+              </div>
+              <div id="exec-icua-label" style="font-size:11px;font-weight:600;color:var(--muted);margin-top:6px;"></div>
+            </div>
+          </div>
+          <!-- Droite : Carte -->
+          <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);overflow:hidden;position:relative;min-height:380px;">
+            <div id="exec-map" style="width:100%;height:100%;min-height:380px;"></div>
+            <div style="position:absolute;top:10px;right:10px;z-index:500;background:white;border-radius:8px;box-shadow:var(--shadow-sm);padding:6px 8px;font-size:11px;">
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-urgences" checked onchange="execToggleLayer('urgences')"> <span data-i18n="sup.couche_urgences">Urgences</span></label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-horsdelai" checked onchange="execToggleLayer('horsdelai')"> <span data-i18n="sup.couche_horsdelai">Hors délai</span></label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-cap" onchange="execToggleLayer('cap')"> CAP</label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-tous" onchange="execToggleLayer('tous')"> <span data-i18n="sup.couche_tous">Tous</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ BLOC 4 — Sections repliables ═══ -->
+        <div style="margin-bottom:16px;">
+
+          <!-- 1. Répartitions (par commune / organisation / domaine) -->
+          <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-repartitions-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.repartitions">Répartitions</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
+            </div>
+            <div id="sdc-repartitions-body" style="display:none;padding:0 16px 16px;">
+              <div id="sdc-repartitions-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.par_commune">Par commune</div>
+                  <div id="sdc-rep-communes" style="font-size:12px;"></div>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.par_organisation">Par organisation</div>
+                  <div id="sdc-rep-organisations" style="font-size:12px;"></div>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.par_domaine">Par domaine</div>
+                  <div id="sdc-rep-domaines" style="font-size:12px;"></div>
+                </div>
               </div>
             </div>
-            <!-- KPI secondaires -->
-            <div class="wb-kpis" id="exec-kpis" style="grid-template-columns:repeat(6,1fr);"></div>
           </div>
 
-          <!-- COLONNE DROITE — Panneaux de décision -->
-          <div style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;max-height:600px;">
-            <!-- Causes + Action recommandée -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);padding:14px 16px;">
-              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Pourquoi ?</div>
-              <div id="exec-situation-causes" style="font-size:12px;color:var(--gray-700);line-height:1.7;margin-bottom:10px;"></div>
-              <div id="exec-action-recommandee" style="font-size:12px;color:var(--navy);padding:8px 12px;background:var(--blue-light);border-radius:8px;font-weight:600;border-left:3px solid var(--navy);"></div>
+          <!-- 2. Communes (tableau) -->
+          <div id="exec-communes-card" style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-communes-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="admin.communes">Communes</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
             </div>
+            <div id="sdc-communes-body" style="display:none;padding:0 16px 16px;overflow-x:auto;">
+              <table class="ops-table" id="exec-communes-table"><thead><tr><th scope="col" data-i18n="admin.communes">Commune</th><th scope="col" data-i18n="sup.col_ouverts">Ouverts</th><th scope="col" data-i18n="sup.col_delai">Délai</th><th scope="col">SLA</th></tr></thead><tbody id="exec-communes-body"></tbody></table>
+            </div>
+          </div>
 
-            <!-- Alertes prioritaires -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);padding:14px 16px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <div style="font-size:12px;font-weight:700;color:var(--navy);">Alertes</div>
-                <span id="exec-alerte-count" style="background:var(--ops-danger-bg);color:var(--ops-danger);padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;"></span>
+          <!-- 3. Performance des organisations -->
+          <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-orgperf-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_orgs">Performance des organisations</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
+            </div>
+            <div id="sdc-orgperf-body" style="display:none;padding:0 16px 16px;">
+              <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;">
+                <select id="sdc-orgperf-sort" onchange="sdcOrgPerfRender()" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;">
+                  <option value="dossiers_recus" data-i18n="sup.tri_volume">Tri : Volume</option>
+                  <option value="en_retard" data-i18n="sup.tri_retard">Tri : Retard</option>
+                  <option value="temps_moyen_h" data-i18n="sup.tri_temps">Tri : Temps moyen</option>
+                  <option value="taux_resolution" data-i18n="sup.tri_resolution">Tri : Résolution</option>
+                </select>
               </div>
-              <div id="exec-alertes" style="font-size:12px;max-height:160px;overflow-y:auto;"></div>
+              <div style="overflow-x:auto;">
+                <table class="ops-table"><thead><tr style="background:var(--gray-50);text-align:left;"><th style="padding:8px 10px;" data-i18n="sup.col_organisation">Organisation</th><th style="padding:8px 10px;" data-i18n="sup.col_type">Type</th><th style="padding:8px 10px;text-align:right;" data-i18n="sup.col_recus">Reçus</th><th style="padding:8px 10px;text-align:right;" data-i18n="sup.col_temps">Temps moy.</th><th style="padding:8px 10px;text-align:right;" data-i18n="sup.col_resolution">Résolution</th><th style="padding:8px 10px;text-align:right;" data-i18n="sup.col_retard">En retard</th></tr></thead><tbody id="sdc-orgperf-tbody"></tbody></table>
+              </div>
             </div>
+          </div>
 
-            <!-- Actions prioritaires -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);padding:14px 16px;">
-              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Actions prioritaires</div>
-              <div id="exec-decisions" style="font-size:12px;max-height:140px;overflow-y:auto;"></div>
+          <!-- 4. Performance des agents CAP -->
+          <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-capperf-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents CAP</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
             </div>
-
-            <!-- Décisions recommandées -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);padding:14px 16px;">
-              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Décisions recommandées</div>
-              <div id="exec-recommandations" style="font-size:12px;color:var(--gray-700);"></div>
+            <div id="sdc-capperf-body" style="display:none;padding:0 16px 16px;">
+              <div id="sdc-capperf-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
             </div>
+          </div>
 
-            <!-- Événements récents -->
-            <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);padding:14px 16px;">
-              <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">Événements récents</div>
-              <div id="exec-activite" style="max-height:140px;overflow-y:auto;font-size:11px;"></div>
+          <!-- 5. Indicateurs ICUA détaillés -->
+          <div id="sdc-icua-section" style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-icua-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.icua_details">Indicateurs ICUA détaillés</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
+            </div>
+            <div id="sdc-icua-body" style="display:none;padding:0 16px 16px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.icua_radar">Radar des dimensions</div>
+                  <canvas id="sdc-icua-radar" width="280" height="280" style="max-width:280px;margin:0 auto;display:block;"></canvas>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.icua_scores">Scores par axe</div>
+                  <div id="sdc-icua-dims"></div>
+                </div>
+              </div>
+              <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px;">
+                <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.icua_synthese">Synthèse des signalements</div>
+                <div id="sdc-icua-synthese" style="font-size:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Activité récente -->
+          <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
+            <div onclick="sdcToggle('sdc-activite-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.activite_recente">Activité récente</span>
+              <span style="font-size:14px;color:var(--muted);">▸</span>
+            </div>
+            <div id="sdc-activite-body" style="display:none;padding:0 16px 16px;">
+              <div id="sdc-activite-list" style="max-height:300px;overflow-y:auto;font-size:12px;"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ BUREAU DES RAPPORTS ══ -->
+      <div id="view-rapports" class="view">
+        <button class="btn-back" onclick="showView('bo-executive')" data-i18n="common.retour">← Retour</button>
+        <div class="wb-header" style="background:linear-gradient(135deg,#041F38,#063B5A,#0B6078);">
+          <div class="wb-header-inner">
+            <div style="flex:1;">
+              <div class="wb-greeting" data-i18n="sup.rapports">Rapports</div>
+              <div class="wb-subtitle" data-i18n="sup.rapports_desc">Générez des rapports PDF sur l'activité du territoire.</div>
             </div>
           </div>
         </div>
-
-        <!-- Tableaux détaillés -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-          <div class="ops-card"><div class="ops-card-header"><span class="ops-card-title">Communes</span></div><div style="overflow-x:auto;"><table class="ops-table" id="exec-communes-table"><thead><tr><th scope="col">Commune</th><th scope="col">Ouverts</th><th scope="col">Délai</th><th scope="col"><span class="acro" tabindex="0" data-def="Service Level Agreement (engagement de délai)">SLA<sup style="font-size:9px;color:var(--muted);margin-left:1px;">?</sup></span></th></tr></thead><tbody id="exec-communes-body"></tbody></table></div></div>
-          <div class="ops-card"><div class="ops-card-header"><span class="ops-card-title">Services sous tension</span></div><div id="exec-services" style="font-size:12px;"></div></div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group" style="margin:0;">
+              <label data-i18n="sup.rap_periode">Période</label>
+              <select id="rap-periode" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+                <option value="7j" data-i18n="sup.periode_7j">7 derniers jours</option>
+                <option value="30j" selected data-i18n="sup.periode_30j">30 derniers jours</option>
+                <option value="trimestre" data-i18n="sup.rap_trimestre">Trimestre</option>
+                <option value="annee" data-i18n="sup.periode_annee">Année</option>
+                <option value="custom" data-i18n="sup.periode_custom">Personnalisée</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label data-i18n="sup.rap_territoire">Territoire</label>
+              <select id="rap-commune" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+                <option value="" data-i18n="sup.rap_toute_wilaya">Toute la Wilaya</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label data-i18n="sup.rap_domaine">Domaine</label>
+              <select id="rap-domaine" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+                <option value="" data-i18n="sup.filtre_tous">Tous</option>
+                <option value="proprete">Propreté</option>
+                <option value="eau">Eau</option>
+                <option value="voirie">Voirie</option>
+                <option value="eclairage">Éclairage</option>
+                <option value="espaces_verts">Espaces verts</option>
+                <option value="general">Général</option>
+                <option value="stationnement">Stationnement</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label data-i18n="sup.rap_organisation">Organisation</label>
+              <select id="rap-organisation" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+                <option value="" data-i18n="sup.rap_toutes_orgs">Toutes</option>
+              </select>
+            </div>
+          </div>
+          <div id="rap-custom-dates" style="display:none;margin-top:10px;display:flex;gap:8px;">
+            <input type="date" id="rap-from" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+            <input type="date" id="rap-to" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" onclick="genererRapport()" id="rap-btn-generer" data-i18n="sup.rap_generer">Générer le rapport</button>
+            <span id="rap-status" style="font-size:12px;color:var(--muted);"></span>
+          </div>
         </div>
+        <div id="rap-result" style="display:none;" class="card" style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:16px;">
+            <span style="font-size:28px;">📄</span>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:var(--navy);" id="rap-result-title"></div>
+              <div style="font-size:11px;color:var(--muted);" id="rap-result-date"></div>
+            </div>
+            <a id="rap-download-link" href="#" target="_blank" class="btn btn-sm btn-primary" download>Télécharger</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ANNUAIRE ══ -->
+      <div id="view-annuaire" class="view">
+        <button class="btn-back" onclick="showView('bo-executive')" data-i18n="common.retour">← Retour</button>
+        <div class="wb-header" style="background:linear-gradient(135deg,#041F38,#063B5A,#0B6078);">
+          <div class="wb-header-inner">
+            <div style="flex:1;">
+              <div class="wb-greeting" data-i18n="sup.annuaire">Annuaire</div>
+              <div class="wb-subtitle" data-i18n="sup.annuaire_desc">Annuaire des acteurs de la plateforme.</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+          <input type="text" id="annuaire-search" placeholder="Rechercher..." oninput="annuaireLoad()" style="flex:1;min-width:180px;padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+          <select id="annuaire-fn" onchange="annuaireLoad()" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+            <option value="">Toutes fonctions</option>
+            <option value="agent_traitant">Agent traitant</option>
+            <option value="cap">Agent CAP</option>
+            <option value="entite_responsable">Responsable EPIC</option>
+            <option value="superviseur">Superviseur</option>
+          </select>
+          <select id="annuaire-commune" onchange="annuaireLoad()" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+            <option value="">Toutes communes</option>
+          </select>
+          <button id="annuaire-btn-add" class="btn btn-sm btn-primary" onclick="annuaireShowModal()" style="display:none;">+ Ajouter</button>
+          <label id="annuaire-inactifs-label" style="display:none;font-size:11px;color:var(--muted);align-items:center;gap:3px;cursor:pointer;"><input type="checkbox" id="annuaire-inactifs" onchange="annuaireLoad()"> Inclure inactifs</label>
+        </div>
+        <div id="annuaire-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;"></div>
       </div>
 
       <!-- ══ COCKPIT EXÉCUTIF (Vague 5A) ══ -->
@@ -4380,10 +4613,35 @@
         <!-- ═══ PERFORMANCE CAP (Vague 5D) ═══ -->
         <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div style="font-size:15px;font-weight:700;color:var(--navy);"><span data-i18n="sup.perf_cap">Performance des agents</span> <span class="acro" tabindex="0" data-def="Corps des Agents de Proximité">CAP<sup style="font-size:9px;color:var(--muted);margin-left:1px;">?</sup></span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents CAP</div>
           </div>
           <div id="capperf-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
           <div id="capperf-empty" style="display:none;text-align:center;color:var(--muted);padding:20px;font-size:13px;">Aucun agent CAP actif sur cette période.</div>
+        </div>
+      </div>
+
+      <!-- ── Drawer superviseur (consultation dossier) ── -->
+      <div id="sup-drawer" class="bo-drawer hidden">
+        <div class="bo-drawer-overlay" onclick="supCloseDrawer()"></div>
+        <div class="bo-drawer-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);">
+            <h3 id="sup-drawer-title" style="font-size:16px;font-weight:700;color:var(--navy);margin:0;">Fiche dossier</h3>
+            <button onclick="supCloseDrawer()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+          </div>
+          <div id="sup-drawer-content" style="padding:20px 24px;overflow-y:auto;flex:1;"></div>
+          <div id="sup-drawer-actions" style="padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <!-- ── Panneau détail organisation ── -->
+      <div id="orgperf-detail-panel" class="bo-drawer hidden">
+        <div class="bo-drawer-overlay" onclick="orgPerfCloseDetail()"></div>
+        <div class="bo-drawer-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);">
+            <h3 id="orgperf-detail-title" style="font-size:16px;font-weight:700;color:var(--navy);margin:0;"></h3>
+            <button onclick="orgPerfCloseDetail()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+          </div>
+          <div id="orgperf-detail-content" style="padding:20px 24px;overflow-y:auto;flex:1;"></div>
         </div>
       </div>
 
@@ -4885,12 +5143,7 @@
         <button class="btn-back" onclick="showView(getDefaultView())">← Retour</button>
         <div class="page-header">
           <h2 data-i18n="notif.titre">Mes notifications</h2>
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <button class="btn btn-sm btn-outline" onclick="loadNotifications()" data-i18n="infos.tous">Toutes</button>
-            <button class="btn btn-sm btn-outline" onclick="loadNotifications('signalement')">Signalements</button>
-            <button class="btn btn-sm btn-outline" onclick="loadNotifications('rdv')">RDV</button>
-            <button class="btn btn-sm btn-outline" onclick="markAllRead()" data-i18n="notif.tout_lu">Tout marquer lu</button>
-          </div>
+          <div id="notif-filters" style="display:flex;gap:6px;margin-top:8px;"></div>
         </div>
         <div id="notif-list"></div>
       </div>
@@ -5757,15 +6010,15 @@ async function initApp() {
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   ['bo-agent'],
-    superviseur:          hasNiveau('wilaya') ? ['cockpit','bo-executive','dashboard','admin-communiques','bo-admin','civipark'] : ['cockpit','bo-responsable','bo-agent','cap','admin-communiques'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark'] : ['bo-executive','rapports','annuaire','admin-communiques'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
     citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
-    admin_apc: ['bo-responsable','bo-agent','cap','admin-communiques'],
-    admin_wilaya: ['cockpit','bo-executive','dashboard','admin-communiques','bo-admin','civipark'],
+    admin_apc: ['bo-executive','rapports','admin-communiques'],
+    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin','civipark'],
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -6021,17 +6274,31 @@ function getDefaultView() {
   if (fn === 'agent_traitant') return 'bo-agent';
   if (fn === 'cap') return 'bo-cap';
   if (fn === 'entite_responsable') return 'bo-agent';
-  if (fn === 'superviseur') return hasNiveau('wilaya') ? 'bo-executive' : 'bo-responsable';
+  if (fn === 'superviseur') return 'bo-executive';
   if (fn === 'citoyen') return 'home';
   // Fallback sur role
   var r = currentUser.role;
   if (r === 'agent' || r === 'operateur') return 'bo-agent';
-  if (r === 'admin_apc') return 'bo-responsable';
+  if (r === 'admin_apc') return 'bo-executive';
   if (r === 'admin_wilaya') return 'bo-executive';
   return 'home';
 }
 
+function toggleMobileSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (!sidebar) return;
+  var isOpen = sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', !isOpen);
+  if (overlay) overlay.classList.toggle('active', !isOpen);
+}
+
 function showView(name) {
+  // Close mobile sidebar on navigation
+  var sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (overlay) overlay.classList.remove('active');
   // ── Route guards par rôle ──
   var role = currentUser ? currentUser.role : 'citoyen';
   var isCitoyen = role === 'citoyen';
@@ -6044,14 +6311,14 @@ function showView(name) {
     agent_traitant:       ['bo-agent','profil','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','a-propos','aide','notifications'],
     entite_responsable:   ['bo-agent','profil','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['cockpit','bo-executive','dashboard','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'] : ['cockpit','bo-responsable','bo-agent','cap','admin-communiques','profil','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','profil','a-propos','aide','notifications'],
     operateur: ['bo-agent','profil','a-propos','aide','notifications'],
-    admin_apc: ['cockpit','bo-responsable','bo-agent','cap','admin-communiques','profil','a-propos','aide','notifications'],
-    admin_wilaya: ['cockpit','bo-executive','dashboard','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'],
+    admin_apc: ['bo-executive','admin-communiques','profil','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
@@ -6097,7 +6364,7 @@ function showView(name) {
   if (name === 'infos') loadInfos();
   if (name === 'communiques') initCommuniquesView();
   if (name === 'participe') loadParticipations();
-  if (name === 'notifications') loadNotifications();
+  if (name === 'notifications') { initNotifFilters(); loadNotifications(); }
   if (name === 'cap') initCap();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
@@ -6112,6 +6379,8 @@ function showView(name) {
   if (name === 'bo-cap') initBoCap();
   if (name === 'bo-responsable') initSupervision();
   if (name === 'bo-executive') initBoExecutive();
+  if (name === 'rapports') initRapports();
+  if (name === 'annuaire') annuaireInit();
   if (name === 'cockpit') cockpitLoad();
   if (name === 'bo-admin') initBoAdmin();
   if (name === 'securite') { /* static view, nothing to init */ }
@@ -7949,6 +8218,22 @@ async function participer(id) {
 }
 
 // ─── NOTIFICATIONS ───────────────────────────────────────────
+function initNotifFilters() {
+  var el = document.getElementById('notif-filters');
+  if (!el) return;
+  var isAr = currentLang === 'ar';
+  var fn = currentUser ? currentUser.fonction : 'citoyen';
+  var html = '<button class="btn btn-sm btn-outline" onclick="loadNotifications()">' + (isAr ? 'الكل' : 'Toutes') + '</button>';
+  html += '<button class="btn btn-sm btn-outline" onclick="loadNotifications(\'signalement\')">' + (isAr ? 'الإشارات' : 'Signalements') + '</button>';
+  if (fn === 'citoyen') {
+    html += '<button class="btn btn-sm btn-outline" onclick="loadNotifications(\'rdv\')">' + (isAr ? 'المواعيد' : 'RDV') + '</button>';
+  }
+  if (fn === 'cap') {
+    html += '<button class="btn btn-sm btn-outline" onclick="loadNotifications(\'cap\')">' + (isAr ? 'المهام' : 'Missions') + '</button>';
+  }
+  el.innerHTML = html;
+}
+
 async function loadNotifications(type) {
   const el = document.getElementById('notif-list');
   el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + t('global.chargement') + '</div>';
@@ -7956,17 +8241,18 @@ async function loadNotifications(type) {
     const url = type ? '/api/notifications?type=' + type : '/api/notifications';
     const notifs = await safeFetchJSON(url, {}, true);
     if (!notifs.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">' + t('notif.aucune') + '</p>'; return; }
-    // Barre d'outils
+    var isAr = currentLang === 'ar';
+    // Barre d'outils (un seul bouton de marquage)
     el.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">' +
-      '<button class="btn btn-sm btn-outline" onclick="markAllRead()" style="font-size:11px;">Tout marquer comme lu</button>' +
-      '<button class="btn btn-sm btn-outline" onclick="deleteAllNotifs()" style="font-size:11px;color:var(--red);border-color:var(--red);">Tout effacer</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="markAllRead()" style="font-size:11px;">' + (isAr ? 'تعليم الكل كمقروء' : 'Tout marquer comme lu') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="deleteAllNotifs()" style="font-size:11px;color:var(--red);border-color:var(--red);">' + (isAr ? 'حذف الكل' : 'Tout effacer') + '</button>' +
     '</div>' +
     notifs.map(function(n) {
       return '<div class="card" style="margin-bottom:4px;padding:8px 12px;border-left:3px solid ' + (n.lu ? 'var(--gray-200)' : 'var(--green)') + ';opacity:' + (n.lu ? '0.7' : '1') + ';">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
           '<div style="flex:1;cursor:pointer;display:flex;align-items:center;gap:8px;" onclick="notifClick(' + n.id + ',\'' + escHtml(n.lien || '') + '\',this.parentElement.parentElement)">' +
             '<div style="flex:1;"><span style="font-weight:' + (n.lu ? '400' : '600') + ';font-size:12px;color:var(--navy);">' + escHtml(n.titre) + '</span>' +
-            (n.message ? '<span style="font-size:11px;color:var(--muted);margin-left:6px;">' + escHtml(n.message).substring(0, 30) + '</span>' : '') +
+            (n.message ? '<span style="font-size:11px;color:var(--muted);margin-left:6px;">' + escHtml(n.message).substring(0,60) + '</span>' : '') +
             '</div><span style="font-size:10px;color:var(--muted);flex-shrink:0;">' + fmtDateTime(n.cree_le) + '</span>' +
           '</div>' +
           '<button onclick="deleteNotif(' + n.id + ')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0;">✕</button>' +
@@ -7992,6 +8278,12 @@ function notifClick(id, lien, el) {
   if (!lien) return;
   var parts = lien.split('#');
   var sigId = parts[1] || '';
+
+  // Superviseur : ouvrir le drawer superviseur directement
+  if (sigId && hasFonction('superviseur')) {
+    supOpenDrawer(sigId);
+    return;
+  }
 
   // Stocker l'ID cible dans sessionStorage AVANT navigation
   if (sigId) {
@@ -8438,9 +8730,14 @@ async function cockpitLoad() {
   if (toEl) toEl.classList.toggle('hidden', periode !== 'custom');
   if (periode === 'custom' && (!fromEl.value || !toEl.value)) return;
 
+  // Masquer le sélecteur de commune dans la carte pour superviseur communal
+  var carteComSel = document.getElementById('carte-op-commune');
+  if (carteComSel) carteComSel.style.display = hasNiveau('commune') ? 'none' : '';
+
   // Construire l'URL
   var url = '/api/supervision/cockpit?periode=' + encodeURIComponent(periode);
   if (periode === 'custom') url += '&from=' + fromEl.value + '&to=' + toEl.value;
+  url += cockpitGetFilterParams();
 
   try {
     var res = await apiFetch(url, { headers: authHeaders() });
@@ -8461,7 +8758,17 @@ function cockpitRender(data) {
 
   // Périmètre
   var perimEl = document.getElementById('cockpit-perimetre');
-  if (perimEl) perimEl.textContent = data.perimetre === 'commune' ? 'Périmètre : commune' : 'Périmètre : Wilaya d\'Alger';
+  if (perimEl) {
+    if (hasNiveau('commune') && currentUser && currentUser.commune_id) {
+      var cc = communes.find(function(x) { return x.id === currentUser.commune_id; });
+      var ccName = cc ? cc.nom : '';
+      perimEl.textContent = currentLang === 'ar'
+        ? 'النطاق : بلدية ' + ccName
+        : 'Périmètre : Commune de ' + ccName;
+    } else {
+      perimEl.textContent = data.perimetre === 'commune' ? t('sup.perimetre_commune') : t('sup.perimetre_wilaya');
+    }
+  }
 
   // ── KPI Cards ──
   var evolution = k.recus_precedent > 0 ? Math.round(((k.recus - k.recus_precedent) / k.recus_precedent) * 100) : 0;
@@ -8469,19 +8776,28 @@ function cockpitRender(data) {
   var evolColor = evolution > 0 ? '#EF4444' : evolution < 0 ? '#16a34a' : 'var(--muted)';
 
   var kpisHtml =
-    cockpitKpiCard('Dossiers reçus', k.recus, '#2563eb', evolSign + evolution + '%', evolColor) +
-    cockpitKpiCard('En cours', k.en_cours, '#f97316', null, null) +
-    cockpitKpiCard('En retard', k.en_retard, k.en_retard > 0 ? '#EF4444' : '#16a34a', null, null) +
-    cockpitKpiCard('À valider', k.a_valider, '#eab308', null, null) +
-    cockpitKpiCard('Temps moyen', k.temps_moyen_h ? k.temps_moyen_h + 'h' : '—', '#8b5cf6', null, null);
+    cockpitKpiCard(t('sup.dossiers_recus'), k.recus, '#2563eb', evolSign + evolution + '%', evolColor) +
+    cockpitKpiCard(t('sup.en_cours'), k.en_cours, '#f97316', null, null) +
+    cockpitKpiCard(t('sup.en_retard'), k.en_retard, k.en_retard > 0 ? '#EF4444' : '#16a34a', null, null) +
+    cockpitKpiCard(t('sup.a_valider'), k.a_valider, '#eab308', null, null) +
+    cockpitKpiCard(t('sup.temps_moyen'), k.temps_moyen_h ? k.temps_moyen_h + 'h' : '—', '#8b5cf6', null, null);
 
   document.getElementById('cockpit-kpis').innerHTML = kpisHtml;
+
+  // Masquer 'Par commune' si superviseur communal (une seule commune)
+  var repartEl = document.getElementById('cockpit-repartitions');
+  if (repartEl) {
+    var communeCard = repartEl.children[0];
+    if (communeCard) communeCard.style.display = hasNiveau('commune') ? 'none' : '';
+    repartEl.style.gridTemplateColumns = hasNiveau('commune') ? '1fr 1fr' : '1fr 1fr 1fr';
+  }
 
   // ── Répartitions ──
   // Communes
   var cHtml = data.repartitions.communes.length
     ? data.repartitions.communes.map(function(c) {
-        return '<div onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+        var isActive = _cockpitFilter.type === 'commune' && _cockpitFilter.id === c.id;
+        return '<div data-filter-type="commune" data-filter-id="' + c.id + '" data-filter-label="' + escHtml(c.nom) + '" onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;' + (isActive ? 'background:var(--blue-light);border-left:3px solid var(--blue);' : '') + '" onmouseover="if(!this.dataset.active)this.style.background=\'var(--gray-50)\'" onmouseout="if(!this.dataset.active)this.style.background=\'' + (isActive ? 'var(--blue-light)' : 'transparent') + '\'">' +
           '<span style="font-weight:600;color:var(--navy);">' + escHtml(c.nom) + '</span>' +
           '<span style="color:var(--muted);font-weight:700;">' + c.total + '</span></div>';
       }).join('')
@@ -8491,7 +8807,8 @@ function cockpitRender(data) {
   // Organisations
   var oHtml = data.repartitions.organisations.length
     ? data.repartitions.organisations.map(function(o) {
-        return '<div onclick="cockpitDrill(\'organisation\',' + o.id + ',\'' + escHtml(o.nom) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+        var isActive = _cockpitFilter.type === 'organisation' && _cockpitFilter.id === o.id;
+        return '<div data-filter-type="organisation" data-filter-id="' + o.id + '" data-filter-label="' + escHtml(o.nom) + '" onclick="cockpitDrill(\'organisation\',' + o.id + ',\'' + escHtml(o.nom) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;' + (isActive ? 'background:var(--blue-light);border-left:3px solid var(--blue);' : '') + '" onmouseover="if(!this.dataset.active)this.style.background=\'var(--gray-50)\'" onmouseout="if(!this.dataset.active)this.style.background=\'' + (isActive ? 'var(--blue-light)' : 'transparent') + '\'">' +
           '<span style="font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</span>' +
           '<span style="color:var(--muted);font-weight:700;">' + o.total + '</span></div>';
       }).join('')
@@ -8503,7 +8820,8 @@ function cockpitRender(data) {
   var dHtml = data.repartitions.domaines.length
     ? data.repartitions.domaines.map(function(d) {
         var label = domaineLabels[d.domaine] || d.domaine;
-        return '<div onclick="cockpitDrill(\'domaine\',null,\'' + escHtml(d.domaine) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+        var isActive = _cockpitFilter.type === 'domaine' && _cockpitFilter.label === d.domaine;
+        return '<div data-filter-type="domaine" data-filter-id="null" data-filter-label="' + escHtml(d.domaine) + '" onclick="cockpitDrill(\'domaine\',null,\'' + escHtml(d.domaine) + '\')" style="display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px;transition:background 0.15s;' + (isActive ? 'background:var(--blue-light);border-left:3px solid var(--blue);' : '') + '" onmouseover="if(!this.dataset.active)this.style.background=\'var(--gray-50)\'" onmouseout="if(!this.dataset.active)this.style.background=\'' + (isActive ? 'var(--blue-light)' : 'transparent') + '\'">' +
           '<span style="font-weight:600;color:var(--navy);">' + escHtml(label) + '</span>' +
           '<span style="color:var(--muted);font-weight:700;">' + d.total + '</span></div>';
       }).join('')
@@ -8519,9 +8837,454 @@ function cockpitKpiCard(label, value, color, badge, badgeColor) {
     '</div></div>';
 }
 
+// ═══ FILTRAGE COCKPIT ═══
+var _cockpitFilter = { type: null, id: null, label: null };
+
 function cockpitDrill(type, id, label) {
-  showView('bo-agent');
-  showToast('Filtre : ' + label, 'info');
+  // Toggle : si même filtre, on le retire
+  if (_cockpitFilter.type === type && _cockpitFilter.id === id && _cockpitFilter.label === label) {
+    _cockpitFilter = { type: null, id: null, label: null };
+    showToast(currentLang === 'ar' ? 'تمت إزالة الفلتر' : 'Filtre retiré', 'info');
+  } else {
+    _cockpitFilter = { type: type, id: id, label: label };
+    showToast(currentLang === 'ar' ? 'فلتر : ' + label : 'Filtre : ' + label, 'info');
+  }
+  // Recharger le cockpit avec le filtre
+  cockpitLoad();
+}
+
+function cockpitGetFilterParams() {
+  var f = _cockpitFilter;
+  if (!f.type) return '';
+  if (f.type === 'commune') return '&commune_id=' + f.id;
+  if (f.type === 'organisation') return '&organisation_id=' + f.id;
+  if (f.type === 'domaine') return '&domaine=' + encodeURIComponent(f.label);
+  return '';
+}
+
+function cockpitHighlightActive() {
+  var f = _cockpitFilter;
+  ['cockpit-communes','cockpit-organisations','cockpit-domaines'].forEach(function(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.querySelectorAll('[data-filter-type]').forEach(function(item) {
+      var isActive = f.type === item.dataset.filterType && String(f.id) === String(item.dataset.filterId) && f.label === item.dataset.filterLabel;
+      item.style.background = isActive ? 'var(--blue-light)' : 'transparent';
+      item.style.borderLeft = isActive ? '3px solid var(--blue)' : 'none';
+    });
+  });
+}
+
+// ═══ DRAWER SUPERVISEUR ═══
+var _supCurrentId = null;
+
+async function supOpenDrawer(id) {
+  _supCurrentId = id;
+  var content = document.getElementById('sup-drawer-content');
+  var actions = document.getElementById('sup-drawer-actions');
+  var titleEl = document.getElementById('sup-drawer-title');
+  if (!content || !actions) return;
+
+  content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + (currentLang === 'ar' ? 'جاري التحميل...' : 'Chargement...') + '</div>';
+  actions.innerHTML = '';
+  titleEl.textContent = currentLang === 'ar' ? 'ملف الإشارة' : 'Fiche dossier';
+  document.getElementById('sup-drawer').classList.remove('hidden');
+
+  // Charger le dossier depuis l'API
+  try {
+    var res = await apiFetch('/api/signaler/board/' + id, { headers: authHeaders() });
+    if (!res.ok) { var e = await res.json(); showToast(e.erreur || 'Erreur', 'error'); supCloseDrawer(); return; }
+    var s = await res.json();
+    // Si l'API retourne un tableau, prendre le premier
+    if (Array.isArray(s)) s = s.find(function(x) { return x.id === id; }) || s[0];
+    if (!s) { showToast(currentLang === 'ar' ? 'الملف غير موجود' : 'Dossier introuvable', 'error'); supCloseDrawer(); return; }
+
+    titleEl.textContent = s.reference || (currentLang === 'ar' ? 'ملف الإشارة' : 'Fiche signalement');
+    var isAr = currentLang === 'ar';
+    var ficheHtml = '';
+
+    // ── BLOC 1 — Le signalement ──
+    ficheHtml += '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);">';
+    ficheHtml += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + (isAr ? 'الإشارة' : t('bo.drawer_signalement')) + '</div>';
+    if (s.photo_path) ficheHtml += '<img src="/'+escHtml(s.photo_path)+'" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;margin-bottom:10px;" onerror="this.style.display=\'none\'">';
+    var ficheCategorie = s.sous_categorie_a_affiner ? sigFamilleLabel(s.categorie_famille) : locCat(s);
+    ficheHtml += '<div style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;">' + escHtml(ficheCategorie) + '</div>';
+    if (s.description) ficheHtml += '<p style="font-size:13px;color:var(--gray-700);line-height:1.5;margin:6px 0;">' + escHtml(s.description) + '</p>';
+    ficheHtml += '<div style="font-size:12px;color:var(--muted);margin-top:6px;">' + (isAr ? '📍 ' : '📍 ') + escHtml(locCommune(s));
+    if (s.lat && s.lng) ficheHtml += ' · <a href="https://www.google.com/maps?q='+s.lat+','+s.lng+'" target="_blank" style="color:var(--teal);text-decoration:none;font-weight:600;">' + (isAr ? 'الخريطة' : t('bo.voir_carte')) + '</a>';
+    ficheHtml += '</div>';
+    ficheHtml += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">📅 ' + fmtDateTime(s.cree_le) + '</div>';
+    if (s.citoyen_prenom) ficheHtml += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">👤 ' + escHtml(s.citoyen_prenom + ' ' + (s.citoyen_nom||'')) + (s.citoyen_tel ? ' · 📞 ' + escHtml(s.citoyen_tel) : '') + '</div>';
+    ficheHtml += '</div>';
+
+    // ── BLOC 2 — Analyse ──
+    var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:t('bo.col_clos'),rejete:t('bo.col_rejete')};
+    var criticiteLabels = isAr
+      ? {haute:'استعجال عالي',moyenne:'استعجال متوسط',basse:'استعجال منخفض'}
+      : {haute:'Urgence haute',moyenne:'Urgence moyenne',basse:'Urgence basse'};
+    ficheHtml += '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);">';
+    ficheHtml += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + (isAr ? 'التحليل' : t('bo.drawer_analyse')) + '</div>';
+    ficheHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">';
+    ficheHtml += '<span class="kanban-card-badge" style="background:#fee2e2;color:#EF4444;">' + escHtml(etatLabels[s.etat] || s.etat) + '</span>';
+    ficheHtml += '<span class="kanban-card-badge" style="background:#fef3c7;color:#F59E0B;">' + escHtml(criticiteLabels[s.criticite] || s.criticite) + '</span>';
+    ficheHtml += '<span class="kanban-card-badge" style="background:var(--blue-light);color:var(--blue);">' + escHtml(locDomaine(s._domaine||s.domaine)) + '</span>';
+    ficheHtml += '</div>';
+    ficheHtml += '<div style="font-size:12px;color:var(--muted);">' + escHtml(s.reference||'—') + '</div>';
+    if (s.organisation_nom) ficheHtml += '<div style="font-size:12px;color:var(--navy);margin-top:4px;">' + (isAr ? 'المنظمة : ' : 'Organisation : ') + '<strong>' + escHtml(s.organisation_nom) + '</strong></div>';
+    ficheHtml += '</div>';
+
+    // ── BLOC 2B — Planification (lecture seule) ──
+    if (s.equipe_interne || s.responsable_intervention || s.delai_prevu) {
+      var lEquipe = t('epic.planif_equipe');
+      var lResp = t('epic.planif_resp');
+      var lDate = t('epic.planif_date');
+      ficheHtml += '<div style="margin-bottom:16px;background:#f8f9fb;border-radius:12px;padding:14px 16px;border:1px solid var(--line);">';
+      ficheHtml += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + (isAr ? 'التخطيط' : t('bo.drawer_planif')) + '</div>';
+      ficheHtml += '<div style="font-size:12px;color:var(--navy);line-height:1.8;">';
+      if (s.equipe_interne) ficheHtml += '<div>' + lEquipe + ' : <strong>' + escHtml(s.equipe_interne) + '</strong></div>';
+      if (s.responsable_intervention) ficheHtml += '<div>' + lResp + ' : <strong>' + escHtml(s.responsable_intervention) + '</strong></div>';
+      if (s.delai_prevu) ficheHtml += '<div>' + lDate + ' : <strong>' + fmtDateTime(s.delai_prevu) + '</strong></div>';
+      ficheHtml += '</div></div>';
+    }
+
+    // ── BLOC 2C — Compte-rendu ──
+    if (s.compte_rendu_description) {
+      var resLabels = isAr
+        ? {resolu_completement:'تم الحل بالكامل',resolu_partiellement:'تم الحل جزئياً',impossible_intervenir:'تعذر التدخل',intervention_reportee:'تم تأجيل التدخل',autre:'أخرى'}
+        : {resolu_completement:'Résolu complètement',resolu_partiellement:'Résolu partiellement',impossible_intervenir:'Impossible d\'intervenir',intervention_reportee:'Intervention reportée',autre:'Autre'};
+      ficheHtml += '<div style="margin-bottom:16px;background:#F5F3FF;border-radius:12px;padding:14px 16px;border:1px solid #DDD6FE;">';
+      ficheHtml += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + (isAr ? 'تقرير التدخل' : 'Compte-rendu d\'intervention') + '</div>';
+      ficheHtml += '<div style="font-size:12px;color:var(--navy);margin-bottom:6px;"><strong>' + (isAr ? 'النتيجة :' : 'Résultat :') + '</strong> ' + escHtml(resLabels[s.compte_rendu_resultat]||s.compte_rendu_resultat||'—') + '</div>';
+      ficheHtml += '<div style="font-size:12px;color:var(--navy);margin-bottom:6px;"><strong>' + (isAr ? 'الوصف :' : 'Description :') + '</strong> ' + escHtml(s.compte_rendu_description) + '</div>';
+      if (s.compte_rendu_observation) ficheHtml += '<div style="font-size:12px;color:var(--navy);margin-bottom:6px;"><strong>' + (isAr ? 'ملاحظة :' : 'Observation :') + '</strong> ' + escHtml(s.compte_rendu_observation) + '</div>';
+      if (s.compte_rendu_date_fin) ficheHtml += '<div style="font-size:12px;color:var(--muted);"><strong>' + (isAr ? 'تاريخ الانتهاء :' : 'Date de fin :') + '</strong> ' + new Date(s.compte_rendu_date_fin).toLocaleString(isAr ? 'ar-DZ' : 'fr-FR') + '</div>';
+      ficheHtml += '</div>';
+    }
+
+    // ── Rapports CAP ──
+    ficheHtml += '<div id="sup-drawer-cap-reports" style="margin-bottom:16px;"></div>';
+
+    // ── Historique (repliable) ──
+    ficheHtml += '<div style="margin-bottom:16px;">' +
+      '<div onclick="var c=document.getElementById(\'sup-tl-content\');c.style.display=c.style.display===\'none\'?\'\':\'none\';" style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">' +
+        '<span>' + (isAr ? 'السجل الزمني' : t('bo.drawer_historique')) + '</span><span style="font-size:14px;">▸</span>' +
+      '</div>' +
+      '<div id="sup-tl-content" style="display:none;font-size:12px;color:var(--muted);">' + (isAr ? 'جاري التحميل...' : 'Chargement...') + '</div>' +
+    '</div>';
+
+    content.innerHTML = ficheHtml;
+
+    // ── Actions superviseur — Barre d'Action Exécutive ──
+    var actHtml = '';
+    if (s.etat === 'a_valider') {
+      actHtml += '<div style="width:100%;display:flex;gap:6px;margin-bottom:8px;">' +
+        '<button class="btn btn-sm btn-primary" onclick="supValiderCR()" style="flex:1;">✅ ' + t('sup.valider_cr') + '</button>' +
+        '<button class="btn btn-sm" style="background:var(--red-light);color:var(--red);flex:1;" onclick="supDemanderReprise()">↩️ ' + t('sup.demander_reprise') + '</button>' +
+      '</div>';
+    }
+    actHtml += '<div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;">' +
+      '<button class="btn btn-sm btn-outline" onclick="supRelancer()" style="flex:1;font-size:11px;">📩 ' + (isAr ? 'إعادة' : 'Relancer') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="supNotifier()" style="flex:1;font-size:11px;">🔔 ' + (isAr ? 'إشعار' : 'Notifier') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="supDemanderExplication(\'' + id + '\')" style="flex:1;font-size:11px;">❓ ' + (isAr ? 'طلب توضيح' : 'Demander explication') + '</button>' +
+      '<button class="btn btn-sm" style="background:#fef2f2;color:#EF4444;flex:1;font-size:11px;" onclick="supUrgenceWali()">🚨 ' + (isAr ? 'استعجال' : 'Urgence Wali') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="genererRapportDossier(\'' + id + '\')" style="flex:1;font-size:11px;">📄 ' + (isAr ? 'تقرير' : 'Rapport') + '</button>' +
+    '</div>';
+    actions.innerHTML = actHtml;
+
+    // Load timeline
+    try {
+      var hRes = await apiFetch('/api/signaler/board/' + id + '/historique', { headers: authHeaders() });
+      if (hRes.ok) {
+        var hist = await hRes.json();
+        var tlEl = document.getElementById('sup-tl-content');
+        if (hist.length && tlEl) {
+          tlEl.innerHTML = hist.map(function(h) {
+            return '<div style="display:flex;gap:8px;padding:4px 0;border-left:2px solid var(--line);padding-left:10px;margin-left:4px;">' +
+              '<div style="font-size:10px;color:var(--muted);min-width:60px;">' + fmtDateTime(h.le) + '</div>' +
+              '<div style="font-size:11px;color:var(--navy);">' + escHtml(h.action || h.etat) +
+              (h.prenom ? ' — ' + escHtml(h.prenom) : '') +
+              (h.commentaire ? '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + escHtml(h.commentaire) + '</div>' : '') +
+              '</div></div>';
+          }).join('');
+        } else if (tlEl) {
+          tlEl.innerHTML = '<div style="color:var(--muted);font-size:11px;">' + (isAr ? 'لا يوجد سجل' : 'Aucun historique') + '</div>';
+        }
+      }
+    } catch(e) {}
+
+    // Load CAP reports
+    try {
+      var capRes = await apiFetch('/api/signaler/board/' + id + '/missions-cap', { headers: authHeaders() });
+      if (capRes.ok) {
+        var caps = await capRes.json();
+        var capEl = document.getElementById('sup-drawer-cap-reports');
+        if (caps.length && capEl) {
+          var decLabels = isAr
+            ? {valider:'✅ مؤكد',amender:'⚠️ مؤكد جزئياً',rejeter:'❌ غير مؤسس'}
+            : {valider:'✅ Confirmé',amender:'⚠️ Partiellement confirmé',rejeter:'❌ Non fondé'};
+          capEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">' + (isAr ? 'تقارير الميدان CAP' : 'Rapport(s) terrain CAP') + '</div>' +
+            caps.map(function(m) {
+              var agentName = (m.agent_prenom || '') + ' ' + (m.agent_nom || '');
+              return '<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:14px;margin-bottom:8px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+                  '<div style="font-size:13px;font-weight:700;color:var(--navy);">👮 ' + escHtml(agentName.trim() || 'Agent CAP') + (m.affecte_a ? ' <span onclick="annuaireOpenFiche(\'' + m.affecte_a + '\')" style="cursor:pointer;font-size:11px;" title="' + (isAr?'فتح الملف':'Voir fiche') + '">📇</span>' : '') + '</div>' +
+                  '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:' + (m.etat==='termine'?'#f0fdf4':'#fef3c7') + ';color:' + (m.etat==='termine'?'#16a34a':'#92400e') + ';">' + escHtml(m.etat) + '</span>' +
+                '</div>' +
+                (m.decision ? '<div style="font-size:13px;font-weight:600;margin-bottom:6px;">' + (decLabels[m.decision] || m.decision) + (m.motif_decision ? ' — ' + escHtml(m.motif_decision) : '') + '</div>' : '') +
+                (m.constat_visuel ? '<div style="font-size:12px;color:var(--navy);margin-bottom:6px;"><strong>' + (isAr ? 'المعاينة :' : 'Constat :') + '</strong> ' + escHtml(m.constat_visuel) + '</div>' : '') +
+                (m.photo_path ? '<div style="margin-bottom:6px;"><img src="/' + escHtml(m.photo_path) + '" style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid var(--line);" onerror="this.style.display=\'none\'"></div>' : '') +
+                '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + fmtDateTime(m.cloture_le || m.cree_le) + '</div>' +
+              '</div>';
+            }).join('');
+        }
+      }
+    } catch(e) {}
+
+  } catch(e) {
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">' + escHtml(e.message) + '</div>';
+  }
+}
+
+function supCloseDrawer() { document.getElementById('sup-drawer').classList.add('hidden'); _supCurrentId = null; }
+
+// Actions superviseur (délèguent aux fonctions existantes mais avec _supCurrentId)
+function supValiderCR() {
+  if (!_supCurrentId) return;
+  showPromptModal(t('sup.valider_cr'), '', async function(commentaire) {
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/valider', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentaire: (commentaire||'').trim() })
+      });
+      if (res.ok) {
+        showToast(currentLang === 'ar' ? 'تمت المصادقة — الملف محلول' : 'Compte-rendu validé — dossier résolu.');
+        supCloseDrawer();
+        cockpitLoad();
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+    } catch(e) { showToast(e.message, 'error'); }
+  });
+}
+
+function supDemanderReprise() {
+  if (!_supCurrentId) return;
+  showPromptModal(t('sup.demander_reprise'), '', async function(motif) {
+    if (!motif || !motif.trim()) { showToast(currentLang === 'ar' ? 'السبب مطلوب' : 'Le motif est obligatoire.', 'error'); return; }
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/reprise', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motif: motif.trim() })
+      });
+      if (res.ok) {
+        showToast(currentLang === 'ar' ? 'طلب إعادة — الملف أعيد للمصلحة' : 'Reprise demandée — dossier retourné au service.');
+        supCloseDrawer();
+        cockpitLoad();
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+    } catch(e) { showToast(e.message, 'error'); }
+  }, { textarea: true, desc: currentLang === 'ar' ? 'أعمال غير مكتملة، نتيجة غير مرضية...' : 'Travaux incomplets, résultat insatisfaisant...' });
+}
+
+function supCommentaire(type, title, successMsg) {
+  if (!_supCurrentId) return;
+  showPromptModal(title, '', async function(msg) {
+    if (!msg || !msg.trim()) return;
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/commentaire', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentaire: msg.trim(), type: type })
+      });
+      if (res.ok) {
+        showToast(successMsg);
+        supOpenDrawer(_supCurrentId); // Refresh drawer
+      } else {
+        var err = await res.json();
+        showToast(err.erreur || 'Erreur', 'error');
+      }
+    } catch(e) { showToast(e.message, 'error'); }
+  }, { textarea: true });
+}
+
+function supCommuniquer() {
+  supCommentaire('communique',
+    currentLang === 'ar' ? 'إعداد بلاغ' : 'Communiquer sur ce dossier',
+    currentLang === 'ar' ? 'تم إرسال البلاغ' : 'Communication envoyée.');
+}
+
+function supNotifier() {
+  supCommentaire('notification',
+    currentLang === 'ar' ? 'إرسال إشعار' : 'Notifier les parties prenantes',
+    currentLang === 'ar' ? 'تم الإشعار' : 'Notification envoyée.');
+}
+
+function supRelancer() {
+  supCommentaire('relance',
+    currentLang === 'ar' ? 'إعادة تنبيه المصلحة' : 'Relancer le service',
+    currentLang === 'ar' ? 'تمت الإعادة' : 'Relance envoyée.');
+}
+
+function supUrgenceWali() {
+  if (!_supCurrentId) return;
+  showPromptModal(currentLang === 'ar' ? 'إشارة استعجال للوالي' : 'Signaler une urgence au Wali', '', async function(msg) {
+    if (!msg || !msg.trim()) return;
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/commentaire', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentaire: msg.trim(), type: 'urgence_wali' })
+      });
+      if (res.ok) {
+        showToast(currentLang === 'ar' ? 'تم إشعار الوالي' : 'Urgence signalée au Wali.');
+        supOpenDrawer(_supCurrentId);
+      } else {
+        var err = await res.json();
+        showToast(err.erreur || 'Erreur', 'error');
+      }
+    } catch(e) { showToast(e.message, 'error'); }
+  }, { textarea: true, desc: currentLang === 'ar' ? 'صف طبيعة الاستعجال...' : 'Décrivez la nature de l\'urgence...' });
+}
+
+// ═══ DEMANDE D'EXPLICATION ═══
+
+function supDemanderExplication(sigId) {
+  var id = sigId || _supCurrentId;
+  if (!id) return;
+  var isAr = currentLang === 'ar';
+  var title = isAr ? 'طلب توضيح' : 'Demander une explication';
+
+  // Créer une modale custom avec message + sélecteur de délai
+  var modalHtml = '<div style="margin-bottom:12px;font-size:12px;color:var(--muted);">' +
+    (isAr ? 'أرسل طلب توضيح للمنظمة المسؤولة عن هذا الملف.' : 'Envoyez une demande d\'explication à l\'organisation responsable de ce dossier.') +
+  '</div>' +
+  '<textarea id="expl-message" rows="3" placeholder="' + (isAr ? 'اكتب رسالتك...' : 'Votre message...') + '" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;resize:vertical;margin-bottom:10px;"></textarea>' +
+  '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+    '<label style="font-size:12px;color:var(--navy);font-weight:600;">' + (isAr ? 'المهلة :' : 'Délai :') + '</label>' +
+    '<select id="expl-delai" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;">' +
+      '<option value="24">24h</option>' +
+      '<option value="48" selected>48h</option>' +
+      '<option value="72">72h</option>' +
+    '</select>' +
+  '</div>' +
+  '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+    '<button class="btn btn-sm btn-outline" onclick="document.getElementById(\'expl-modal\').classList.add(\'hidden\')">' + (isAr ? 'إلغاء' : 'Annuler') + '</button>' +
+    '<button class="btn btn-sm btn-primary" onclick="supEnvoyerExplication(\'' + id + '\')">' + (isAr ? 'إرسال' : 'Envoyer') + '</button>' +
+  '</div>';
+
+  // Utiliser une div modale simple
+  var existing = document.getElementById('expl-modal');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = 'expl-modal';
+    existing.className = 'bo-modal';
+    existing.innerHTML = '<div class="bo-modal-overlay" onclick="this.parentElement.classList.add(\'hidden\')"></div>' +
+      '<div class="bo-modal-content" style="max-width:420px;"><h4 id="expl-modal-title" style="margin:0 0 12px;font-size:15px;color:var(--navy);"></h4><div id="expl-modal-body"></div></div>';
+    document.body.appendChild(existing);
+  }
+  document.getElementById('expl-modal-title').textContent = title;
+  document.getElementById('expl-modal-body').innerHTML = modalHtml;
+  existing.classList.remove('hidden');
+}
+
+async function supEnvoyerExplication(sigId) {
+  var msg = document.getElementById('expl-message');
+  var delai = document.getElementById('expl-delai');
+  if (!msg || !msg.value.trim()) { showToast(currentLang === 'ar' ? 'الرسالة مطلوبة' : 'Le message est requis.', 'error'); return; }
+  try {
+    var res = await apiFetch('/api/supervision/demandes-explication', {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signalement_id: sigId, message: msg.value.trim(), delai_heures: Number(delai.value) })
+    });
+    if (res.ok) {
+      showToast(currentLang === 'ar' ? 'تم إرسال طلب التوضيح' : 'Demande d\'explication envoyée.');
+      document.getElementById('expl-modal').classList.add('hidden');
+      if (_supCurrentId === sigId) supOpenDrawer(sigId); // refresh drawer
+    } else {
+      var err = await res.json();
+      showToast(err.erreur || 'Erreur', 'error');
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ═══ PANNEAU DÉTAIL ORGANISATION ═══
+
+async function orgPerfOpenDetail(orgId, orgName) {
+  var titleEl = document.getElementById('orgperf-detail-title');
+  var contentEl = document.getElementById('orgperf-detail-content');
+  if (!titleEl || !contentEl) return;
+
+  titleEl.textContent = orgName;
+  contentEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + (currentLang === 'ar' ? 'جاري التحميل...' : 'Chargement...') + '</div>';
+  document.getElementById('orgperf-detail-panel').classList.remove('hidden');
+
+  var isAr = currentLang === 'ar';
+
+  // Charger les KPIs de l'organisation depuis _orgPerfData
+  var orgData = (_orgPerfData || []).find(function(o) { return o.organisation_id === orgId; });
+  var html = '';
+
+  if (orgData) {
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">';
+    html += '<div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:10px;"><div style="font-size:20px;font-weight:800;color:var(--navy);">' + orgData.dossiers_recus + '</div><div style="font-size:10px;color:var(--muted);">' + (isAr ? 'مستلمة' : 'Reçus') + '</div></div>';
+    html += '<div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:10px;"><div style="font-size:20px;font-weight:800;color:' + (orgData.taux_resolution >= 80 ? '#16a34a' : '#EF4444') + ';">' + orgData.taux_resolution + '%</div><div style="font-size:10px;color:var(--muted);">' + (isAr ? 'حل' : 'Résolution') + '</div></div>';
+    html += '<div style="text-align:center;padding:12px;background:var(--gray-50);border-radius:10px;"><div style="font-size:20px;font-weight:800;color:' + (orgData.en_retard > 0 ? '#EF4444' : '#16a34a') + ';">' + orgData.en_retard + '</div><div style="font-size:10px;color:var(--muted);">' + (isAr ? 'متأخرة' : 'En retard') + '</div></div>';
+    html += '</div>';
+  }
+
+  // Charger les dossiers de cette organisation
+  html += '<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + (isAr ? 'الملفات المفتوحة والمتأخرة' : 'Dossiers ouverts et en retard') + '</div>';
+
+  try {
+    var res = await apiFetch('/api/signaler/board', { headers: authHeaders() });
+    if (res.ok) {
+      var allDossiers = await res.json();
+      // Filtrer les dossiers qui appartiennent à cette organisation (par nom)
+      var dossiers = (Array.isArray(allDossiers) ? allDossiers : []).filter(function(d) {
+        return !['resolu','rejete'].includes(d.etat);
+      });
+      // On ne peut pas filtrer par org_id côté client car le board ne retourne pas organisation_id
+      // Afficher les dossiers ouverts/en retard les plus récents (limité à 20)
+      var ouverts = dossiers.slice(0, 20);
+      if (ouverts.length) {
+        html += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">' + (isAr ? 'آخر الملفات المفتوحة على المنصة' : 'Derniers dossiers ouverts sur la plateforme') + '</div>';
+        html += ouverts.map(function(d) {
+          var now = Date.now();
+          var horsDelai = d.etat === 'recu' && d.cree_le && (now - new Date(d.cree_le).getTime()) > 48*3600*1000;
+          return '<div onclick="orgPerfCloseDetail();supOpenDrawer(\'' + d.id + '\')" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;' + (horsDelai ? 'border-left:3px solid #EF4444;' : '') + '" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'white\'">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-weight:600;font-size:12px;color:var(--navy);">' + escHtml(d.reference || '—') + '</span>' +
+              '<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:#fee2e2;color:#EF4444;">' + escHtml(d.etat) + '</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:3px;">' + escHtml(d.categorie_nom || d.categorie || '—') + ' · ' + escHtml(d.commune_nom || '—') + (horsDelai ? ' · <span style="color:#EF4444;font-weight:700;">' + (isAr ? 'خارج الآجال' : 'HORS DÉLAI') + '</span>' : '') + '</div>' +
+          '</div>';
+        }).join('');
+      } else {
+        html += '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">' + (isAr ? 'لا توجد ملفات مفتوحة' : 'Aucun dossier ouvert') + '</div>';
+      }
+    }
+  } catch(e) {
+    html += '<div style="color:var(--red);padding:12px;">' + escHtml(e.message) + '</div>';
+  }
+
+  contentEl.innerHTML = html;
+}
+
+function orgPerfCloseDetail() { document.getElementById('orgperf-detail-panel').classList.add('hidden'); }
+
+function cockpitScrollToOrg(orgId, orgName) {
+  // Scroll vers la section Performance des organisations et surbrillance
+  var table = document.getElementById('orgperf-table');
+  if (table) {
+    table.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Surbrillance de la ligne correspondante
+    setTimeout(function() {
+      var rows = document.getElementById('orgperf-body');
+      if (!rows) return;
+      Array.from(rows.querySelectorAll('tr')).forEach(function(tr) {
+        if (tr.textContent.includes(orgName)) {
+          tr.style.background = '#dbeafe';
+          tr.style.transition = 'background 0.3s';
+          setTimeout(function() { tr.style.background = ''; }, 3000);
+        }
+      });
+    }, 600);
+  }
 }
 
 // ═══ CARTE OPÉRATIONNELLE (5B) ═══
@@ -8601,7 +9364,7 @@ function carteOpRender(data) {
       '<div><strong>Urgence :</strong> ' + escHtml(d.gravite || 'normale') + '</div>' +
       '<div><strong>Créé le :</strong> ' + fmtDateTime(d.cree_le) + '</div>' +
       (d.categorie ? '<div><strong>Catégorie :</strong> ' + escHtml(d.categorie) + '</div>' : '') +
-      '<div style="margin-top:6px;"><a href="#" onclick="boOpenDrawer(\'' + d.id + '\');return false;" style="color:var(--blue);font-weight:600;">Ouvrir le dossier</a></div>' +
+      '<div style="margin-top:6px;"><a href="#" onclick="supOpenDrawer(\'' + d.id + '\');return false;" style="color:var(--blue);font-weight:600;">' + (currentLang === 'ar' ? 'فتح الملف' : 'Ouvrir le dossier') + '</a></div>' +
       '</div>';
     var marker = L.marker([lat, lng], { icon: icon }).addTo(_cockpitMap).bindPopup(popup);
     _cockpitMarkers.push(marker);
@@ -8626,7 +9389,7 @@ function carteOpRender(data) {
       '<div><strong>Priorité :</strong> ' + escHtml(m.priorite) + '</div>' +
       '<div><strong>Agent :</strong> ' + agent + '</div>' +
       '<div><strong>Commune :</strong> ' + escHtml(m.commune_nom || '—') + '</div>' +
-      '<div style="margin-top:6px;"><a href="#" onclick="showView(\'bo-cap\');return false;" style="color:#8b5cf6;font-weight:600;">Ouvrir la mission CAP</a></div>' +
+      (m.signalement_id ? '<div style="margin-top:6px;"><a href="#" onclick="supOpenDrawer(\'' + m.signalement_id + '\');return false;" style="color:#8b5cf6;font-weight:600;">' + (currentLang === 'ar' ? 'فتح الملف' : 'Ouvrir le dossier') + '</a></div>' : '') +
       '</div>';
     var marker = L.marker([lat, lng], { icon: icon }).addTo(_cockpitMap).bindPopup(popup);
     _cockpitMarkers.push(marker);
@@ -8670,7 +9433,7 @@ function carteOpRender(data) {
   if (data.sans_gps.length && sansGpsContainer && sansGpsList) {
     sansGpsContainer.style.display = '';
     sansGpsList.innerHTML = data.sans_gps.map(function(d) {
-      return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;" onclick="boOpenDrawer(\'' + d.id + '\')">' +
+      return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;" onclick="supOpenDrawer(\'' + d.id + '\')">' +
         '<span><strong>' + escHtml(d.reference) + '</strong> — ' + escHtml(d.categorie || '—') + '</span>' +
         '<span style="color:var(--muted);">' + escHtml(d.commune_nom || '—') + ' · ' + escHtml(d.etat) + '</span></div>';
     }).join('');
@@ -8728,7 +9491,7 @@ function orgPerfRender() {
     var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
     var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
     var repriseColor = o.taux_reprise > 20 ? '#EF4444' : o.taux_reprise > 0 ? '#f97316' : 'var(--muted)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="cockpitDrill(\'organisation\',' + o.organisation_id + ',\'' + escHtml(o.nom) + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom) + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
       '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
       '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type] || o.type) + '</span></td>' +
       '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
@@ -8821,7 +9584,7 @@ async function alertesLoad() {
   var periodeEl = document.getElementById('cockpit-periode');
   var periode = periodeEl ? periodeEl.value : '30j';
   try {
-    var res = await apiFetch('/api/supervision/alertes-strategiques?periode=' + encodeURIComponent(periode), { headers: authHeaders() });
+    var res = await apiFetch('/api/supervision/alertes-strategiques?periode=' + encodeURIComponent(periode) + cockpitGetFilterParams(), { headers: authHeaders() });
     if (!res.ok) return;
     var data = await res.json();
     _alertesData = data.alertes || [];
@@ -8842,10 +9605,10 @@ function alertesRender() {
   if (!container) return;
 
   var graviteIcons = { critique: '🔴', elevee: '🟠', normale: '🟡' };
-  var graviteLabels = { critique: 'Critique', elevee: 'Élevée', normale: 'Normale' };
+  var graviteLabels = { critique: t('sup.gravite_critique'), elevee: t('sup.gravite_elevee'), normale: t('sup.gravite_normale') };
   var graviteBg = { critique: '#fee2e2', elevee: '#fff7ed', normale: '#fefce8' };
   var graviteBorder = { critique: '#EF4444', elevee: '#f97316', normale: '#eab308' };
-  var typeLabels = { sla: 'SLA dépassé', critique: 'Incident critique', chaud: 'Point chaud', saturee: 'Organisation saturée' };
+  var typeLabels = { sla: t('sup.alerte_sla'), critique: t('sup.alerte_critique'), chaud: t('sup.alerte_chaud'), saturee: t('sup.alerte_saturee') };
   var domaineLabels = {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage'};
 
   if (!list.length) {
@@ -8862,26 +9625,30 @@ function alertesRender() {
     var details = '';
     var action = '';
 
+    var isAr = currentLang === 'ar';
+    var btnOuvrir = isAr ? 'فتح' : 'Ouvrir';
+    var btnVoirOrg = isAr ? 'عرض المنظمة' : 'Voir l\'organisation';
+
     if (a.type === 'sla') {
-      details = '<strong>Réf. ' + escHtml(a.reference) + '</strong> — ' + escHtml(a.commune || '—') +
-        '<br>Retard : <strong>' + a.retard_label + '</strong>' +
+      details = '<strong>' + (isAr ? 'مرجع ' : 'Réf. ') + escHtml(a.reference) + '</strong> — ' + escHtml(a.commune || '—') +
+        '<br>' + (isAr ? 'تأخير : ' : 'Retard : ') + '<strong>' + a.retard_label + '</strong>' +
         (a.organisation ? ' · ' + escHtml(a.organisation) : '') +
         (a.domaine ? ' · ' + escHtml(domaineLabels[a.domaine] || a.domaine) : '');
-      action = '<button class="btn btn-sm btn-outline" onclick="boOpenDrawer(\'' + a.signalement_id + '\')" style="font-size:10px;">Ouvrir</button>';
+      action = '<button class="btn btn-sm btn-outline" onclick="supOpenDrawer(\'' + a.signalement_id + '\')" style="font-size:10px;">' + btnOuvrir + '</button>';
     } else if (a.type === 'critique') {
-      details = '<strong>Réf. ' + escHtml(a.reference) + '</strong> — ' + escHtml(a.commune || '—') +
-        '<br>Depuis ' + a.depuis_heures + 'h · ' + escHtml(domaineLabels[a.domaine] || a.domaine || '—') +
+      details = '<strong>' + (isAr ? 'مرجع ' : 'Réf. ') + escHtml(a.reference) + '</strong> — ' + escHtml(a.commune || '—') +
+        '<br>' + (isAr ? 'منذ ' : 'Depuis ') + a.depuis_heures + (isAr ? ' ساعة' : 'h') + ' · ' + escHtml(domaineLabels[a.domaine] || a.domaine || '—') +
         (a.organisation ? ' · ' + escHtml(a.organisation) : '');
-      action = '<button class="btn btn-sm btn-outline" onclick="boOpenDrawer(\'' + a.signalement_id + '\')" style="font-size:10px;">Ouvrir</button>';
+      action = '<button class="btn btn-sm btn-outline" onclick="supOpenDrawer(\'' + a.signalement_id + '\')" style="font-size:10px;">' + btnOuvrir + '</button>';
     } else if (a.type === 'chaud') {
-      details = '<strong>' + a.nb + ' dossiers</strong> — ' + escHtml(a.commune || '—') +
-        '<br>Domaines : ' + a.domaines.map(function(d) { return escHtml(domaineLabels[d] || d); }).join(', ') +
-        '<br><span style="font-size:10px;color:var(--muted);">Réf. : ' + a.refs.join(', ') + '</span>';
-      action = '<button class="btn btn-sm btn-outline" onclick="showView(\'cockpit\');document.getElementById(\'carte-op-type\').value=\'critiques\';carteOpLoad();" style="font-size:10px;">' + t('bo.voir_carte') + '</button>';
+      details = '<strong>' + a.nb + (isAr ? ' ملفات' : ' dossiers') + '</strong> — ' + escHtml(a.commune || '—') +
+        '<br>' + (isAr ? 'المجالات : ' : 'Domaines : ') + a.domaines.map(function(d) { return escHtml(domaineLabels[d] || d); }).join(', ') +
+        '<br><span style="font-size:10px;color:var(--muted);">' + (isAr ? 'مرجع : ' : 'Réf. : ') + a.refs.join(', ') + '</span>';
+      action = '<button class="btn btn-sm btn-outline" onclick="document.getElementById(\'carte-op-type\').value=\'critiques\';carteOpLoad();" style="font-size:10px;">' + t('bo.voir_carte') + '</button>';
     } else if (a.type === 'saturee') {
       details = '<strong>' + escHtml(a.organisation) + '</strong> (' + escHtml(a.type_org || '') + ')' +
-        '<br>' + a.ouverts + ' dossiers ouverts · ' + a.en_retard + ' en retard · ' + a.taux_retard + '% retard';
-      action = '<button class="btn btn-sm btn-outline" onclick="cockpitDrill(\'organisation\',' + a.organisation_id + ',\'' + escHtml(a.organisation) + '\')" style="font-size:10px;">Voir l\'organisation</button>';
+        '<br>' + a.ouverts + (isAr ? ' ملفات مفتوحة · ' : ' dossiers ouverts · ') + a.en_retard + (isAr ? ' متأخرة · ' : ' en retard · ') + a.taux_retard + '% ' + (isAr ? 'تأخير' : 'retard');
+      action = '<button class="btn btn-sm btn-outline" onclick="cockpitScrollToOrg(' + a.organisation_id + ',\'' + escHtml(a.organisation) + '\')" style="font-size:10px;">' + btnVoirOrg + '</button>';
     }
 
     return '<div style="background:' + bg + ';border:1px solid ' + border + ';border-left:4px solid ' + border + ';border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">' +
@@ -8901,26 +9668,465 @@ function alertesRender() {
 
 var execMapLayers = { urgences: true, horsdelai: true, cap: false, tous: false };
 
+// ═══ BUREAU DES RAPPORTS ═══
+
+function initRapports() {
+  var isAr = currentLang === 'ar';
+  var isCommune = hasNiveau('commune');
+
+  // Populate commune select
+  var sel = document.getElementById('rap-commune');
+  if (sel && sel.options.length <= 1 && communes.length) {
+    if (isCommune) {
+      sel.style.display = 'none';
+      sel.value = (currentUser || {}).commune_id || '';
+    } else {
+      communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; sel.appendChild(o); });
+    }
+  }
+
+  // Populate organisation select
+  var orgSel = document.getElementById('rap-organisation');
+  if (orgSel && orgSel.options.length <= 1) {
+    safeFetchJSON('/api/supervision/organisations-performance?periode=annee', {}, true).then(function(data) {
+      (data.organisations || []).forEach(function(o) {
+        var opt = document.createElement('option');
+        opt.value = o.organisation_id;
+        opt.textContent = o.nom;
+        orgSel.appendChild(opt);
+      });
+    }).catch(function(){});
+  }
+
+  // Toggle custom dates
+  var perSel = document.getElementById('rap-periode');
+  if (perSel) perSel.onchange = function() {
+    var cd = document.getElementById('rap-custom-dates');
+    if (cd) cd.style.display = this.value === 'custom' ? 'flex' : 'none';
+  };
+}
+
+async function genererRapport(opts) {
+  opts = opts || {};
+  var isAr = currentLang === 'ar';
+  var statusEl = document.getElementById('rap-status');
+  var btnEl = document.getElementById('rap-btn-generer');
+
+  var body = {
+    periode: opts.periode || (document.getElementById('rap-periode') || {}).value || '30j',
+    commune_id: opts.commune_id || (document.getElementById('rap-commune') || {}).value || '',
+    domaine: opts.domaine || (document.getElementById('rap-domaine') || {}).value || '',
+    organisation_id: opts.organisation_id || (document.getElementById('rap-organisation') || {}).value || '',
+    from: (document.getElementById('rap-from') || {}).value || '',
+    to: (document.getElementById('rap-to') || {}).value || '',
+    lang: currentLang
+  };
+
+  if (statusEl) statusEl.textContent = isAr ? 'جاري إنشاء التقرير...' : 'Génération en cours...';
+  if (btnEl) btnEl.disabled = true;
+
+  try {
+    var res = await apiFetch('/api/rapports/generer', {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (data.ok && data.url) {
+      if (statusEl) statusEl.textContent = isAr ? 'تم إنشاء التقرير ✅' : 'Rapport généré ✅';
+      var resultEl = document.getElementById('rap-result');
+      if (resultEl) {
+        resultEl.style.display = '';
+        document.getElementById('rap-result-title').textContent = data.filename;
+        document.getElementById('rap-result-date').textContent = new Date().toLocaleString(isAr ? 'ar-DZ' : 'fr-DZ');
+        var link = document.getElementById('rap-download-link');
+        if (link) { link.href = data.url; link.textContent = isAr ? 'تحميل' : 'Télécharger'; }
+      }
+      showToast(isAr ? 'التقرير جاهز للتحميل' : 'Rapport prêt au téléchargement.');
+    } else {
+      showToast(data.erreur || 'Erreur', 'error');
+      if (statusEl) statusEl.textContent = '';
+    }
+  } catch(e) { showToast(e.message, 'error'); if (statusEl) statusEl.textContent = ''; }
+  if (btnEl) btnEl.disabled = false;
+}
+
+async function genererRapportDossier(sigId) {
+  var isAr = currentLang === 'ar';
+  showToast(isAr ? 'جاري إنشاء تقرير الملف...' : 'Génération du rapport dossier...', 'info');
+  try {
+    var res = await apiFetch('/api/rapports/dossier/' + sigId, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lang: currentLang })
+    });
+    var data = await res.json();
+    if (data.ok && data.url) {
+      window.open(data.url, '_blank');
+      showToast(isAr ? 'تقرير الملف جاهز' : 'Rapport dossier prêt.');
+    } else { showToast(data.erreur || 'Erreur', 'error'); }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function genererRapportOrg(orgId) {
+  showView('rapports');
+  setTimeout(function() {
+    var sel = document.getElementById('rap-organisation');
+    if (sel) sel.value = orgId;
+  }, 500);
+}
+
+// ═══ ANNUAIRE ═══
+
+function annuaireInit() {
+  var isAr = currentLang === 'ar';
+  var canEdit = hasFonction('superviseur');
+  var sel = document.getElementById('annuaire-commune');
+  if (sel && sel.options.length <= 1 && communes.length) {
+    if (hasNiveau('commune')) { sel.style.display = 'none'; }
+    else { communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; sel.appendChild(o); }); }
+  }
+  var search = document.getElementById('annuaire-search');
+  if (search) search.placeholder = isAr ? 'بحث...' : 'Rechercher...';
+  var addBtn = document.getElementById('annuaire-btn-add');
+  if (addBtn) addBtn.style.display = canEdit ? '' : 'none';
+  if (addBtn) addBtn.textContent = isAr ? '+ إضافة' : '+ Ajouter';
+  var inLabel = document.getElementById('annuaire-inactifs-label');
+  if (inLabel && canEdit) inLabel.style.display = 'flex';
+  annuaireLoad();
+}
+
+async function annuaireLoad() {
+  var isAr = currentLang === 'ar';
+  var canEdit = hasFonction('superviseur');
+  var isWilaya = hasNiveau('wilaya');
+  var q = (document.getElementById('annuaire-search') || {}).value || '';
+  var fn = (document.getElementById('annuaire-fn') || {}).value || '';
+  var com = (document.getElementById('annuaire-commune') || {}).value || '';
+  var inclInactifs = document.getElementById('annuaire-inactifs');
+  var params = [];
+  if (q) params.push('q=' + encodeURIComponent(q));
+  if (fn) params.push('fonction=' + fn);
+  if (com) params.push('commune_id=' + com);
+  if (inclInactifs && inclInactifs.checked) params.push('inclure_inactifs=true');
+  var qs = params.length ? '?' + params.join('&') : '';
+
+  var list = document.getElementById('annuaire-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">' + (isAr ? 'جاري التحميل...' : 'Chargement...') + '</div>';
+
+  try {
+    var data = await safeFetchJSON('/api/supervision/annuaire' + qs, {}, true);
+    if (!data.length) {
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);grid-column:1/-1;">' + (isAr ? 'لا توجد نتائج' : 'Aucun résultat.') + '</div>';
+      return;
+    }
+    var fnLabels = isAr
+      ? {agent_traitant:'معالج الإشارات',cap:'عون القرب',entite_responsable:'مسؤول المصلحة',superviseur:'المشرف'}
+      : {agent_traitant:'Agent traitant',cap:'Agent CAP',entite_responsable:'Responsable EPIC',superviseur:'Superviseur'};
+
+    list.innerHTML = data.map(function(u) {
+      var name = ((u.prenom||'') + ' ' + (u.nom||'')).trim() || '—';
+      var initials = (u.prenom||'X')[0] + (u.nom||'X')[0];
+      var charge = u.dossiers_en_cours + u.missions_en_cours;
+      var chargeLbl = charge > 0 ? (isAr ? charge + ' ملفات جارية' : charge + ' en cours') : (isAr ? 'متاح' : 'Disponible');
+      var chargeColor = charge > 5 ? '#EF4444' : charge > 0 ? '#f97316' : '#16a34a';
+      var isInactif = u.actif === false;
+      var supHtml = '';
+      if (u.superieur) {
+        supHtml = '<div style="font-size:10px;color:var(--muted);margin-top:6px;border-top:1px solid var(--line);padding-top:6px;">' +
+          (isAr ? 'المسؤول : ' : 'Supérieur : ') +
+          '<a onclick="annuaireScrollTo(\'' + u.superieur.id + '\')" style="color:var(--teal);cursor:pointer;font-weight:600;">' + escHtml(u.superieur.nom) + '</a>' +
+          ' <span style="font-size:9px;color:var(--muted);">(' + (fnLabels[u.superieur.fonction]||u.superieur.fonction) + ')</span></div>';
+      }
+      // Boutons admin
+      var adminBtns = '';
+      if (canEdit) {
+        adminBtns = '<div style="display:flex;gap:4px;margin-top:8px;border-top:1px solid var(--line);padding-top:8px;">' +
+          '<button class="btn btn-sm btn-outline" onclick="annuaireShowModal(\'' + u.id + '\')" style="font-size:10px;">✏️ ' + (isAr ? 'تعديل' : 'Modifier') + '</button>';
+        if (isWilaya) {
+          if (isInactif) {
+            adminBtns += '<button class="btn btn-sm btn-outline" onclick="annuaireAction(\'' + u.id + '\',\'reactiver\')" style="font-size:10px;color:#16a34a;">🔄 ' + (isAr ? 'إعادة تفعيل' : 'Réactiver') + '</button>';
+          } else {
+            adminBtns += '<button class="btn btn-sm btn-outline" onclick="annuaireAction(\'' + u.id + '\',\'desactiver\')" style="font-size:10px;color:#f97316;">⏸ ' + (isAr ? 'تعطيل' : 'Désactiver') + '</button>';
+          }
+          adminBtns += '<button class="btn btn-sm btn-outline" onclick="annuaireAction(\'' + u.id + '\',\'supprimer\')" style="font-size:10px;color:#EF4444;">🗑 ' + (isAr ? 'حذف' : 'Supprimer') + '</button>';
+        }
+        adminBtns += '</div>';
+      }
+
+      return '<div id="annuaire-' + u.id + '" style="background:white;border:1px solid var(--line);border-radius:12px;padding:16px;transition:box-shadow 0.2s;' + (isInactif ? 'opacity:0.5;' : '') + '">' +
+        (isInactif ? '<span style="float:right;font-size:9px;padding:2px 6px;border-radius:6px;background:#fee2e2;color:#EF4444;font-weight:600;">' + (isAr ? 'غير نشط' : 'Inactif') + '</span>' : '') +
+        '<div style="display:flex;gap:12px;align-items:flex-start;">' +
+          '<div style="width:44px;height:44px;border-radius:50%;background:' + (isInactif ? '#9ca3af' : 'var(--navy)') + ';color:white;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;">' + initials.toUpperCase() + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:14px;font-weight:700;color:var(--navy);">' + escHtml(name) + '</div>' +
+            '<div style="font-size:11px;color:var(--teal);font-weight:600;">' + (fnLabels[u.fonction]||u.fonction) + '</div>' +
+            (u.organisation_nom ? '<div style="font-size:11px;color:var(--muted);">' + escHtml(u.organisation_nom) + '</div>' : '') +
+            (u.commune_nom ? '<div style="font-size:11px;color:var(--muted);">📍 ' + escHtml(u.commune_nom) + '</div>' : '') +
+          '</div>' +
+          '<div style="text-align:right;">' +
+            '<div style="font-size:11px;font-weight:700;color:' + chargeColor + ';">' + chargeLbl + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+          (u.telephone ? '<a href="tel:' + u.telephone + '" style="font-size:11px;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:3px;">📞 ' + u.telephone + '</a>' : '') +
+          (u.email ? '<a href="mailto:' + u.email + '" style="font-size:11px;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:3px;">✉️ ' + escHtml(u.email) + '</a>' : '') +
+        '</div>' +
+        supHtml +
+        adminBtns +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--red);padding:20px;">' + escHtml(e.message) + '</div>';
+  }
+}
+
+function annuaireScrollTo(id) {
+  var el = document.getElementById('annuaire-' + id);
+  if (el) {
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.boxShadow = '0 0 0 3px var(--teal)';
+    setTimeout(function() { el.style.boxShadow = ''; }, 2000);
+  }
+}
+
+function annuaireShowModal(editId) {
+  var isAr = currentLang === 'ar';
+  var title = editId ? (isAr ? 'تعديل جهة الاتصال' : 'Modifier le contact') : (isAr ? 'إضافة جهة اتصال' : 'Ajouter un contact');
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">' +
+    '<input id="ann-prenom" placeholder="' + (isAr ? 'الاسم' : 'Prénom') + '" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">' +
+    '<input id="ann-nom" placeholder="' + (isAr ? 'اللقب' : 'Nom') + '" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">' +
+    '<select id="ann-fonction" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">' +
+      '<option value="agent_traitant">Agent traitant</option><option value="cap">Agent CAP</option>' +
+      '<option value="entite_responsable">Responsable EPIC</option><option value="superviseur">Superviseur</option></select>' +
+    '<select id="ann-commune" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;"><option value="">Commune</option></select>' +
+    '<input id="ann-tel" placeholder="' + (isAr ? 'الهاتف' : 'Téléphone') + '" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">' +
+    '<input id="ann-email" placeholder="Email" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">' +
+    '<select id="ann-org" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;grid-column:span 2;"><option value="">Organisation</option></select>' +
+  '</div>';
+  if (!editId) {
+    html += '<div style="margin-bottom:12px;display:flex;gap:12px;">' +
+      '<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ann-mode" value="simple" checked> ' + (isAr ? 'جهة اتصال بسيطة' : 'Contact simple') + '</label>' +
+      '<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ann-mode" value="compte"> ' + (isAr ? 'إنشاء حساب مستخدم' : 'Créer un compte') + '</label>' +
+    '</div>';
+  }
+  html += '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+    '<button class="btn btn-sm btn-outline" onclick="document.getElementById(\'ann-modal\').classList.add(\'hidden\')">' + (isAr ? 'إلغاء' : 'Annuler') + '</button>' +
+    '<button class="btn btn-sm btn-primary" onclick="annuaireSave(\'' + (editId||'') + '\')">' + (isAr ? 'حفظ' : 'Enregistrer') + '</button>' +
+  '</div>';
+
+  var modal = document.getElementById('ann-modal');
+  if (!modal) {
+    modal = document.createElement('div'); modal.id = 'ann-modal'; modal.className = 'bo-modal';
+    modal.innerHTML = '<div class="bo-modal-overlay" onclick="this.parentElement.classList.add(\'hidden\')"></div><div class="bo-modal-content" style="max-width:480px;"><h4 id="ann-modal-title" style="margin:0 0 12px;"></h4><div id="ann-modal-body"></div></div>';
+    document.body.appendChild(modal);
+  }
+  document.getElementById('ann-modal-title').textContent = title;
+  document.getElementById('ann-modal-body').innerHTML = html;
+  modal.classList.remove('hidden');
+
+  // Populate selects
+  var comSel = document.getElementById('ann-commune');
+  communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; comSel.appendChild(o); });
+  safeFetchJSON('/api/admin/organisations', {}, true).then(function(orgs) {
+    var orgSel = document.getElementById('ann-org');
+    (Array.isArray(orgs) ? orgs : []).forEach(function(o) { var opt = document.createElement('option'); opt.value = o.id; opt.textContent = o.nom; orgSel.appendChild(opt); });
+  }).catch(function(){});
+
+  // If editing, pre-fill
+  if (editId) {
+    safeFetchJSON('/api/supervision/annuaire?q=', {}, true).then(function(data) {
+      var u = data.find(function(x) { return x.id === editId; });
+      if (u) {
+        document.getElementById('ann-prenom').value = u.prenom || '';
+        document.getElementById('ann-nom').value = u.nom || '';
+        document.getElementById('ann-fonction').value = u.fonction || '';
+        document.getElementById('ann-commune').value = u.commune_id || '';
+        document.getElementById('ann-tel').value = u.telephone || '';
+        document.getElementById('ann-email').value = u.email || '';
+        setTimeout(function() { document.getElementById('ann-org').value = u.organisation_id || ''; }, 500);
+      }
+    }).catch(function(){});
+  }
+}
+
+async function annuaireSave(editId) {
+  var isAr = currentLang === 'ar';
+  var body = {
+    prenom: document.getElementById('ann-prenom').value.trim(),
+    nom: document.getElementById('ann-nom').value.trim(),
+    fonction: document.getElementById('ann-fonction').value,
+    commune_id: document.getElementById('ann-commune').value || null,
+    telephone: document.getElementById('ann-tel').value.trim(),
+    email: document.getElementById('ann-email').value.trim(),
+    organisation_id: document.getElementById('ann-org').value || null,
+  };
+  if (!body.prenom || !body.nom) { showToast(isAr ? 'الاسم واللقب مطلوبان' : 'Prénom et nom requis.', 'error'); return; }
+
+  try {
+    var res;
+    if (editId) {
+      res = await apiFetch('/api/supervision/annuaire/' + editId, {
+        method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    } else {
+      var mode = document.querySelector('input[name="ann-mode"]:checked');
+      body.creer_compte = mode && mode.value === 'compte';
+      res = await apiFetch('/api/supervision/annuaire', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+    var data = await res.json();
+    if (data.ok) {
+      document.getElementById('ann-modal').classList.add('hidden');
+      if (data.mot_de_passe_provisoire) {
+        showToast((isAr ? 'كلمة المرور المؤقتة : ' : 'Mot de passe provisoire : ') + data.mot_de_passe_provisoire, 'info');
+        alert((isAr ? 'كلمة المرور المؤقتة : ' : 'Mot de passe provisoire : ') + data.mot_de_passe_provisoire);
+      } else {
+        showToast(isAr ? 'تم الحفظ' : 'Enregistré.');
+      }
+      annuaireLoad();
+    } else {
+      showToast(data.erreur || 'Erreur', 'error');
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function annuaireAction(uid, action) {
+  var isAr = currentLang === 'ar';
+  var confirmMsg = {
+    desactiver: isAr ? 'تعطيل هذا الحساب ؟' : 'Désactiver ce contact ?',
+    supprimer: isAr ? 'حذف نهائياً ؟' : 'Supprimer définitivement ?',
+    reactiver: isAr ? 'إعادة تفعيل ؟' : 'Réactiver ce contact ?'
+  };
+  if (!confirm(confirmMsg[action] || 'Confirmer ?')) return;
+  try {
+    var res = await apiFetch('/api/supervision/annuaire/' + uid + '?action=' + action, {
+      method: 'DELETE', headers: authHeaders()
+    });
+    var data = await res.json();
+    if (data.ok) {
+      showToast(isAr ? 'تم' : 'Fait.');
+      annuaireLoad();
+    } else {
+      showToast(data.erreur || 'Erreur', 'error');
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function annuaireOpenFiche(userId) {
+  showView('annuaire');
+  setTimeout(function() {
+    var el = document.getElementById('annuaire-' + userId);
+    if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.boxShadow = '0 0 0 3px var(--teal)'; setTimeout(function(){el.style.boxShadow='';},2000); }
+  }, 800);
+}
+
+function sdcToggle(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : '';
+  var arrow = el.parentElement.querySelector('[style*="font-size:14px"]');
+  if (arrow) arrow.textContent = isOpen ? '▸' : '▾';
+}
+
+window._sdcOrgPerfData = [];
+function sdcOrgPerfRender() {
+  var sortEl = document.getElementById('sdc-orgperf-sort');
+  var sortBy = sortEl ? sortEl.value : 'dossiers_recus';
+  var sorted = window._sdcOrgPerfData.slice().sort(function(a, b) {
+    if (sortBy === 'taux_resolution') return b.taux_resolution - a.taux_resolution;
+    if (sortBy === 'temps_moyen_h') return (b.temps_moyen_h||0) - (a.temps_moyen_h||0);
+    if (sortBy === 'en_retard') return b.en_retard - a.en_retard;
+    return b.dossiers_recus - a.dossiers_recus;
+  });
+  var isAr = currentLang === 'ar';
+  var typeLabels = { epic: 'EPIC', service: 'Service', direction: 'Direction', cabinet: 'Cabinet', wilaya: 'Wilaya' };
+  var tbody = document.getElementById('sdc-orgperf-tbody');
+  if (!tbody) return;
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--muted);">' + (isAr ? 'لا توجد بيانات' : 'Aucune donnée') + '</td></tr>';
+    return;
+  }
+  tbody.innerHTML = sorted.map(function(o) {
+    var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
+    var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom) + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+      '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
+      '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type]||o.type) + '</span></td>' +
+      '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;">' + (o.temps_moyen_h ? o.temps_moyen_h + 'h' : '—') + '</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-weight:600;color:' + resColor + ';">' + o.taux_resolution + '%</td>' +
+      '<td style="padding:8px 10px;text-align:right;font-weight:600;color:' + retardColor + ';">' + o.en_retard + '</td></tr>';
+  }).join('');
+}
+
 async function initBoExecutive() {
   var u = currentUser || {};
-  var nameEl = document.getElementById('exec-name');
-  if (nameEl) nameEl.textContent = 'Pilotage stratégique — ' + (u.prenom || u.nom || 'Responsable');
-  var dateEl = document.getElementById('exec-date');
-  if (dateEl) dateEl.textContent = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  var isCommune = hasNiveau('commune');
+  var isAr = currentLang === 'ar';
+  var communeNom = '', communeLat = 36.7753, communeLng = 3.0588;
 
-  // Populate commune filter
-  var sel = document.getElementById('exec-filter-commune');
-  if (sel && sel.options.length <= 1 && communes.length) {
-    communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; o.style.color = '#333'; sel.appendChild(o); });
+  if (isCommune && u.commune_id && communes.length) {
+    var c = communes.find(function(x) { return x.id === u.commune_id; });
+    if (c) {
+      communeNom = c.nom;
+      if (c.centre_lat) communeLat = c.centre_lat;
+      if (c.centre_lng) communeLng = c.centre_lng;
+    }
   }
 
-  // Init Leaflet map — réutilise le même moteur que Ma Houma
+  // Bandeau
+  var nameEl = document.getElementById('exec-name');
+  if (nameEl) {
+    if (isCommune) {
+      nameEl.textContent = isAr
+        ? 'قاعة القيادة — بلدية ' + communeNom
+        : 'Salle de Commandement — Commune de ' + communeNom;
+    } else {
+      nameEl.textContent = isAr
+        ? 'قاعة القيادة' : 'Salle de Commandement';
+    }
+  }
+  var subtitleEl = document.getElementById('exec-subtitle');
+  if (subtitleEl) subtitleEl.textContent = isAr
+    ? 'رؤية موحدة للإقليم — مساعدة على اتخاذ القرار'
+    : 'Vision consolidée du territoire — aide à la décision.';
+  var dateEl = document.getElementById('exec-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  // Filtre commune
+  var sel = document.getElementById('exec-filter-commune');
+  if (sel) {
+    if (isCommune) {
+      sel.style.display = 'none';
+      sel.value = u.commune_id || '';
+    } else {
+      sel.style.display = '';
+      if (sel.options.length <= 1 && communes.length) {
+        communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; o.style.color = '#333'; sel.appendChild(o); });
+      }
+    }
+  }
+
+  // Masquer communes-card pour commune
+  var comCard = document.getElementById('exec-communes-card');
+  if (comCard) comCard.style.display = isCommune ? 'none' : '';
+
+  // Init carte
   var mapEl = document.getElementById('exec-map');
+  var defaultCenter = isCommune ? [communeLat, communeLng] : [36.7538, 3.0588];
+  var defaultZoom = isCommune ? 14 : 11;
   if (mapEl && !execMap) {
-    execMap = L.map('exec-map').setView([36.7538, 3.0588], 11);
+    execMap = L.map('exec-map').setView(defaultCenter, defaultZoom);
     createTileLayer(execMap);
   }
-  if (execMap) setTimeout(function() { execMap.invalidateSize(); }, 300);
+  if (execMap) {
+    if (isCommune) execMap.setView(defaultCenter, defaultZoom);
+    setTimeout(function() { execMap.invalidateSize(); }, 300);
+  }
 
   await execLoad();
 }
@@ -8964,13 +10170,13 @@ function execRenderMapMarkers() {
       className: '', iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
     });
     var m = L.marker([lat, lng], { icon: icon }).addTo(execMap);
-    var etatL = {recu:'Reçu',transmis:'Transmis',en_intervention:'Pris en charge',resolu:'Résolu',rejete:'Rejeté'};
+    var etatL = currentLang==='ar' ? {recu:'مستلم',transmis:'محال',en_intervention:'قيد التدخل',resolu:'محلول',rejete:'مرفوض'} : {recu:'Reçu',transmis:'Transmis',en_intervention:'Pris en charge',resolu:'Résolu',rejete:'Rejeté'};
     m.bindPopup('<div style="font-family:Inter,sans-serif;font-size:12px;min-width:160px;">' +
       '<strong>' + escHtml(s.sous_categorie_a_affiner ? sigFamilleLabel(s.categorie_famille) : (s.categorie || s.categorie_nom || '—')) + '</strong><br>' +
       '<span style="color:var(--muted);">📍 ' + escHtml(s.commune_nom || s.commune || '—') + '</span><br>' +
       '<span style="padding:2px 6px;border-radius:8px;font-size:10px;font-weight:600;background:' + color + '22;color:' + color + ';">' + (etatL[etat] || etat) + '</span>' +
-      (isHorsDelai ? ' <span style="color:#EF4444;font-size:10px;font-weight:700;">HORS DÉLAI</span>' : '') +
-      (isUrgent ? ' <span style="color:#F59E0B;font-size:10px;font-weight:700;">URGENT</span>' : '') +
+      (isHorsDelai ? ' <span style="color:#EF4444;font-size:10px;font-weight:700;">' + (currentLang==='ar'?'خارج الآجال':'HORS DÉLAI') + '</span>' : '') +
+      (isUrgent ? ' <span style="color:#F59E0B;font-size:10px;font-weight:700;">' + (currentLang==='ar'?'مستعجل':'URGENT') + '</span>' : '') +
       '<br><span style="font-size:10px;color:var(--muted);">' + fmtDate(s.cree_le || s.created_at) + '</span>' +
     '</div>');
     execMapMarkers.push(m);
@@ -8980,107 +10186,206 @@ function execRenderMapMarkers() {
 async function execLoad() {
   var communeId = (document.getElementById('exec-filter-commune') || {}).value || '';
   var qs = communeId ? '?communeId=' + communeId : '';
+  var qsAmp = communeId ? '&communeId=' + communeId : '';
+  var isAr = currentLang === 'ar';
   var lastEl = document.getElementById('exec-last-updated');
-  if (lastEl) lastEl.textContent = 'Mis a jour : ' + new Date().toLocaleTimeString('fr-DZ', {hour:'2-digit',minute:'2-digit'});
+  if (lastEl) lastEl.textContent = (isAr ? 'آخر تحديث : ' : 'Mis à jour : ') + new Date().toLocaleTimeString(isAr ? 'ar-DZ' : 'fr-DZ', {hour:'2-digit',minute:'2-digit'});
 
-  // KPIs
+  // ── Badge filtre périmètre ──
+  var badgeEl = document.getElementById('exec-filter-badge');
+  var badgeText = document.getElementById('exec-filter-badge-text');
+  if (badgeEl && badgeText) {
+    if (communeId && !hasNiveau('commune')) {
+      var sel = document.getElementById('exec-filter-commune');
+      var communeLabel = sel ? sel.options[sel.selectedIndex].text : '';
+      badgeText.textContent = (isAr ? 'النطاق : ' : 'Périmètre : ') + communeLabel;
+      badgeEl.style.display = '';
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+
+  // ── KPIs ──
+  var ouv = 0, resolus = 0, eng = 0, acrit = 0;
   try {
     var kpis = await safeFetchJSON('/api/supervision/kpis' + qs, {}, true);
-    // Charger ICUA en parallèle
-    var icuaScore = '—';
-    try { var icuaData = await safeFetchJSON('/api/dashboard/icua', {}, true); icuaScore = Math.round(icuaData.icua || 0); } catch(e) {}
-    var icuaColor = icuaScore >= 75 ? 'ops-success' : icuaScore >= 50 ? 'ops-warning' : 'ops-danger';
-    var kpiEl = document.getElementById('exec-kpis');
-    if (kpiEl) kpiEl.innerHTML =
-      '<div class="ops-kpi ' + icuaColor + '"><div><div class="ops-kpi-value">' + icuaScore + '</div><div class="ops-kpi-label">ICUA</div></div></div>' +
-      '<div class="ops-kpi ops-info"><div><div class="ops-kpi-value">' + (kpis.ouverts||0) + '</div><div class="ops-kpi-label">Ouverts</div></div></div>' +
-      '<div class="ops-kpi ops-success"><div><div class="ops-kpi-value">' + (kpis.resolus_aujourdhui||0) + '</div><div class="ops-kpi-label">Résolus</div></div></div>' +
-      '<div class="ops-kpi ' + ((kpis.engagement_pct||0) >= 80 ? 'ops-success' : (kpis.engagement_pct||0) >= 50 ? 'ops-warning' : 'ops-danger') + '"><div><div class="ops-kpi-value">' + (kpis.engagement_pct||0) + '%</div><div class="ops-kpi-label">Engagement</div></div></div>' +
-      '<div class="ops-kpi ops-warning"><div><div class="ops-kpi-value">' + (kpis.temps_moyen_h||'\u2014') + 'h</div><div class="ops-kpi-label">Temps moy.</div></div></div>' +
-      '<div class="ops-kpi ops-purple"><div><div class="ops-kpi-value">' + (kpis.missions_cap||0) + '</div><div class="ops-kpi-label">CAP actifs</div></div></div>';
-    var ac = document.getElementById('exec-alerte-count');
-    if (ac) ac.textContent = kpis.alertes_critiques || 0;
+    ouv = kpis.ouverts || 0;
+    resolus = kpis.resolus_aujourdhui || 0;
+    eng = kpis.engagement_pct || 0;
+    acrit = kpis.alertes_critiques || 0;
+  } catch(e) {}
 
-    // Synthèse exécutive — interprétation en langage naturel
-    var acrit = kpis.alertes_critiques || 0;
-    var eng = kpis.engagement_pct || 0;
-    var mcap = kpis.missions_cap || 0;
-    var ouv = kpis.ouverts || 0;
-    var sitEl = document.getElementById('exec-situation-indicator');
-    var causesEl = document.getElementById('exec-situation-causes');
-    var actEl = document.getElementById('exec-action-recommandee');
+  // 4 compteurs
+  var kpiEl = document.getElementById('exec-kpis');
+  if (kpiEl) {
+    var kpiCard = function(val, label, color) {
+      return '<div style="background:white;border:1px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center;border-top:3px solid ' + color + ';">' +
+        '<div style="font-size:24px;font-weight:800;color:var(--navy);">' + val + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;">' + label + '</div></div>';
+    };
+    kpiEl.innerHTML =
+      kpiCard(ouv, isAr ? 'مفتوحة' : 'Ouverts', '#2563eb') +
+      kpiCard(resolus, isAr ? 'محلولة اليوم' : 'Résolus', '#16a34a') +
+      kpiCard(eng + '%', isAr ? 'التزام' : 'Engagement', eng >= 80 ? '#16a34a' : eng >= 50 ? '#f97316' : '#EF4444') +
+      kpiCard(acrit, isAr ? 'تنبيهات' : 'Alertes', acrit > 0 ? '#EF4444' : '#16a34a');
+  }
 
-    if (sitEl) {
-      if (acrit > 3 || eng < 50) {
-        sitEl.style.background = '#fee2e2'; sitEl.style.color = '#EF4444';
-        sitEl.textContent = '🔴 Situation critique';
-      } else if (acrit > 0 || eng < 80) {
-        sitEl.style.background = '#fef3c7'; sitEl.style.color = '#92400e';
-        sitEl.textContent = '🟠 Situation sous vigilance';
-      } else {
-        sitEl.style.background = '#f0fdf4'; sitEl.style.color = '#16a34a';
-        sitEl.textContent = '🟢 Situation maîtrisée';
-      }
-    }
-    if (causesEl) {
-      var causes = [];
-      if (acrit > 0) causes.push(acrit + ' alerte' + (acrit>1?'s':'') + ' critique' + (acrit>1?'s':''));
-      if (eng < 80) causes.push('engagements de service à ' + eng + '%');
-      if (mcap > 0) causes.push(mcap + ' intervention' + (mcap>1?'s':'') + ' CAP en cours');
-      if (ouv > 10) causes.push(ouv + ' dossiers ouverts');
-      causesEl.innerHTML = causes.length ? causes.map(function(c) { return '• ' + c; }).join('<br>') : '• Fonctionnement nominal. Aucun point d\'attention.';
-    }
-    if (actEl) {
-      if (acrit > 3) actEl.textContent = '→ Action prioritaire : traiter les ' + acrit + ' alertes critiques en urgence.';
-      else if (eng < 50) actEl.textContent = '→ Action prioritaire : investiguer la dégradation des engagements de service.';
-      else if (acrit > 0) actEl.textContent = '→ Vérifier les alertes en cours et les dossiers hors délai.';
-      else if (mcap > 2) actEl.textContent = '→ Suivre les ' + mcap + ' interventions CAP en attente de retour.';
-      else actEl.textContent = '→ Aucune action urgente requise.';
-    }
+  // ICUA gauge
+  var icuaScore = 0;
+  try { var icuaData = await safeFetchJSON('/api/dashboard/icua', {}, true); icuaScore = Math.round(icuaData.icua || 0); } catch(e) {}
+  var icuaColor = icuaScore >= 75 ? '#16a34a' : icuaScore >= 50 ? '#f97316' : '#EF4444';
+  var icuaLabel = icuaScore >= 75 ? (isAr ? 'مدينة مدنية' : 'Ville civique') : icuaScore >= 50 ? (isAr ? 'تحت المراقبة' : 'À surveiller') : (isAr ? 'أولوية' : 'Prioritaire');
+  var arcEl = document.getElementById('exec-icua-arc');
+  if (arcEl) { arcEl.setAttribute('stroke-dasharray', Math.round((icuaScore / 100) * 327) + ' 327'); arcEl.setAttribute('stroke', icuaColor); }
+  var scoreEl = document.getElementById('exec-icua-score');
+  if (scoreEl) { scoreEl.textContent = icuaScore; scoreEl.style.color = icuaColor; }
+  var iLabelEl = document.getElementById('exec-icua-label');
+  if (iLabelEl) { iLabelEl.textContent = icuaLabel; iLabelEl.style.color = icuaColor; }
 
-    // Decisions from KPIs
-    var dHtml = '';
-    if ((kpis.alertes_critiques||0) > 0) dHtml += '<div style="padding:8px 0;font-size:13px;border-bottom:1px solid var(--ops-border);">Traiter ' + kpis.alertes_critiques + ' signalements hors delai</div>';
-    if ((kpis.missions_cap||0) > 0) dHtml += '<div style="padding:8px 0;font-size:13px;border-bottom:1px solid var(--ops-border);">' + kpis.missions_cap + ' interventions CAP en cours</div>';
-    if ((kpis.ouverts||0) > 10) dHtml += '<div style="padding:8px 0;font-size:13px;">' + kpis.ouverts + ' signalements ouverts a prioriser</div>';
-    var decEl = document.getElementById('exec-decisions');
-    if (decEl) decEl.innerHTML = dHtml || '<div style="padding:12px;font-size:13px;color:var(--muted);">Aucune decision urgente</div>';
-  } catch(e) { var kpiEl2 = document.getElementById('exec-kpis'); if(kpiEl2) kpiEl2.innerHTML = '<div class="ops-empty"><p>KPIs indisponibles</p></div>'; }
+  // ── Construire les situations prioritaires D'ABORD (avant le feu) ──
+  var cards = [];
 
-  // Alertes
+  // Alertes (hors délai, CAP bloqués) — avec filtre commune
   try {
     var alertes = await safeFetchJSON('/api/supervision/alertes' + qs, {}, true);
-    var aHtml = '';
     if (alertes.hors_delai && alertes.hors_delai.length) {
-      aHtml += alertes.hors_delai.slice(0,5).map(function(a) {
-        return '<div style="padding:8px 0;border-bottom:1px solid var(--ops-border);display:flex;gap:8px;align-items:center;">' +
-          '<span class="ops-sla ops-sla-breach">Hors delai</span>' +
-          '<span style="font-weight:600;">#' + escHtml(a.reference||'') + '</span> \u00b7 ' + escHtml(a.commune||'') + ' \u00b7 ' + escHtml(a.categorie||'') +
-        '</div>';
-      }).join('');
+      alertes.hors_delai.slice(0,3).forEach(function(a) {
+        cards.push({ icon: '🔴', severity: 'critique',
+          text: (isAr ? 'الملف #' : 'Dossier #') + escHtml(a.reference||'') + (isAr ? ' خارج الآجال — ' : ' hors délai — ') + escHtml(a.commune||'') + ' · ' + escHtml(a.categorie||''),
+          id: a.id, bg: '#fee2e2', border: '#EF4444' });
+      });
     }
-    if (!aHtml) aHtml = '<div class="ops-empty" style="padding:12px;"><p>Aucune alerte critique</p></div>';
-    var aEl = document.getElementById('exec-alertes');
-    if (aEl) aEl.innerHTML = aHtml;
+    if (alertes.cap_bloque && alertes.cap_bloque.length) {
+      alertes.cap_bloque.slice(0,2).forEach(function(a) {
+        cards.push({ icon: '🟣', severity: 'critique',
+          text: (isAr ? 'تدخل CAP محظور — #' : 'Intervention CAP bloquée — #') + escHtml(a.reference||'') + ' · ' + escHtml(a.motif_blocage||''),
+          id: a.id, bg: '#F5F3FF', border: '#8b5cf6' });
+      });
+    }
   } catch(e) {}
 
-  // Activite
+  // Services défaillants — avec filtre commune
+  var servicesData = [];
   try {
-    var activite = await safeFetchJSON('/api/supervision/activite' + qs, {}, true);
-    var dotMap = {recu:'',transmis:'ops-dot-info',en_intervention:'ops-dot-warning',resolu:'ops-dot-success',rejete:'ops-dot-danger',cree:'',accepte:'ops-dot-info',en_cours:'ops-dot-warning',termine:'ops-dot-success',bloque:'ops-dot-danger'};
-    var actEl = document.getElementById('exec-activite');
-    if (actEl) actEl.innerHTML = activite.length ?
-      '<div class="ops-timeline">' + activite.slice(0,8).map(function(a) {
-        return '<div class="ops-timeline-item"><div class="ops-timeline-dot ' + (dotMap[a.etat]||'') + '"></div><div class="ops-timeline-content">' +
-          '<div class="ops-timeline-date">' + fmtDateTime(a.date) + '</div>' +
-          '<div class="ops-timeline-action">' + escHtml(a.action||a.etat) + (a.reference?' \u00b7 #'+escHtml(a.reference):'') + '</div>' +
-          (a.commune?'<div class="ops-timeline-detail">' + escHtml(a.commune) + '</div>':'') +
-        '</div></div>';
-      }).join('') + '</div>'
-      : '<div class="ops-empty" style="padding:12px;"><p>Aucune activite recente</p></div>';
+    servicesData = await safeFetchJSON('/api/supervision/services' + qs, {}, true);
+    servicesData.filter(function(s) { return (s.engagement_pct||100) < 60; }).slice(0,2).forEach(function(s) {
+      cards.push({ icon: '🟠', severity: 'warning',
+        text: (isAr ? 'المصلحة ' : 'Service ') + '<strong>' + escHtml(s.service) + '</strong>' + (isAr ? ' — التزام ' : ' — engagement ') + (s.engagement_pct||0) + '%',
+        id: null, bg: '#fff7ed', border: '#f97316' });
+    });
+    var sEl = document.getElementById('exec-services');
+    if (sEl) {
+      var sHtml = servicesData.filter(function(s){return (s.engagement_pct||100) < 80;}).map(function(s) {
+        var slaClass = (s.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
+        return '<div style="padding:6px 0;border-bottom:1px solid var(--ops-border);display:flex;justify-content:space-between;align-items:center;"><div><span style="font-weight:600;font-size:12px;">' + escHtml(s.service||'') + '</span><span style="font-size:11px;color:var(--muted);margin-left:6px;">' + (s.signalements||0) + ' sig.</span></div><span class="ops-sla ' + slaClass + '">' + (s.engagement_pct||0) + '%</span></div>';
+      }).join('');
+      sEl.innerHTML = sHtml || '<div style="padding:12px;font-size:12px;color:var(--muted);">' + (isAr ? 'جميع المصالح منتظمة' : 'Tous les services sont conformes.') + '</div>';
+    }
   } catch(e) {}
 
-  // Communes table + carte territoriale
+  // Demandes d'explication expirées — avec filtre commune
+  try {
+    var demandes = await safeFetchJSON('/api/supervision/demandes-explication?statut=en_retard' + qsAmp, {}, true);
+    if (Array.isArray(demandes) && demandes.length) {
+      demandes.slice(0,2).forEach(function(d) {
+        cards.push({ icon: '⏰', severity: 'warning',
+          text: (isAr ? 'طلب توضيح بدون رد — #' : 'Demande d\'explication sans réponse — #') + escHtml(d.reference||'') + ' · ' + escHtml(d.organisation_nom||''),
+          id: d.signalement_id, bg: '#fef3c7', border: '#eab308' });
+      });
+    }
+  } catch(e) {}
+
+  cards = cards.slice(0,5);
+
+  // ── FEU TRICOLORE — basé sur les cartes réelles ──
+  var hasCritique = cards.some(function(c) { return c.severity === 'critique'; });
+  var hasWarning = cards.some(function(c) { return c.severity === 'warning'; });
+  var sitEl = document.getElementById('exec-situation-indicator');
+  var feuEl = document.getElementById('exec-feu');
+  var sitLabel = document.getElementById('exec-situation-label');
+  var causesEl = document.getElementById('exec-situation-causes');
+
+  if (sitEl) {
+    if (hasCritique) {
+      sitEl.style.background = '#fee2e2'; sitEl.style.color = '#991b1b'; sitEl.style.borderColor = '#fca5a5';
+      if (feuEl) feuEl.textContent = '🔴';
+      if (sitLabel) sitLabel.textContent = isAr ? 'وضع حرج' : 'Situation critique';
+    } else if (hasWarning || cards.length > 0) {
+      sitEl.style.background = '#fef3c7'; sitEl.style.color = '#92400e'; sitEl.style.borderColor = '#fde68a';
+      if (feuEl) feuEl.textContent = '🟠';
+      if (sitLabel) sitLabel.textContent = isAr ? 'وضع تحت المراقبة' : 'Sous vigilance';
+    } else {
+      sitEl.style.background = '#f0fdf4'; sitEl.style.color = '#166534'; sitEl.style.borderColor = '#bbf7d0';
+      if (feuEl) feuEl.textContent = '🟢';
+      if (sitLabel) sitLabel.textContent = isAr ? 'وضع مُتحكَّم فيه' : 'Situation maîtrisée';
+    }
+  }
+  if (causesEl) {
+    if (cards.length === 0) {
+      causesEl.textContent = isAr ? 'سير عادي. لا توجد حالات ذات أولوية.' : 'Fonctionnement nominal. Aucune situation prioritaire.';
+    } else {
+      var desc = [];
+      var nbCrit = cards.filter(function(c){return c.severity==='critique';}).length;
+      var nbWarn = cards.filter(function(c){return c.severity==='warning';}).length;
+      if (nbCrit) desc.push(nbCrit + (isAr ? ' حالة حرجة' : ' situation' + (nbCrit>1?'s':'') + ' critique' + (nbCrit>1?'s':'')));
+      if (nbWarn) desc.push(nbWarn + (isAr ? ' تحت المراقبة' : ' sous vigilance'));
+      causesEl.textContent = (isAr ? 'تحت المراقبة : ' : 'Sous vigilance : ') + desc.join(', ');
+    }
+  }
+
+  // ── Afficher les cartes situations ──
+  var sitList = document.getElementById('exec-situations-list');
+  if (sitList) {
+    if (cards.length) {
+      sitList.innerHTML = cards.map(function(c) {
+        var btns = '';
+        if (c.id) btns += '<button class="btn btn-sm btn-outline" onclick="supOpenDrawer(\'' + c.id + '\')" style="font-size:10px;">' + (isAr ? 'فتح' : 'Ouvrir') + '</button>';
+        if (c.id) btns += '<button class="btn btn-sm btn-outline" onclick="supCommentaire(\'relance\',\'' + (isAr ? 'إعادة تنبيه' : 'Relancer') + '\',\'' + (isAr ? 'تمت الإعادة' : 'Relance envoyée.') + '\')" style="font-size:10px;">' + (isAr ? 'إعادة' : 'Relancer') + '</button>';
+        if (c.id) btns += '<button class="btn btn-sm btn-outline" onclick="supDemanderExplication(\'' + c.id + '\')" style="font-size:10px;">' + (isAr ? 'طلب توضيح' : 'Explication') + '</button>';
+        return '<div style="background:' + c.bg + ';border:1px solid ' + c.border + ';border-left:4px solid ' + c.border + ';border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
+          '<div style="display:flex;gap:8px;align-items:flex-start;flex:1;"><span style="font-size:18px;line-height:1;">' + c.icon + '</span><div style="font-size:12px;color:var(--navy);line-height:1.5;">' + c.text + '</div></div>' +
+          (btns ? '<div style="display:flex;gap:4px;flex-shrink:0;">' + btns + '</div>' : '') + '</div>';
+      }).join('');
+    } else {
+      sitList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">' +
+        (isAr ? 'لا توجد حالات ذات أولوية على هذا النطاق.' : (communeId ? 'Aucune situation prioritaire sur ce périmètre.' : 'Aucune situation prioritaire.')) + '</div>';
+    }
+  }
+
+  // ── SECTION 1 : Répartitions (par commune / organisation / domaine) ──
+  try {
+    var cockpitData = await safeFetchJSON('/api/supervision/cockpit?periode=30j' + qsAmp, {}, true);
+    var repCommunes = document.getElementById('sdc-rep-communes');
+    var repOrgs = document.getElementById('sdc-rep-organisations');
+    var repDomaines = document.getElementById('sdc-rep-domaines');
+    var domaineLabels = {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement'};
+
+    // Masquer la colonne commune pour superviseur communal
+    var repGrid = document.getElementById('sdc-repartitions-grid');
+    if (repGrid && hasNiveau('commune')) {
+      repGrid.style.gridTemplateColumns = '1fr 1fr';
+      if (repGrid.children[0]) repGrid.children[0].style.display = 'none';
+    }
+
+    if (repCommunes) {
+      repCommunes.innerHTML = (cockpitData.repartitions.communes||[]).map(function(c) {
+        return '<div onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(c.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + c.total + '</span></div>';
+      }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
+    }
+    if (repOrgs) {
+      repOrgs.innerHTML = (cockpitData.repartitions.organisations||[]).map(function(o) {
+        return '<div onclick="orgPerfOpenDetail(' + o.id + ',\'' + escHtml(o.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(o.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + o.total + '</span></div>';
+      }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
+    }
+    if (repDomaines) {
+      repDomaines.innerHTML = (cockpitData.repartitions.domaines||[]).map(function(d) {
+        var label = domaineLabels[d.domaine] || d.domaine;
+        return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(label) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + d.total + '</span></div>';
+      }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
+    }
+  } catch(e) {}
+
+  // ── SECTION 2 : Communes table ──
   try {
     var comData = await safeFetchJSON('/api/supervision/communes', {}, true);
     comData.sort(function(a,b) { return (a.engagement_pct||100)-(b.engagement_pct||100); });
@@ -9088,44 +10393,141 @@ async function execLoad() {
     if (cbEl) cbEl.innerHTML = comData.length ?
       comData.map(function(c) {
         var slaClass = (c.engagement_pct||0) >= 80 ? 'ops-sla-ok' : (c.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
-        return '<tr><td style="font-weight:600;">' + escHtml(c.commune||'') + '</td>' +
-          '<td>' + (c.ouverts||0) + '</td>' +
-          '<td>' + (c.delai_moyen||'\u2014') + 'h</td>' +
-          '<td><span class="ops-sla ' + slaClass + '">' + (c.engagement_pct||0) + '%</span></td></tr>';
-      }).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Aucune donnée</td></tr>';
+        return '<tr><td style="font-weight:600;">' + escHtml(c.commune||'') + '</td><td>' + (c.ouverts||0) + '</td><td>' + (c.delai_moyen||'—') + 'h</td><td><span class="ops-sla ' + slaClass + '">' + (c.engagement_pct||0) + '%</span></td></tr>';
+      }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);">—</td></tr>';
   } catch(e) {}
 
-  // Services en difficulte
-  var servicesData = [];
+  // ── SECTION 3 : Performance des organisations ──
   try {
-    servicesData = await safeFetchJSON('/api/supervision/services', {}, true);
-    var sHtml = servicesData.filter(function(s){return (s.engagement_pct||100) < 80;}).map(function(s) {
-      var slaClass = (s.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
-      return '<div style="padding:6px 0;border-bottom:1px solid var(--ops-border);display:flex;justify-content:space-between;align-items:center;">' +
-        '<div><span style="font-weight:600;font-size:12px;">' + escHtml(s.service||'') + '</span><span style="font-size:11px;color:var(--muted);margin-left:6px;">' + (s.signalements||0) + ' sig.</span></div>' +
-        '<span class="ops-sla ' + slaClass + '">' + (s.engagement_pct||0) + '%</span>' +
-      '</div>';
-    }).join('');
-    var sEl = document.getElementById('exec-services');
-    if (sEl) sEl.innerHTML = sHtml || '<div style="padding:12px;font-size:12px;color:var(--muted);">Tous les services sont conformes.</div>';
+    var orgPerfRes = await safeFetchJSON('/api/supervision/organisations-performance?periode=30j' + qsAmp, {}, true);
+    window._sdcOrgPerfData = orgPerfRes.organisations || [];
+    sdcOrgPerfRender();
   } catch(e) {}
 
-  // Décisions recommandées
-  var recEl = document.getElementById('exec-recommandations');
-  if (recEl) {
-    var recs = [];
-    var sousT = servicesData.filter(function(s) { return (s.engagement_pct||100) < 60; });
-    sousT.forEach(function(s) { recs.push('Relancer <strong>' + escHtml(s.service) + '</strong> (engagement ' + s.engagement_pct + '%)'); });
-    if (mcap > 2) recs.push('Suivre les <strong>' + mcap + ' interventions CAP</strong> en attente');
-    if (acrit > 0) recs.push('Traiter les <strong>' + acrit + ' alertes critiques</strong>');
-    if (ouv > 20) recs.push('Considérer une communication sur les <strong>' + ouv + ' dossiers ouverts</strong>');
-    recEl.innerHTML = recs.length ? recs.map(function(r) { return '<div style="padding:4px 0;border-bottom:1px solid var(--line);">' + r + '</div>'; }).join('') : '<div style="color:var(--muted);">Aucune décision urgente.</div>';
-  }
-
-  // Charger les signalements sur la carte (réutilise le même moteur)
+  // ── SECTION 4 : Performance CAP ──
   try {
-    var boardRes = await apiFetch('/api/signaler/board', { headers: authHeaders() });
+    var capPerfRes = await safeFetchJSON('/api/supervision/cap-performance?periode=30j' + qsAmp, {}, true);
+    var capCards = document.getElementById('sdc-capperf-cards');
+    var agents = capPerfRes.agents || [];
+    if (capCards) {
+      if (agents.length) {
+        capCards.innerHTML = agents.map(function(a) {
+          var name = (a.prenom||'') + ' ' + (a.nom||'');
+          var taux = a.missions_total > 0 ? Math.round((a.missions_realisees / a.missions_total) * 100) : 0;
+          var tc = taux >= 80 ? '#16a34a' : taux >= 50 ? '#f97316' : '#EF4444';
+          return '<div style="background:var(--gray-50);border:1px solid var(--line);border-radius:10px;padding:12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+              '<div style="font-size:13px;font-weight:700;color:var(--navy);">' + escHtml(name.trim()||'Agent CAP') + '</div>' +
+              '<div style="font-size:18px;font-weight:800;color:' + tc + ';">' + taux + '%</div>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:10px;text-align:center;">' +
+              '<div><span style="font-weight:700;color:#16a34a;">' + (a.missions_realisees||0) + '</span><br>' + (isAr ? 'منجزة' : 'Réalisées') + '</div>' +
+              '<div><span style="font-weight:700;color:#2563eb;">' + (a.missions_en_cours||0) + '</span><br>' + (isAr ? 'جارية' : 'En cours') + '</div>' +
+              '<div><span style="font-weight:700;color:#EF4444;">' + (a.missions_bloquees||0) + '</span><br>' + (isAr ? 'محظورة' : 'Bloquées') + '</div>' +
+              '<div><span style="font-weight:700;color:#8b5cf6;">' + (a.temps_moyen_min ? a.temps_moyen_min + 'min' : '—') + '</span><br>' + (isAr ? 'متوسط' : 'Moy.') + '</div>' +
+            '</div></div>';
+        }).join('');
+      } else {
+        capCards.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">' + (isAr ? 'لا يوجد نشاط CAP' : 'Aucun agent CAP actif.') + '</div>';
+      }
+    }
+  } catch(e) {}
+
+  // ── SECTION 5 : Indicateurs ICUA détaillés ──
+  try {
+    var icuaFull = await safeFetchJSON('/api/dashboard/icua', {}, true);
+    var dims = icuaFull.dimensions || {};
+    var dimLabels = {
+      proprete: isAr ? 'النظافة' : 'Propreté',
+      reactivite: isAr ? 'الاستجابة' : 'Réactivité',
+      vivre_ensemble: isAr ? 'العيش المشترك' : 'Vivre Ensemble',
+      fluidite: isAr ? 'السيولة' : 'Fluidité',
+      engagement: isAr ? 'الالتزام' : 'Engagement'
+    };
+    // Progress bars
+    var dimsEl = document.getElementById('sdc-icua-dims');
+    if (dimsEl) {
+      dimsEl.innerHTML = Object.entries(dimLabels).map(function(e) {
+        var val = Math.round(dims[e[0]] || 0);
+        var col = val >= 75 ? '#16a34a' : val >= 50 ? '#f97316' : '#EF4444';
+        return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--navy);font-weight:600;">' + e[1] + '</span><span style="color:' + col + ';font-weight:700;">' + val + '%</span></div>' +
+          '<div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;"><div style="height:100%;width:' + val + '%;background:' + col + ';border-radius:3px;transition:width 0.5s;"></div></div></div>';
+      }).join('');
+    }
+    // Radar chart
+    var radarCtx = document.getElementById('sdc-icua-radar');
+    if (radarCtx && typeof Chart !== 'undefined') {
+      if (window._sdcIcuaChart) window._sdcIcuaChart.destroy();
+      window._sdcIcuaChart = new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+          labels: Object.values(dimLabels),
+          datasets: [{ label: 'ICUA', data: ['proprete','reactivite','vivre_ensemble','fluidite','engagement'].map(function(k){return dims[k]||0;}),
+            backgroundColor: 'rgba(10,61,98,0.15)', borderColor: '#0A3D62', borderWidth: 2, pointBackgroundColor: '#E1A730', pointRadius: 4 }]
+        },
+        options: { scales: { r: { min: 0, max: 100, ticks: { stepSize: 25 } } }, plugins: { legend: { display: false } } }
+      });
+    }
+  } catch(e) {}
+  // Synthèse signalements
+  try {
+    var synthese = await safeFetchJSON('/api/dashboard/synthese', {}, true);
+    var synEl = document.getElementById('sdc-icua-synthese');
+    if (synEl && synthese) {
+      var synHtml = '';
+      if (synthese.par_domaine && synthese.par_domaine.length) {
+        synHtml += '<div style="margin-bottom:8px;font-size:11px;font-weight:600;color:var(--navy);">' + (isAr ? 'حسب المجال' : 'Par domaine') + '</div>';
+        synHtml += synthese.par_domaine.map(function(d) {
+          return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line);font-size:11px;"><span>' + escHtml(d.domaine||d.label||'—') + '</span><span style="font-weight:700;">' + (d.total||d.count||0) + '</span></div>';
+        }).join('');
+      }
+      if (synthese.par_commune && synthese.par_commune.length) {
+        synHtml += '<div style="margin-top:10px;margin-bottom:8px;font-size:11px;font-weight:600;color:var(--navy);">' + (isAr ? 'حسب البلدية' : 'Par commune') + '</div>';
+        synHtml += synthese.par_commune.slice(0,8).map(function(c) {
+          return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--line);font-size:11px;"><span>' + escHtml(c.commune||c.label||'—') + '</span><span style="font-weight:700;">' + (c.total||c.count||0) + '</span></div>';
+        }).join('');
+      }
+      synEl.innerHTML = synHtml || '<div style="color:var(--muted);font-size:11px;">' + (isAr ? 'لا توجد بيانات' : 'Aucune donnée') + '</div>';
+    }
+  } catch(e) {}
+
+  // ── SECTION 6 : Activité récente (journal lisible) ──
+  try {
+    var activite = await safeFetchJSON('/api/supervision/activite' + qs, {}, true);
+    var actEl = document.getElementById('sdc-activite-list');
+    if (actEl) {
+      var actionLabels = {
+        recu: isAr ? 'إشارة مستلمة' : 'Signalement reçu',
+        transmis: isAr ? 'تم الإحالة' : 'Transmis au service',
+        pris_en_charge: isAr ? 'أخذ بعين الاعتبار' : 'Pris en charge',
+        en_intervention: isAr ? 'تدخل جاري' : 'Intervention en cours',
+        a_valider: isAr ? 'في انتظار المصادقة' : 'En attente de validation',
+        resolu: isAr ? 'تم الحل' : 'Résolu',
+        rejete: isAr ? 'مرفوض' : 'Rejeté',
+        relance_service: isAr ? 'إعادة تنبيه المصلحة' : 'Relance du service',
+        message_service: isAr ? 'رسالة للمصلحة' : 'Message au service',
+        communique_superviseur: isAr ? 'بلاغ المشرف' : 'Communiqué superviseur',
+        notification_superviseur: isAr ? 'إشعار المشرف' : 'Notification superviseur',
+        urgence_wali: isAr ? 'استعجال والي' : 'Urgence Wali',
+        demande_explication: isAr ? 'طلب توضيح' : 'Demande d\'explication',
+        reponse_explication: isAr ? 'رد على طلب توضيح' : 'Réponse à demande d\'explication',
+        mission_cap: isAr ? 'مهمة CAP' : 'Mission CAP'
+      };
+      actEl.innerHTML = activite.length ? activite.slice(0,12).map(function(a) {
+        var label = actionLabels[a.action] || actionLabels[a.etat] || escHtml(a.action||a.etat||'—');
+        var ref = a.reference ? ' — <strong>#' + escHtml(a.reference) + '</strong>' : '';
+        var time = fmtDateTime(a.date);
+        return '<div style="padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-size:12px;color:var(--navy);">' + label + ref + (a.commune ? ' · ' + escHtml(a.commune) : '') + '</div>' +
+          '<div style="font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px;">' + time + '</div></div>';
+      }).join('') : '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">' + (isAr ? 'لا يوجد نشاط حديث' : 'Aucune activité récente.') + '</div>';
+    }
+  } catch(e) {}
+
+  // ── Carte ──
+  try {
+    var boardQs = communeId ? '?communeId=' + communeId : '';
+    var boardRes = await apiFetch('/api/signaler/board' + boardQs, { headers: authHeaders() });
     if (boardRes.ok) {
       var boardData = await boardRes.json();
       var now = Date.now();
@@ -9134,6 +10536,15 @@ async function execLoad() {
         return s;
       });
       execRenderMapMarkers();
+      if (communeId && execMap && window._execMapData.length) {
+        var pts = window._execMapData.filter(function(s){return s.lat && s.lng;});
+        if (pts.length) {
+          var bounds = L.latLngBounds(pts.map(function(s){return [parseFloat(s.lat),parseFloat(s.lng)];}));
+          execMap.fitBounds(bounds, {padding:[30,30], maxZoom:15});
+        }
+      } else if (!communeId && execMap && !hasNiveau('commune')) {
+        execMap.setView([36.7538, 3.0588], 11);
+      }
     }
   } catch(e) {}
 }
@@ -9523,7 +10934,7 @@ async function supLoad() {
     var aHtml = '';
     if (alertes.hors_delai && alertes.hors_delai.length) {
       aHtml += alertes.hors_delai.map(function(a) {
-        return '<div style="padding:8px 0;border-bottom:1px solid var(--ops-border);display:flex;gap:8px;align-items:center;">' +
+        return '<div onclick="supOpenDrawer(\'' + (a.id||'') + '\')" style="padding:8px 0;border-bottom:1px solid var(--ops-border);display:flex;gap:8px;align-items:center;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
           '<span class="ops-sla ops-sla-breach">Hors délai</span>' +
           '<span style="font-weight:600;">#' + escHtml(a.reference) + '</span> · ' + escHtml(a.commune||'') + ' · ' + escHtml(a.categorie||'') +
         '</div>';
@@ -9567,10 +10978,10 @@ async function supLoad() {
   try {
     var kpis2 = await safeFetchJSON('/api/supervision/kpis' + qs, {}, true);
     var dHtml = '';
-    if (kpis2.alertes_critiques > 0) dHtml += '<div style="padding:6px 0;font-size:13px;">🔴 <strong>' + kpis2.alertes_critiques + '</strong> signalements hors délai</div>';
+    if (kpis2.alertes_critiques > 0) dHtml += '<div onclick="showView(\'cockpit\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🔴 <strong>' + kpis2.alertes_critiques + '</strong> signalements hors délai</div>';
     if (kpis2.missions_cap > 0) dHtml += '<div style="padding:6px 0;font-size:13px;">🟣 <strong>' + kpis2.missions_cap + '</strong> interventions CAP en cours</div>';
-    if (kpis2.ouverts > 10) dHtml += '<div style="padding:6px 0;font-size:13px;">🟠 <strong>' + kpis2.ouverts + '</strong> signalements ouverts</div>';
-    document.getElementById('sup-decisions').innerHTML = dHtml || '<div style="padding:12px;font-size:13px;color:var(--muted);">✅ Aucune décision urgente</div>';
+    if (kpis2.ouverts > 10) dHtml += '<div onclick="showView(\'cockpit\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🟠 <strong>' + kpis2.ouverts + '</strong> signalements ouverts</div>';
+    document.getElementById('sup-decisions').innerHTML = dHtml || '<div style="padding:12px;font-size:13px;color:var(--muted);">Aucune décision urgente</div>';
   } catch(e) {}
 
   // Services

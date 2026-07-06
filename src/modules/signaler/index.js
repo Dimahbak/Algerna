@@ -455,6 +455,31 @@ router.get('/board',
     res.json(rows);
   }));
 
+// GET /board/:id — un seul signalement par ID (pour drawer superviseur)
+router.get('/board/:id',
+  authenticate, requireStaff(),
+  asyncH(async (req, res) => {
+    const sql = `SELECT s.id, s.reference, s.domaine, s.etat, cs.criticite, s.gravite,
+                        s.description, s.photo_path, s.lat, s.lng, s.cree_le, s.resolu_le,
+                        s.assigne_a, s.transmis_a, s.motif_rejet, s.nb_confirmations,
+                        s.delai_prevu, s.equipe_interne, s.responsable_intervention,
+                        s.compte_rendu_description, s.compte_rendu_resultat, s.compte_rendu_date_fin, s.compte_rendu_observation,
+                        cs.libelle AS categorie_nom, cs.libelle_ar AS categorie_nom_ar, cs.famille AS categorie_famille, s.sous_categorie_a_affiner,
+                        c.nom AS commune_nom, c.nom_ar AS commune_nom_ar, s.commune_id,
+                        u.prenom AS citoyen_prenom, u.nom AS citoyen_nom, u.telephone AS citoyen_tel,
+                        o.nom AS organisation_nom
+                   FROM signalement s
+                   LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+                   LEFT JOIN commune c ON c.id = s.commune_id
+                   LEFT JOIN utilisateur u ON u.id = s.citoyen_id
+                   LEFT JOIN utilisateur a ON a.id = s.assigne_a
+                   LEFT JOIN organisations o ON o.id = a.organisation_id
+                  WHERE s.id = $1`;
+    const { rows } = await query(sql, [req.params.id]);
+    if (!rows.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
+    res.json(rows[0]);
+  }));
+
 // PATCH /board/:id/etat — workflow via le board (tous domaines)
 router.patch('/board/:id/etat',
   authenticate, requireStaff(),
@@ -792,5 +817,39 @@ router.get('/board/:id/route',
     const service = await workflow.routerSignalement(req.params.id);
     res.json({ service });
   }));
+
+// ═══ API PUBLIQUE ANONYMISÉE ═══
+router.get('/public/carte', asyncH(async (req, res) => {
+  const { rows } = await query(`
+    SELECT cs.libelle AS categorie, c.nom AS commune, s.etat, s.cree_le, s.domaine,
+           ROUND(CAST(s.lat AS numeric), 2) AS lat, ROUND(CAST(s.lng AS numeric), 2) AS lng
+      FROM signalement s
+      LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+      LEFT JOIN commune c ON c.id = s.commune_id
+     WHERE s.lat IS NOT NULL AND CAST(s.lat AS float) > 0
+       AND s.cree_le >= NOW() - INTERVAL '90 days'
+     ORDER BY s.cree_le DESC LIMIT 200`);
+  res.json(rows);
+}));
+
+router.get('/public/stats', asyncH(async (req, res) => {
+  const [total, resolus, taux, nbCommunes] = await Promise.all([
+    query('SELECT COUNT(*)::int AS n FROM signalement'),
+    query("SELECT COUNT(*)::int AS n FROM signalement WHERE etat='resolu'"),
+    query("SELECT CASE WHEN COUNT(*)>0 THEN ROUND(COUNT(*) FILTER (WHERE etat='resolu')::numeric / COUNT(*)::numeric * 100) ELSE 0 END::int AS n FROM signalement"),
+    query('SELECT COUNT(DISTINCT commune_id)::int AS n FROM signalement WHERE commune_id IS NOT NULL'),
+  ]);
+  res.json({ total: total.rows[0].n, resolus: resolus.rows[0].n, taux: taux.rows[0].n, communes: nbCommunes.rows[0].n });
+}));
+
+router.get('/public/recents', asyncH(async (req, res) => {
+  const { rows } = await query(`
+    SELECT cs.libelle AS categorie, c.nom AS commune, s.etat, s.cree_le, s.domaine
+      FROM signalement s
+      LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+      LEFT JOIN commune c ON c.id = s.commune_id
+     ORDER BY s.cree_le DESC LIMIT 12`);
+  res.json(rows);
+}));
 
 module.exports = router;

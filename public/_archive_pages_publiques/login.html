@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALGERNA - Connexion</title>
+<link rel="icon" href="/assets/logo/algerna_icon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;background:url('/assets/bg/alger_login_bg.png') center center / cover no-repeat #1a2332;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+
+/* LANG */
+.lang-bar{position:fixed;top:16px;right:16px;z-index:100;display:flex;gap:3px;background:rgba(255,255,255,0.92);border-radius:10px;padding:3px;box-shadow:0 2px 10px rgba(0,0,0,0.15);}
+.lang-bar button{border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.lang-bar .active{background:#0B3C5D;color:#fff;}
+.lang-bar button:not(.active){background:transparent;color:#0B3C5D;}
+
+/* BRANDING */
+.branding{position:absolute;top:30px;left:40px;color:#fff;z-index:10;}
+.branding h1{font-size:28px;font-weight:800;letter-spacing:.5px;}
+.branding h1 span{color:#2ecc71;}
+.branding p{font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px;font-style:italic;}
+
+/* MAIN AREA */
+.main-area{flex:1;display:flex;align-items:center;justify-content:flex-end;padding:0 60px;position:relative;}
+
+/* CARD */
+.login-card{width:400px;max-width:92vw;background:rgba(255,255,255,0.96);border-radius:20px;padding:32px 28px;box-shadow:0 8px 40px rgba(0,0,0,0.25);}
+.login-card h2{font-size:22px;font-weight:700;color:#041F38;text-align:center;margin-bottom:4px;}
+.login-card .subtitle{font-size:12px;color:#6b7280;text-align:center;margin-bottom:16px;}
+.tabs{display:flex;gap:0;margin-bottom:16px;background:#f3f4f6;border-radius:10px;padding:3px;}
+.tabs button{flex:1;padding:9px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280;transition:all .2s;}
+.tabs button.active{background:#fff;color:#041F38;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#041F38;margin-bottom:4px;}
+.form-group input,.form-group select{width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:13px;outline:none;transition:border-color .2s;}
+.form-group input:focus,.form-group select:focus{border-color:#7C3AED;box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.options{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:11px;}
+.options label{color:#6b7280;display:flex;align-items:center;gap:4px;cursor:pointer;}
+.options a{color:#2563eb;font-weight:600;}
+.btn-submit{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;background:#7C3AED;color:#fff;box-shadow:0 4px 14px rgba(124,58,237,0.3);transition:background .2s;}
+.btn-submit:hover{background:#6D28D9;}
+.bottom-link{text-align:center;margin-top:14px;font-size:12px;color:#6b7280;}
+.bottom-link a{color:#2563eb;font-weight:700;}
+.error-msg{background:#fee2e2;color:#991b1b;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;display:none;}
+.hidden{display:none !important;}
+
+/* BACK */
+.back-btn{position:absolute;top:30px;right:140px;z-index:10;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:8px 18px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600;text-decoration:none;}
+
+/* PILLARS */
+.pillars{background:rgba(4,31,56,0.75);padding:20px 40px;}
+.pillars-grid{max-width:800px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;color:#fff;}
+.pillar-icon{font-size:28px;margin-bottom:6px;color:#93c5fd;}
+.pillar-title{font-size:13px;font-weight:700;}
+.pillar-desc{font-size:10px;color:rgba(255,255,255,0.6);}
+
+/* FOOTER */
+.page-footer{background:rgba(0,0,0,0.5);padding:10px 40px;display:flex;justify-content:space-between;align-items:center;}
+.page-footer img{height:28px;border-radius:4px;background:#fff;padding:2px;}
+.page-footer .left{display:flex;align-items:center;gap:8px;}
+.page-footer .left span{font-size:10px;color:rgba(255,255,255,0.6);}
+.page-footer .right{font-size:10px;color:rgba(255,255,255,0.4);}
+
+/* RTL */
+[dir="rtl"] body{font-family:'Noto Sans Arabic','Inter',system-ui,sans-serif;}
+[dir="rtl"] .branding{left:auto;right:40px;}
+[dir="rtl"] .main-area{justify-content:flex-start;}
+[dir="rtl"] .back-btn{right:auto;left:140px;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .branding{position:relative;top:auto;left:auto;text-align:center;padding:20px 16px 0;color:#fff;}
+  .main-area{flex-direction:column;padding:16px;justify-content:flex-start;align-items:center;}
+  .login-card{width:100%;max-width:400px;margin-top:10px;}
+  .back-btn{position:relative;top:auto;right:auto;display:block;text-align:center;margin:10px 16px;width:calc(100% - 32px);}
+  .pillars-grid{grid-template-columns:1fr 1fr;gap:12px;}
+  .page-footer{flex-direction:column;gap:6px;text-align:center;}
+  [dir="rtl"] .branding{right:auto;}
+  [dir="rtl"] .main-area{justify-content:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- LANG -->
+<div class="lang-bar">
+  <button class="active" onclick="setLang('fr')">FR</button>
+  <button onclick="setLang('ar')">AR</button>
+</div>
+
+<!-- BRANDING -->
+<div class="branding">
+  <h1>Alger<span>na</span></h1>
+  <p id="t-slogan">Ma ville. Mon pouvoir. Notre avenir.</p>
+</div>
+
+<!-- BACK -->
+<a href="/" class="back-btn" id="t-back">&larr; Retour</a>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="login-card">
+    <h2 id="t-welcome">Bienvenue</h2>
+    <p class="subtitle" id="t-subtitle">Connectez-vous à votre espace citoyen.</p>
+
+    <div class="tabs">
+      <button class="active" onclick="switchTab('login')" id="t-tab-login">Connexion</button>
+      <button onclick="switchTab('register')" id="t-tab-register">Inscription</button>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <!-- LOGIN -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label id="t-lbl-id">Identifiant</label>
+        <input type="text" id="login-tel" placeholder="Téléphone ou email" required>
+      </div>
+      <div class="form-group">
+        <label id="t-lbl-mdp">Mot de passe</label>
+        <input type="password" id="login-mdp" placeholder="Mot de passe" required>
+      </div>
+      <div class="options">
+        <label><input type="checkbox" id="login-remember"> <span id="t-remember">Rester connecté</span></label>
+        <a href="#" onclick="alert('Bientôt disponible');return false;" id="t-forgot">Mot de passe oublié ?</a>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-login">Se connecter</button>
+      <div class="bottom-link"><span id="t-no-account">Pas encore de compte ?</span> <a href="#" onclick="switchTab('register');return false;" id="t-create-link">Créer un compte</a></div>
+    </form>
+
+    <!-- REGISTER -->
+    <form id="register-form" class="hidden" onsubmit="doRegister(event)">
+      <div class="row2">
+        <div class="form-group"><label id="t-lbl-prenom">Prénom *</label><input type="text" id="reg-prenom" required minlength="2"></div>
+        <div class="form-group"><label id="t-lbl-nom">Nom *</label><input type="text" id="reg-nom" required minlength="2"></div>
+      </div>
+      <div class="form-group"><label id="t-lbl-email">Email *</label><input type="email" id="reg-email" required></div>
+      <div class="form-group"><label id="t-lbl-tel">Téléphone</label><input type="tel" id="reg-tel" pattern="(\+213|0)[5-7][0-9]{8}"></div>
+      <div class="form-group"><label id="t-lbl-commune">Commune *</label><select id="reg-commune" required><option value="">-- Commune --</option></select></div>
+      <div class="form-group"><label id="t-lbl-mdp2">Mot de passe *</label><input type="password" id="reg-mdp" required minlength="6"></div>
+      <label style="font-size:10px;color:#6b7280;display:flex;align-items:start;gap:5px;margin-bottom:12px;"><input type="checkbox" id="reg-cgu" required style="margin-top:2px;"> <span id="t-cgu">J'accepte les CGU et la politique de confidentialité.</span></label>
+      <button type="submit" class="btn-submit" id="btn-register">Créer mon compte</button>
+      <div class="bottom-link"><span id="t-has-account">Déjà un compte ?</span> <a href="#" onclick="switchTab('login');return false;" id="t-login-link">Connexion</a></div>
+    </form>
+  </div>
+</div>
+
+<!-- PILLARS -->
+<div class="pillars">
+  <div class="pillars-grid">
+    <div><div class="pillar-icon">🛡️</div><div class="pillar-title" id="t-p1">Sécurisé</div><div class="pillar-desc" id="t-p1d">Vos données sont protégées</div></div>
+    <div><div class="pillar-icon">⚡</div><div class="pillar-title" id="t-p2">Rapide</div><div class="pillar-desc" id="t-p2d">Suivez en temps réel</div></div>
+    <div><div class="pillar-icon">✅</div><div class="pillar-title" id="t-p3">Efficace</div><div class="pillar-desc" id="t-p3d">Des résultats visibles</div></div>
+    <div><div class="pillar-icon">👥</div><div class="pillar-title" id="t-p4">Participatif</div><div class="pillar-desc" id="t-p4d">Votre voix compte</div></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <div class="left"><img src="/assets/algerna/design-v1/logo-wilaya-alger-officiel.png" alt="Wilaya"><span>WILAYA D'ALGER · Plateforme numérique officielle</span></div>
+  <div class="right">&copy; 2024 Algerna. Tous droits réservés.</div>
+</div>
+
+<script>
+function switchTab(tab){
+  document.getElementById('login-form').classList.toggle('hidden',tab!=='login');
+  document.getElementById('register-form').classList.toggle('hidden',tab!=='register');
+  document.querySelectorAll('.tabs button').forEach(function(b,i){b.classList.toggle('active',i===(tab==='login'?0:1));});
+  document.getElementById('error-msg').style.display='none';
+}
+
+async function doLogin(e){
+  e.preventDefault();
+  var tel=document.getElementById('login-tel').value.trim();
+  var mdp=document.getElementById('login-mdp').value;
+  var remember=document.getElementById('login-remember').checked;
+  var errEl=document.getElementById('error-msg');
+  errEl.style.display='none';
+  document.getElementById('btn-login').disabled=true;
+  try{
+    var res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({telephone:tel,motDePasse:mdp})});
+    var data=await res.json();
+    if(data.token){
+      localStorage.setItem('algerna_token',data.token);
+      if(data.utilisateur)localStorage.setItem('algerna_user',JSON.stringify(data.utilisateur));
+      if(remember)localStorage.setItem('algerna_remember','1');
+      window.location.href='/';
+    }else{
+      errEl.textContent=data.erreur||'Identifiants incorrects.';errEl.style.display='';
+    }
+  }catch(err){errEl.textContent='Erreur réseau.';errEl.style.display='';}
+  document.getElementById('btn-login').disabled=false;
+}
+
+async function doRegister(e){
+  e.preventDefault();
+  var errEl=document.getElementById('error-msg');
+  errEl.style.display='none';
+  var body={prenom:document.getElementById('reg-prenom').value.trim(),nom:document.getElementById('reg-nom').value.trim(),email:document.getElementById('reg-email').value.trim(),telephone:document.getElementById('reg-tel').value.trim()||undefined,commune_id:document.getElementById('reg-commune').value||undefined,motDePasse:document.getElementById('reg-mdp').value};
+  document.getElementById('btn-register').disabled=true;
+  try{
+    var res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    var data=await res.json();
+    if(data.token){localStorage.setItem('algerna_token',data.token);if(data.utilisateur)localStorage.setItem('algerna_user',JSON.stringify(data.utilisateur));window.location.href='/';}
+    else{errEl.textContent=data.erreur||'Erreur lors de l\'inscription.';errEl.style.display='';}
+  }catch(err){errEl.textContent='Erreur réseau.';errEl.style.display='';}
+  document.getElementById('btn-register').disabled=false;
+}
+
+// Load communes
+fetch('/api/referentiel/communes').then(r=>r.json()).then(function(cs){
+  var sel=document.getElementById('reg-commune');
+  cs.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.nom;sel.appendChild(o);});
+}).catch(function(){});
+
+function setLang(lang){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  var ar=lang==='ar';
+  document.querySelector('.lang-bar button:first-child').classList.toggle('active',!ar);
+  document.querySelector('.lang-bar button:last-child').classList.toggle('active',ar);
+  var t={'t-slogan':ar?'مدينتي. قوتي. مستقبلنا.':'Ma ville. Mon pouvoir. Notre avenir.',
+    't-back':ar?'→ رجوع':'← Retour','t-welcome':ar?'مرحباً':'Bienvenue',
+    't-subtitle':ar?'سجل الدخول إلى فضائك.':'Connectez-vous à votre espace citoyen.',
+    't-tab-login':ar?'تسجيل الدخول':'Connexion','t-tab-register':ar?'إنشاء حساب':'Inscription',
+    't-lbl-id':ar?'المعرف':'Identifiant','t-lbl-mdp':ar?'كلمة المرور':'Mot de passe',
+    't-remember':ar?'البقاء متصلاً':'Rester connecté','t-forgot':ar?'نسيت كلمة المرور ؟':'Mot de passe oublié ?',
+    'btn-login':ar?'تسجيل الدخول':'Se connecter','t-no-account':ar?'ليس لديك حساب ؟':'Pas encore de compte ?',
+    't-create-link':ar?'إنشاء حساب':'Créer un compte',
+    't-lbl-prenom':ar?'الاسم *':'Prénom *','t-lbl-nom':ar?'اللقب *':'Nom *','t-lbl-email':ar?'البريد *':'Email *',
+    't-lbl-tel':ar?'الهاتف':'Téléphone','t-lbl-commune':ar?'البلدية *':'Commune *','t-lbl-mdp2':ar?'كلمة المرور *':'Mot de passe *',
+    't-cgu':ar?'أوافق على شروط الاستخدام.':'J\'accepte les CGU et la politique de confidentialité.',
+    'btn-register':ar?'إنشاء حسابي':'Créer mon compte','t-has-account':ar?'لديك حساب ؟':'Déjà un compte ?','t-login-link':ar?'تسجيل الدخول':'Connexion',
+    't-p1':ar?'آمن':'Sécurisé','t-p1d':ar?'بياناتكم محمية':'Vos données sont protégées',
+    't-p2':ar?'سريع':'Rapide','t-p2d':ar?'تابعوا في الوقت الحقيقي':'Suivez en temps réel',
+    't-p3':ar?'فعّال':'Efficace','t-p3d':ar?'نتائج ملموسة':'Des résultats visibles',
+    't-p4':ar?'تشاركي':'Participatif','t-p4d':ar?'صوتكم مسموع':'Votre voix compte',
+  };
+  for(var k in t){var el=document.getElementById(k);if(el)el.textContent=t[k];}
+}
+
+// If already logged in, redirect to app
+if(localStorage.getItem('algerna_token')){window.location.href='/';}
+
+// Auto-switch tab from URL param (?tab=register)
+var urlTab=new URLSearchParams(window.location.search).get('tab');
+if(urlTab==='register')switchTab('register');
+</script>
+</body>
+</html>

@@ -47,6 +47,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(path.join(__dirname, '../public')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // CyberPanel/OLS proxy context strips the /api prefix before
 // forwarding to Express. Routes are dual-mounted below (/api/* + /*)
@@ -149,6 +150,7 @@ const moduleMap = {
   notifications: require('./modules/notifications'),
   saksini:       require('./modules/saksini'),
   supervision:   require('./modules/supervision'),
+  rapports:      require('./modules/rapports'),
   admin:         require('./modules/admin'),
   icua:          require('./modules/icua'),
   intelligence:  require('./modules/intelligence'),
@@ -158,7 +160,7 @@ for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/${name}`, handler);      // Stripped path (OLS proxy)
 }
 
-// SPA fallback — toutes les routes non-API renvoient index.html
+// SPA fallback — toutes les autres routes non-API renvoient index.html
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
   res.sendFile(path.join(__dirname, '../public/index.html'));

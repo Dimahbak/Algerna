@@ -25,7 +25,12 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
   return withTransaction(async (client) => {
     // 1. Verrouiller et lire le signalement
     const { rows } = await client.query(
-      'SELECT id, etat, citoyen_id, reference, domaine FROM signalement WHERE id = $1 FOR UPDATE',
+      `SELECT s.id, s.etat, s.citoyen_id, s.reference, s.domaine,
+              cs.libelle AS categorie, c.nom AS commune_nom
+         FROM signalement s
+         LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+         LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.id = $1 FOR UPDATE`,
       [signalementId]
     );
     if (!rows.length) throw new Error('Signalement introuvable');
@@ -91,12 +96,13 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
 
     // 6. Notification citoyen
     if (sig.citoyen_id) {
+      const ctx = [sig.reference, sig.categorie, sig.commune_nom].filter(Boolean).join(' · ');
       const messages = {
-        transmis:         { titre: 'Signalement pris en charge', message: `Votre signalement #${sig.reference} a été transmis au service compétent.` },
-        en_intervention:  { titre: 'Intervention en cours', message: `Une intervention est en cours pour votre signalement #${sig.reference}.` },
-        a_valider:        { titre: 'Intervention terminée', message: `L'intervention pour votre signalement #${sig.reference} est terminée et en attente de validation.` },
-        resolu:           { titre: 'Signalement résolu', message: `Votre signalement #${sig.reference} a été résolu. Merci pour votre contribution !` },
-        rejete:           { titre: 'Signalement non recevable', message: `Votre signalement #${sig.reference} n'a pas été retenu. Motif : ${opts.motifRejet || 'non précisé'}.` },
+        transmis:         { titre: 'Pris en charge — ' + ctx, message: `Votre signalement #${sig.reference} a été transmis au service compétent.` },
+        en_intervention:  { titre: 'Intervention en cours — ' + ctx, message: `Intervention en cours · ${sig.categorie || ''} · ${sig.commune_nom || ''}` },
+        a_valider:        { titre: 'Intervention terminée — ' + ctx, message: `L'intervention pour #${sig.reference} est terminée, en attente de validation.` },
+        resolu:           { titre: 'Résolu — ' + ctx, message: `Votre signalement #${sig.reference} a été résolu. Merci !` },
+        rejete:           { titre: 'Non recevable — ' + ctx, message: `#${sig.reference} non retenu. Motif : ${opts.motifRejet || 'non précisé'}.` },
       };
       const notif = messages[nouveauEtat];
       if (notif) {
@@ -181,8 +187,8 @@ async function creerMissionCap(signalementId, user, opts = {}) {
         await client.query(
           `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
            VALUES ($1, 'signalement', $2, $3, $4)`,
-          [sig.citoyen_id, 'Intervention terrain créée',
-           `Une intervention de terrain a été créée pour votre signalement #${sig.reference}.`,
+          [sig.citoyen_id, 'Intervention terrain — ' + [sig.reference, sig.categorie, sig.commune_nom].filter(Boolean).join(' · '),
+           `Intervention créée · #${sig.reference} · ${sig.categorie || ''} · ${sig.commune_nom || ''}`,
            '/mes-signalements']
         );
       } catch (e) {}
@@ -194,8 +200,8 @@ async function creerMissionCap(signalementId, user, opts = {}) {
         await client.query(
           `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
            VALUES ($1, 'cap', $2, $3, $4)`,
-          [affecteA, 'Mission terrain',
-           (opts.type || 'constat') + ' — ' + (sig.reference || ''),
+          [affecteA, 'Mission terrain — ' + [sig.reference, sig.categorie, sig.commune_nom].filter(Boolean).join(' · '),
+           (opts.type || 'constat') + ' · ' + (sig.reference || '') + ' · ' + (sig.commune_nom || ''),
            '/bo-cap#' + signalementId]
         );
       } catch (e) {}
