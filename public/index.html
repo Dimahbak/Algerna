@@ -5739,6 +5739,7 @@ async function handleLogin(e) {
       return;
     }
     if (!res.ok) throw new Error(data.erreur || data.message || data.error || t('auth.identifiants_incorrects'));
+    purgeUserState();
     saveAuth(data.token, data.utilisateur);
     initApp();
   } catch (err) {
@@ -5865,10 +5866,19 @@ async function submitConfirmCode() {
   }
 }
 
-// ─── LOGOUT ───────────────────────────────────────────────
-function handleLogout() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+// ─── PURGE ALL USER STATE ─────────────────────────────────
+function purgeUserState() {
+  // Storage: remove all user-specific keys, keep lang only
+  var langPref = localStorage.getItem('algerna_lang');
+  var keysToRemove = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k !== 'algerna_lang') keysToRemove.push(k);
+  }
+  keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
+  if (langPref) localStorage.setItem('algerna_lang', langPref);
+  sessionStorage.clear();
+  // Memory state
   currentUser = null;
   communes = [];
   rdvServices = [];
@@ -5877,7 +5887,27 @@ function handleLogout() {
   _equipAllData = [];
   sigFamillesData = null;
   _bandeauData = [];
+  if (typeof _cpZones !== 'undefined') _cpZones = [];
   if (_bandeauTimer) { clearInterval(_bandeauTimer); _bandeauTimer = null; }
+  // Purge SW API caches (keep asset caches)
+  if ('caches' in window) {
+    caches.keys().then(function(keys) {
+      keys.forEach(function(key) {
+        caches.open(key).then(function(cache) {
+          cache.keys().then(function(reqs) {
+            reqs.forEach(function(req) {
+              if (req.url.includes('/api/')) cache.delete(req);
+            });
+          });
+        });
+      });
+    });
+  }
+}
+
+// ─── LOGOUT ───────────────────────────────────────────────
+function handleLogout() {
+  purgeUserState();
   // Reset UI state
   document.getElementById('auth-page').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
@@ -5926,9 +5956,13 @@ async function initApp() {
   document.getElementById('auth-page').style.display = 'none';
   var authLang = document.querySelector('.auth-lang');
   if (authLang) authLang.style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+  // Show loading screen while fetching fresh profile
+  var appEl = document.getElementById('app');
+  appEl.style.display = 'flex';
+  appEl.style.opacity = '0';
+  appEl.style.transition = 'opacity .15s ease';
 
-  // Refresh user data from server to avoid stale cache
+  // Refresh user data from server — BLOCK display until resolved
   try {
     var freshUser = await safeFetchJSON('/api/auth/me', {}, true);
     if (freshUser && freshUser.id) {
@@ -6030,6 +6064,8 @@ async function initApp() {
   loadNotifBadge();
   var fab = document.getElementById('saksini-fab');
   if (fab) fab.style.display = (role === 'citoyen') ? 'flex' : 'none';
+  // Reveal app now that fresh user data is loaded
+  appEl.style.opacity = '1';
 }
 
 // ─── COMMUNES ─────────────────────────────────────────────
@@ -14697,34 +14733,39 @@ function populateAgentFilters() {
 
 // ─── BOOTSTRAP ────────────────────────────────────────────
 (function bootstrap() {
-  initI18n(); // Initialize language on page load
+  initI18n();
   const token = getToken();
   const savedUser = localStorage.getItem(USER_KEY);
   if (token && savedUser) {
+    // Don't render stale user — set minimal currentUser for auth headers only,
+    // initApp will fetch fresh data before rendering
     try {
       currentUser = JSON.parse(savedUser);
-      // Verify token in background
-      fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => {
-          if (r.status === 401) { handleLogout(); return; }
-          return r.json();
-        })
-        .then(u => { if (u) { currentUser = u; localStorage.setItem(USER_KEY, JSON.stringify(u)); } })
-        .catch(() => {});
-      initApp();
-    } catch (e) {
-      handleLogout();
-    }
+    } catch(e) { currentUser = null; }
+    // Verify token then init — no stale UI flash
+    fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function(r) {
+        if (r.status === 401) { handleLogout(); return; }
+        return r.json();
+      })
+      .then(function(u) {
+        if (u && u.id) {
+          currentUser = u;
+          localStorage.setItem(USER_KEY, JSON.stringify(u));
+          initApp();
+        } else { handleLogout(); }
+      })
+      .catch(function() {
+        // Network error — use cached user as fallback
+        if (currentUser) initApp();
+        else handleLogout();
+      });
   } else {
     document.getElementById('auth-page').style.display = 'flex';
-    // Pre-load communes for register form
     fetch('/api/referentiel/communes')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => {
-        communes = data;
-        populateCommuneSelects();
-      })
-      .catch(() => {});
+      .then(function(r) { return r.ok ? r.json() : []; })
+      .then(function(data) { communes = data; populateCommuneSelects(); })
+      .catch(function() {});
   }
 })();
 
