@@ -10486,7 +10486,7 @@ async function execLoad() {
       alertes.cap_bloque.slice(0,2).forEach(function(a) {
         cards.push({ icon: '🟣', severity: 'critique',
           text: (isAr ? 'تدخل CAP محظور — #' : 'Intervention CAP bloquée — #') + escHtml(a.reference||'') + ' · ' + escHtml(a.motif_blocage||''),
-          id: a.id, bg: '#F5F3FF', border: '#8b5cf6' });
+          id: a.signalement_id || a.id, bg: '#F5F3FF', border: '#8b5cf6' });
       });
     }
   } catch(e) {}

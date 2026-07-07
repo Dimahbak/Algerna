@@ -135,7 +135,7 @@ router.get('/alertes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
              LEFT JOIN commune c ON c.id=s.commune_id
             WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours'${cf}
             ORDER BY s.cree_le ASC LIMIT 10`),
-    query(`SELECT m.id, m.type, m.motif_blocage, s.reference, c.nom AS commune
+    query(`SELECT m.id, m.signalement_id, m.type, m.motif_blocage, s.reference, c.nom AS commune
              FROM mission_cap m
              JOIN signalement s ON s.id=m.signalement_id
              LEFT JOIN commune c ON c.id=s.commune_id
