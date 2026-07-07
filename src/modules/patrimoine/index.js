@@ -10,8 +10,17 @@ const { authenticate, requireRole } = require('../../middleware/auth');
 const { asyncH, badRequest, notFound, makeReference } = require('../../utils/http');
 
 const router = express.Router();
-const AGENTS = ['admin_apc', 'admin_wilaya'];
-const ADMINS = ['admin_apc', 'admin_wilaya'];
+const AGENTS = ['admin_apc', 'admin_wilaya', 'operateur'];
+const ADMINS = ['admin_apc', 'admin_wilaya', 'operateur'];
+
+// Operateurs need capacité 'patrimoine' — blocks other EPICs
+function requirePatrimoine(req, res, next) {
+  if (req.user.role === 'operateur' && !(Array.isArray(req.user.capacites) && req.user.capacites.includes('patrimoine'))) {
+    return res.status(403).json({ erreur: 'Accès refusé' });
+  }
+  next();
+}
+router.use(authenticate, requirePatrimoine);
 
 // ─── GET /api/patrimoine/dashboard ───────────────────────
 router.get('/dashboard', authenticate, requireRole(...AGENTS), asyncH(async (req, res) => {
