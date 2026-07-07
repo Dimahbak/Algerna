@@ -1753,6 +1753,7 @@
       #exec-icua-score { font-size:16px !important; }
       /* SdC repartitions grid → 1 col */
       #sdc-repartitions-grid { grid-template-columns:1fr !important; }
+      #sdc-epic-cards { grid-template-columns:1fr !important; }
       /* Tables scroll internal */
       .ops-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
       /* Buttons min touch target */
@@ -4259,6 +4260,14 @@
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-cap" onchange="execToggleLayer('cap')"> CAP</label>
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-tous" onchange="execToggleLayer('tous')"> <span data-i18n="sup.couche_tous">Tous</span></label>
             </div>
+          </div>
+        </div>
+
+        <!-- ═══ BLOC 3B — Les 3 EPIC en un coup d'œil ═══ -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Les 3 EPIC en un coup d'œil</div>
+          <div id="sdc-epic-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Chargement...</div>
           </div>
         </div>
 
@@ -10661,6 +10670,49 @@ async function execLoad() {
       }
     }
   } catch(e) {}
+
+  // ── SECTION 4B : Les 3 EPIC en un coup d'œil ──
+  try {
+    var epicEl = document.getElementById('sdc-epic-cards');
+    if (epicEl) {
+      var ekpi = function(val, label, color) {
+        return '<div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:' + color + ';">' + val + '</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;">' + label + '</div></div>';
+      };
+      var epicCard = function(title, icon, kpis) {
+        return '<div style="background:white;border:1px solid var(--line);border-radius:12px;padding:14px;border-top:3px solid #063B5A;">' +
+          '<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + icon + ' ' + title + '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(' + Math.min(kpis.length, 3) + ',1fr);gap:6px;">' + kpis.join('') + '</div></div>';
+      };
+      // Eau: from _orgPerfData (already loaded)
+      var eauOrg = (window._sdcOrgPerfData || _orgPerfData || []).find(function(o) { return o.nom && o.nom.includes('Eau'); });
+      var eauKpis = eauOrg ? [
+        ekpi(eauOrg.dossiers_recus - eauOrg.resolus, isAr ? 'جارية' : 'En cours', '#2563eb'),
+        ekpi(eauOrg.resolus, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
+        ekpi(eauOrg.en_retard, isAr ? 'متأخرة' : 'En retard', eauOrg.en_retard > 0 ? '#EF4444' : '#16a34a')
+      ] : [ekpi('—', 'Données', '#94a3b8')];
+      // Parkings
+      var pkStats = await safeFetchJSON('/api/civipark/encaissements/stats', {}, true).catch(function(){ return {}; });
+      var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).filter(function(c){return c.statut==='active';}).length; } catch(e){}
+      var pkClotures = 0; try { var cls = await safeFetchJSON('/api/civipark/clotures', {headers: authHeaders()}, true); var lastCl = (cls||[]).find(function(c){return c.ecart!=0;}); pkClotures = lastCl ? lastCl.ecart : 0; } catch(e){}
+      var pkKpis = [
+        ekpi(pkStats.total_encaissements || 0, isAr ? 'تحصيلات' : 'Encaissements', '#2563eb'),
+        ekpi(pkCartes, isAr ? 'بطاقات' : 'Cartes actives', '#16a34a'),
+        ekpi((pkClotures > 0 ? '+' : '') + pkClotures + ' DA', isAr ? 'فارق' : 'Écart caisse', pkClotures != 0 ? '#EF4444' : '#16a34a')
+      ];
+      // Régie foncière
+      var patri = await safeFetchJSON('/api/patrimoine/dashboard', {headers: authHeaders()}, true).catch(function(){ return {}; });
+      var rfKpis = [
+        ekpi(patri.total || 0, isAr ? 'عقارات' : 'Biens', '#2563eb'),
+        ekpi((patri.taux_occupation || 0) + '%', isAr ? 'إشغال' : 'Occupation', (patri.taux_occupation||0) >= 50 ? '#16a34a' : '#f97316'),
+        ekpi(Number(patri.loyers_mois || 0).toLocaleString('fr-DZ'), isAr ? 'إيجارات' : 'Loyers/mois', '#063B5A'),
+        ekpi(patri.contrats_expirant || 0, isAr ? 'تنتهي' : 'Expirent', (patri.contrats_expirant||0) > 0 ? '#EF4444' : '#16a34a')
+      ];
+      epicEl.innerHTML =
+        epicCard(isAr ? 'المياه' : 'Eau', '💧', eauKpis) +
+        epicCard(isAr ? 'مواقف' : 'Parkings', '🅿️', pkKpis) +
+        epicCard(isAr ? 'العقارات' : 'Régie foncière', '🏛️', rfKpis);
+    }
+  } catch(e) { console.warn('EPIC cards error:', e); }
 
   // ── SECTION 5 : Indicateurs ICUA détaillés ──
   try {
