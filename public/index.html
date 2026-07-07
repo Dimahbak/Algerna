@@ -10683,12 +10683,12 @@ async function execLoad() {
           '<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + icon + ' ' + title + '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(' + Math.min(kpis.length, 3) + ',1fr);gap:6px;">' + kpis.join('') + '</div></div>';
       };
-      // Eau: from _orgPerfData (already loaded)
-      var eauOrg = (window._sdcOrgPerfData || _orgPerfData || []).find(function(o) { return o.nom && o.nom.includes('Eau'); });
+      // Eau: from cockpitData.repartitions.organisations (join direct, même source que le tableau Répartition)
+      var eauOrg = (cockpitData && cockpitData.repartitions && cockpitData.repartitions.organisations || []).find(function(o) { return o.nom && o.nom.includes('Eau'); });
       var eauKpis = eauOrg ? [
-        ekpi(eauOrg.dossiers_recus - eauOrg.resolus, isAr ? 'جارية' : 'En cours', '#2563eb'),
-        ekpi(eauOrg.resolus, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
-        ekpi(eauOrg.en_retard, isAr ? 'متأخرة' : 'En retard', eauOrg.en_retard > 0 ? '#EF4444' : '#16a34a')
+        ekpi(eauOrg.en_cours || 0, isAr ? 'جارية' : 'En cours', '#2563eb'),
+        ekpi(eauOrg.resolus || 0, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
+        ekpi(eauOrg.en_retard || 0, isAr ? 'متأخرة' : 'En retard', (eauOrg.en_retard || 0) > 0 ? '#EF4444' : '#16a34a')
       ] : [ekpi('—', 'Données', '#94a3b8')];
       // Parkings
       var pkStats = await safeFetchJSON('/api/civipark/encaissements/stats', {}, true).catch(function(){ return {}; });

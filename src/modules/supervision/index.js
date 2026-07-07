@@ -223,7 +223,11 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
              JOIN commune c ON c.id = s.commune_id
             ${wherePeriode}
             GROUP BY c.id, c.nom ORDER BY total DESC`),
-    query(`SELECT o.id, o.nom, COUNT(s.id)::int AS total
+    query(`SELECT o.id, o.nom, COUNT(s.id)::int AS total,
+              COUNT(*) FILTER (WHERE s.etat = 'resolu')::int AS resolus,
+              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS en_cours,
+              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
+                AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu)::int AS en_retard
              FROM signalement s
              JOIN utilisateur u ON u.id = s.assigne_a
              JOIN organisations o ON o.id = u.organisation_id
