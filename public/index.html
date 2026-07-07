@@ -1728,8 +1728,16 @@
       .main-content { padding: 16px 12px 80px; max-width: 100%; overflow-x:hidden; }
       .form-row { grid-template-columns: 1fr; }
       .module-grid { grid-template-columns: repeat(2, 1fr); }
-      .navbar { padding: 0 12px; }
+      .navbar { padding: 0 8px; overflow:hidden; }
+      .navbar-brand { gap:8px; font-size:18px; min-width:0; }
+      .navbar-brand-sub { display:none; }
+      .navbar-brand-icon { width:32px; height:32px; }
+      .navbar-right { gap:6px; flex-shrink:0; }
+      .lang-selector { gap:2px; }
+      .lang-selector .lang-btn { padding:4px 8px; font-size:11px; }
+      .user-badge { padding:4px 8px; gap:4px; }
       .user-badge span { display: none; }
+      .user-badge svg { display:none; }
       .app-body { flex-direction: column; }
       .icua-score { font-size: 56px; }
       /* Bandeaux de rôle contenus */
