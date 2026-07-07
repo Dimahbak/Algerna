@@ -9720,7 +9720,7 @@ function orgPerfRender() {
     var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
     var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
     var repriseColor = o.taux_reprise > 20 ? '#EF4444' : o.taux_reprise > 0 ? '#f97316' : 'var(--muted)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom) + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
       '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
       '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type] || o.type) + '</span></td>' +
       '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
@@ -10282,7 +10282,7 @@ function sdcOrgPerfRender() {
   tbody.innerHTML = sorted.map(function(o) {
     var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
     var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom) + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
       '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
       '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type]||o.type) + '</span></td>' +
       '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
@@ -10603,7 +10603,7 @@ async function execLoad() {
     }
     if (repOrgs) {
       repOrgs.innerHTML = (cockpitData.repartitions.organisations||[]).map(function(o) {
-        return '<div onclick="orgPerfOpenDetail(' + o.id + ',\'' + escHtml(o.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(o.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + o.total + '</span></div>';
+        return '<div onclick="orgPerfOpenDetail(' + o.id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(o.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + o.total + '</span></div>';
       }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
     }
     if (repDomaines) {
