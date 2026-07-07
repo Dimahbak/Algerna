@@ -5960,7 +5960,7 @@ async function initApp() {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
-    entite_responsable:   ['bo-agent'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark'] : ['bo-executive','rapports','annuaire','admin-communiques'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
@@ -6224,12 +6224,13 @@ function getDefaultView() {
   var fn = currentUser.fonction;
   if (fn === 'agent_traitant') return 'bo-agent';
   if (fn === 'cap') return 'bo-cap';
-  if (fn === 'entite_responsable') return 'bo-agent';
+  if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
   if (fn === 'superviseur') return 'bo-executive';
   if (fn === 'citoyen') return 'home';
   // Fallback sur role
   var r = currentUser.role;
-  if (r === 'agent' || r === 'operateur') return 'bo-agent';
+  if (r === 'agent') return 'bo-agent';
+  if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
   if (r === 'admin_apc') return 'bo-executive';
   if (r === 'admin_wilaya') return 'bo-executive';
   return 'home';
@@ -6261,13 +6262,13 @@ function showView(name) {
     citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','a-propos','aide','notifications'],
-    entite_responsable:   ['bo-agent','profil','a-propos','aide','notifications'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','profil','a-propos','aide','notifications'],
-    operateur: ['bo-agent','profil','a-propos','aide','notifications'],
+    operateur: hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','profil','a-propos','aide','notifications'],
     admin_wilaya: ['bo-executive','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'],
   };
