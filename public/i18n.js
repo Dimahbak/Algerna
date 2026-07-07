@@ -656,7 +656,7 @@ const I18N = {
     "participe.deja": "Vous participez déjà.",
     "home.desc_demarches": "Accédez à vos démarches administratives en ligne.",
     "home.desc_signale": "Signalez un problème dans votre quartier.",
-    "home.que_faire": "Que souhaitez-vous faire aujourd'hui ?",
+    "home.que_faire": "Que souhaitez-vous faire aujourd\u2019hui\u00a0?",
     "home.cta_signale_sub": "Signalez un problème sur l'espace public.",
     "mod.citoyen_sub": "Services numériques de proximité",
     "mod.citoyen_desc": "Signaler, suivre, participer et accéder simplement aux services proposés par votre collectivité.",
