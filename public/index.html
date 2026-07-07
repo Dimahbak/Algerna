@@ -10692,11 +10692,11 @@ async function execLoad() {
       ] : [ekpi('—', 'Données', '#94a3b8')];
       // Parkings
       var pkStats = await safeFetchJSON('/api/civipark/encaissements/stats', {}, true).catch(function(){ return {}; });
-      var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).length; } catch(e){}
+      var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).filter(function(c){return c.statut==='active';}).length; } catch(e){}
       var pkClotures = 0; try { var cls = await safeFetchJSON('/api/civipark/clotures', {headers: authHeaders()}, true); var lastCl = (cls||[]).find(function(c){return c.ecart!=0;}); pkClotures = lastCl ? lastCl.ecart : 0; } catch(e){}
       var pkKpis = [
         ekpi(pkStats.total_encaissements || 0, isAr ? 'تحصيلات' : 'Encaissements', '#2563eb'),
-        ekpi(pkCartes, isAr ? 'بطاقات' : 'Cartes résident', '#16a34a'),
+        ekpi(pkCartes, isAr ? 'بطاقات' : 'Cartes actives', '#16a34a'),
         ekpi((pkClotures > 0 ? '+' : '') + pkClotures + ' DA', isAr ? 'فارق' : 'Écart caisse', pkClotures != 0 ? '#EF4444' : '#16a34a')
       ];
       // Régie foncière
