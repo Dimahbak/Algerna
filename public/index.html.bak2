@@ -459,10 +459,7 @@
         padding: 0 16px !important;
         padding-top: clamp(280px, 35vh, 330px) !important;
         gap: 0 !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding-bottom: max(env(safe-area-inset-bottom, 0px), 32px) !important;
+        overflow: hidden !important;
         box-sizing: border-box !important;
       }
       /* ── Mobile brand : MASQUÉ — logos dans l'image ── */
@@ -620,16 +617,6 @@
         background: transparent !important;
         color: #0B2B4D !important;
       }
-    }
-    /* ── Inscription : padding réduit pour permettre le scroll ── */
-    @media (max-width: 768px) {
-      .auth-wrapper.register-active {
-        padding-top: clamp(60px, 10vh, 120px) !important;
-      }
-      #auth-page .form-row {
-        grid-template-columns: 1fr !important;
-      }
-      #reg-btn { margin-top: 4px !important; }
     }
     /* ── Petit écran (hauteur ≤ 760px) ── */
     @media (max-width: 768px) and (max-height: 760px) {
@@ -2239,8 +2226,7 @@
           </div>
           <div class="form-group">
             <label data-i18n="auth.mdp">Mot de passe *</label>
-            <input type="password" id="reg-mdp" placeholder="Créez votre mot de passe (6 caractères minimum)" required minlength="6" style="padding-right:44px;" />
-            <button type="button" class="pwd-eye" onclick="togglePwdEye(this)" tabindex="-1"><svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg><svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <input type="password" id="reg-mdp" placeholder="Créez votre mot de passe (6 caractères minimum)" required minlength="6" />
           </div>
           <div class="form-group" style="margin-bottom:16px;">
             <label style="display:flex;align-items:start;gap:8px;cursor:pointer;font-size:12px;color:var(--gray-600);justify-content:flex-end;text-align:right;">
@@ -5767,69 +5753,6 @@ function switchTab(tab) {
   document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
   document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
   hideError('auth-error');
-  // Mobile: réduire le padding-top et activer le scroll pour le formulaire d'inscription
-  const wrapper = document.querySelector('.auth-wrapper');
-  if (wrapper) {
-    wrapper.classList.toggle('register-active', tab === 'register');
-    wrapper.scrollTop = 0;
-  }
-}
-
-// ─── PASSWORD EYE TOGGLE ─────────────────────────────────
-function togglePwdEye(btn) {
-  var input = btn.parentElement.querySelector('input[type="password"], input[type="text"]');
-  if (!input) return;
-  var show = input.type === 'password';
-  input.type = show ? 'text' : 'password';
-  btn.querySelector('.eye-off').style.display = show ? 'none' : '';
-  btn.querySelector('.eye-on').style.display = show ? '' : 'none';
-}
-
-// ─── FORGOT PASSWORD ─────────────────────────────────────
-function showForgotPassword() {
-  var isAr = currentLang === 'ar';
-  var html = '<div style="padding:4px;">' +
-    '<p style="font-size:13px;color:var(--muted);margin-bottom:12px;">' + (isAr ? 'أدخل رقم هاتفك أو بريدك الإلكتروني' : 'Entrez votre numéro de téléphone ou e-mail') + '</p>' +
-    '<input type="text" id="forgot-id" placeholder="' + (isAr ? '0770000000 أو email@exemple.com' : '0770000000 ou email@exemple.com') + '" style="width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-bottom:12px;">' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="submitForgot()">' + (isAr ? 'إرسال' : 'Envoyer') + '</button>' +
-    '<div id="forgot-msg" style="margin-top:10px;font-size:12px;color:var(--muted);text-align:center;"></div></div>';
-  showModal(isAr ? 'استعادة كلمة المرور' : 'Mot de passe oublié', html);
-}
-async function submitForgot() {
-  var id = (document.getElementById('forgot-id')?.value||'').trim();
-  var msgEl = document.getElementById('forgot-msg');
-  if (!id) return;
-  try {
-    var res = await fetch('/api/auth/forgot', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({identifiant:id}) });
-    var data = await res.json();
-    if (msgEl) msgEl.textContent = data.message || (currentLang==='ar' ? 'إذا كان الحساب موجودًا، تم إرسال رابط.' : 'Si ce compte existe, un lien a été envoyé.');
-  } catch(e) { if (msgEl) msgEl.textContent = 'Erreur réseau.'; }
-}
-
-// ─── RESET PASSWORD (from ?reset=TOKEN in URL) ───────────
-function checkResetToken() {
-  var token = new URLSearchParams(window.location.search).get('reset');
-  if (!token) return;
-  var isAr = currentLang === 'ar';
-  var authPage = document.getElementById('auth-page');
-  if (authPage) authPage.style.display = 'flex';
-  var card = document.querySelector('.auth-card');
-  if (card) card.innerHTML = '<div style="padding:24px;"><h2 style="color:#0B2B4D;margin:0 0 12px;">' + (isAr?'كلمة مرور جديدة':'Nouveau mot de passe') + '</h2>' +
-    '<div class="form-group" style="margin-bottom:12px;position:relative;"><input type="password" id="reset-pwd" placeholder="' + (isAr?'6 أحرف كحد أدنى':'Min 6 caractères') + '" required minlength="6" style="width:100%;padding:10px 44px 10px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;">' +
-    '<button type="button" class="pwd-eye" onclick="togglePwdEye(this)" tabindex="-1"><svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg><svg class="eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="submitReset(\'' + token + '\')">' + (isAr?'تأكيد':'Confirmer') + '</button>' +
-    '<div id="reset-msg" style="margin-top:10px;font-size:12px;text-align:center;"></div></div>';
-}
-async function submitReset(token) {
-  var pwd = document.getElementById('reset-pwd')?.value;
-  var msgEl = document.getElementById('reset-msg');
-  if (!pwd || pwd.length < 6) { if(msgEl) msgEl.textContent = '6 caractères minimum.'; return; }
-  try {
-    var res = await fetch('/api/auth/reset', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token:token,motDePasse:pwd}) });
-    var data = await res.json();
-    if (data.ok) { if(msgEl){msgEl.style.color='#16a34a';msgEl.textContent=currentLang==='ar'?'تم تغيير كلمة المرور.':'Mot de passe modifié. Redirection...';} setTimeout(function(){window.location.href='/';},2000); }
-    else { if(msgEl){msgEl.style.color='#EF4444';msgEl.textContent=data.erreur||'Erreur';} }
-  } catch(e) { if(msgEl){msgEl.style.color='#EF4444';msgEl.textContent='Erreur réseau.';} }
 }
 
 // ─── LOGIN ────────────────────────────────────────────────
@@ -14918,8 +14841,7 @@ function populateAgentFilters() {
 
 // ─── BOOTSTRAP ────────────────────────────────────────────
 (function bootstrap() {
-  initI18n();
-  checkResetToken(); // Handle ?reset=TOKEN from email link
+  initI18n(); // Initialize language on page load
   const token = getToken();
   const savedUser = localStorage.getItem(USER_KEY);
   if (token && savedUser) {

@@ -191,13 +191,14 @@ router.post('/login', async (req, res, next) => {
   next();
 });
 
-// POST /api/auth/login — actual login
+// POST /api/auth/login — actual login (telephone OR email)
 router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
   const { telephone, motDePasse } = req.body;
+  const isEmail = telephone && telephone.includes('@');
   const { rows } = await query(
     `SELECT u.*, o.nom AS organisation_nom
      FROM utilisateur u LEFT JOIN organisations o ON o.id = u.organisation_id
-     WHERE u.telephone=$1 AND u.actif=TRUE`, [telephone]);
+     WHERE ${isEmail ? 'u.email=$1' : 'u.telephone=$1'} AND u.actif=TRUE`, [telephone]);
   if (!rows.length) throw unauthorized('Identifiants incorrects.');
 
   const user = rows[0];
@@ -226,6 +227,38 @@ router.get('/me', authenticate, asyncH(async (req, res) => {
      WHERE u.id = $1`,
     [req.user.id]);
   res.json(rows[0]);
+}));
+
+// POST /api/auth/forgot — demande de réinitialisation (identifiant = tel ou email)
+router.post('/forgot', asyncH(async (req, res) => {
+  const { identifiant } = req.body;
+  if (!identifiant) return res.json({ ok: true }); // neutre
+  const isEmail = identifiant.includes('@');
+  const { rows } = await query(
+    `SELECT id, email, prenom FROM utilisateur WHERE ${isEmail ? 'email=$1' : 'telephone=$1'} AND actif=TRUE`, [identifiant]);
+  // Toujours répondre neutre (ne pas révéler si le compte existe)
+  if (!rows.length || !rows[0].email) return res.json({ ok: true, message: 'Si ce compte existe et possède un email, un lien a été envoyé.' });
+  const user = rows[0];
+  // Generate token
+  const crypto = require('crypto');
+  const token = crypto.randomBytes(32).toString('hex');
+  const expire = new Date(Date.now() + 3600000); // 1h
+  await query('UPDATE utilisateur SET reset_token=$1, reset_expire=$2 WHERE id=$3', [token, expire, user.id]);
+  // Send email
+  const { sendResetEmail } = require('../../services/emailService');
+  await sendResetEmail(user.email, user.prenom || '', token);
+  res.json({ ok: true, message: 'Si ce compte existe et possède un email, un lien a été envoyé.' });
+}));
+
+// POST /api/auth/reset — appliquer le nouveau mot de passe
+router.post('/reset', asyncH(async (req, res) => {
+  const { token, motDePasse } = req.body;
+  if (!token || !motDePasse || motDePasse.length < 6) return res.status(400).json({ erreur: 'Token et mot de passe (min 6 car.) requis.' });
+  const { rows } = await query('SELECT id FROM utilisateur WHERE reset_token=$1 AND reset_expire > NOW()', [token]);
+  if (!rows.length) return res.status(400).json({ erreur: 'Lien expiré ou invalide. Refaites une demande.' });
+  const hash = await bcrypt.hash(motDePasse, config.bcryptRounds);
+  await query('UPDATE utilisateur SET mot_de_passe=$1, reset_token=NULL, reset_expire=NULL WHERE id=$2', [hash, rows[0].id]);
+  res.json({ ok: true });
 }));
 
 module.exports = router;
