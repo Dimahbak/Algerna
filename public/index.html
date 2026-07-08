@@ -4448,6 +4448,12 @@
             <a id="rap-download-link" href="#" target="_blank" class="btn btn-sm btn-primary" download>Télécharger</a>
           </div>
         </div>
+
+        <!-- Mes rapports -->
+        <div class="card" style="padding:16px;margin-top:16px;">
+          <h4 style="margin:0 0 12px;">Mes rapports générés</h4>
+          <div id="rap-mes-rapports" style="font-size:12px;color:var(--muted);">Chargement...</div>
+        </div>
       </div>
 
       <!-- ══ ANNUAIRE ══ -->
@@ -9940,6 +9946,29 @@ function initRapports() {
     var cd = document.getElementById('rap-custom-dates');
     if (cd) cd.style.display = this.value === 'custom' ? 'flex' : 'none';
   };
+
+  // Load mes rapports
+  loadMesRapports();
+}
+
+async function loadMesRapports() {
+  var el = document.getElementById('rap-mes-rapports');
+  if (!el) return;
+  try {
+    var rapports = await safeFetchJSON('/api/rapports/mes-rapports', { headers: authHeaders() }, true);
+    if (!rapports.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);">Aucun rapport généré.</div>'; return; }
+    var typeIcons = { territoire: '📊', dossier: '📋', encaissements: '💰' };
+    var typeLabels = { territoire: 'Territoire', dossier: 'Dossier', encaissements: 'Encaissements' };
+    el.innerHTML = rapports.map(function(r) {
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-weight:600;color:var(--navy);font-size:13px;">' + (typeIcons[r.type]||'📄') + ' ' + escHtml(r.titre||r.filename) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);">' + (typeLabels[r.type]||r.type) + ' · ' + fmtDateTime(r.cree_le) + (r.prenom ? ' · ' + escHtml(r.prenom) + ' ' + escHtml(r.nom||'') : '') + '</div>' +
+        '</div>' +
+        '<a href="' + escHtml(r.url) + '" target="_blank" download class="btn btn-sm btn-primary" style="flex-shrink:0;font-size:11px;">Télécharger</a>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--red);">Erreur de chargement</div>'; }
 }
 
 async function genererRapport(opts) {

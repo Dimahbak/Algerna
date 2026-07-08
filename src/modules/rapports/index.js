@@ -245,10 +245,12 @@ router.post('/generer', authenticate, requirePilotage(), asyncH(async (req, res)
   doc.end();
   await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
 
-  // Journal
+  // Journal + enregistrement
   await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
     SELECT id, etat, $1, 'rapport_genere', $2 FROM signalement LIMIT 1`,
     [req.user.id, `Rapport généré : ${title} — ${subtitle}`]);
+  await query(`INSERT INTO rapport_genere (url, filename, type, titre, genere_par) VALUES ($1,$2,$3,$4,$5)`,
+    ['/uploads/rapports/' + filename, filename, 'territoire', `${title} — ${subtitle}`, req.user.id]);
 
   res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
 }));
@@ -364,10 +366,12 @@ router.post('/dossier/:id', authenticate, requirePilotage(), asyncH(async (req, 
   doc.end();
   await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
 
-  // Journal
+  // Journal + enregistrement
   await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
     VALUES ($1, $2, $3, 'rapport_genere', $4)`,
     [id, s.etat, req.user.id, 'Rapport dossier ' + s.reference + ' généré']);
+  await query(`INSERT INTO rapport_genere (url, filename, type, titre, genere_par) VALUES ($1,$2,$3,$4,$5)`,
+    ['/uploads/rapports/' + filename, filename, 'dossier', 'Fiche dossier ' + s.reference, req.user.id]);
 
   res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
 }));
@@ -501,7 +505,18 @@ router.post('/encaissements', authenticate, requirePilotage(), asyncH(async (req
 
   doc.end();
   await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
+  await query(`INSERT INTO rapport_genere (url, filename, type, titre, genere_par) VALUES ($1,$2,$3,$4,$5)`,
+    ['/uploads/rapports/' + filename, filename, 'encaissements', `Encaissements — ${communeNom}`, req.user.id]);
   res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
+}));
+
+// ═══ GET /mes-rapports — liste des rapports générés ═══
+router.get('/mes-rapports', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT r.*, u.prenom, u.nom FROM rapport_genere r
+     LEFT JOIN utilisateur u ON u.id = r.genere_par
+     ORDER BY r.cree_le DESC LIMIT 50`);
+  res.json(rows);
 }));
 
 module.exports = router;
