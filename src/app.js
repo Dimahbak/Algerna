@@ -170,6 +170,14 @@ for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/${name}`, handler);      // Stripped path (OLS proxy)
 }
 
+// Config publique (client IDs, feature flags)
+app.get('/api/config/public', (req, res) => {
+  res.json({ googleClientId: process.env.GOOGLE_CLIENT_ID || null });
+});
+app.get('/config/public', (req, res) => {
+  res.json({ googleClientId: process.env.GOOGLE_CLIENT_ID || null });
+});
+
 // SPA fallback — toutes les autres routes non-API renvoient index.html
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();

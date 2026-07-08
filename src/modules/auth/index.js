@@ -214,6 +214,64 @@ router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
   res.json({ token: signToken(user), utilisateur: user });
 }));
 
+
+// POST /api/auth/google — connexion via Google OAuth
+router.post('/google', asyncH(async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) throw badRequest('credential requis');
+
+  // Vérifier le token avec Google
+  const gRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+  const gData = await gRes.json();
+
+  if (!gRes.ok || gData.error_description) throw badRequest('Token Google invalide');
+
+  // Vérifier l'audience si GOOGLE_CLIENT_ID configuré
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (clientId && gData.aud !== clientId) throw badRequest('Token Google invalide (audience)');
+
+  const { sub: googleId, email, given_name: prenom, family_name: nom, name } = gData;
+  if (!email) throw badRequest('Email Google non disponible');
+
+  // Chercher l'utilisateur par google_id ou email
+  const { rows } = await query(
+    'SELECT * FROM utilisateur WHERE google_id=$1 OR (email=$2 AND email IS NOT NULL) ORDER BY (google_id=$1) DESC LIMIT 1',
+    [googleId, email]
+  );
+
+  let user;
+  if (rows.length) {
+    user = rows[0];
+    // Lier google_id si pas encore fait
+    if (!user.google_id) {
+      await query('UPDATE utilisateur SET google_id=$1 WHERE id=$2', [googleId, user.id]);
+      user.google_id = googleId;
+    }
+  } else {
+    // Créer un nouveau compte Google
+    const crypto = require('crypto');
+    const hash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+    const telPlaceholder = `google_${googleId}`;
+    const { rows: newRows } = await query(
+      `INSERT INTO utilisateur(telephone, email, nom, prenom, mot_de_passe, role, google_id, email_confirme, consentement_cgu)
+       VALUES($1,$2,$3,$4,$5,'citoyen',$6,true,true) RETURNING *`,
+      [telPlaceholder, email, nom || name || '', prenom || '', hash, googleId]
+    );
+    user = newRows[0];
+
+    // Email de bienvenue
+    try {
+      const { sendConfirmationEmail } = require('../../services/emailService');
+      await sendConfirmationEmail(email, prenom || '');
+    } catch(e) { console.warn('[google-auth] welcome email failed:', e.message); }
+  }
+
+  if (!user.actif) throw unauthorized('Compte désactivé.');
+
+  delete user.mot_de_passe;
+  res.json({ token: signToken(user), utilisateur: user });
+}));
+
 // GET /api/auth/me — profil courant
 router.get('/me', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
