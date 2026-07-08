@@ -150,7 +150,7 @@ router.get('/doublons', authenticate, asyncH(async (req, res) => {
   if (!famille || !lat || !lng) return res.json({ doublon: null });
   const fLat = parseFloat(lat); const fLng = parseFloat(lng);
   if (!fLat || !fLng) return res.json({ doublon: null });
-  // Chercher un signalement de la même famille dans un rayon ~100m (0.001 degré ≈ 111m)
+  // Chercher un signalement de la même famille dans un rayon ~200m (0.002 degré ≈ 222m)
   const { rows } = await query(
     `SELECT s.id, s.reference, s.description, s.etat, s.cree_le, cs.libelle AS categorie,
             c.nom AS commune_nom, s.photo_path
@@ -159,7 +159,7 @@ router.get('/doublons', authenticate, asyncH(async (req, res) => {
        LEFT JOIN commune c ON c.id = s.commune_id
       WHERE cs.famille = $1
         AND s.etat NOT IN ('resolu','rejete')
-        AND ABS(s.lat - $2) < 0.001 AND ABS(s.lng - $3) < 0.001
+        AND ABS(s.lat - $2) < 0.002 AND ABS(s.lng - $3) < 0.002
       ORDER BY s.cree_le DESC LIMIT 1`,
     [famille, fLat, fLng]);
   res.json({ doublon: rows[0] || null });
@@ -330,7 +330,7 @@ router.post('/signalements',
 router.get('/proches', asyncH(async (req, res) => {
   const { lat, lng, famille } = req.query;
   if (!lat || !lng) throw badRequest('lat et lng requis');
-  const rayon = 0.001; // ~100m
+  const rayon = 0.002; // ~200m
   let sql = `SELECT s.id, s.reference, s.lat, s.lng, s.description, s.nb_confirmations,
                     cs.libelle AS categorie, cs.famille, s.cree_le
                FROM signalement s

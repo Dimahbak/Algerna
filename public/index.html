@@ -9178,6 +9178,7 @@ async function supOpenDrawer(id) {
     ficheHtml += '<span class="kanban-card-badge" style="background:#fee2e2;color:#EF4444;">' + escHtml(etatLabels[s.etat] || s.etat) + '</span>';
     ficheHtml += '<span class="kanban-card-badge" style="background:#fef3c7;color:#F59E0B;">' + escHtml(criticiteLabels[s.criticite] || s.criticite) + '</span>';
     ficheHtml += '<span class="kanban-card-badge" style="background:var(--blue-light);color:var(--blue);">' + escHtml(locDomaine(s._domaine||s.domaine)) + '</span>';
+    if (s.nb_confirmations > 0) ficheHtml += '<span class="kanban-card-badge" style="background:' + (s.nb_confirmations >= 3 ? '#dc2626' : '#7c3aed') + ';color:white;font-weight:700;">' + (isAr ? 'أكّده ' + s.nb_confirmations + ' مواطنين' : 'Confirmé par ' + s.nb_confirmations + ' citoyen' + (s.nb_confirmations > 1 ? 's' : '')) + '</span>';
     ficheHtml += '</div>';
     ficheHtml += '<div style="font-size:12px;color:var(--muted);">' + escHtml(s.reference||'—') + '</div>';
     if (s.organisation_nom) ficheHtml += '<div style="font-size:12px;color:var(--navy);margin-top:4px;">' + (isAr ? 'المنظمة : ' : 'Organisation : ') + '<strong>' + escHtml(s.organisation_nom) + '</strong></div>';
@@ -12395,6 +12396,7 @@ async function boOpenDrawer(id) {
   ficheHtml += '<span class="kanban-card-badge" style="background:#fee2e2;color:#EF4444;">' + escHtml(etatLabels[s.etat] || s.etat) + '</span>';
   ficheHtml += '<span class="kanban-card-badge" style="background:#fef3c7;color:#F59E0B;">' + escHtml(criticiteLabels[s.criticite] || s.criticite) + '</span>';
   ficheHtml += '<span class="kanban-card-badge" style="background:var(--blue-light);color:var(--blue);">' + escHtml(locDomaine(s._domaine||s.domaine)) + '</span>';
+  if (s.nb_confirmations > 0) ficheHtml += '<span class="kanban-card-badge" style="background:' + (s.nb_confirmations >= 3 ? '#dc2626' : '#7c3aed') + ';color:white;font-weight:700;">' + (currentLang==='ar' ? 'أكّده ' + s.nb_confirmations + ' مواطنين' : 'Confirmé par ' + s.nb_confirmations + ' citoyen' + (s.nb_confirmations > 1 ? 's' : '')) + '</span>';
   ficheHtml += '</div>';
   ficheHtml += '<div style="font-size:12px;color:var(--muted);">' + escHtml(s.reference||'—') + '</div>';
   ficheHtml += '</div>';
