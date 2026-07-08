@@ -1753,7 +1753,8 @@
       #exec-icua-score { font-size:16px !important; }
       /* SdC repartitions grid → 1 col */
       #sdc-repartitions-grid { grid-template-columns:1fr !important; }
-      #sdc-epic-cards { grid-template-columns:1fr !important; }
+      #sdc-epic-cards { grid-template-columns:repeat(2,1fr) !important; }
+      @media (max-width:480px) { #sdc-epic-cards { grid-template-columns:1fr !important; } }
       /* Tables scroll internal */
       .ops-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; }
       /* Buttons min touch target */
@@ -4263,10 +4264,10 @@
           </div>
         </div>
 
-        <!-- ═══ BLOC 3B — Les 3 EPIC en un coup d'œil ═══ -->
+        <!-- ═══ BLOC 3B — Les EPIC en un coup d'œil ═══ -->
         <div style="margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Les 3 EPIC en un coup d'œil</div>
-          <div id="sdc-epic-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Les EPIC en un coup d'œil</div>
+          <div id="sdc-epic-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
             <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Chargement...</div>
           </div>
         </div>
@@ -10680,13 +10681,19 @@ async function execLoad() {
           '<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + icon + ' ' + title + '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(' + Math.min(kpis.length, 3) + ',1fr);gap:6px;">' + kpis.join('') + '</div></div>';
       };
-      // Eau: from cockpitData.repartitions.organisations (join direct, même source que le tableau Répartition)
-      var eauOrg = (cockpitData && cockpitData.repartitions && cockpitData.repartitions.organisations || []).find(function(o) { return o.nom && o.nom.includes('Eau'); });
-      var eauKpis = eauOrg ? [
-        ekpi(eauOrg.en_cours || 0, isAr ? 'جارية' : 'En cours', '#2563eb'),
-        ekpi(eauOrg.resolus || 0, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
-        ekpi(eauOrg.en_retard || 0, isAr ? 'متأخرة' : 'En retard', (eauOrg.en_retard || 0) > 0 ? '#EF4444' : '#16a34a')
-      ] : [ekpi('—', 'Données', '#94a3b8')];
+      // Helper: build signalement EPIC card from cockpit repartitions
+      var repOrgs = (cockpitData && cockpitData.repartitions && cockpitData.repartitions.organisations) || [];
+      function sigEpicKpis(keyword) {
+        var org = repOrgs.find(function(o) { return o.nom && o.nom.includes(keyword); });
+        return org ? [
+          ekpi(org.en_cours || 0, isAr ? 'جارية' : 'En cours', '#2563eb'),
+          ekpi(org.resolus || 0, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
+          ekpi(org.en_retard || 0, isAr ? 'متأخرة' : 'En retard', (org.en_retard || 0) > 0 ? '#EF4444' : '#16a34a')
+        ] : [ekpi('—', '—', '#94a3b8'), ekpi('—', '—', '#94a3b8'), ekpi('—', '—', '#94a3b8')];
+      }
+      var eauKpis = sigEpicKpis('Eau');
+      var propreteKpis = sigEpicKpis('Propreté');
+      var voirieKpis = sigEpicKpis('Voirie');
       // Parkings
       var pkStats = await safeFetchJSON('/api/civipark/encaissements/stats', {}, true).catch(function(){ return {}; });
       var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).filter(function(c){return c.statut==='active';}).length; } catch(e){}
@@ -10706,6 +10713,8 @@ async function execLoad() {
       ];
       epicEl.innerHTML =
         epicCard(isAr ? 'المياه' : 'Eau', '💧', eauKpis) +
+        epicCard(isAr ? 'النظافة' : 'Propreté', '🧹', propreteKpis) +
+        epicCard(isAr ? 'الطرقات' : 'Voirie', '🛣️', voirieKpis) +
         epicCard(isAr ? 'مواقف' : 'Parkings', '🅿️', pkKpis) +
         epicCard(isAr ? 'العقارات' : 'Régie foncière', '🏛️', rfKpis);
     }
