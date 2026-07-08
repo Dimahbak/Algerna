@@ -218,7 +218,7 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
 
   // ── Répartitions ──
   const [parCommune, parOrganisation, parDomaine] = await Promise.all([
-    query(`SELECT c.id, c.nom, COUNT(s.id)::int AS total
+    query(`SELECT c.id, c.nom, c.nom_ar, COUNT(s.id)::int AS total
              FROM signalement s
              JOIN commune c ON c.id = s.commune_id
             ${wherePeriode}

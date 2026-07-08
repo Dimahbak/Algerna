@@ -5649,6 +5649,8 @@ function setLoading(btnId, textId, spinnerId, loading) {
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// AR-aware field selectors (fallback to FR if AR empty)
+function arF(ar, fr) { return (currentLang === 'ar' && ar) ? ar : (fr || ''); }
 
 // ── Dictionnaire centralisé des acronymes ──
 var ACRONYMES = {
@@ -7495,7 +7497,7 @@ async function loadAgentSignals(domain) {
           <div class="agent-signal-card-header">
             <div>
               <div class="agent-signal-ref">#${escHtml(s.reference || String(sigId))}</div>
-              <div class="agent-signal-cat">${escHtml(s.categorie || s.categorie_nom || '—')}</div>
+              <div class="agent-signal-cat">${escHtml(arF(s.categorie_nom_ar, s.categorie_nom) || s.categorie || '—')}</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;">
               ${s.criticite ? `<span class="${criticiteClass(s.criticite)}">${escHtml(s.criticite)}</span>` : ''}
@@ -7666,7 +7668,7 @@ async function showIqepDetail(parcId) {
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
         <div>
           <h3 style="margin:0;color:var(--navy);">${escHtml(d.nom)}</h3>
-          <p style="margin:2px 0;font-size:12px;color:var(--muted);">📍 ${escHtml(d.commune_nom || '—')}</p>
+          <p style="margin:2px 0;font-size:12px;color:var(--muted);">📍 ${escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—')}</p>
         </div>
         <div style="text-align:center;">
           <div style="font-size:36px;font-weight:800;color:${color};">${note}<span style="font-size:14px;">/100</span></div>
@@ -7778,7 +7780,7 @@ async function capLoadAgents() {
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
             <div>
               <div style="font-weight:700;color:var(--navy);">${escHtml((a.prenom||'')+' '+(a.nom||''))}</div>
-              <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(a.commune_nom||'—')} · ${escHtml(a.secteur||'—')}</div>
+              <div style="font-size:12px;color:var(--muted);">📍 ${escHtml(arF(a.commune_nom_ar, a.commune_nom)||'—')} · ${escHtml(a.secteur||'—')}</div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;">
               <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:${a.actif?'#f0fdf4':'#fee2e2'};color:${a.actif?'#16a34a':'#ef4444'};">${a.actif?'Actif':'Inactif'}</span>
@@ -9493,7 +9495,7 @@ async function orgPerfOpenDetail(orgId, orgName) {
               '<span style="font-weight:600;font-size:12px;color:var(--navy);">' + escHtml(d.reference || '—') + '</span>' +
               '<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:#fee2e2;color:#EF4444;">' + escHtml(d.etat) + '</span>' +
             '</div>' +
-            '<div style="font-size:11px;color:var(--muted);margin-top:3px;">' + escHtml(d.categorie_nom || d.categorie || '—') + ' · ' + escHtml(d.commune_nom || '—') + (horsDelai ? ' · <span style="color:#EF4444;font-weight:700;">' + (isAr ? 'خارج الآجال' : 'HORS DÉLAI') + '</span>' : '') + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:3px;">' + escHtml(arF(d.categorie_nom_ar, d.categorie_nom) || d.categorie || '—') + ' · ' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + (horsDelai ? ' · <span style="color:#EF4444;font-weight:700;">' + (isAr ? 'خارج الآجال' : 'HORS DÉLAI') + '</span>' : '') + '</div>' +
           '</div>';
         }).join('');
       } else {
@@ -9600,7 +9602,7 @@ function carteOpRender(data) {
       '<div style="font-size:12px;min-width:200px;">' +
       '<div style="font-weight:700;color:var(--navy);margin-bottom:4px;">' + escHtml(d.reference) + '</div>' +
       '<div><strong>État :</strong> ' + escHtml(d.etat) + '</div>' +
-      '<div><strong>Commune :</strong> ' + escHtml(d.commune_nom || '—') + '</div>' +
+      '<div><strong>Commune :</strong> ' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + '</div>' +
       '<div><strong>Domaine :</strong> ' + escHtml(d.domaine || '—') + '</div>' +
       (d.organisation_nom ? '<div><strong>Organisation :</strong> ' + escHtml(d.organisation_nom) + '</div>' : '') +
       '<div><strong>Urgence :</strong> ' + escHtml(d.gravite || 'normale') + '</div>' +
@@ -9630,7 +9632,7 @@ function carteOpRender(data) {
       '<div><strong>État mission :</strong> ' + escHtml(m.mission_etat) + '</div>' +
       '<div><strong>Priorité :</strong> ' + escHtml(m.priorite) + '</div>' +
       '<div><strong>Agent :</strong> ' + agent + '</div>' +
-      '<div><strong>Commune :</strong> ' + escHtml(m.commune_nom || '—') + '</div>' +
+      '<div><strong>Commune :</strong> ' + escHtml(arF(m.commune_nom_ar, m.commune_nom) || '—') + '</div>' +
       (m.signalement_id ? '<div style="margin-top:6px;"><a href="#" onclick="supOpenDrawer(\'' + m.signalement_id + '\');return false;" style="color:#8b5cf6;font-weight:600;">' + (currentLang === 'ar' ? 'فتح الملف' : 'Ouvrir le dossier') + '</a></div>' : '') +
       '</div>';
     var marker = L.marker([lat, lng], { icon: icon }).addTo(_cockpitMap).bindPopup(popup);
@@ -9677,7 +9679,7 @@ function carteOpRender(data) {
     sansGpsList.innerHTML = data.sans_gps.map(function(d) {
       return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;" onclick="supOpenDrawer(\'' + d.id + '\')">' +
         '<span><strong>' + escHtml(d.reference) + '</strong> — ' + escHtml(d.categorie || '—') + '</span>' +
-        '<span style="color:var(--muted);">' + escHtml(d.commune_nom || '—') + ' · ' + escHtml(d.etat) + '</span></div>';
+        '<span style="color:var(--muted);">' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + ' · ' + escHtml(d.etat) + '</span></div>';
     }).join('');
   } else if (sansGpsContainer) {
     sansGpsContainer.style.display = 'none';
@@ -9733,8 +9735,8 @@ function orgPerfRender() {
     var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
     var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
     var repriseColor = o.taux_reprise > 20 ? '#EF4444' : o.taux_reprise > 0 ? '#f97316' : 'var(--muted)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
-      '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(arF(o.nom_ar,o.nom)).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+      '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(arF(o.nom_ar,o.nom)) + '</td>' +
       '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type] || o.type) + '</span></td>' +
       '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
       '<td style="padding:8px 10px;text-align:right;">' + (o.temps_moyen_h ? o.temps_moyen_h + 'h' : '—') + '</td>' +
@@ -10318,8 +10320,8 @@ function sdcOrgPerfRender() {
   tbody.innerHTML = sorted.map(function(o) {
     var resColor = o.taux_resolution >= 80 ? '#16a34a' : o.taux_resolution >= 50 ? '#f97316' : '#EF4444';
     var retardColor = o.en_retard > 0 ? '#EF4444' : 'var(--muted)';
-    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
-      '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(o.nom) + '</td>' +
+    return '<tr style="border-bottom:1px solid var(--line);cursor:pointer;transition:background 0.15s;" onclick="orgPerfOpenDetail(' + o.organisation_id + ',\'' + escHtml(arF(o.nom_ar,o.nom)).replace(/'/g,'\\x27') + '\')" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">' +
+      '<td style="padding:8px 10px;font-weight:600;color:var(--navy);">' + escHtml(arF(o.nom_ar,o.nom)) + '</td>' +
       '<td style="padding:8px 10px;"><span style="font-size:10px;padding:2px 6px;border-radius:6px;background:var(--blue-light);color:var(--blue);font-weight:600;">' + escHtml(typeLabels[o.type]||o.type) + '</span></td>' +
       '<td style="padding:8px 10px;text-align:right;font-weight:700;">' + o.dossiers_recus + '</td>' +
       '<td style="padding:8px 10px;text-align:right;">' + (o.temps_moyen_h ? o.temps_moyen_h + 'h' : '—') + '</td>' +
@@ -10437,8 +10439,8 @@ function execRenderMapMarkers() {
     var m = L.marker([lat, lng], { icon: icon }).addTo(execMap);
     var etatL = currentLang==='ar' ? {recu:'مستلم',transmis:'محال',en_intervention:'قيد التدخل',resolu:'محلول',rejete:'مرفوض'} : {recu:'Reçu',transmis:'Transmis',en_intervention:'Pris en charge',resolu:'Résolu',rejete:'Rejeté'};
     m.bindPopup('<div style="font-family:Inter,sans-serif;font-size:12px;min-width:160px;">' +
-      '<strong>' + escHtml(s.sous_categorie_a_affiner ? sigFamilleLabel(s.categorie_famille) : (s.categorie || s.categorie_nom || '—')) + '</strong><br>' +
-      '<span style="color:var(--muted);">📍 ' + escHtml(s.commune_nom || s.commune || '—') + '</span><br>' +
+      '<strong>' + escHtml(s.sous_categorie_a_affiner ? sigFamilleLabel(s.categorie_famille) : (arF(s.categorie_nom_ar, s.categorie_nom) || s.categorie || '—')) + '</strong><br>' +
+      '<span style="color:var(--muted);">📍 ' + escHtml(arF(s.commune_nom_ar, s.commune_nom) || s.commune || '—') + '</span><br>' +
       '<span style="padding:2px 6px;border-radius:8px;font-size:10px;font-weight:600;background:' + color + '22;color:' + color + ';">' + (etatL[etat] || etat) + '</span>' +
       (isHorsDelai ? ' <span style="color:#EF4444;font-size:10px;font-weight:700;">' + (currentLang==='ar'?'خارج الآجال':'HORS DÉLAI') + '</span>' : '') +
       (isUrgent ? ' <span style="color:#F59E0B;font-size:10px;font-weight:700;">' + (currentLang==='ar'?'مستعجل':'URGENT') + '</span>' : '') +
@@ -10634,7 +10636,7 @@ async function execLoad() {
 
     if (repCommunes) {
       repCommunes.innerHTML = (cockpitData.repartitions.communes||[]).map(function(c) {
-        return '<div onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(c.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + c.total + '</span></div>';
+        return '<div onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(arF(c.nom_ar,c.nom)) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + c.total + '</span></div>';
       }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
     }
     if (repOrgs) {
@@ -11501,7 +11503,7 @@ function capRenderMissions() {
       '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">' +
         '<div style="flex:1;">' +
           '<div style="font-weight:700;font-size:14px;color:var(--navy);">' + escHtml(typeL[m.type] || m.type || m.sig_categorie || '—') + '</div>' +
-          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">📍 ' + escHtml(m.commune_nom || '—') + ' · ' + ago + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">📍 ' + escHtml(arF(m.commune_nom_ar, m.commune_nom) || '—') + ' · ' + ago + '</div>' +
           (m.commentaire ? '<div style="font-size:11px;color:var(--gray-600);margin-top:4px;line-height:1.4;">' + escHtml(m.commentaire).substring(0,80) + (m.commentaire.length > 80 ? '…' : '') + '</div>' : '') +
           (m.sig_reference ? '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + _refLabel + ' ' + escHtml(m.sig_reference) + (m.sig_etat ? ' · ' + _sigLabel + ' ' + escHtml(m.sig_etat) : '') + '</div>' : '') +
         '</div>' +
@@ -11541,7 +11543,7 @@ async function capOpenDrawer(id) {
 
   ficheHtml += '<div style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line);">';
   ficheHtml += secLabel(currentLang==='ar'?'أين':'Où');
-  ficheHtml += '<div style="font-size:13px;color:var(--gray-700);">📍 ' + escHtml(m.commune_nom || '—') + '</div>';
+  ficheHtml += '<div style="font-size:13px;color:var(--gray-700);">📍 ' + escHtml(arF(m.commune_nom_ar, m.commune_nom) || '—') + '</div>';
   if (m.sig_lat && m.sig_lng) ficheHtml += '<div style="margin-top:8px;"><a href="https://www.google.com/maps/dir/?api=1&destination=' + m.sig_lat + ',' + m.sig_lng + '" target="_blank" class="btn btn-sm btn-primary" style="width:100%;text-align:center;font-size:14px;padding:12px;">' + t('cap.ouvrir_itineraire') + '</a></div>';
   ficheHtml += '</div>';
 
@@ -11917,7 +11919,7 @@ function initWorkbenchMap(mapElId, signals) {
       var color = etatMarkerColor(s.etat || 'recu');
       var icon = createMarkerIcon(color, s._domaine || s.domaine);
       var marker = L.marker([lat, lng], {icon: icon}).addTo(map).bindPopup(
-        '<div style="font-size:12px;"><strong>' + escHtml(s.categorie_nom || s.categorie || '—') + '</strong><br>📍 ' + escHtml(s.commune_nom || '—') + '<br>' + escHtml(s.etat || '') + '</div>'
+        '<div style="font-size:12px;"><strong>' + escHtml(arF(s.categorie_nom_ar, s.categorie_nom) || s.categorie || '—') + '</strong><br>📍 ' + escHtml(arF(s.commune_nom_ar, s.commune_nom) || '—') + '<br>' + escHtml(s.etat || '') + '</div>'
       );
       _wbMapMarkers.push(marker);
     });
@@ -14638,7 +14640,7 @@ function renderCarteMarkers(filter) {
 
     const popupContent = `
       <div style="font-family:Inter,sans-serif;font-size:13px;min-width:160px;">
-        <strong>${escHtml(s.categorie || s.categorie_nom || '—')}</strong><br>
+        <strong>${escHtml(arF(s.categorie_nom_ar, s.categorie_nom) || s.categorie || '—')}</strong><br>
         <span style="font-size:11px;color:#6b7280;">${s._domaine === 'eau' ? '💧 ' + t('dash.eau') : '🌿 ' + t('dash.proprete')}</span>
         <div style="margin:6px 0;">
           <span style="display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:${color}22;color:${color}">${etatLabel(etat)}</span>
