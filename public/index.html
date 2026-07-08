@@ -9231,6 +9231,11 @@ async function supOpenDrawer(id) {
         '<button class="btn btn-sm" style="background:var(--red-light);color:var(--red);flex:1;" onclick="supDemanderReprise()">↩️ ' + t('sup.demander_reprise') + '</button>' +
       '</div>';
     }
+    if (['pris_en_charge','en_intervention','a_valider','transmis','recu'].includes(s.etat)) {
+      actHtml += '<div style="width:100%;margin-bottom:8px;">' +
+        '<button class="btn btn-sm" style="background:#f1f5f9;color:#475569;width:100%;font-size:11px;" onclick="supClasserSansSuite()">📁 ' + (isAr ? 'حفظ بدون متابعة' : 'Classer sans suite') + '</button>' +
+      '</div>';
+    }
     actHtml += '<div style="width:100%;display:flex;gap:6px;flex-wrap:wrap;">' +
       '<button class="btn btn-sm btn-outline" onclick="supRelancer()" style="flex:1;font-size:11px;">📩 ' + (isAr ? 'إعادة' : 'Relancer') + '</button>' +
       '<button class="btn btn-sm btn-outline" onclick="supNotifier()" style="flex:1;font-size:11px;">🔔 ' + (isAr ? 'إشعار' : 'Notifier') + '</button>' +
@@ -9368,6 +9373,27 @@ function supRelancer() {
   supCommentaire('relance',
     currentLang === 'ar' ? 'إعادة تنبيه المصلحة' : 'Relancer le service',
     currentLang === 'ar' ? 'تمت الإعادة' : 'Relance envoyée.');
+}
+
+function supClasserSansSuite() {
+  if (!_supCurrentId) return;
+  var isAr = currentLang === 'ar';
+  var title = isAr ? 'حفظ بدون متابعة — السبب مطلوب' : 'Classer sans suite — motif obligatoire';
+  var placeholder = isAr ? 'غير مؤسس، مكرر، خارج الاختصاص...' : 'Non fondé, doublon, hors compétence...';
+  showPromptModal(title, placeholder, async function(motif) {
+    if (!motif || !motif.trim()) { showToast(isAr ? 'السبب مطلوب' : 'Le motif est obligatoire.', 'error'); return; }
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/etat', {
+        method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ etat: 'rejete', motifRejet: motif.trim(), commentaire: motif.trim() })
+      });
+      if (res.ok) {
+        showToast(isAr ? 'تم حفظ الملف بدون متابعة' : 'Dossier classé sans suite.');
+        supCloseDrawer();
+        cockpitLoad();
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+    } catch(e) { showToast(e.message, 'error'); }
+  });
 }
 
 function supUrgenceWali() {
