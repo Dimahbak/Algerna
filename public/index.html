@@ -5651,7 +5651,7 @@ function escHtml(s) {
 }
 // AR-aware field selectors (fallback to FR if AR empty)
 function arF(ar, fr) { return (currentLang === 'ar' && ar) ? ar : (fr || ''); }
-function etatLabel(etat) { return t('bo.col_' + etat) || etat; }
+// etatLabel defined below (line ~7394)
 
 // ── Dictionnaire centralisé des acronymes ──
 var ACRONYMES = {
@@ -7393,11 +7393,13 @@ function etatBadgeClass(etat) {
 
 function etatLabel(etat) {
   const map = {
-    recu: t('etat.recu'),
-    transmis: t('etat.transmis'),
-    en_intervention: t('etat.en_intervention'),
-    resolu: t('etat.resolu'),
-    rejete: t('etat.rejete')
+    recu: t('bo.col_recu'),
+    transmis: t('bo.col_transmis'),
+    pris_en_charge: t('bo.col_pris_en_charge'),
+    en_intervention: t('bo.col_en_intervention'),
+    a_valider: t('bo.col_a_valider'),
+    resolu: t('bo.col_clos'),
+    rejete: t('bo.col_rejete')
   };
   return map[etat] || etat || '—';
 }
@@ -10438,7 +10440,7 @@ function execRenderMapMarkers() {
       className: '', iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
     });
     var m = L.marker([lat, lng], { icon: icon }).addTo(execMap);
-    var etatL = currentLang==='ar' ? {recu:'مستلم',transmis:'محال',en_intervention:'قيد التدخل',resolu:'محلول',rejete:'مرفوض'} : {recu:'Reçu',transmis:'Transmis',en_intervention:'Pris en charge',resolu:'Résolu',rejete:'Rejeté'};
+    var etatL = currentLang==='ar' ? {recu:'مستلم',transmis:'محوّل',pris_en_charge:'تم التكفل',en_intervention:'قيد التدخل',a_valider:'في انتظار المصادقة',resolu:'محلول',rejete:'غير مقبول'} : {recu:'Reçu',transmis:'Transmis',pris_en_charge:'Pris en charge',en_intervention:'En intervention',a_valider:'À valider',resolu:'Résolu',rejete:'Rejeté'};
     m.bindPopup('<div style="font-family:Inter,sans-serif;font-size:12px;min-width:160px;">' +
       '<strong>' + escHtml(s.sous_categorie_a_affiner ? sigFamilleLabel(s.categorie_famille) : (arF(s.categorie_nom_ar, s.categorie_nom) || s.categorie || '—')) + '</strong><br>' +
       '<span style="color:var(--muted);">📍 ' + escHtml(arF(s.commune_nom_ar, s.commune_nom) || s.commune || '—') + '</span><br>' +
