@@ -4403,7 +4403,7 @@
                 <option value="custom" data-i18n="sup.periode_custom">Personnalisée</option>
               </select>
             </div>
-            <div class="form-group" style="margin:0;">
+            <div class="form-group" style="margin:0;" id="rap-commune-group">
               <label data-i18n="sup.rap_territoire">Territoire</label>
               <select id="rap-commune" style="width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
                 <option value="" data-i18n="sup.rap_toute_wilaya">Toute la Wilaya</option>
@@ -9928,7 +9928,8 @@ function initRapports() {
   var sel = document.getElementById('rap-commune');
   if (sel && sel.options.length <= 1 && communes.length) {
     if (isCommune) {
-      sel.style.display = 'none';
+      var grp = document.getElementById('rap-commune-group');
+      if (grp) grp.style.display = 'none';
       sel.value = (currentUser || {}).commune_id || '';
     } else {
       communes.forEach(function(c) { var o = document.createElement('option'); o.value = c.id; o.textContent = c.nom; sel.appendChild(o); });

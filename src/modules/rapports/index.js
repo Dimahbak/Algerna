@@ -85,7 +85,7 @@ router.post('/generer', authenticate, requirePilotage(), asyncH(async (req, res)
   const { periode, from, to, commune_id, domaine, organisation_id, lang } = req.body;
   const isAr = lang === 'ar';
   const isCommune = hasPerimetre(req.user, 'commune');
-  const effectiveCommuneId = commune_id || (isCommune ? req.user.commune_id : null);
+  const effectiveCommuneId = isCommune ? req.user.commune_id : (commune_id || null);
   const p = periodeSQL(periode, from, to);
 
   // Build filters
