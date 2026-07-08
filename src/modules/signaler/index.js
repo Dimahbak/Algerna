@@ -833,6 +833,21 @@ router.get('/public/carte', asyncH(async (req, res) => {
   res.json(rows);
 }));
 
+// GET /mes-signalements — signalements du citoyen connecté
+router.get('/mes-signalements', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT s.id, s.reference, s.domaine, s.etat, s.description, s.lat, s.lng, s.cree_le, s.nb_confirmations,
+            cs.libelle AS categorie, cs.libelle_ar AS categorie_ar, cs.famille,
+            c.nom AS commune, c.nom_ar AS commune_ar
+       FROM signalement s
+       LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+       LEFT JOIN commune c ON c.id = s.commune_id
+      WHERE s.citoyen_id = $1
+      ORDER BY s.cree_le DESC LIMIT 100`,
+    [req.user.id]);
+  res.json(rows);
+}));
+
 router.get('/public/stats', asyncH(async (req, res) => {
   const [total, resolus, taux, nbCommunes] = await Promise.all([
     query('SELECT COUNT(*)::int AS n FROM signalement'),
