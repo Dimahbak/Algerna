@@ -221,6 +221,17 @@ router.post('/signalements/rapide',
       return rows[0];
     });
 
+    // Email de confirmation (fire-and-forget, ne bloque jamais)
+    try {
+      const { rows: uRows } = await query('SELECT email, prenom FROM utilisateur WHERE id=$1', [citoyenId]);
+      if (uRows[0]?.email) {
+        const { sendSignalementEmail } = require('../../services/emailService');
+        const catLabel = (await query('SELECT libelle FROM categorie_signal WHERE id=$1', [categorieId])).rows[0]?.libelle || famille;
+        const commLabel = communeId ? (await query('SELECT nom FROM commune WHERE id=$1', [communeId])).rows[0]?.nom || '' : '';
+        sendSignalementEmail(uRows[0].email, uRows[0].prenom || '', reference, catLabel, commLabel).catch(e => console.warn('[email] signalement confirm failed:', e.message));
+      }
+    } catch(e) { console.warn('[email] signalement confirm error:', e.message); }
+
     res.status(201).json({ signalement: result });
   }));
 
@@ -446,10 +457,9 @@ router.get('/board',
       params.push(req.user.commune_id);
       sql += ` AND s.commune_id = $${params.length}`;
     }
-    // Entité responsable : ne voit que les dossiers de son domaine d'activité
+    // Entité responsable : ne voit que les dossiers assignés à son organisation
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
-      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${Number(req.user.organisation_id)})`;
-      sql += ` OR s.domaine::text IN (SELECT UNNEST(domaines) FROM organisations WHERE id = ${Number(req.user.organisation_id)}))`;
+      sql += ` AND s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${Number(req.user.organisation_id)})`;
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
     const { rows } = await query(sql, params);

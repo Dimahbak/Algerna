@@ -182,4 +182,23 @@ async function testConnection() {
   }
 }
 
-module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, testConnection };
+async function sendResetEmail(email, prenom, token) {
+  const link = `https://civismart.pylcom.app/?reset=${token}`;
+  try {
+    await transporter.sendMail({ from: FROM, to: email, subject: 'ALGERNA — Réinitialisation mot de passe',
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;"><div style="background:#063B5A;color:white;padding:20px 24px;border-radius:12px 12px 0 0;text-align:center;"><h1 style="margin:0;font-size:22px;">ALGERNA</h1></div><div style="background:white;border:1px solid #e0e7ed;border-top:none;padding:24px;border-radius:0 0 12px 12px;"><h2 style="color:#063B5A;">Bonjour${prenom?' '+prenom:''}</h2><p>Cliquez ci-dessous pour réinitialiser votre mot de passe :</p><div style="text-align:center;margin:24px 0;"><a href="${link}" style="display:inline-block;background:#7C3AED;color:white;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;">Réinitialiser</a></div><p style="color:#64748B;font-size:13px;">Ce lien expire dans 1 heure.</p></div></div>` });
+    console.log('[emailService] Reset email sent to', email);
+    return { ok: true };
+  } catch(e) { console.warn('[emailService] sendResetEmail failed:', e.message); return { ok: false }; }
+}
+
+async function sendSignalementEmail(email, prenom, reference, categorie, commune) {
+  try {
+    await transporter.sendMail({ from: FROM, to: email, subject: `ALGERNA — Signalement ${reference} enregistré`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;"><div style="background:#063B5A;color:white;padding:20px 24px;border-radius:12px 12px 0 0;text-align:center;"><h1 style="margin:0;font-size:22px;">ALGERNA</h1><p style="margin:4px 0 0;font-size:13px;opacity:0.8;">Confirmation de signalement</p></div><div style="background:white;border:1px solid #e0e7ed;border-top:none;padding:24px;border-radius:0 0 12px 12px;"><h2 style="color:#063B5A;margin:0 0 12px;">Signalement enregistré${prenom?', '+prenom:''} !</h2><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:16px;"><div style="font-size:11px;color:#166534;text-transform:uppercase;">Référence</div><div style="font-size:22px;font-weight:800;color:#166534;">${reference}</div></div><table style="width:100%;font-size:14px;color:#334155;line-height:1.8;"><tr><td style="font-weight:600;">Catégorie</td><td>${categorie}</td></tr>${commune?'<tr><td style="font-weight:600;">Commune</td><td>'+commune+'</td></tr>':''}<tr><td style="font-weight:600;">Statut</td><td>Reçu</td></tr></table><p style="color:#64748B;font-size:13px;margin-top:16px;">Suivez l'avancement dans <strong>Mon suivi</strong>.</p></div></div>` });
+    console.log('[emailService] Signalement confirmation sent to', email, 'ref:', reference);
+    return { ok: true };
+  } catch(e) { console.warn('[emailService] sendSignalementEmail failed:', e.message); return { ok: false }; }
+}
+
+module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, testConnection };
