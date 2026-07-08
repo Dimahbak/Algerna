@@ -2392,7 +2392,7 @@
       </button>
       <button class="nav-item hidden" onclick="showView('admin-communiques')" data-view="admin-communiques" id="nav-admin-communiques">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Communiqués
+        <span data-i18n="sidebar.communiques">Communiqués</span>
       </button>
       <button class="nav-item hidden" onclick="showView('civipark')" data-view="civipark" id="nav-civipark">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -2403,10 +2403,10 @@
         PatriLocal
       </button>
       <div class="nav-divider hidden" id="admin-sys-divider"></div>
-      <div class="nav-label hidden" id="admin-sys-label">Administration</div>
+      <div class="nav-label hidden" id="admin-sys-label" data-i18n="sidebar.administration">Administration</div>
       <button class="nav-item hidden" onclick="showView('bo-admin')" data-view="bo-admin" id="nav-bo-admin">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Administration
+        <span data-i18n="sidebar.administration">Administration</span>
       </button>
       <div class="sidebar-illust"><img src="/assets/algerna/design-v1/sidebar-djamaa-night-v1.webp" alt="" loading="lazy"></div>
     </aside>
@@ -5651,6 +5651,7 @@ function escHtml(s) {
 }
 // AR-aware field selectors (fallback to FR if AR empty)
 function arF(ar, fr) { return (currentLang === 'ar' && ar) ? ar : (fr || ''); }
+function etatLabel(etat) { return t('bo.col_' + etat) || etat; }
 
 // ── Dictionnaire centralisé des acronymes ──
 var ACRONYMES = {
@@ -9063,7 +9064,7 @@ function cockpitRender(data) {
   document.getElementById('cockpit-organisations').innerHTML = oHtml;
 
   // Domaines
-  var domaineLabels = {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement'};
+  var domaineLabels = currentLang==='ar' ? {eau:'المياه',proprete:'النظافة',general:'عام',voirie:'الطرقات',eclairage:'الإنارة',espaces_verts:'مساحات خضراء',stationnement:'التوقف'} : {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement'};
   var dHtml = data.repartitions.domaines.length
     ? data.repartitions.domaines.map(function(d) {
         var label = domaineLabels[d.domaine] || d.domaine;
@@ -9493,7 +9494,7 @@ async function orgPerfOpenDetail(orgId, orgName) {
           return '<div onclick="orgPerfCloseDetail();supOpenDrawer(\'' + d.id + '\')" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;' + (horsDelai ? 'border-left:3px solid #EF4444;' : '') + '" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'white\'">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;">' +
               '<span style="font-weight:600;font-size:12px;color:var(--navy);">' + escHtml(d.reference || '—') + '</span>' +
-              '<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:#fee2e2;color:#EF4444;">' + escHtml(d.etat) + '</span>' +
+              '<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:#fee2e2;color:#EF4444;">' + escHtml(etatLabel(d.etat)) + '</span>' +
             '</div>' +
             '<div style="font-size:11px;color:var(--muted);margin-top:3px;">' + escHtml(arF(d.categorie_nom_ar, d.categorie_nom) || d.categorie || '—') + ' · ' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + (horsDelai ? ' · <span style="color:#EF4444;font-weight:700;">' + (isAr ? 'خارج الآجال' : 'HORS DÉLAI') + '</span>' : '') + '</div>' +
           '</div>';
@@ -9601,7 +9602,7 @@ function carteOpRender(data) {
     var popup =
       '<div style="font-size:12px;min-width:200px;">' +
       '<div style="font-weight:700;color:var(--navy);margin-bottom:4px;">' + escHtml(d.reference) + '</div>' +
-      '<div><strong>État :</strong> ' + escHtml(d.etat) + '</div>' +
+      '<div><strong>État :</strong> ' + escHtml(etatLabel(d.etat)) + '</div>' +
       '<div><strong>Commune :</strong> ' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + '</div>' +
       '<div><strong>Domaine :</strong> ' + escHtml(d.domaine || '—') + '</div>' +
       (d.organisation_nom ? '<div><strong>Organisation :</strong> ' + escHtml(d.organisation_nom) + '</div>' : '') +
@@ -9679,7 +9680,7 @@ function carteOpRender(data) {
     sansGpsList.innerHTML = data.sans_gps.map(function(d) {
       return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;" onclick="supOpenDrawer(\'' + d.id + '\')">' +
         '<span><strong>' + escHtml(d.reference) + '</strong> — ' + escHtml(d.categorie || '—') + '</span>' +
-        '<span style="color:var(--muted);">' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + ' · ' + escHtml(d.etat) + '</span></div>';
+        '<span style="color:var(--muted);">' + escHtml(arF(d.commune_nom_ar, d.commune_nom) || '—') + ' · ' + escHtml(etatLabel(d.etat)) + '</span></div>';
     }).join('');
   } else if (sansGpsContainer) {
     sansGpsContainer.style.display = 'none';
@@ -10625,7 +10626,7 @@ async function execLoad() {
     var repCommunes = document.getElementById('sdc-rep-communes');
     var repOrgs = document.getElementById('sdc-rep-organisations');
     var repDomaines = document.getElementById('sdc-rep-domaines');
-    var domaineLabels = {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement'};
+    var domaineLabels = currentLang==='ar' ? {eau:'المياه',proprete:'النظافة',general:'عام',voirie:'الطرقات',eclairage:'الإنارة',espaces_verts:'مساحات خضراء',stationnement:'التوقف'} : {eau:'Eau',proprete:'Propreté',general:'Général',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement'};
 
     // Masquer la colonne commune pour superviseur communal
     var repGrid = document.getElementById('sdc-repartitions-grid');
