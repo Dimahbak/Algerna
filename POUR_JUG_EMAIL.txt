@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════
+  POUR JUG — Emails ALGERNA non reçus par les destinataires externes
+  Généré le 8 juillet 2026
+═══════════════════════════════════════════════════════════
+
+PROBLÈME : les emails envoyés via club@capcowork.co (bienvenue, reset mot de passe)
+sont acceptés par le relais mail.capcowork.co mais n'arrivent PAS chez les
+destinataires externes (Protonmail, Gmail, etc.).
+
+DIAGNOSTIC :
+  - SMTP capcowork.co accepte l'envoi (250 OK, queued)
+  - Le serveur SMTP se présente comme "host.ithrytec.com" (EHLO)
+  - Le From est "club@capcowork.co"
+  - → MISMATCH : le hostname ne correspond pas au domaine d'envoi
+
+  Ligne de réponse SMTP :
+    EHLO → 250-host.ithrytec.com
+    MAIL FROM:<club@capcowork.co> → 250 2.1.0 Ok
+    RCPT TO:<garydawn@protonmail.com> → 250 2.1.5 Ok
+    DATA → 250 2.0.0 Ok: queued as D2CEA2903D9
+
+  Mais l'email n'arrive jamais chez Protonmail (ni inbox, ni spam).
+
+CAUSE PROBABLE :
+  Le relais capcowork.co envoie le mail à Protonmail, mais Protonmail le REJETTE
+  silencieusement ou le met en quarantaine à cause de :
+  1. SPF softfail (~all au lieu de -all) → Protonmail n'a pas confiance
+  2. Pas de DKIM → pas de signature cryptographique
+  3. Hostname mismatch (host.ithrytec.com ≠ capcowork.co)
+
+ENREGISTREMENTS DNS À VÉRIFIER/CRÉER SUR capcowork.co :
+  ┌─────────────┬───────────────────────────────────────────────┐
+  │ Type        │ Valeur                                        │
+  ├─────────────┼───────────────────────────────────────────────┤
+  │ SPF (TXT)   │ v=spf1 ip4:102.220.30.62 -all                │
+  │             │ (changer ~all en -all = hardfail)              │
+  │ DKIM (TXT)  │ Générer une clé DKIM sur le serveur mail      │
+  │             │ et publier la clé publique en DNS              │
+  │ DMARC (TXT) │ v=DMARC1; p=none; rua=mailto:admin@capcowork.co │
+  │ rDNS (PTR)  │ 102.220.30.62 → mail.capcowork.co             │
+  └─────────────┴───────────────────────────────────────────────┘
+
+ALTERNATIVE RAPIDE (si DNS trop long) :
+  Utiliser un service SMTP externe : Brevo (ex-Sendinblue), Mailgun, ou Resend.
+  Comptes gratuits = 300 emails/jour, livraison immédiate, DKIM automatique.
+  Changer 2 lignes dans src/services/emailService.js (host + auth).
+
+ADRESSE FROM UTILISÉE : "ALGERNA — Wilaya d'Alger" <club@capcowork.co>
+
+COMMANDES POUR VÉRIFIER APRÈS CORRECTION DNS :
+  # Tester l'envoi
+  node -e "require('./src/services/emailService').testConnection().then(console.log)"
+  # Envoyer un test
+  curl -s http://localhost:3055/api/auth/forgot -H 'Content-Type: application/json' \
+    -d '{"identifiant":"garydawn@protonmail.com"}'
+
+RESET MANUEL DE SECOURS (si l'email ne passe toujours pas) :
+  node scripts/reset-password.js <téléphone-ou-email> <nouveau-mot-de-passe>
