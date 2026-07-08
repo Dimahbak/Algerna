@@ -9935,14 +9935,14 @@ function initRapports() {
     }
   }
 
-  // Populate organisation select
+  // Populate organisation select — all active organisations
   var orgSel = document.getElementById('rap-organisation');
   if (orgSel && orgSel.options.length <= 1) {
-    safeFetchJSON('/api/supervision/organisations-performance?periode=annee', {}, true).then(function(data) {
-      (data.organisations || []).forEach(function(o) {
+    safeFetchJSON('/api/supervision/organisations-performance?periode=annee&inclure_inactives=true', {}, true).then(function(data) {
+      (data.organisations || data || []).forEach(function(o) {
         var opt = document.createElement('option');
-        opt.value = o.organisation_id;
-        opt.textContent = o.nom;
+        opt.value = o.organisation_id || o.id;
+        opt.textContent = (currentLang==='ar' && o.nom_ar) ? o.nom_ar : o.nom;
         orgSel.appendChild(opt);
       });
     }).catch(function(){});
@@ -9968,13 +9968,15 @@ async function loadMesRapports() {
     var typeIcons = { territoire: '📊', dossier: '📋', encaissements: '💰' };
     var typeLabels = { territoire: 'Territoire', dossier: 'Dossier', encaissements: 'Encaissements' };
     el.innerHTML = rapports.map(function(r) {
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);">' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="font-weight:600;color:var(--navy);font-size:13px;">' + (typeIcons[r.type]||'📄') + ' ' + escHtml(r.titre||r.filename) + '</div>' +
-          '<div style="font-size:11px;color:var(--muted);">' + (typeLabels[r.type]||r.type) + ' · ' + fmtDateTime(r.cree_le) + (r.prenom ? ' · ' + escHtml(r.prenom) + ' ' + escHtml(r.nom||'') : '') + '</div>' +
-        '</div>' +
-        '<a href="' + escHtml(r.url) + '" target="_blank" download class="btn btn-sm btn-primary" style="flex-shrink:0;font-size:11px;">Télécharger</a>' +
-      '</div>';
+      var isAr = currentLang === 'ar';
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--line);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">' +
+          '<div style="min-width:0;">' +
+            '<div style="font-weight:600;color:var(--navy);font-size:13px;">' + (typeIcons[r.type]||'📄') + ' ' + escHtml(r.titre||r.filename) + '</div>' +
+            '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + (typeLabels[r.type]||r.type) + ' · ' + fmtDateTime(r.cree_le) + '</div>' +
+          '</div>' +
+          '<a href="' + escHtml(r.url) + '" target="_blank" download style="flex-shrink:0;font-size:11px;padding:4px 12px;background:#7C3AED;color:white;border-radius:8px;text-decoration:none;font-weight:600;white-space:nowrap;">' + (isAr?'تحميل':'Télécharger') + '</a>' +
+        '</div></div>';
     }).join('');
   } catch(e) { el.innerHTML = '<div style="color:var(--red);">Erreur de chargement</div>'; }
 }
