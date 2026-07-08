@@ -4266,7 +4266,7 @@
 
         <!-- ═══ BLOC 3B — Les EPIC en un coup d'œil ═══ -->
         <div style="margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;">Les EPIC en un coup d'œil</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.epic_titre">Les EPIC en un coup d'œil</div>
           <div id="sdc-epic-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
             <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Chargement...</div>
           </div>
@@ -8097,7 +8097,7 @@ async function cpLoadCartes() {
       '</div>';
     if (!cartes.length) { el.innerHTML = html + '<div class="empty-state"><p>Aucune carte résident.</p></div>'; return; }
     var statutColors = {en_attente:'#f59e0b',validee_attente_paiement:'#3b82f6',active:'#16a34a',expiree:'#94a3b8',suspendue:'#ef4444',revoquee:'#991b1b'};
-    var statutLabels = {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
+    var statutLabels = currentLang==='ar' ? {en_attente:'قيد الانتظار',validee_attente_paiement:'بانتظار الدفع',active:'نشطة',expiree:'منتهية',suspendue:'معلقة',revoquee:'ملغاة'} : {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
     html += cartes.map(function(c) {
       var sc = statutColors[c.statut]||'#94a3b8';
       return '<div class="card" style="margin-bottom:8px;padding:12px;cursor:pointer;" onclick="cpCarteDetail('+c.id+')">' +
@@ -8124,7 +8124,7 @@ async function cpCarteDetail(id) {
   det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
   try {
     var c = await safeFetchJSON('/api/civipark/cartes/' + id, { headers: authHeaders() });
-    var statutLabels = {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
+    var statutLabels = currentLang==='ar' ? {en_attente:'قيد الانتظار',validee_attente_paiement:'بانتظار الدفع',active:'نشطة',expiree:'منتهية',suspendue:'معلقة',revoquee:'ملغاة'} : {en_attente:'En attente',validee_attente_paiement:'Attente paiement',active:'Active',expiree:'Expirée',suspendue:'Suspendue',revoquee:'Révoquée'};
     var html = '<button class="btn-back" onclick="document.getElementById(\'cp-detail\').classList.add(\'hidden\')">← Retour</button>';
     html += '<div class="card" style="padding:16px;margin-top:8px;">';
     html += '<h3 style="margin:0 0 8px;">Carte ' + escHtml(c.numero||'') + '</h3>';
@@ -10639,7 +10639,8 @@ async function execLoad() {
     }
     if (repOrgs) {
       repOrgs.innerHTML = (cockpitData.repartitions.organisations||[]).map(function(o) {
-        return '<div onclick="orgPerfOpenDetail(' + o.id + ',\'' + escHtml(o.nom).replace(/'/g,'\\x27') + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(o.nom) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + o.total + '</span></div>';
+        var oName = (isAr && o.nom_ar) ? o.nom_ar : o.nom;
+        return '<div onclick="orgPerfOpenDetail(' + o.id + ',\'' + escHtml(oName).replace(/'/g,'\\x27') + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(oName) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + o.total + '</span></div>';
       }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
     }
     if (repDomaines) {

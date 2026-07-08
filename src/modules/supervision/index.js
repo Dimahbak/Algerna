@@ -223,7 +223,7 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
              JOIN commune c ON c.id = s.commune_id
             ${wherePeriode}
             GROUP BY c.id, c.nom ORDER BY total DESC`),
-    query(`SELECT o.id, o.nom, COUNT(s.id)::int AS total,
+    query(`SELECT o.id, o.nom, o.nom_ar, COUNT(s.id)::int AS total,
               COUNT(*) FILTER (WHERE s.etat = 'resolu')::int AS resolus,
               COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS en_cours,
               COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
@@ -232,7 +232,7 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
              JOIN utilisateur u ON u.id = s.assigne_a
              JOIN organisations o ON o.id = u.organisation_id
             ${wherePeriode}
-            GROUP BY o.id, o.nom ORDER BY total DESC`),
+            GROUP BY o.id, o.nom, o.nom_ar ORDER BY total DESC`),
     query(`SELECT s.domaine, COUNT(*)::int AS total
              FROM signalement s
             ${wherePeriode} AND s.domaine IS NOT NULL
@@ -472,7 +472,7 @@ router.get('/organisations-performance', authenticate, requirePilotage(), asyncH
          LEFT JOIN utilisateur u_assigne ON u_assigne.id = s.assigne_a
         WHERE ${intervalSQL}${communeFilter}${filterSQL}
      )
-     SELECT o.id AS organisation_id, o.nom, o.type,
+     SELECT o.id AS organisation_id, o.nom, o.nom_ar, o.type,
             COUNT(oe.signalement_id)::int AS dossiers_recus,
             COUNT(*) FILTER (WHERE s.etat = 'resolu')::int AS resolus,
             COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
@@ -481,7 +481,7 @@ router.get('/organisations-performance', authenticate, requirePilotage(), asyncH
        LEFT JOIN org_executante oe ON oe.organisation_id = o.id
        LEFT JOIN signalement s ON s.id = oe.signalement_id
       WHERE o.actif = true
-      GROUP BY o.id, o.nom, o.type
+      GROUP BY o.id, o.nom, o.nom_ar, o.type
       ${inclureInactives ? '' : 'HAVING COUNT(oe.signalement_id) > 0'}
       ORDER BY dossiers_recus DESC`,
     params
@@ -757,7 +757,7 @@ router.get('/alertes-strategiques', authenticate, requirePilotage(), asyncH(asyn
          LEFT JOIN utilisateur u ON u.organisation_id = o.id
          LEFT JOIN signalement s ON s.assigne_a = u.id${communeFilter.replace(/AND/,'AND')}
         WHERE o.actif = true
-        GROUP BY o.id, o.nom, o.type
+        GROUP BY o.id, o.nom, o.nom_ar, o.type
        HAVING COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete')) >= ${SEUIL_ORG_DOSSIERS_OUVERTS}
            OR COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
                 AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu) >= ${SEUIL_ORG_DOSSIERS_RETARD}
