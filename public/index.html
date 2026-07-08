@@ -9477,7 +9477,7 @@ async function orgPerfOpenDetail(orgId, orgName) {
   }
 
   // Charger les dossiers de cette organisation (filtrés par org_id)
-  html += '<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + (isAr ? 'الملفات المفتوحة والمتأخرة' : 'Dossiers ouverts et en retard') + '</div>';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;" id="orgperf-dossiers-titre">' + (isAr ? 'الملفات المفتوحة والمتأخرة' : 'Dossiers ouverts et en retard') + '</div>';
 
   try {
     var res = await apiFetch('/api/signaler/board?organisation_id=' + orgId, { headers: authHeaders() });
@@ -9487,6 +9487,7 @@ async function orgPerfOpenDetail(orgId, orgName) {
         return !['resolu','rejete'].includes(d.etat);
       });
       var ouverts = dossiers.slice(0, 20);
+      window._orgPerfDossiersCount = dossiers.length;
       if (ouverts.length) {
         html += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">' + (isAr ? 'ملفات هذه المصلحة' : 'Dossiers de cette organisation') + '</div>';
         html += ouverts.map(function(d) {
@@ -9509,6 +9510,9 @@ async function orgPerfOpenDetail(orgId, orgName) {
   }
 
   contentEl.innerHTML = html;
+  // Update title with count after DOM is written
+  var titreEl2 = document.getElementById('orgperf-dossiers-titre');
+  if (titreEl2 && typeof _orgPerfDossiersCount !== 'undefined') titreEl2.textContent = titreEl2.textContent.replace(/\(\d+\)/, '') + ' (' + _orgPerfDossiersCount + ')';
 }
 
 function orgPerfCloseDetail() { document.getElementById('orgperf-detail-panel').classList.add('hidden'); }
@@ -10723,7 +10727,7 @@ async function execLoad() {
           ekpi(org.en_cours || 0, isAr ? 'جارية' : 'En cours', '#2563eb'),
           ekpi(org.resolus || 0, isAr ? 'محلولة' : 'Résolus', '#16a34a'),
           ekpi(org.en_retard || 0, isAr ? 'متأخرة' : 'En retard', (org.en_retard || 0) > 0 ? '#EF4444' : '#16a34a')
-        ] : [ekpi('—', '—', '#94a3b8'), ekpi('—', '—', '#94a3b8'), ekpi('—', '—', '#94a3b8')];
+        ] : [ekpi(0, isAr ? 'جارية' : 'En cours', '#94a3b8'), ekpi(0, isAr ? 'محلولة' : 'Résolus', '#94a3b8'), ekpi(0, isAr ? 'متأخرة' : 'En retard', '#94a3b8')];
       }
       var eauKpis = sigEpicKpis('Eau');
       var propreteKpis = sigEpicKpis('Propreté');
