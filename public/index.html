@@ -10767,7 +10767,7 @@ async function execLoad() {
     }
   } catch(e) {}
 
-  cards = cards.slice(0,5);
+  cards = cards.filter(function(c) { return c.id; }).slice(0,5); // Anti-orphan: no card without valid dossier ID
 
   // ── FEU TRICOLORE — basé sur les cartes réelles ──
   var hasCritique = cards.some(function(c) { return c.severity === 'critique'; });
