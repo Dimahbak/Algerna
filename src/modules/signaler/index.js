@@ -439,6 +439,7 @@ router.get('/board',
     if (communeId) { params.push(Number(communeId)); sql += ` AND s.commune_id = $${params.length}`; }
     if (etat) { params.push(etat); sql += ` AND s.etat = $${params.length}`; }
     if (categorie) { params.push(categorie); sql += ` AND cs.famille = $${params.length}`; }
+    if (req.query.organisation_id) { sql += ` AND s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${Number(req.query.organisation_id)})`; }
     // Superviseur communal : restreint à sa commune
     var isCommune = hasPerimetre(req.user, 'commune');
     if (isCommune && req.user.commune_id) {

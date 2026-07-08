@@ -9465,22 +9465,19 @@ async function orgPerfOpenDetail(orgId, orgName) {
     html += '</div>';
   }
 
-  // Charger les dossiers de cette organisation
+  // Charger les dossiers de cette organisation (filtrés par org_id)
   html += '<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">' + (isAr ? 'الملفات المفتوحة والمتأخرة' : 'Dossiers ouverts et en retard') + '</div>';
 
   try {
-    var res = await apiFetch('/api/signaler/board', { headers: authHeaders() });
+    var res = await apiFetch('/api/signaler/board?organisation_id=' + orgId, { headers: authHeaders() });
     if (res.ok) {
       var allDossiers = await res.json();
-      // Filtrer les dossiers qui appartiennent à cette organisation (par nom)
       var dossiers = (Array.isArray(allDossiers) ? allDossiers : []).filter(function(d) {
         return !['resolu','rejete'].includes(d.etat);
       });
-      // On ne peut pas filtrer par org_id côté client car le board ne retourne pas organisation_id
-      // Afficher les dossiers ouverts/en retard les plus récents (limité à 20)
       var ouverts = dossiers.slice(0, 20);
       if (ouverts.length) {
-        html += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">' + (isAr ? 'آخر الملفات المفتوحة على المنصة' : 'Derniers dossiers ouverts sur la plateforme') + '</div>';
+        html += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">' + (isAr ? 'ملفات هذه المصلحة' : 'Dossiers de cette organisation') + '</div>';
         html += ouverts.map(function(d) {
           var now = Date.now();
           var horsDelai = d.etat === 'recu' && d.cree_le && (now - new Date(d.cree_le).getTime()) > 48*3600*1000;
