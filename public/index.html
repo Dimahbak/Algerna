@@ -5972,7 +5972,7 @@ async function initApp() {
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark'] : ['bo-executive','rapports','annuaire','admin-communiques'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
@@ -5980,7 +5980,7 @@ async function initApp() {
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
     admin_apc: ['bo-executive','rapports','admin-communiques'],
-    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin','civipark'],
+    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin'],
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -6274,14 +6274,14 @@ function showView(name) {
     agent_traitant:       ['bo-agent','profil','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','profil','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','profil','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','profil','a-propos','aide','notifications'],
-    admin_wilaya: ['bo-executive','admin-communiques','bo-admin','civipark','profil','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','admin-communiques','bo-admin','profil','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
