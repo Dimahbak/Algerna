@@ -21,6 +21,8 @@
   <script defer src="https://unpkg.com/lucide@1.23.0/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
+  <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -9481,12 +9483,22 @@ function ccoeShowEvtForm(evt) {
     '</div>' +
     '<div class="form-group"><label>Lieu</label><input type="text" id="ccoe-evt-lieu" value="' + (isEdit ? escHtml(evt.lieu || '') : '') + '"></div>' +
     '<div class="form-group"><label>Description itinéraire</label><textarea id="ccoe-evt-itin-desc" rows="2" placeholder="Étapes du parcours…">' + (isEdit ? escHtml(evt.itineraire_description || '') : '') + '</textarea></div>' +
+    '<div class="form-group"><label>' + (t('ccoe.itineraire') || 'Itinéraire') + ' & Zones</label>' +
+    '<div id="ccoe-draw-mobile-msg" style="display:none;font-size:12px;color:var(--muted);margin-bottom:6px;font-style:italic;">' + (t('ccoe.trace_desktop') || 'Tracé modifiable sur ordinateur') + '</div>' +
+    '<div id="ccoe-draw-map" style="height:350px;border-radius:8px;overflow:hidden;border:1px solid #ddd;"></div>' +
+    '<div id="ccoe-draw-toolbar" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">' +
+    '<button type="button" class="btn btn-sm btn-outline" onclick="ccoeDrawStart(\'polyline\')" id="ccoe-btn-polyline">✏ Itinéraire</button>' +
+    '<button type="button" class="btn btn-sm btn-outline" onclick="ccoeDrawStart(\'polygon\')" id="ccoe-btn-polygon">▭ Zone</button>' +
+    '<button type="button" class="btn btn-sm btn-outline" style="color:#DC2626;" onclick="ccoeDrawClear()">✕ Effacer tout</button>' +
+    '</div></div>' +
     '<div class="form-group"><label>Description</label><textarea id="ccoe-evt-desc" rows="2">' + (isEdit ? escHtml(evt.description || '') : '') + '</textarea></div>' +
     '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
     '<button type="button" class="btn btn-outline" onclick="ccoeTab(\'evenements\')">Annuler</button>' +
     '<button type="submit" class="btn btn-primary">Enregistrer</button>' +
     '</div></form></div>';
   document.getElementById('ccoe-content').innerHTML = html;
+  // Init draw map after DOM
+  setTimeout(function() { ccoeInitDrawMap(isEdit ? evt : null); }, 200);
 }
 
 function ccoeToggleAutre() {
@@ -9495,9 +9507,118 @@ function ccoeToggleAutre() {
   if (fields) fields.style.display = sel.value === 'autre' ? '' : 'none';
 }
 
+// ── Draw Map for itineraire + zones ──
+var _ccoeDrawMap = null;
+var _ccoeDrawnItems = null;
+var _ccoeDrawHandler = null;
+
+function ccoeInitDrawMap(evt) {
+  var el = document.getElementById('ccoe-draw-map');
+  if (!el) return;
+  var isMobile = window.innerWidth < 500;
+  var mobileMsg = document.getElementById('ccoe-draw-mobile-msg');
+  var toolbar = document.getElementById('ccoe-draw-toolbar');
+  if (isMobile) {
+    if (mobileMsg) mobileMsg.style.display = '';
+    if (toolbar) toolbar.style.display = 'none';
+  }
+
+  if (_ccoeDrawMap) { _ccoeDrawMap.remove(); _ccoeDrawMap = null; }
+  _ccoeDrawMap = L.map(el).setView([36.753, 3.058], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OSM' }).addTo(_ccoeDrawMap);
+
+  _ccoeDrawnItems = new L.FeatureGroup();
+  _ccoeDrawMap.addLayer(_ccoeDrawnItems);
+
+  // Load existing GeoJSON if editing
+  if (evt) {
+    if (evt.itineraire_geojson) {
+      try {
+        var itin = typeof evt.itineraire_geojson === 'string' ? JSON.parse(evt.itineraire_geojson) : evt.itineraire_geojson;
+        L.geoJSON(itin, { style: { color: '#DC2626', weight: 4 } }).eachLayer(function(l) { _ccoeDrawnItems.addLayer(l); });
+      } catch(e) {}
+    }
+    if (evt.zones_geojson) {
+      try {
+        var zones = typeof evt.zones_geojson === 'string' ? JSON.parse(evt.zones_geojson) : evt.zones_geojson;
+        L.geoJSON(zones, { style: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } }).eachLayer(function(l) { _ccoeDrawnItems.addLayer(l); });
+      } catch(e) {}
+    }
+    if (_ccoeDrawnItems.getLayers().length) {
+      _ccoeDrawMap.fitBounds(_ccoeDrawnItems.getBounds(), { padding: [20, 20] });
+    }
+  }
+
+  // leaflet-draw integration (graceful if not loaded)
+  if (typeof L.Draw !== 'undefined' && !isMobile) {
+    var drawControl = new L.Control.Draw({
+      position: 'topright',
+      draw: {
+        polyline: { shapeOptions: { color: '#DC2626', weight: 4 } },
+        polygon: { shapeOptions: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } },
+        rectangle: false, circle: false, circlemarker: false, marker: false
+      },
+      edit: { featureGroup: _ccoeDrawnItems }
+    });
+    _ccoeDrawMap.addControl(drawControl);
+    _ccoeDrawMap.on(L.Draw.Event.CREATED, function(e) {
+      _ccoeDrawnItems.addLayer(e.layer);
+    });
+    // Hide our custom toolbar — leaflet-draw provides its own
+    if (toolbar) toolbar.style.display = 'none';
+  } else if (!isMobile && window._leafletDrawFailed) {
+    // CDN failed — show fallback message
+    var notice = document.createElement('div');
+    notice.style.cssText = 'font-size:12px;color:#F59E0B;margin-top:4px;';
+    notice.textContent = 'Outil de tracé indisponible (bibliothèque non chargée). Utilisez les boutons ci-dessous.';
+    el.parentNode.insertBefore(notice, el.nextSibling);
+  }
+
+  setTimeout(function() { if (_ccoeDrawMap) _ccoeDrawMap.invalidateSize(); }, 300);
+}
+
+function ccoeDrawStart(type) {
+  if (!_ccoeDrawMap || !_ccoeDrawnItems) return;
+  if (typeof L.Draw === 'undefined') {
+    showToast('Outil de tracé non disponible', 'error');
+    return;
+  }
+  if (_ccoeDrawHandler) { _ccoeDrawHandler.disable(); _ccoeDrawHandler = null; }
+  var opts = type === 'polyline'
+    ? { shapeOptions: { color: '#DC2626', weight: 4 } }
+    : { shapeOptions: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } };
+  _ccoeDrawHandler = type === 'polyline'
+    ? new L.Draw.Polyline(_ccoeDrawMap, opts)
+    : new L.Draw.Polygon(_ccoeDrawMap, opts);
+  _ccoeDrawHandler.enable();
+}
+
+function ccoeDrawClear() {
+  if (_ccoeDrawnItems) _ccoeDrawnItems.clearLayers();
+}
+
+function ccoeCollectGeoJSON() {
+  var result = { itineraire: null, zones: null };
+  if (!_ccoeDrawnItems) return result;
+  var polylines = [], polygons = [];
+  _ccoeDrawnItems.eachLayer(function(layer) {
+    if (layer instanceof L.Polygon) {
+      polygons.push(layer.toGeoJSON().geometry);
+    } else if (layer instanceof L.Polyline) {
+      polylines.push(layer.toGeoJSON().geometry);
+    }
+  });
+  if (polylines.length === 1) result.itineraire = polylines[0];
+  else if (polylines.length > 1) result.itineraire = { type: 'MultiLineString', coordinates: polylines.map(function(p) { return p.coordinates; }) };
+  if (polygons.length === 1) result.zones = polygons[0];
+  else if (polygons.length > 1) result.zones = { type: 'GeometryCollection', geometries: polygons };
+  return result;
+}
+
 function ccoeSaveEvt(e, id) {
   e.preventDefault();
   var typeVal = document.getElementById('ccoe-evt-type').value;
+  var geo = ccoeCollectGeoJSON();
   var body = {
     titre: document.getElementById('ccoe-evt-titre').value,
     type: typeVal,
@@ -9506,7 +9627,9 @@ function ccoeSaveEvt(e, id) {
     heure: document.getElementById('ccoe-evt-heure').value || null,
     lieu: document.getElementById('ccoe-evt-lieu').value || null,
     description: document.getElementById('ccoe-evt-desc').value || null,
-    itineraire_description: document.getElementById('ccoe-evt-itin-desc').value || null
+    itineraire_description: document.getElementById('ccoe-evt-itin-desc').value || null,
+    itineraire_geojson: geo.itineraire,
+    zones_geojson: geo.zones
   };
   if (typeVal === 'autre') {
     var label = document.getElementById('ccoe-evt-type-label').value;
