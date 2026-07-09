@@ -11652,7 +11652,9 @@ async function initBoCap() {
   var metaEl = document.getElementById('cap-meta');
   if (metaEl) {
     var today = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {weekday:'long', day:'numeric', month:'long'});
-    var communeLabel = u.commune_nom || u.commune_nom_ar || (currentLang === 'ar' ? 'ولاية الجزائر' : 'Wilaya d\'Alger');
+    var communeLabel = u.commune_nom
+      ? (currentLang === 'ar' ? (u.commune_nom_ar || u.commune_nom) : u.commune_nom)
+      : (currentLang === 'ar' ? 'ولاية الجزائر' : 'Wilaya d\'Alger');
     metaEl.textContent = communeLabel + ' · ' + today;
   }
   await capLoadMissions();
