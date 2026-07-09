@@ -8764,6 +8764,9 @@ function initNotifFilters() {
   if (fn === 'cap') {
     html += '<button class="btn btn-sm btn-outline" onclick="loadNotifications(\'cap\')">' + (isAr ? 'المهام' : 'Missions') + '</button>';
   }
+  if (fn === 'cabinet' || fn === 'entite_responsable') {
+    html += '<button class="btn btn-sm btn-outline" onclick="loadNotifications(\'ccoe\')">' + (isAr ? 'مركز التنسيق' : 'CCOE') + '</button>';
+  }
   el.innerHTML = html;
 }
 
@@ -8811,6 +8814,19 @@ function notifClick(id, lien, el) {
   if (!lien) return;
   var parts = lien.split('#');
   var sigId = parts[1] || '';
+  var viewPath = parts[0] || '';
+
+  // CCOE notification → open chantier directly
+  if (viewPath === '/mes-chantiers-ccoe' && sigId) {
+    showView('mes-chantiers-ccoe');
+    setTimeout(function() { if (typeof mccShowDetail === 'function') mccShowDetail(parseInt(sigId)); }, 500);
+    return;
+  }
+  if (viewPath === '/ccoe' && sigId) {
+    showView('ccoe');
+    setTimeout(function() { if (typeof ccoeShowChantierDetail === 'function') ccoeShowChantierDetail(parseInt(sigId)); }, 500);
+    return;
+  }
 
   // Superviseur : ouvrir le drawer superviseur directement
   if (sigId && hasFonction('superviseur')) {
@@ -9306,6 +9322,7 @@ function mccLoadChantiers() {
         '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(ch.axe) + (ch.date_limite ? ' · ' + new Date(ch.date_limite).toLocaleDateString('fr-FR') : '') + '</div></div>' +
         '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">' +
         '<span style="font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;background:' + (statutColors[ch.statut] || '#6B7280') + ';">' + escHtml(ch.statut) + '</span>' +
+        (ch.transmis_le ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#D1FAE5;color:#059669;">✓</span>' : '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#FEF3C7;color:#92400E;">⏳</span>') +
         '<span style="font-size:12px;font-weight:600;color:' + (pct === 100 ? '#059669' : 'var(--muted)') + ';">' + pct + '%</span>' +
         (enRetard ? '<span style="font-size:10px;color:#DC2626;font-weight:600;">EN RETARD</span>' : '') +
         '</div></div>' +
@@ -9694,21 +9711,29 @@ function ccoeShowEvtDetail(evtId) {
       '</div>';
 
     // OPORD section
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-      '<h4 style="margin:0;">Ordres d\'opération (' + opords.length + ')</h4>' +
-      '<button class="btn btn-sm btn-primary" onclick="ccoeShowOpordForm(' + evtId + ')">+ Nouvel OPORD</button></div>';
-
     if (!opords.length) {
-      html += '<div class="card" style="padding:16px;text-align:center;color:var(--muted);">Aucun OPORD. Créez-en un pour démarrer les chantiers.</div>';
+      // ── Parcours guidé : bouton principal pour générer en un geste ──
+      html += '<div class="card" style="padding:20px;text-align:center;border:2px dashed #0B6078;margin-bottom:12px;">' +
+        '<div style="font-size:40px;margin-bottom:8px;">📋</div>' +
+        '<h4 style="margin:0 0 8px;color:#0B6078;">' + (t('ccoe.generer_ordre') || 'Générer l\'ordre d\'opération et les chantiers') + '</h4>' +
+        '<p style="font-size:13px;color:var(--muted);margin-bottom:14px;">L\'OPORD sera créé et les chantiers générés automatiquement depuis le gabarit standard.</p>' +
+        '<button class="btn btn-primary" onclick="ccoeGenererComplet(' + evtId + ')" style="font-size:15px;padding:10px 30px;">' + (t('ccoe.generer_ordre') || 'Générer l\'ordre et les chantiers') + '</button>' +
+        '<div style="margin-top:10px;"><button class="btn btn-sm btn-outline" onclick="ccoeShowOpordForm(' + evtId + ')">ou créer manuellement</button></div></div>';
     } else {
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">' +
+        '<h4 style="margin:0;">Ordres d\'opération (' + opords.length + ')</h4>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+        '<button class="btn btn-sm btn-primary" style="background:#059669;" onclick="ccoeTransmettre(' + evtId + ')">📡 ' + (t('ccoe.transmettre') || 'Transmettre aux services') + '</button>' +
+        '<button class="btn btn-sm btn-outline" onclick="ccoeRelancer(' + evtId + ')">🔄 ' + (t('ccoe.relancer') || 'Relancer') + '</button>' +
+        '</div></div>';
       opords.forEach(function(o) {
+        var statutBg = o.statut === 'diffuse' ? '#059669' : o.statut === 'actif' ? '#3B82F6' : '#9CA3AF';
         html += '<div class="card" style="padding:14px;margin-bottom:8px;">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<div><strong>OPORD #' + o.id + '</strong> <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#E5E7EB;">' + escHtml(o.statut) + '</span>' +
-          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + (o.objectif ? escHtml(o.objectif).substring(0, 100) : 'Pas d\'objectif défini') + '</div></div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+          '<div><strong>OPORD #' + o.id + '</strong> <span style="font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;background:' + statutBg + ';">' + escHtml(o.statut) + '</span>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + (o.objectif ? escHtml(o.objectif).substring(0, 100) : '') + '</div></div>' +
           '<div style="display:flex;gap:6px;">' +
           '<button class="btn btn-sm btn-outline" onclick="ccoeLoadOpordChantiers(' + o.id + ',' + evtId + ')">Chantiers (' + (o.nb_chantiers || 0) + ')</button>' +
-          '<button class="btn btn-sm btn-outline" onclick="ccoeGenererChantiers(' + o.id + ')">Générer</button>' +
           '</div></div></div>';
       });
     }
@@ -9747,7 +9772,7 @@ function ccoeSaveOpord(e, evtId) {
 function ccoeGenererChantiers(opordId) {
   safeFetchJSON('/api/ccoe/gabarits', null, true).then(function(gabarits) {
     if (!gabarits.length) return showToast('Aucun gabarit disponible', 'error');
-    var g = gabarits[0]; // Default to first gabarit
+    var g = gabarits[0];
     if (!confirm('Générer les chantiers depuis le gabarit "' + g.nom + '" (' + g.nb_axes + ' axes) ?')) return;
     safeFetchJSON('/api/ccoe/opord/' + opordId + '/generer', {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -9757,6 +9782,53 @@ function ccoeGenererChantiers(opordId) {
       ccoeTab('chantiers');
     }).catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
   });
+}
+
+// ── Parcours guidé : génération complète en un geste ──
+function ccoeGenererComplet(evtId) {
+  var intention = prompt(t('ccoe.intention_prompt') || 'Intention du commandement (optionnel) :');
+  safeFetchJSON('/api/ccoe/evenements/' + evtId + '/generer-complet', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ intention: intention || null })
+  }, true).then(function(data) {
+    showToast((data.chantiers?.length || 0) + ' chantiers générés — OPORD créé', 'success');
+    ccoeShowEvtDetail(evtId);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+// ── Transmission aux services ──
+function ccoeTransmettre(evtId) {
+  safeFetchJSON('/api/ccoe/evenements/' + evtId + '/recap-transmission', null, true).then(function(chantiers) {
+    var nonTransmis = chantiers.filter(function(c) { return !c.transmis_le; });
+    if (!nonTransmis.length) { showToast('Tous les chantiers sont déjà transmis', 'info'); return; }
+    var recap = nonTransmis.map(function(c) { return '• ' + c.axe + ' → ' + (c.organisation_nom || '—'); }).join('\n');
+    if (!confirm((t('ccoe.confirmer_transmission') || 'Transmettre aux services suivants ?') + '\n\n' + recap + '\n\n' + nonTransmis.length + ' chantier(s)')) return;
+    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/transmettre', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+    }, true).then(function(data) {
+      showToast(data.transmis + ' chantier(s) transmis — notifications envoyées', 'success');
+      ccoeShowEvtDetail(evtId);
+    }).catch(function(err) { showToast(err.message || err, 'error'); });
+  });
+}
+
+function ccoeRelancer(evtId) {
+  if (!confirm(t('ccoe.confirmer_relance') || 'Relancer les services sur les chantiers non commencés ou en retard ?')) return;
+  safeFetchJSON('/api/ccoe/evenements/' + evtId + '/relancer', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+  }, true).then(function(data) {
+    showToast(data.relances + ' relance(s) envoyée(s)', 'success');
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function ccoeTransmettreChantier(chantierId, evtId) {
+  safeFetchJSON('/api/ccoe/chantiers/' + chantierId + '/transmettre', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+  }, true).then(function() {
+    showToast('Chantier transmis', 'success');
+    if (evtId) ccoeShowEvtDetail(evtId);
+    else ccoeShowChantierDetail(chantierId);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
 function ccoeLoadOpordChantiers(opordId, evtId) {
@@ -9788,6 +9860,7 @@ function ccoeLoadChantiers(container, opordId, evtId) {
         '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(ch.axe) + ' · ' + escHtml(ch.organisation_nom || '—') + (ch.responsable_prenom ? ' · ' + escHtml(ch.responsable_prenom) : '') + '</div></div>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
         '<span style="font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;background:' + (statutColors[ch.statut] || '#6B7280') + ';">' + escHtml(ch.statut) + '</span>' +
+        (ch.transmis_le ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#D1FAE5;color:#059669;">✓</span>' : '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#FEF3C7;color:#92400E;">⏳</span>') +
         '<span style="font-size:12px;font-weight:600;color:' + (pct === 100 ? '#059669' : 'var(--muted)') + ';">' + pct + '%</span>' +
         (enRetard ? '<span style="font-size:10px;color:#DC2626;font-weight:600;">EN RETARD</span>' : '') +
         '</div></div>' +
@@ -9805,8 +9878,10 @@ function ccoeShowChantierDetail(chantierId) {
   c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
   safeFetchJSON('/api/ccoe/chantiers/' + chantierId, null, true).then(function(ch) {
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
-    var html = '<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-sm btn-outline" onclick="ccoeTab(\'chantiers\')">← Liste</button>' +
-      '<button class="btn btn-sm btn-outline" onclick="ccoeShowContact(' + ch.id + ')">📞 Contact</button></div>' +
+    var html = '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;"><button class="btn btn-sm btn-outline" onclick="ccoeTab(\'chantiers\')">← Liste</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="ccoeShowContact(' + ch.id + ')">📞 Contact</button>' +
+      (!ch.transmis_le ? '<button class="btn btn-sm btn-primary" style="background:#059669;" onclick="ccoeTransmettreChantier(' + ch.id + ')">📡 Transmettre</button>' : '<span style="font-size:11px;padding:3px 8px;border-radius:8px;background:#D1FAE5;color:#059669;">✓ Transmis</span>') +
+      '</div>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;">' +
       '<h3 style="margin:0;">' + escHtml(ch.titre) + '</h3>' +

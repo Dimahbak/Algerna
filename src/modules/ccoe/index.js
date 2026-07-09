@@ -724,4 +724,251 @@ router.delete('/annuaire/:id', requireFonction('cabinet'), asyncH(async (req, re
   res.json({ ok: true });
 }));
 
+// ═══════════════════════════════════════════════════════
+// PARCOURS GUIDÉ : événement → OPORD + chantiers en un geste
+// ═══════════════════════════════════════════════════════
+
+router.post('/evenements/:evtId/generer-complet', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const { intention, axes, date_limite, gabarit_id } = req.body;
+  const evtId = req.params.evtId;
+
+  // Get event
+  const evt = (await query('SELECT * FROM evenement WHERE id=$1', [evtId])).rows[0];
+  if (!evt) throw notFound('Événement introuvable');
+
+  // Create OPORD
+  const opord = (await query(
+    `INSERT INTO opord (evenement_id, objectif, intention_commandement, cree_par, statut)
+     VALUES ($1,$2,$3,$4,'actif') RETURNING *`,
+    [evtId, evt.titre, intention || null, req.user.id])).rows[0];
+
+  // Generate chantiers
+  let chantiers;
+  if (axes && axes.length) {
+    // Custom axes (type "autre")
+    chantiers = await withTransaction(async (client) => {
+      const results = [];
+      for (const axe of axes) {
+        const orgRow = (await client.query(
+          'SELECT organisation_id FROM ccoe_axe_organisation WHERE axe=$1', [axe])).rows[0];
+        const gabarit = (await client.query(
+          'SELECT id FROM gabarit_evenement WHERE actif=TRUE ORDER BY id LIMIT 1')).rows[0];
+        const ga = gabarit ? (await client.query(
+          'SELECT id, titre, titre_ar FROM gabarit_axe WHERE gabarit_id=$1 AND axe=$2',
+          [gabarit.id, axe])).rows[0] : null;
+        const ch = (await client.query(
+          `INSERT INTO chantier (opord_id, axe, organisation_id, titre, titre_ar, date_limite)
+           VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+          [opord.id, axe, orgRow?.organisation_id || null,
+           ga?.titre || axe.replace(/_/g, ' '), ga?.titre_ar || null,
+           date_limite || evt.date_debut])).rows[0];
+        if (ga) {
+          const items = (await client.query(
+            'SELECT libelle, libelle_ar, ordre FROM gabarit_checklist WHERE axe_id=$1 ORDER BY ordre',
+            [ga.id])).rows;
+          for (const item of items) {
+            await client.query(
+              'INSERT INTO chantier_checklist (chantier_id, libelle, libelle_ar, ordre) VALUES ($1,$2,$3,$4)',
+              [ch.id, item.libelle, item.libelle_ar, item.ordre]);
+          }
+        }
+        results.push(ch);
+      }
+      return results;
+    });
+  } else {
+    // Full gabarit
+    const gId = gabarit_id || (await query('SELECT id FROM gabarit_evenement WHERE actif=TRUE LIMIT 1')).rows[0]?.id;
+    if (!gId) throw badRequest('Aucun gabarit disponible');
+    const gaAxes = (await query(
+      'SELECT axe, titre, titre_ar, ordre FROM gabarit_axe WHERE gabarit_id=$1 ORDER BY ordre', [gId])).rows;
+    chantiers = await withTransaction(async (client) => {
+      const results = [];
+      for (const axe of gaAxes) {
+        const orgRow = (await client.query(
+          'SELECT organisation_id FROM ccoe_axe_organisation WHERE axe=$1', [axe.axe])).rows[0];
+        const ch = (await client.query(
+          `INSERT INTO chantier (opord_id, axe, organisation_id, titre, titre_ar, date_limite)
+           VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+          [opord.id, axe.axe, orgRow?.organisation_id || null,
+           axe.titre, axe.titre_ar, date_limite || evt.date_debut])).rows[0];
+        const items = (await client.query(
+          'SELECT libelle, libelle_ar, ordre FROM gabarit_checklist WHERE axe_id=(SELECT id FROM gabarit_axe WHERE gabarit_id=$1 AND axe=$2) ORDER BY ordre',
+          [gId, axe.axe])).rows;
+        for (const item of items) {
+          await client.query(
+            'INSERT INTO chantier_checklist (chantier_id, libelle, libelle_ar, ordre) VALUES ($1,$2,$3,$4)',
+            [ch.id, item.libelle, item.libelle_ar, item.ordre]);
+        }
+        results.push(ch);
+      }
+      return results;
+    });
+  }
+
+  res.status(201).json({ opord, chantiers });
+}));
+
+// ═══════════════════════════════════════════════════════
+// TRANSMISSION AUX SERVICES (notifications multi-canal)
+// ═══════════════════════════════════════════════════════
+
+// Helper: notify one chantier
+async function transmettreChantier(chantierId, userId, userName) {
+  const ch = (await query(
+    `SELECT ch.*, o.nom AS org_nom, e.titre AS evt_titre, e.date_debut
+     FROM chantier ch
+     LEFT JOIN organisations o ON o.id = ch.organisation_id
+     LEFT JOIN opord op ON op.id = ch.opord_id
+     LEFT JOIN evenement e ON e.id = op.evenement_id
+     WHERE ch.id = $1`, [chantierId])).rows[0];
+  if (!ch) return null;
+
+  // Mark as transmitted
+  await query('UPDATE chantier SET transmis_le=NOW(), transmis_par=$2 WHERE id=$1', [chantierId, userId]);
+
+  // Trace in fil
+  await query(
+    `INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+     VALUES ($1, $2, $3, 'transmission')`,
+    [chantierId, userId, 'Ordre transmis par ' + (userName || 'Cabinet')]);
+
+  // In-app notifications to all users of the org
+  if (ch.organisation_id) {
+    const users = (await query(
+      'SELECT id FROM utilisateur WHERE organisation_id=$1 AND actif=TRUE', [ch.organisation_id])).rows;
+    const dateStr = ch.date_debut ? new Date(ch.date_debut).toLocaleDateString('fr-FR') : '';
+    for (const u of users) {
+      try {
+        await query(
+          'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
+          [u.id, 'ccoe',
+           'Nouvel ordre CCOE : ' + (ch.axe || ''),
+           (ch.evt_titre || ch.titre) + ' — échéance ' + dateStr,
+           '/mes-chantiers-ccoe#' + chantierId]);
+      } catch(e) { /* non-bloquant */ }
+    }
+  }
+
+  // Email to contact from annuaire
+  try {
+    const contact = (await query(
+      'SELECT email FROM ccoe_contact WHERE axe=$1 AND organisation_id=$2 AND actif=TRUE LIMIT 1',
+      [ch.axe, ch.organisation_id])).rows[0];
+    if (contact?.email) {
+      const { notify } = require('../../services/notifier');
+      notify({
+        email: contact.email,
+        subject: '[CCOE] Ordre de mission — ' + (ch.axe || '') + ' — ' + (ch.evt_titre || ch.titre),
+        html: '<h3>Ordre de mission CCOE</h3>' +
+          '<p><strong>Événement :</strong> ' + (ch.evt_titre || '') + '</p>' +
+          '<p><strong>Axe :</strong> ' + (ch.axe || '') + '</p>' +
+          '<p><strong>Chantier :</strong> ' + (ch.titre || '') + '</p>' +
+          '<p><strong>Échéance :</strong> ' + (ch.date_limite ? new Date(ch.date_limite).toLocaleDateString('fr-FR') : 'non définie') + '</p>'
+      });
+      console.log('[CCOE] Email ordre transmis →', contact.email);
+    }
+  } catch(e) {
+    console.log('[CCOE] Email non envoyé (non bloquant):', e.message);
+  }
+
+  return ch;
+}
+
+// POST /ccoe/evenements/:evtId/transmettre — transmettre tous les chantiers d'un événement
+router.post('/evenements/:evtId/transmettre', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const chantiers = (await query(
+    `SELECT ch.id FROM chantier ch
+     JOIN opord o ON o.id = ch.opord_id
+     WHERE o.evenement_id = $1 AND ch.transmis_le IS NULL`, [req.params.evtId])).rows;
+
+  const transmitted = [];
+  for (const ch of chantiers) {
+    const result = await transmettreChantier(ch.id, req.user.id, req.user.prenom || 'Cabinet');
+    if (result) transmitted.push(result);
+  }
+
+  // Update OPORD statut to 'diffuse'
+  await query(
+    `UPDATE opord SET statut='diffuse', maj_le=NOW()
+     WHERE evenement_id=$1 AND statut != 'diffuse'`, [req.params.evtId]);
+
+  res.json({ transmis: transmitted.length });
+}));
+
+// POST /ccoe/chantiers/:id/transmettre — transmettre un seul chantier
+router.post('/chantiers/:id/transmettre', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const result = await transmettreChantier(req.params.id, req.user.id, req.user.prenom || 'Cabinet');
+  if (!result) throw notFound();
+  res.json({ ok: true });
+}));
+
+// POST /ccoe/evenements/:evtId/relancer — relancer les chantiers non commencés ou en retard
+router.post('/evenements/:evtId/relancer', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const chantiers = (await query(
+    `SELECT ch.id, ch.axe, ch.titre, ch.statut, ch.date_limite, ch.organisation_id
+     FROM chantier ch
+     JOIN opord o ON o.id = ch.opord_id
+     WHERE o.evenement_id = $1
+       AND (ch.statut = 'non_commence'
+            OR (ch.date_limite < NOW() AND ch.statut NOT IN ('termine','valide')))`,
+    [req.params.evtId])).rows;
+
+  let relanced = 0;
+  for (const ch of chantiers) {
+    // Trace relance in fil
+    await query(
+      `INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+       VALUES ($1, $2, $3, 'relance')`,
+      [ch.id, req.user.id, 'Relance Cabinet — chantier ' + (ch.statut === 'non_commence' ? 'non démarré' : 'en retard')]);
+
+    // Re-notify org users
+    if (ch.organisation_id) {
+      const users = (await query(
+        'SELECT id FROM utilisateur WHERE organisation_id=$1 AND actif=TRUE', [ch.organisation_id])).rows;
+      for (const u of users) {
+        try {
+          await query(
+            'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
+            [u.id, 'ccoe', 'Relance CCOE : ' + (ch.axe || ''), ch.titre + ' — ' + ch.statut,
+             '/mes-chantiers-ccoe#' + ch.id]);
+        } catch(e) {}
+      }
+    }
+
+    // Email relance
+    try {
+      const contact = (await query(
+        'SELECT email FROM ccoe_contact WHERE axe=$1 AND organisation_id=$2 AND actif=TRUE LIMIT 1',
+        [ch.axe, ch.organisation_id])).rows[0];
+      if (contact?.email) {
+        const { notify } = require('../../services/notifier');
+        notify({
+          email: contact.email,
+          subject: '[CCOE] RELANCE — ' + ch.titre,
+          html: '<p><strong>Relance</strong> — le chantier <em>' + ch.titre + '</em> est ' +
+            (ch.statut === 'non_commence' ? 'non démarré' : 'en retard') + '.</p>'
+        });
+        console.log('[CCOE] Email relance →', contact.email);
+      }
+    } catch(e) {}
+
+    relanced++;
+  }
+  res.json({ relances: relanced });
+}));
+
+// GET /ccoe/evenements/:evtId/recap-transmission — récapitulatif avant transmission
+router.get('/evenements/:evtId/recap-transmission', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT ch.id, ch.titre, ch.axe, ch.statut, ch.transmis_le, ch.organisation_id,
+       org.nom AS organisation_nom
+     FROM chantier ch
+     LEFT JOIN organisations org ON org.id = ch.organisation_id
+     JOIN opord o ON o.id = ch.opord_id
+     WHERE o.evenement_id = $1
+     ORDER BY ch.axe`, [req.params.evtId]);
+  res.json(rows);
+}));
+
 module.exports = router;
