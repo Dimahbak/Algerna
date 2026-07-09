@@ -408,7 +408,7 @@
 
     /* Infobulles acronymes */
     .acro { position:relative; cursor:help; border-bottom:1px dotted var(--muted); }
-    .acro::after { content:attr(data-def); position:absolute; top:calc(100% + 4px); left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:4px 10px; border-radius:6px; font-size:11px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s; z-index:1000; }
+    .acro::after { content:attr(data-def); position:absolute; top:calc(100% + 4px); left:50%; transform:translateX(-50%); background:var(--navy); color:white; padding:6px 12px; border-radius:6px; font-size:11px; white-space:normal; max-width:320px; line-height:1.4; opacity:0; pointer-events:none; transition:opacity .2s; z-index:9500; }
     .acro:hover::after, .acro:focus::after { opacity:1; }
 
     .section-subheading {
@@ -2423,11 +2423,11 @@
       </button>
       <button class="nav-item hidden" onclick="showView('cap')" data-view="cap" id="nav-cap">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Interventions <span class="acro" data-def="Corps des Agents de Proximité">CAP</span>
+        Interventions <span class="acro" tabindex="0" data-def="Agents de Proximité — Agents de terrain">CAP<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span>
       </button>
       <button class="nav-item hidden" onclick="showView('dashboard')" data-view="dashboard" id="nav-dashboard">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Indicateurs <span class="acro" data-def="Indice Citoyen Urbain ALGERNA">ICUA</span>
+        Indicateurs <span class="acro" tabindex="0" data-def="Indice Citoyen Urbain — Score global de qualité des services (0-100)">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span>
       </button>
       <button class="nav-item hidden" onclick="showView('admin-communiques')" data-view="admin-communiques" id="nav-admin-communiques">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -4298,7 +4298,7 @@
             <div id="exec-kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
             <!-- ICUA Gauge -->
             <div id="exec-icua-card" onclick="sdcToggle('sdc-icua-body');document.getElementById('sdc-icua-section').scrollIntoView({behavior:'smooth',block:'start'});" style="background:white;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
-              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">ICUA</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;"><span class="acro" tabindex="0" data-def="Score global (0-100) mesurant la qualité des services publics">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></div>
               <div id="exec-icua-gauge" style="position:relative;width:110px;height:110px;margin:0 auto;">
                 <svg viewBox="0 0 120 120" width="110" height="110">
                   <circle cx="60" cy="60" r="52" fill="none" stroke="#e5e7eb" stroke-width="10"/>
@@ -4323,7 +4323,7 @@
 
         <!-- ═══ BLOC 3B — Les EPIC en un coup d'œil ═══ -->
         <div style="margin-bottom:16px;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.epic_titre">Les EPIC en un coup d'œil</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="sup.epic_titre">Les <span class="acro" tabindex="0" data-def="Établissement Public — Organismes chargés des services de la ville (eau, propreté, éclairage, voirie)">EPIC<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span> en un coup d'œil</div>
           <div id="sdc-epic-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
             <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Chargement...</div>
           </div>
@@ -4363,7 +4363,7 @@
               <span style="font-size:14px;color:var(--muted);">▸</span>
             </div>
             <div id="sdc-communes-body" style="display:none;padding:0 16px 16px;overflow-x:auto;">
-              <table class="ops-table" id="exec-communes-table"><thead><tr><th scope="col" data-i18n="admin.communes">Commune</th><th scope="col" data-i18n="sup.col_ouverts">Ouverts</th><th scope="col" data-i18n="sup.col_delai">Délai</th><th scope="col">SLA</th></tr></thead><tbody id="exec-communes-body"></tbody></table>
+              <table class="ops-table" id="exec-communes-table"><thead><tr><th scope="col" data-i18n="admin.communes">Commune</th><th scope="col" data-i18n="sup.col_ouverts">Ouverts</th><th scope="col" data-i18n="sup.col_delai">Délai</th><th scope="col"><span class="acro" tabindex="0" data-def="Engagement de délai — % de dossiers traités dans les 48h">SLA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></th></tr></thead><tbody id="exec-communes-body"></tbody></table>
             </div>
           </div>
 
@@ -4391,7 +4391,7 @@
           <!-- 4. Performance des agents CAP -->
           <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
             <div onclick="sdcToggle('sdc-capperf-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents CAP</span>
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents <span class="acro" tabindex="0" data-def="Agents de Proximité — Agents de terrain qui constatent les problèmes sur place">CAP<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></span>
               <span style="font-size:14px;color:var(--muted);">▸</span>
             </div>
             <div id="sdc-capperf-body" style="display:none;padding:0 16px 16px;">
@@ -4402,7 +4402,7 @@
           <!-- 5. Indicateurs ICUA détaillés -->
           <div id="sdc-icua-section" style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:8px;">
             <div onclick="sdcToggle('sdc-icua-body')" style="padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.icua_details">Indicateurs ICUA détaillés</span>
+              <span style="font-size:13px;font-weight:700;color:var(--navy);" data-i18n="sup.icua_details">Indicateurs <span class="acro" tabindex="0" data-def="Indice Citoyen Urbain — Score global de qualité des services publics (0-100)">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span> détaillés</span>
               <span style="font-size:14px;color:var(--muted);">▸</span>
             </div>
             <div id="sdc-icua-body" style="display:none;padding:0 16px 16px;">
@@ -4578,7 +4578,7 @@
             </div>
             <select id="cockpit-alertes-filter" onchange="alertesRender()" style="font-size:11px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;">
               <option value="">Toutes les alertes</option>
-              <option value="sla">SLA dépassé</option>
+              <option value="sla">SLA dépassé (hors délai 48h)</option>
               <option value="critique">Incidents critiques</option>
               <option value="chaud">Points chauds</option>
               <option value="saturee">Organisations saturées</option>
@@ -4698,7 +4698,7 @@
         <!-- ═══ PERFORMANCE CAP (Vague 5D) ═══ -->
         <div style="background:white;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;margin-bottom:16px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div style="font-size:15px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents CAP</div>
+            <div style="font-size:15px;font-weight:700;color:var(--navy);" data-i18n="sup.perf_cap">Performance des agents <span class="acro" tabindex="0" data-def="Agents de Proximité — Agents de terrain">CAP<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></div>
           </div>
           <div id="capperf-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
           <div id="capperf-empty" style="display:none;text-align:center;color:var(--muted);padding:20px;font-size:13px;">Aucun agent CAP actif sur cette période.</div>
@@ -4763,10 +4763,12 @@
           <div class="module-identity-desc" data-i18n="mod.communiques_desc">Signalements, travaux, services publics, campagnes de sensibilisation, événements et informations institutionnelles.</div>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:space-between;">
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="comm-filter-buttons">
             <button class="btn btn-sm btn-primary" onclick="loadAdminCommuniques()">Tous</button>
             <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('brouillon')">Brouillons</button>
-            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('en_revision')">Prêts à publier</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('soumis_wilaya')" id="comm-filter-soumis" style="display:none;">Soumis à la Wilaya</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('en_revision')">En révision</button>
+            <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('rejete')" id="comm-filter-rejete" style="display:none;">Rejetés</button>
             <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('publie')">Publiés</button>
             <button class="btn btn-sm btn-outline" onclick="loadAdminCommuniques('archive')">Archivés</button>
           </div>
@@ -4827,7 +4829,7 @@
                 <div class="form-group" style="margin:0;"><label>Commune</label>
                   <select id="comm-commune"><option value="">Toute la Wilaya</option></select>
                 </div>
-                <div class="form-group" style="margin:0;"><label>Niveau de validation</label>
+                <div class="form-group" style="margin:0;" id="comm-statut-group"><label>Niveau de validation</label>
                   <select id="comm-statut">
                     <option value="brouillon">Préparation (brouillon)</option>
                     <option value="en_revision">En révision</option>
@@ -4839,8 +4841,8 @@
                   <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Sélectionnez une commune ci-dessus ou laissez "Toute la Wilaya" pour une diffusion générale.</div>
                 </div>
               </div>
-              <div style="display:flex;gap:8px;margin-top:12px;">
-                <button type="submit" class="btn btn-primary" style="flex:1;">Enregistrer</button>
+              <div style="display:flex;gap:8px;margin-top:12px;" id="comm-form-actions">
+                <button type="submit" class="btn btn-primary" style="flex:1;" id="comm-btn-save">Enregistrer</button>
                 <button type="button" class="btn btn-outline" onclick="hideCommuniqueForm()">Annuler</button>
               </div>
             </form>
@@ -4852,11 +4854,11 @@
       <div id="view-dashboard" class="view">
         <button class="btn-back" onclick="showView(getDefaultView())">← Retour</button>
         <div class="page-header">
-          <h2>Indicateurs <span class="acro" tabindex="0" data-def="Indice Citoyen Urbain ALGERNA">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;">?</sup></span></h2>
+          <h2>Indicateurs <span class="acro" tabindex="0" data-def="Indice Citoyen Urbain — Score global (0-100) mesurant la qualité des services publics">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></h2>
           <p data-i18n="dash.sous_titre">Indicateurs de gouvernance civique — Wilaya d'Alger</p>
         </div>
         <div class="module-identity">
-          <div class="module-identity-subtitle">Indice Citoyen Urbain ALGERNA (<span class="acro" tabindex="0" data-def="Indice Citoyen Urbain ALGERNA">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;">?</sup></span>)</div>
+          <div class="module-identity-subtitle">Indice Citoyen Urbain ALGERNA (<span class="acro" tabindex="0" data-def="Score global (0-100) — Plus le score est élevé, meilleur est le service rendu aux citoyens">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span>)</div>
           <div class="module-identity-desc" data-i18n="mod.icua_desc">Mesure la performance opérationnelle des services et le respect des Engagements de Service.</div>
         </div>
 
@@ -5711,25 +5713,37 @@ function arF(ar, fr) { return (currentLang === 'ar' && ar) ? ar : (fr || ''); }
 // etatLabel defined below (line ~7394)
 
 // ── Dictionnaire centralisé des acronymes ──
-var ACRONYMES = {
-  ICUA:  'Indice Citoyen Urbain ALGERNA',
-  IQEP:  'Indice de Qualité de l\'Espace Public',
-  CAP:   'Corps des Agents de Proximité',
-  EPIC:  'Établissement Public à caractère Industriel et Commercial',
-  APC:   'Assemblée Populaire Communale (mairie)',
-  SLA:   'Service Level Agreement (engagement de délai)',
+var ACRONYMES_FR = {
+  ICUA:  'Indice Citoyen Urbain ALGERNA — Score global (0-100) mesurant la qualité des services publics. Plus le score est élevé, meilleur est le service rendu aux citoyens.',
+  IQEP:  'Indice de Qualité de l\'Espace Public — Note (0-100) évaluant l\'état des parcs, trottoirs et éclairage. Un score haut signifie des espaces bien entretenus.',
+  CAP:   'Corps des Agents de Proximité — Agents de terrain qui constatent les problèmes sur place et accompagnent les citoyens.',
+  EPIC:  'Établissement Public à caractère Industriel et Commercial — Organisme public (eau, propreté, éclairage, voirie) chargé d\'un service de la ville.',
+  APC:   'Assemblée Populaire Communale — La mairie, l\'administration locale de votre commune.',
+  SLA:   'Engagement de délai de traitement — Durée maximale (48h par défaut) pour résoudre un signalement. Un SLA dépassé signifie un retard.',
+  SdC:   'Salle de Commandement — Écran de pilotage central pour superviser l\'ensemble de l\'activité du territoire.',
   CET:   'Centre d\'Enfouissement Technique',
   PMR:   'Personne à Mobilité Réduite',
   AADL:  'Agence nationale de l\'Amélioration et du Développement du Logement',
   CNI:   'Carte Nationale d\'Identité',
-  EPIC:  'Établissement Public à caractère Industriel et Commercial',
   DPO:   'Délégué à la Protection des Données',
   RGPD:  'Règlement Général sur la Protection des Données',
-  KPI:   'Key Performance Indicator (indicateur clé)',
+  KPI:   'Indicateur clé de performance — Chiffre mesurant l\'efficacité d\'un service (ex. nombre de dossiers traités, délai moyen).',
   RBAC:  'Contrôle d\'accès basé sur les rôles',
 };
+var ACRONYMES_AR = {
+  ICUA:  'مؤشر المواطن الحضري — درجة شاملة (0-100) تقيس جودة الخدمات العمومية. كلما ارتفعت الدرجة، كانت الخدمة أفضل.',
+  IQEP:  'مؤشر جودة الفضاء العام — تقييم (0-100) لحالة الحدائق والأرصفة والإنارة.',
+  CAP:   'فرق الأعوان الميدانيين — أعوان ميدانيون يعاينون المشاكل ويرافقون المواطنين.',
+  EPIC:  'مؤسسة عمومية ذات طابع صناعي وتجاري — هيئة عمومية (مياه، نظافة، إنارة) مكلفة بخدمة حضرية.',
+  APC:   'المجلس الشعبي البلدي — إدارة بلديتك المحلية.',
+  SLA:   'التزام بمهلة المعالجة — المدة القصوى (48 ساعة افتراضيا) لحل بلاغ. تجاوز المهلة يعني تأخرا.',
+  SdC:   'قاعة القيادة — شاشة القيادة المركزية لمتابعة نشاط الإقليم.',
+  KPI:   'مؤشر أداء رئيسي — رقم يقيس فعالية خدمة (عدد الملفات المعالجة، متوسط المدة...).',
+};
+var ACRONYMES = ACRONYMES_FR;
 function acro(code) {
-  var def = ACRONYMES[code] || code;
+  var dict = (currentLang === 'ar' && ACRONYMES_AR[code]) ? ACRONYMES_AR : ACRONYMES_FR;
+  var def = dict[code] || ACRONYMES_FR[code] || code;
   return '<span class="acro" tabindex="0" data-def="' + escHtml(def) + '">' + escHtml(code) + '<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span>';
 }
 
@@ -10593,10 +10607,22 @@ async function initBoExecutive() {
     if (isCommune) {
       nameEl.textContent = isAr
         ? 'قاعة القيادة — بلدية ' + communeNom
-        : 'Salle de Commandement — Commune de ' + communeNom;
+        : 'Salle de Commandement — APC de ' + communeNom;
     } else {
       nameEl.textContent = isAr
-        ? 'قاعة القيادة' : 'Salle de Commandement';
+        ? 'قاعة القيادة — الولاية' : 'Salle de Commandement — Wilaya';
+    }
+  }
+  // Mettre à jour aussi le label sidebar
+  var navExec = document.getElementById('nav-bo-executive');
+  if (navExec) {
+    var spanSdc = navExec.querySelector('span[data-i18n="sup.sdc"]');
+    if (spanSdc) {
+      if (isCommune) {
+        spanSdc.textContent = isAr ? 'قاعة القيادة — البلدية' : 'Salle de Commandement — APC';
+      } else {
+        spanSdc.textContent = isAr ? 'قاعة القيادة — الولاية' : 'Salle de Commandement — Wilaya';
+      }
     }
   }
   var subtitleEl = document.getElementById('exec-subtitle');
@@ -13270,6 +13296,11 @@ async function boConfirmCap() {
 async function loadAdminCommuniques(statut) {
   var el = document.getElementById('admin-communiques-list');
   el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  // Afficher les filtres soumis/rejetés selon le profil
+  var btnSoumis = document.getElementById('comm-filter-soumis');
+  var btnRejete = document.getElementById('comm-filter-rejete');
+  if (btnSoumis) btnSoumis.style.display = '';
+  if (btnRejete) btnRejete.style.display = '';
   // Populate commune select
   var commSel = document.getElementById('comm-commune');
   if (commSel && commSel.options.length <= 1) {
@@ -13285,13 +13316,19 @@ async function loadAdminCommuniques(statut) {
     var data = await safeFetchJSON(url, {}, true);
     if (!data || !data.length) { el.innerHTML = '<p style="padding:16px;color:var(--muted);">Aucun communiqué.</p>'; return; }
     var niveauColors = { urgent:'#ef4444', important:'#2563eb', info:'#7C3AED' };
-    var statutLabels = { brouillon:'Préparation', en_revision:'En révision', valide:'Validé', publie:'Publié', archive:'Archivé' };
+    var statutLabels = { brouillon:'Préparation', en_revision:'En révision', soumis_wilaya:'Soumis à la Wilaya', valide:'Validé', publie:'Publié', rejete:'Rejeté', archive:'Archivé' };
+    var isCommune = currentUser && currentUser.niveau_perimetre === 'commune';
+    var statutColors = { brouillon:'#6b7280', en_revision:'#d97706', soumis_wilaya:'#2563eb', valide:'#16a34a', publie:'#16a34a', rejete:'#ef4444', archive:'#9ca3af' };
     el.innerHTML = '<div class="table-wrapper"><table><thead><tr><th>Statut</th><th>Priorité</th><th>Titre</th><th>Commune</th><th>Début</th><th>Fin</th><th>Actions</th></tr></thead><tbody>' +
       data.map(function(c) {
-        var sColor = c.actif ? '#16a34a' : '#9ca3af';
-        var statLabel = c.actif ? (statutLabels[c.statut] || 'Publié') : 'Inactif';
+        var sColor = statutColors[c.statut] || '#9ca3af';
+        var statLabel = statutLabels[c.statut] || c.statut;
+        var motifHtml = '';
+        if (c.statut === 'rejete' && c.commentaire_revision) {
+          motifHtml = '<div style="font-size:10px;color:#ef4444;margin-top:2px;">Motif : ' + escHtml(c.commentaire_revision) + '</div>';
+        }
         return '<tr>' +
-          '<td><span style="padding:2px 8px;border-radius:8px;font-size:11px;background:' + sColor + '22;color:' + sColor + ';">' + statLabel + '</span></td>' +
+          '<td><span style="padding:2px 8px;border-radius:8px;font-size:11px;background:' + sColor + '22;color:' + sColor + ';">' + statLabel + '</span>' + motifHtml + '</td>' +
           '<td><span style="color:' + (niveauColors[c.niveau]||'#666') + ';font-weight:600;">' + escHtml(c.niveau||'info') + '</span></td>' +
           '<td style="font-weight:600;">' + escHtml(c.titre) + '</td>' +
           '<td>' + escHtml(c.commune_nom || 'Toute la Wilaya') + '</td>' +
@@ -13299,7 +13336,15 @@ async function loadAdminCommuniques(statut) {
           '<td style="font-size:11px;">' + (c.date_fin ? fmtDate(c.date_fin) : '—') + '</td>' +
           '<td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap;">' +
             '<button class="btn btn-sm btn-outline" onclick="editCommunique(' + c.id + ')" style="font-size:10px;padding:2px 6px;">✏️</button>' +
-            (c.statut==='brouillon' ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-info);color:white;" onclick="commEnvoiRevision(' + c.id + ')">→ Soumettre</button>' : '') +
+            // Brouillon → Soumettre à la Wilaya (commune) ou En révision (wilaya)
+            (c.statut==='brouillon' && isCommune ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:#2563eb;color:white;" onclick="commSoumettre(' + c.id + ')">→ Soumettre à la Wilaya</button>' : '') +
+            (c.statut==='brouillon' && !isCommune ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-info);color:white;" onclick="commEnvoiRevision(' + c.id + ')">→ Soumettre</button>' : '') +
+            // Soumis à la Wilaya → Valider et publier / Rejeter (Wilaya only)
+            (c.statut==='soumis_wilaya' && canPublishCommunique() ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-success);color:white;" onclick="commPublier(' + c.id + ')">✓ Valider et publier</button><button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:#ef4444;color:white;" onclick="commRejeter(' + c.id + ')">✕ Rejeter</button>' : '') +
+            (c.statut==='soumis_wilaya' && !canPublishCommunique() ? '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:#dbeafe;color:#2563eb;">En attente de validation</span>' : '') +
+            // Rejeté → Resoumettre (commune author only)
+            (c.statut==='rejete' && isCommune ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-info);color:white;" onclick="commResoumettre(' + c.id + ')">↻ Resoumettre</button>' : '') +
+            // En révision (workflow wilaya existant)
             (c.statut==='en_revision' && canPublishCommunique() ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-success);color:white;" onclick="commValider(' + c.id + ')">✓ Valider</button><button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-warning);color:white;" onclick="commDemanderCorrection(' + c.id + ')">↩ Retour</button>' : '') +
             (c.statut==='en_revision' && !canPublishCommunique() ? '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:#fef3c7;color:#92400e;">En révision</span>' : '') +
             (c.statut==='valide' && canPublishCommunique() ? '<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;background:var(--ops-success);color:white;" onclick="commPublier(' + c.id + ')">📢 Publier</button>' : '') +
@@ -13323,14 +13368,21 @@ function showCommuniqueForm() {
   document.getElementById('comm-statut').value = 'brouillon';
   document.getElementById('comm-debut').value = new Date().toISOString().slice(0,16);
   document.getElementById('comm-fin').value = '';
-  // Superviseur commune : verrouiller le sélecteur commune
+  // Superviseur commune : verrouiller le sélecteur commune + masquer le champ statut
+  var isCommune = currentUser && currentUser.niveau_perimetre === 'commune';
   var commSel = document.getElementById('comm-commune');
-  if (commSel && currentUser && currentUser.niveau_perimetre === 'commune' && currentUser.commune_id) {
+  if (commSel && isCommune && currentUser.commune_id) {
     commSel.value = currentUser.commune_id;
     commSel.disabled = true;
   } else if (commSel) {
     commSel.disabled = false;
   }
+  // Commune : masquer le champ statut (toujours brouillon à la création)
+  var statutGroup = document.getElementById('comm-statut-group');
+  if (statutGroup) statutGroup.style.display = isCommune ? 'none' : '';
+  // Commune : adapter le bouton
+  var btnSave = document.getElementById('comm-btn-save');
+  if (btnSave) btnSave.textContent = isCommune ? 'Enregistrer brouillon' : 'Enregistrer';
   document.getElementById('communique-form-title').textContent = 'Nouvelle publication';
   document.getElementById('admin-communique-form').classList.remove('hidden');
 }
@@ -13361,6 +13413,8 @@ async function saveCommunique(e) {
   e.preventDefault();
   hideError('comm-form-error');
   var editId = document.getElementById('comm-edit-id').value;
+  var isCommune = currentUser && currentUser.niveau_perimetre === 'commune';
+  var selectedStatut = document.getElementById('comm-statut').value;
   var body = {
     titre: document.getElementById('comm-titre').value.trim(),
     message: document.getElementById('comm-message').value.trim(),
@@ -13370,7 +13424,7 @@ async function saveCommunique(e) {
     commune_id: document.getElementById('comm-commune').value ? Number(document.getElementById('comm-commune').value) : null,
     date_debut: document.getElementById('comm-debut').value || null,
     date_fin: document.getElementById('comm-fin').value || null,
-    actif: document.getElementById('comm-statut').value === 'publie',
+    statut: isCommune ? 'brouillon' : selectedStatut,
   };
   try {
     var url = editId ? '/api/infos/communiques/' + editId : '/api/infos/communiques';
@@ -13428,6 +13482,27 @@ function commArchiver(id) { commWorkflow(id, 'archive'); }
 function commDemanderCorrection(id) {
   var c = prompt('Commentaire de correction :');
   if (c) commWorkflow(id, 'brouillon', c);
+}
+// Commune → Soumettre à la Wilaya
+function commSoumettre(id) { commWorkflow(id, 'soumis_wilaya'); }
+// Commune → Resoumettre après rejet (remet en brouillon pour modification)
+async function commResoumettre(id) {
+  try {
+    var res = await apiFetch('/api/infos/communiques/' + id + '/workflow', {
+      method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ statut: 'brouillon' })
+    });
+    if (res.ok) {
+      showToast('Communiqué remis en brouillon. Modifiez-le puis resoumettez.');
+      loadAdminCommuniques();
+    } else { var err = await res.json(); showToast(err.erreur || err.message || 'Erreur', 'error'); }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+// Wilaya → Rejeter avec motif obligatoire
+function commRejeter(id) {
+  var motif = prompt('Motif de rejet (obligatoire) :');
+  if (!motif || !motif.trim()) { showToast('Le motif de rejet est obligatoire.', 'error'); return; }
+  commWorkflow(id, 'rejete', motif.trim());
 }
 
 // ─── PRÉPARER MON DOSSIER ────────────────────────────────────
@@ -13855,11 +13930,12 @@ async function initCommuniquesView() {
     el.innerHTML = data.map(function(c) {
       var ico = icons[c.niveau] || '📢';
       var date = c.date_publication ? new Date(c.date_publication).toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'}) : '';
+      var communeTag = c.commune_nom ? '<span style="font-size:10px;padding:2px 8px;border-radius:8px;background:#dbeafe;color:#2563eb;margin-left:6px;">' + escHtml(c.commune_nom) + '</span>' : '';
       return '<div class="card" style="padding:16px 20px;">' +
         '<div style="display:flex;align-items:flex-start;gap:12px;">' +
           '<span style="font-size:20px;line-height:1;">' + ico + '</span>' +
           '<div style="flex:1;min-width:0;">' +
-            '<h4 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 4px;">' + escHtml(c.titre) + '</h4>' +
+            '<h4 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 4px;">' + escHtml(c.titre) + communeTag + '</h4>' +
             '<p style="font-size:13px;color:var(--gray-600);margin:0 0 6px;line-height:1.5;">' + escHtml(c.message) + '</p>' +
             (date ? '<span style="font-size:11px;color:var(--muted);">' + date + '</span>' : '') +
           '</div>' +

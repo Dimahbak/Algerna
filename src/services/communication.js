@@ -5,12 +5,14 @@
 const { query, withTransaction } = require('../db/pool');
 
 const STATUT_TRANSITIONS = {
-  brouillon:    ['en_revision'],
-  en_revision:  ['valide', 'brouillon'],  // brouillon = correction demandée
-  valide:       ['publie', 'programme'],
-  programme:    ['publie'],
-  publie:       ['archive'],
-  archive:      [],
+  brouillon:      ['en_revision', 'soumis_wilaya'],
+  en_revision:    ['valide', 'brouillon'],   // brouillon = correction demandée
+  soumis_wilaya:  ['publie', 'rejete'],      // Wilaya valide ou rejette
+  valide:         ['publie', 'programme'],
+  programme:      ['publie'],
+  publie:         ['archive'],
+  rejete:         ['brouillon'],             // Auteur peut resoumettre
+  archive:        [],
 };
 
 async function transitionStatut(communiqueId, nouveauStatut, user, opts = {}) {
@@ -39,9 +41,19 @@ async function transitionStatut(communiqueId, nouveauStatut, user, opts = {}) {
     if (nouveauStatut === 'publie') {
       updates.push('actif = TRUE', 'date_publication = NOW()');
       if (!comm.date_debut) updates.push('date_debut = NOW()');
+      // Si publication depuis soumis_wilaya, enregistrer le validateur
+      if (ancienStatut === 'soumis_wilaya') {
+        updates.push(`validateur_id = $${pi}`, `valide_le = NOW()`);
+        params.push(user.id); pi++;
+      }
     }
     if (nouveauStatut === 'archive') {
       updates.push('actif = FALSE', 'archive_le = NOW()');
+    }
+    if (nouveauStatut === 'rejete') {
+      if (!opts.commentaire) throw new Error('Le motif de rejet est obligatoire.');
+      updates.push(`commentaire_revision = $${pi}`);
+      params.push(opts.commentaire); pi++;
     }
     if (nouveauStatut === 'brouillon' && opts.commentaire) {
       updates.push(`commentaire_revision = $${pi}`);
@@ -101,17 +113,21 @@ async function getWorkflowHistorique(communiqueId) {
 }
 
 async function getKpisCommunication() {
-  const [brouillons, revision, publies, programmes] = await Promise.all([
+  const [brouillons, revision, soumis, publies, programmes, rejetes] = await Promise.all([
     query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'brouillon'"),
     query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'en_revision'"),
+    query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'soumis_wilaya'"),
     query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'publie' AND date_publication >= CURRENT_DATE"),
     query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'programme'"),
+    query("SELECT COUNT(*)::int AS n FROM communique WHERE statut = 'rejete'"),
   ]);
   return {
     brouillons: brouillons.rows[0].n,
     en_revision: revision.rows[0].n,
+    soumis_wilaya: soumis.rows[0].n,
     publies_aujourdhui: publies.rows[0].n,
     programmes: programmes.rows[0].n,
+    rejetes: rejetes.rows[0].n,
   };
 }
 

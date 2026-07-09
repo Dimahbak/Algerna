@@ -129,15 +129,17 @@ router.post('/communiques', authenticate, requireAgentOrSuperviseur(), asyncH(as
   const { titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, statut, priorite,
           titre_ar, message_ar, detail_ar, service } = req.body;
   if (!titre || !message) throw badRequest('titre et message requis');
-  // Superviseur communal : forcer commune_id à sa propre commune
-  const effectiveCommuneId = hasPerimetre(req.user, 'commune') && req.user.commune_id
-    ? req.user.commune_id : (commune_id || null);
+  // Superviseur communal : forcer commune_id à sa propre commune + statut brouillon
+  const isCommune = hasPerimetre(req.user, 'commune') && req.user.commune_id;
+  const effectiveCommuneId = isCommune ? req.user.commune_id : (commune_id || null);
+  // Commune : forcer brouillon (pas de publication directe)
+  const effectiveStatut = isCommune ? 'brouillon' : (statut || 'brouillon');
   const { rows } = await query(
     `INSERT INTO communique (titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, cree_par, statut, priorite)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
     [titre, message, detail||null, categorie||'info', niveau||'info', effectiveCommuneId, zone||null,
      date_debut||new Date().toISOString(), date_fin||null, canal||'bandeau', req.user.id,
-     statut||'brouillon', priorite||'normale']);
+     effectiveStatut, priorite||'normale']);
   // Audit
   try {
     await query(`INSERT INTO communique_audit (communique_id, action, par_utilisateur, details)
@@ -164,6 +166,15 @@ router.patch('/communiques/:id', authenticate, requireSuperviseur(), asyncH(asyn
   }
   const fields = ['titre','message','detail','categorie','niveau','commune_id','zone','date_debut','date_fin','actif','canal','statut','priorite'];
   const sets = []; const vals = []; let i = 1;
+  // Superviseur communal : interdire de changer statut vers publie ou actif
+  if (hasPerimetre(req.user, 'commune')) {
+    if (req.body.statut && ['publie','valide','archive'].includes(req.body.statut)) {
+      throw badRequest('Vous ne pouvez pas publier directement. Soumettez à la Wilaya.');
+    }
+    if (req.body.actif === true) {
+      throw badRequest('Seule la Wilaya peut activer un communiqué.');
+    }
+  }
   for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
   if (!sets.length) throw badRequest('Rien à modifier');
   // Superviseur communal : interdire de changer commune_id
@@ -211,10 +222,25 @@ router.patch('/communiques/:id/workflow', authenticate, requireAgentOrSuperviseu
   if (isAgentOnly && !['en_revision'].includes(statut)) {
     throw badRequest('Les agents ne peuvent qu\'envoyer en révision.');
   }
-  // Superviseur communal : ne peut pas publier (réservé Wilaya / capacité publication)
+  var isCommune = hasPerimetre(req.user, 'commune');
+  // Superviseur communal : ne peut QUE soumettre à la Wilaya (pas publier, valider, rejeter)
+  if (isCommune) {
+    if (['publie', 'valide', 'rejete', 'archive'].includes(statut)) {
+      return res.status(403).json({ erreur: 'La publication est réservée à l\'autorité de Wilaya.' });
+    }
+    // Commune peut : soumis_wilaya (soumettre) ou brouillon (modifier son propre)
+    if (!['soumis_wilaya', 'brouillon'].includes(statut)) {
+      throw badRequest('Action non autorisée pour votre niveau.');
+    }
+  }
+  // Publication/validation/rejet : réservés Wilaya ou capacité publication
   var canPublish = hasCapacite(req.user, 'publication') || (hasCapacite(req.user, 'validation') && hasPerimetre(req.user, 'wilaya'));
-  if (['publie'].includes(statut) && !canPublish) {
-    throw badRequest('La publication est réservée à l\'autorité compétente.');
+  if (['publie', 'rejete'].includes(statut) && !canPublish) {
+    return res.status(403).json({ erreur: 'La publication est réservée à l\'autorité compétente.' });
+  }
+  // Rejet : motif obligatoire
+  if (statut === 'rejete' && !commentaire) {
+    throw badRequest('Le motif de rejet est obligatoire.');
   }
   const result = await comm.transitionStatut(req.params.id, statut, req.user, { commentaire });
   res.json(result);
