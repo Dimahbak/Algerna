@@ -52,6 +52,9 @@ router.get('/kpis', authenticate, ROLE_GATE, asyncH(async (req, res) => {
 
 // GET /activite — flux temps réel (derniers événements)
 router.get('/activite', authenticate, ROLE_GATE, asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const cf = isCommune && req.user.commune_id ? ` WHERE s.commune_id = ${Number(req.user.commune_id)}` : '';
+  const cfCap = isCommune && req.user.commune_id ? ` AND s.commune_id = ${Number(req.user.commune_id)}` : '';
   // Separate queries to avoid UNION ORDER BY issues
   const [sigHist, capHist] = await Promise.all([
     query(`SELECT 'signalement' AS type, h.le AS date, h.action, h.etat, h.commentaire,
@@ -60,6 +63,7 @@ router.get('/activite', authenticate, ROLE_GATE, asyncH(async (req, res) => {
        JOIN signalement s ON s.id = h.signalement_id
        LEFT JOIN utilisateur u ON u.id = h.par_utilisateur
        LEFT JOIN commune c ON c.id = s.commune_id
+      ${cf}
       ORDER BY h.le DESC LIMIT 15`),
     query(`SELECT 'mission_cap' AS type, mh.le AS date, 'mission_' || mh.etat AS action, mh.etat, mh.commentaire,
             u.prenom, u.nom, s.reference, c.nom AS commune
@@ -68,6 +72,7 @@ router.get('/activite', authenticate, ROLE_GATE, asyncH(async (req, res) => {
        LEFT JOIN signalement s ON s.id = m.signalement_id
        LEFT JOIN utilisateur u ON u.id = mh.par_utilisateur
        LEFT JOIN commune c ON c.id = s.commune_id
+      WHERE 1=1${cfCap}
       ORDER BY mh.le DESC LIMIT 10`),
   ]);
   const rows = [...sigHist.rows, ...capHist.rows]
@@ -102,6 +107,8 @@ router.get('/services', authenticate, ROLE_GATE, asyncH(async (req, res) => {
 
 // GET /communes — performance territoriale
 router.get('/communes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const communeFilter = isCommune && req.user.commune_id ? ` WHERE c.id = ${Number(req.user.commune_id)}` : '';
   const { rows } = await query(`
     SELECT c.id, c.nom AS commune,
            COUNT(s.id)::int AS signalements,
@@ -111,6 +118,7 @@ router.get('/communes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
            COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS ouverts
       FROM commune c
       LEFT JOIN signalement s ON s.commune_id = c.id
+    ${communeFilter}
      GROUP BY c.id, c.nom
     HAVING COUNT(s.id) > 0
      ORDER BY signalements DESC

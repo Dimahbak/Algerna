@@ -42,6 +42,10 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     if (!allowed.includes(nouveauEtat)) {
       throw new Error(`Transition ${ancienEtat} → ${nouveauEtat} non autorisée`);
     }
+    // Rejet/classement sans suite : réservé aux superviseurs
+    if (nouveauEtat === 'rejete' && user.fonction === 'entite_responsable') {
+      throw new Error('Le classement sans suite est réservé aux superviseurs.');
+    }
 
     // 3. Mettre à jour le signalement
     const updates = ['etat = $2'];

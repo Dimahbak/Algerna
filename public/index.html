@@ -2391,6 +2391,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Mon impact
       </button>
+      <button class="nav-item" onclick="showView('communiques')" data-view="communiques">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+        Communiques
+      </button>
       <div class="nav-divider" id="admin-divider" style="display:none"></div>
       <div class="nav-label hidden" id="admin-nav-label" data-i18n="bo.operations">Opérations</div>
       <button class="nav-item hidden" onclick="showView('bo-executive')" data-view="bo-executive" id="nav-bo-executive">
@@ -2442,6 +2446,24 @@
       <button class="nav-item hidden" onclick="showView('bo-admin')" data-view="bo-admin" id="nav-bo-admin">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span data-i18n="sidebar.administration">Administration</span>
+      </button>
+      <div class="nav-divider hidden" id="sidebar-transversal-divider"></div>
+      <div class="nav-label hidden" id="sidebar-transversal-label">Mon compte</div>
+      <button class="nav-item hidden" onclick="showView('notifications')" data-view="notifications" id="nav-notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+      </button>
+      <button class="nav-item hidden" onclick="showView('profil')" data-view="profil" id="nav-profil">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profil
+      </button>
+      <button class="nav-item hidden" onclick="showView('aide')" data-view="aide" id="nav-aide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Aide
+      </button>
+      <button class="nav-item hidden" onclick="handleLogout()" id="nav-deconnexion">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Deconnexion
       </button>
       <div class="sidebar-illust"><img src="/assets/algerna/design-v1/sidebar-djamaa-night-v1.webp" alt="" loading="lazy"></div>
     </aside>
@@ -6146,20 +6168,21 @@ async function initApp() {
 
   // ── Sidebar par fonction (avec fallback sur rôle) ──
   var allNavItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .nav-label, .sidebar .nav-divider');
+  var transverses = ['notifications','profil','aide'];
   var menusByFonction = {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
-    agent_traitant:       ['bo-agent'],
-    cap:                  ['bo-cap'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques'],
+    agent_traitant:       ['bo-agent'].concat(transverses),
+    cap:                  ['bo-cap'].concat(transverses),
+    entite_responsable:   (hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent']).concat(transverses),
+    superviseur:          (hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques']).concat(transverses),
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
     citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
-    agent: ['bo-agent'],
-    operateur: ['bo-agent'],
-    admin_apc: ['bo-executive','rapports','admin-communiques'],
-    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin'],
+    agent: ['bo-agent'].concat(transverses),
+    operateur: ['bo-agent'].concat(transverses),
+    admin_apc: ['bo-executive','rapports','admin-communiques'].concat(transverses),
+    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin'].concat(transverses),
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -6195,6 +6218,19 @@ async function initApp() {
       if (sysDivider) sysDivider.style.display = 'none';
       if (sysLabel) sysLabel.style.display = 'none';
     }
+  }
+  // Bloc transversal (Notifications, Profil, Aide, Déconnexion) — non-citoyen uniquement
+  var transDiv = document.getElementById('sidebar-transversal-divider');
+  var transLabel = document.getElementById('sidebar-transversal-label');
+  var navDeconnexion = document.getElementById('nav-deconnexion');
+  if (role !== 'citoyen') {
+    if (transDiv) { transDiv.classList.remove('hidden'); transDiv.style.display = ''; }
+    if (transLabel) { transLabel.classList.remove('hidden'); transLabel.style.display = ''; }
+    if (navDeconnexion) { navDeconnexion.classList.remove('hidden'); navDeconnexion.style.display = ''; }
+  } else {
+    if (transDiv) transDiv.style.display = 'none';
+    if (transLabel) transLabel.style.display = 'none';
+    if (navDeconnexion) navDeconnexion.style.display = 'none';
   }
   var bottomNav = document.querySelector('.bottom-nav');
   if (bottomNav) { bottomNav.style.display = role === 'citoyen' ? '' : 'none'; }
@@ -7604,6 +7640,7 @@ async function initMesSignalements() {
         '</div><span class="' + etatBadgeClass(s.etat) + '">' + etatLabel(s.etat) + '</span></div>' +
         '<div class="mes-sig-commune">' + escHtml(comm) + '</div>' +
         (s.description ? '<div class="mes-sig-desc">' + escHtml(s.description.substring(0,100)) + '</div>' : '') +
+        (s.etat === 'rejete' && s.motif_rejet ? '<div style="margin-top:6px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:12px;color:#991b1b;"><strong>' + (isAr ? 'السبب' : 'Motif') + ' :</strong> ' + escHtml(s.motif_rejet) + '</div>' : '') +
         '<div class="mes-sig-date">' + t('mes_sig.ref') + ' ' + escHtml(s.reference||'—') + ' — ' + fmtDateTime(s.cree_le) +
         (s.nb_confirmations > 0 ? ' · <span style="color:#7c3aed;font-weight:600;">+' + s.nb_confirmations + ' ' + (isAr?'تأكيد':'confirmation'+(s.nb_confirmations>1?'s':'')) + '</span>' : '') +
         '</div></div>';

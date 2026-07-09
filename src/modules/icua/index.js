@@ -2,7 +2,7 @@
  * ICUA API — Indice Citoyen Urbain ALGERNA
  */
 const express = require('express');
-const { authenticate, requireRole } = require('../../middleware/auth');
+const { authenticate, requireRole, hasPerimetre } = require('../../middleware/auth');
 const { asyncH } = require('../../utils/http');
 const icuaEngine = require('../../services/icua');
 const router = express.Router();
@@ -44,7 +44,10 @@ router.get('/historique', authenticate, asyncH(async (req, res) => {
 
 // GET /api/icua/communes — classement par commune
 router.get('/communes', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
-  const data = await icuaEngine.parCommune();
+  let data = await icuaEngine.parCommune();
+  if (hasPerimetre(req.user, 'commune') && req.user.commune_id) {
+    data = data.filter(c => c.commune_id === req.user.commune_id);
+  }
   res.json(data);
 }));
 

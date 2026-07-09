@@ -517,7 +517,7 @@ router.patch('/board/:id/etat',
       res.json(result);
     } catch(e) {
       const msg = e.message || 'Erreur de transition';
-      if (msg.includes('non autorisée') || msg.includes('introuvable')) {
+      if (msg.includes('non autorisée') || msg.includes('introuvable') || msg.includes('réservé')) {
         return res.status(400).json({ erreur: msg });
       }
       throw e;
@@ -863,6 +863,7 @@ router.get('/public/carte', asyncH(async (req, res) => {
 router.get('/mes-signalements', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
     `SELECT s.id, s.reference, s.domaine, s.etat, s.description, s.lat, s.lng, s.cree_le, s.nb_confirmations,
+            s.motif_rejet,
             cs.libelle AS categorie, cs.libelle_ar AS categorie_ar, cs.famille,
             c.nom AS commune, c.nom_ar AS commune_ar
        FROM signalement s
