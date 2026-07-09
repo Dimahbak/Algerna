@@ -4779,6 +4779,7 @@
           <button class="admin-tab-btn" data-tab="ccoe-chantiers" onclick="ccoeTab('chantiers')" role="tab" data-i18n="ccoe.tab_chantiers">Chantiers</button>
           <button class="admin-tab-btn" data-tab="ccoe-carte" onclick="ccoeTab('carte')" role="tab" data-i18n="ccoe.tab_carte">Carte</button>
           <button class="admin-tab-btn" data-tab="ccoe-dashboard" onclick="ccoeTab('dashboard')" role="tab" data-i18n="ccoe.tab_dashboard">Tableau de bord</button>
+          <button class="admin-tab-btn" data-tab="ccoe-annuaire" onclick="ccoeTab('annuaire')" role="tab" data-i18n="ccoe.tab_annuaire">Annuaire CCOE</button>
         </div>
         <div id="ccoe-content" role="tabpanel"></div>
       </div>
@@ -9300,7 +9301,8 @@ function mccShowDetail(chantierId) {
   safeFetchJSON('/api/ccoe/chantiers/' + chantierId, null, true).then(function(ch) {
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
     var isCab = currentUser && (currentUser.fonction === 'cabinet' || (currentUser.capacites && currentUser.capacites.includes('ccoe')));
-    var html = '<button class="btn btn-sm btn-outline" onclick="mccLoadChantiers()" style="margin-bottom:10px;">← ' + (t('ccoe.liste') || 'Liste') + '</button>' +
+    var html = '<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-sm btn-outline" onclick="mccLoadChantiers()">← ' + (t('ccoe.liste') || 'Liste') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="ccoeShowContact(' + ch.id + ')">📞 Contact</button></div>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
       '<h3 style="margin:0;min-width:0;">' + escHtml(ch.titre) + '</h3>' +
@@ -9350,6 +9352,7 @@ function mccShowDetail(chantierId) {
     ch.commentaires.forEach(function(cm) {
       html += '<div style="padding:8px;background:#f9f9f9;border-radius:6px;margin-bottom:6px;">' +
         '<div style="font-size:12px;color:var(--muted);">' + escHtml(cm.auteur_prenom || '?') + ' · ' + new Date(cm.le).toLocaleString('fr-FR') + '</div>' +
+        (cm.type_message ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#E0E7FF;color:#3B5BDB;margin-right:4px;">' + escHtml(cm.type_message.replace(/_/g,' ')) + '</span>' : '') +
         '<div style="font-size:13px;">' + escHtml(cm.message) + '</div>' +
         (cm.photo_path ? '<img src="' + escHtml(cm.photo_path) + '" style="max-width:120px;margin-top:4px;border-radius:4px;">' : '') +
         '</div>';
@@ -9417,6 +9420,7 @@ function ccoeTab(tab) {
   else if (tab === 'chantiers') ccoeLoadChantiers(c);
   else if (tab === 'carte') ccoeLoadCarte(c);
   else if (tab === 'dashboard') ccoeLoadDashboard(c);
+  else if (tab === 'annuaire') ccoeLoadAnnuaire(c);
 }
 
 // ── Événements ──
@@ -9439,7 +9443,7 @@ function ccoeLoadEvenements(container) {
       html += '<div class="card" style="padding:14px;margin-bottom:8px;cursor:pointer;" onclick="ccoeShowEvtDetail(' + e.id + ')">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<div><strong>' + escHtml(e.titre) + '</strong>' +
-        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(e.type) + ' · ' + dateStr + (e.commune_nom ? ' · ' + escHtml(e.commune_nom) : '') + '</div></div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(e.type === 'autre' && e.type_label ? e.type_label : e.type) + ' · ' + dateStr + (e.commune_nom ? ' · ' + escHtml(e.commune_nom) : '') + '</div></div>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
         '<span style="font-size:11px;padding:2px 8px;border-radius:10px;' + badge + '">' + escHtml(e.importance) + '</span>' +
         '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#E5E7EB;">' + escHtml(e.statut) + '</span>' +
@@ -9454,21 +9458,29 @@ function ccoeLoadEvenements(container) {
 
 function ccoeShowEvtForm(evt) {
   var isEdit = evt && evt.id;
-  var types = ['president','premier_ministre','ministre','ambassadeur','fete_nationale','sportif','culturel','inspection_wali'];
-  var typeOpts = types.map(function(t) { return '<option value="' + t + '"' + (isEdit && evt.type === t ? ' selected' : '') + '>' + t.replace(/_/g, ' ') + '</option>'; }).join('');
+  var types = ['president','premier_ministre','ministre','ambassadeur','fete_nationale','sportif','culturel','inspection_wali','autre'];
+  var typeOpts = types.map(function(t) { return '<option value="' + t + '"' + (isEdit && evt.type === t ? ' selected' : '') + '>' + (t === 'autre' ? 'Autre…' : t.replace(/_/g, ' ')) + '</option>'; }).join('');
+  var allAxes = ['securite','protocole','voirie','proprete','eclairage','espaces_verts','mobilite','stationnement','sante','communication','logistique'];
+  var showAutre = isEdit && evt.type === 'autre';
   var html = '<div class="card" style="padding:20px;">' +
     '<h4 style="margin:0 0 14px;color:var(--navy);">' + (isEdit ? 'Modifier' : 'Nouvel événement') + '</h4>' +
     '<form onsubmit="ccoeSaveEvt(event,' + (isEdit ? evt.id : 'null') + ')">' +
     '<div class="form-group"><label>Titre *</label><input type="text" id="ccoe-evt-titre" required value="' + (isEdit ? escHtml(evt.titre) : '') + '"></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-    '<div class="form-group"><label>Type *</label><select id="ccoe-evt-type" required>' + typeOpts + '</select></div>' +
+    '<div class="form-group"><label>Type *</label><select id="ccoe-evt-type" required onchange="ccoeToggleAutre()">' + typeOpts + '</select></div>' +
     '<div class="form-group"><label>Importance</label><select id="ccoe-evt-importance"><option value="normale">Normale</option><option value="haute"' + (isEdit && evt.importance === 'haute' ? ' selected' : '') + '>Haute</option><option value="critique"' + (isEdit && evt.importance === 'critique' ? ' selected' : '') + '>Critique</option></select></div>' +
     '</div>' +
+    '<div id="ccoe-autre-fields" style="' + (showAutre ? '' : 'display:none;') + '">' +
+    '<div class="form-group"><label>Intitulé du type *</label><input type="text" id="ccoe-evt-type-label" placeholder="Ex : Séminaire international" value="' + (isEdit && evt.type_label ? escHtml(evt.type_label) : '') + '"></div>' +
+    '<div class="form-group"><label>Axes d\'intervention (au moins un) *</label><div id="ccoe-axes-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;">' +
+    allAxes.map(function(a) { return '<label style="font-size:13px;display:flex;align-items:center;gap:4px;"><input type="checkbox" name="ccoe-axe" value="' + a + '"> ' + a.replace(/_/g, ' ') + '</label>'; }).join('') +
+    '</div></div></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
     '<div class="form-group"><label>Date *</label><input type="date" id="ccoe-evt-date" required value="' + (isEdit ? evt.date_evenement : '') + '"></div>' +
     '<div class="form-group"><label>Heure</label><input type="time" id="ccoe-evt-heure" value="' + (isEdit && evt.heure ? evt.heure : '') + '"></div>' +
     '</div>' +
     '<div class="form-group"><label>Lieu</label><input type="text" id="ccoe-evt-lieu" value="' + (isEdit ? escHtml(evt.lieu || '') : '') + '"></div>' +
+    '<div class="form-group"><label>Description itinéraire</label><textarea id="ccoe-evt-itin-desc" rows="2" placeholder="Étapes du parcours…">' + (isEdit ? escHtml(evt.itineraire_description || '') : '') + '</textarea></div>' +
     '<div class="form-group"><label>Description</label><textarea id="ccoe-evt-desc" rows="2">' + (isEdit ? escHtml(evt.description || '') : '') + '</textarea></div>' +
     '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
     '<button type="button" class="btn btn-outline" onclick="ccoeTab(\'evenements\')">Annuler</button>' +
@@ -9477,17 +9489,33 @@ function ccoeShowEvtForm(evt) {
   document.getElementById('ccoe-content').innerHTML = html;
 }
 
+function ccoeToggleAutre() {
+  var sel = document.getElementById('ccoe-evt-type');
+  var fields = document.getElementById('ccoe-autre-fields');
+  if (fields) fields.style.display = sel.value === 'autre' ? '' : 'none';
+}
+
 function ccoeSaveEvt(e, id) {
   e.preventDefault();
+  var typeVal = document.getElementById('ccoe-evt-type').value;
   var body = {
     titre: document.getElementById('ccoe-evt-titre').value,
-    type: document.getElementById('ccoe-evt-type').value,
+    type: typeVal,
     importance: document.getElementById('ccoe-evt-importance').value,
     date_evenement: document.getElementById('ccoe-evt-date').value,
     heure: document.getElementById('ccoe-evt-heure').value || null,
     lieu: document.getElementById('ccoe-evt-lieu').value || null,
-    description: document.getElementById('ccoe-evt-desc').value || null
+    description: document.getElementById('ccoe-evt-desc').value || null,
+    itineraire_description: document.getElementById('ccoe-evt-itin-desc').value || null
   };
+  if (typeVal === 'autre') {
+    var label = document.getElementById('ccoe-evt-type-label').value;
+    if (!label) { showToast('Intitulé du type requis pour « Autre »', 'error'); return; }
+    body.type_label = label;
+    var checked = Array.from(document.querySelectorAll('input[name="ccoe-axe"]:checked')).map(function(c) { return c.value; });
+    if (!checked.length) { showToast('Au moins un axe requis', 'error'); return; }
+    body._axes = checked;
+  }
   var method = id ? 'PUT' : 'POST';
   var url = id ? '/api/ccoe/evenements/' + id : '/api/ccoe/evenements';
   apiFetch(url, { method: method, body: JSON.stringify(body), headers: {'Content-Type':'application/json'} })
@@ -9510,8 +9538,9 @@ function ccoeShowEvtDetail(evtId) {
       '<button class="btn btn-sm btn-outline" onclick="ccoeShowEvtForm(_ccoeCurrentEvt)">Modifier</button></div>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
       '<h3 style="margin:0 0 6px;">' + escHtml(evt.titre) + '</h3>' +
-      '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">' + escHtml(evt.type) + ' · ' + dateStr + (evt.heure ? ' ' + evt.heure : '') + (evt.lieu ? ' · ' + escHtml(evt.lieu) : '') + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">' + escHtml(evt.type === 'autre' && evt.type_label ? evt.type_label : evt.type) + ' · ' + dateStr + (evt.heure ? ' ' + evt.heure : '') + (evt.lieu ? ' · ' + escHtml(evt.lieu) : '') + '</div>' +
       (evt.description ? '<p style="font-size:13px;">' + escHtml(evt.description) + '</p>' : '') +
+      (evt.itineraire_description ? '<p style="font-size:13px;color:#0B6078;"><strong>Itinéraire :</strong> ' + escHtml(evt.itineraire_description) + '</p>' : '') +
       '</div>';
 
     // OPORD section
@@ -9626,7 +9655,8 @@ function ccoeShowChantierDetail(chantierId) {
   c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
   safeFetchJSON('/api/ccoe/chantiers/' + chantierId, null, true).then(function(ch) {
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
-    var html = '<button class="btn btn-sm btn-outline" onclick="ccoeTab(\'chantiers\')" style="margin-bottom:10px;">← Liste</button>' +
+    var html = '<div style="display:flex;gap:6px;margin-bottom:10px;"><button class="btn btn-sm btn-outline" onclick="ccoeTab(\'chantiers\')">← Liste</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="ccoeShowContact(' + ch.id + ')">📞 Contact</button></div>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;">' +
       '<h3 style="margin:0;">' + escHtml(ch.titre) + '</h3>' +
@@ -9669,6 +9699,7 @@ function ccoeShowChantierDetail(chantierId) {
     ch.commentaires.forEach(function(cm) {
       html += '<div style="padding:8px;background:#f9f9f9;border-radius:6px;margin-bottom:6px;">' +
         '<div style="font-size:12px;color:var(--muted);">' + escHtml(cm.auteur_prenom || '?') + ' · ' + new Date(cm.le).toLocaleString('fr-FR') + '</div>' +
+        (cm.type_message ? '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#E0E7FF;color:#3B5BDB;margin-right:4px;">' + escHtml(cm.type_message.replace(/_/g,' ')) + '</span>' : '') +
         '<div style="font-size:13px;">' + escHtml(cm.message) + '</div>' +
         (cm.photo_path ? '<img src="' + escHtml(cm.photo_path) + '" style="max-width:120px;margin-top:4px;border-radius:4px;">' : '') +
         '</div>';
@@ -9721,19 +9752,32 @@ function ccoeAddComment(e, chantierId) {
 // ── Carte ──
 function ccoeLoadCarte(container) {
   container.innerHTML = '<div id="ccoe-map-container" style="height:500px;border-radius:8px;overflow:hidden;"></div>';
-  safeFetchJSON('/api/ccoe/carte', null, true).then(function(points) {
+  safeFetchJSON('/api/ccoe/carte', null, true).then(function(data) {
+    var points = data.chantiers || data; // backward compat
+    var evenements = data.evenements || [];
     if (_ccoeMap) { _ccoeMap.remove(); _ccoeMap = null; }
     _ccoeMap = L.map('ccoe-map-container').setView([36.753, 3.058], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OSM' }).addTo(_ccoeMap);
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
+    // Chantier markers
     points.forEach(function(p) {
       var color = statutColors[p.statut] || '#6B7280';
       L.circleMarker([p.lat, p.lng], { radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9 })
         .addTo(_ccoeMap)
         .bindPopup('<strong>' + escHtml(p.titre) + '</strong><br>' + escHtml(p.axe) + ' · ' + escHtml(p.statut) + '<br>' + escHtml(p.organisation_nom || ''));
     });
-    if (points.length) {
-      var bounds = L.latLngBounds(points.map(function(p) { return [p.lat, p.lng]; }));
+    // Event itineraires + zones
+    evenements.forEach(function(evt) {
+      if (evt.itineraire_geojson) {
+        try { L.geoJSON(evt.itineraire_geojson, { style: { color: '#DC2626', weight: 4, opacity: 0.8 } }).addTo(_ccoeMap).bindPopup('Itinéraire — ' + escHtml(evt.titre)); } catch(e) {}
+      }
+      if (evt.zones_geojson) {
+        try { L.geoJSON(evt.zones_geojson, { style: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } }).addTo(_ccoeMap).bindPopup('Zone — ' + escHtml(evt.titre)); } catch(e) {}
+      }
+    });
+    var allPts = points.filter(function(p) { return p.lat && p.lng; });
+    if (allPts.length) {
+      var bounds = L.latLngBounds(allPts.map(function(p) { return [p.lat, p.lng]; }));
       _ccoeMap.fitBounds(bounds, { padding: [30, 30] });
     }
     setTimeout(function() { _ccoeMap.invalidateSize(); }, 200);
@@ -9791,6 +9835,127 @@ function ccoeLoadDashboard(container) {
   }).catch(function(err) {
     container.innerHTML = '<div class="alert alert-error">Erreur: ' + escHtml(err.message || err) + '</div>';
   });
+}
+
+// ── Annuaire CCOE ──
+function ccoeLoadAnnuaire(container) {
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
+  safeFetchJSON('/api/ccoe/annuaire', null, true).then(function(data) {
+    var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+      '<span style="font-weight:600;font-size:15px;">' + (t('ccoe.annuaire_titre') || 'Annuaire CCOE') + ' (' + data.length + ')</span>' +
+      '<button class="btn btn-sm btn-primary" onclick="ccoeAnnuaireForm()">+ Ajouter</button></div>';
+    if (!data.length) {
+      html += '<div class="card" style="padding:16px;text-align:center;color:var(--muted);">Aucun contact</div>';
+    } else {
+      html += '<div style="overflow-x:auto;"><table style="width:100%;font-size:13px;border-collapse:collapse;">' +
+        '<tr style="background:#f0f4f8;"><th style="padding:8px;text-align:left;">Nom</th><th style="padding:8px;">Axe</th><th style="padding:8px;">Fonction</th><th style="padding:8px;">Tél</th><th style="padding:8px;">Email</th><th style="padding:8px;">Organisation</th><th style="padding:8px;">Actions</th></tr>';
+      data.forEach(function(c) {
+        html += '<tr style="border-bottom:1px solid #eee;">' +
+          '<td style="padding:8px;">' + escHtml(c.prenom || '') + ' ' + escHtml(c.nom) + '</td>' +
+          '<td style="padding:8px;text-align:center;">' + escHtml(c.axe || '—') + '</td>' +
+          '<td style="padding:8px;">' + escHtml(c.fonction_label || '—') + '</td>' +
+          '<td style="padding:8px;">' + escHtml(c.telephone || '—') + '</td>' +
+          '<td style="padding:8px;font-size:11px;">' + escHtml(c.email || '—') + '</td>' +
+          '<td style="padding:8px;font-size:11px;">' + escHtml(c.organisation_nom || '—') + '</td>' +
+          '<td style="padding:8px;"><button class="btn btn-sm btn-outline" onclick="ccoeAnnuaireForm(' + c.id + ')">✏</button> ' +
+          '<button class="btn btn-sm btn-outline" style="color:#DC2626;" onclick="ccoeAnnuaireDel(' + c.id + ')">✕</button></td></tr>';
+      });
+      html += '</table></div>';
+    }
+    container.innerHTML = html;
+  }).catch(function(err) {
+    container.innerHTML = '<div class="alert alert-error">' + escHtml(err.message || err) + '</div>';
+  });
+}
+
+function ccoeAnnuaireForm(id) {
+  var c = document.getElementById('ccoe-content');
+  var allAxes = ['securite','protocole','voirie','proprete','eclairage','espaces_verts','mobilite','stationnement','sante','communication','logistique'];
+  if (id) {
+    safeFetchJSON('/api/ccoe/annuaire/' + id, null, true).then(function(ct) { renderAnnuaireForm(c, ct); });
+  } else {
+    renderAnnuaireForm(c, null);
+  }
+  function renderAnnuaireForm(c, ct) {
+    var isE = ct && ct.id;
+    var axeOpts = '<option value="">—</option>' + allAxes.map(function(a) { return '<option value="' + a + '"' + (isE && ct.axe === a ? ' selected' : '') + '>' + a.replace(/_/g,' ') + '</option>'; }).join('');
+    c.innerHTML = '<div class="card" style="padding:20px;"><h4 style="margin:0 0 14px;">' + (isE ? 'Modifier contact' : 'Nouveau contact') + '</h4>' +
+      '<form onsubmit="ccoeAnnuaireSave(event,' + (isE ? ct.id : 'null') + ')">' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-group"><label>Nom *</label><input type="text" id="ann-nom" required value="' + (isE ? escHtml(ct.nom) : '') + '"></div>' +
+      '<div class="form-group"><label>Prénom</label><input type="text" id="ann-prenom" value="' + (isE ? escHtml(ct.prenom||'') : '') + '"></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-group"><label>Téléphone</label><input type="text" id="ann-tel" value="' + (isE ? escHtml(ct.telephone||'') : '') + '"></div>' +
+      '<div class="form-group"><label>Email</label><input type="email" id="ann-email" value="' + (isE ? escHtml(ct.email||'') : '') + '"></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-group"><label>Axe</label><select id="ann-axe">' + axeOpts + '</select></div>' +
+      '<div class="form-group"><label>Fonction</label><input type="text" id="ann-fonction" value="' + (isE ? escHtml(ct.fonction_label||'') : '') + '"></div></div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;"><button type="button" class="btn btn-outline" onclick="ccoeTab(\'annuaire\')">Annuler</button>' +
+      '<button type="submit" class="btn btn-primary">Enregistrer</button></div></form></div>';
+  }
+}
+
+function ccoeAnnuaireSave(e, id) {
+  e.preventDefault();
+  var body = { nom: document.getElementById('ann-nom').value, prenom: document.getElementById('ann-prenom').value || null,
+    telephone: document.getElementById('ann-tel').value || null, email: document.getElementById('ann-email').value || null,
+    axe: document.getElementById('ann-axe').value || null, fonction_label: document.getElementById('ann-fonction').value || null };
+  var method = id ? 'PUT' : 'POST';
+  var url = id ? '/api/ccoe/annuaire/' + id : '/api/ccoe/annuaire';
+  apiFetch(url, { method: method, body: JSON.stringify(body), headers: {'Content-Type':'application/json'} })
+    .then(function() { showToast(id ? 'Contact modifié' : 'Contact ajouté', 'success'); ccoeTab('annuaire'); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function ccoeAnnuaireDel(id) {
+  if (!confirm('Supprimer ce contact ?')) return;
+  apiFetch('/api/ccoe/annuaire/' + id, { method: 'DELETE' })
+    .then(function() { showToast('Contact supprimé', 'success'); ccoeTab('annuaire'); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+// ── Contact + Message par chantier ──
+function ccoeShowContact(chantierId) {
+  safeFetchJSON('/api/ccoe/chantiers/' + chantierId + '/contact', null, true).then(function(ct) {
+    if (ct.erreur) { showToast(ct.erreur, 'error'); return; }
+    var html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove()">' +
+      '<div class="card" style="padding:20px;max-width:420px;width:90%;">' +
+      '<h4 style="margin:0 0 12px;">Contact responsable</h4>' +
+      '<div style="font-size:14px;margin-bottom:4px;"><strong>' + escHtml((ct.prenom||'') + ' ' + ct.nom) + '</strong></div>' +
+      (ct.fonction_label ? '<div style="font-size:13px;color:var(--muted);margin-bottom:4px;">' + escHtml(ct.fonction_label) + '</div>' : '') +
+      (ct.telephone ? '<div style="font-size:13px;">📞 ' + escHtml(ct.telephone) + '</div>' : '') +
+      (ct.email ? '<div style="font-size:13px;">📧 ' + escHtml(ct.email) + '</div>' : '') +
+      '<hr style="margin:12px 0;">' +
+      '<h5 style="margin:0 0 8px;">Envoyer un message</h5>' +
+      '<select id="ccoe-msg-type" style="width:100%;margin-bottom:8px;">' +
+      '<option value="demande_precision">Demande de précision</option>' +
+      '<option value="relance">Relance</option>' +
+      '<option value="point_situation">Point de situation</option>' +
+      '<option value="demande_rapport">Demande de rapport</option></select>' +
+      '<textarea id="ccoe-msg-body" rows="3" style="width:100%;margin-bottom:8px;" placeholder="Votre message…"></textarea>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+      '<button class="btn btn-sm btn-outline" onclick="this.closest(\'div[style*=fixed]\').remove()">Fermer</button>' +
+      '<button class="btn btn-sm btn-primary" onclick="ccoeSendMessage(' + chantierId + ')">Envoyer</button>' +
+      '</div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function ccoeSendMessage(chantierId) {
+  var type_message = document.getElementById('ccoe-msg-type').value;
+  var message = document.getElementById('ccoe-msg-body').value;
+  if (!message) { showToast('Message requis', 'error'); return; }
+  apiFetch('/api/ccoe/chantiers/' + chantierId + '/message', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ type_message: type_message, message: message })
+  }).then(function() {
+    showToast('Message envoyé', 'success');
+    var modal = document.querySelector('div[style*="fixed"][style*="z-index:9999"]');
+    if (modal) modal.remove();
+    // Refresh detail if visible
+    if (document.getElementById('view-ccoe').classList.contains('active')) ccoeShowChantierDetail(chantierId);
+    else if (document.getElementById('view-mes-chantiers-ccoe').classList.contains('active')) mccShowDetail(chantierId);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
 // ─── EXECUTIVE WORKBENCH ──────────────────────────────────────

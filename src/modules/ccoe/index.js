@@ -83,16 +83,21 @@ router.get('/evenements/:id', requireCCOE, asyncH(async (req, res) => {
 router.post('/evenements', requireFonction('cabinet'), asyncH(async (req, res) => {
   const b = req.body;
   if (!b.titre || !b.type || !b.date_evenement) throw badRequest('titre, type, date_evenement requis');
+  if (b.type === 'autre' && !b.type_label) throw badRequest('Intitulé du type requis pour « Autre »');
   const { rows } = await query(
-    `INSERT INTO evenement (titre, titre_ar, type, importance, date_evenement, heure,
+    `INSERT INTO evenement (titre, titre_ar, type, type_label, importance, date_evenement, heure,
        lieu, lieu_ar, commune_id, lat, lng, description, description_ar,
+       itineraire_geojson, zones_geojson, itineraire_description, itineraire_description_ar,
        responsable_cabinet, chef_projet, cree_par)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
      RETURNING *`,
-    [b.titre, b.titre_ar || null, b.type, b.importance || 'normale',
+    [b.titre, b.titre_ar || null, b.type, b.type_label || null, b.importance || 'normale',
      b.date_evenement, b.heure || null, b.lieu || null, b.lieu_ar || null,
      b.commune_id || null, b.lat || null, b.lng || null,
      b.description || null, b.description_ar || null,
+     b.itineraire_geojson ? JSON.stringify(b.itineraire_geojson) : null,
+     b.zones_geojson ? JSON.stringify(b.zones_geojson) : null,
+     b.itineraire_description || null, b.itineraire_description_ar || null,
      b.responsable_cabinet || req.user.id, b.chef_projet || null, req.user.id]);
   res.status(201).json(rows[0]);
 }));
@@ -100,21 +105,30 @@ router.post('/evenements', requireFonction('cabinet'), asyncH(async (req, res) =
 // PUT /ccoe/evenements/:id — modifier (cabinet only)
 router.put('/evenements/:id', requireFonction('cabinet'), asyncH(async (req, res) => {
   const b = req.body;
+  if (b.type === 'autre' && b.type_label === '') throw badRequest('Intitulé du type requis pour « Autre »');
   const { rows } = await query(
     `UPDATE evenement SET
        titre=COALESCE($2,titre), titre_ar=COALESCE($3,titre_ar),
-       type=COALESCE($4,type), importance=COALESCE($5,importance),
-       date_evenement=COALESCE($6,date_evenement), heure=COALESCE($7,heure),
-       lieu=COALESCE($8,lieu), lieu_ar=COALESCE($9,lieu_ar),
-       commune_id=COALESCE($10,commune_id), lat=COALESCE($11,lat), lng=COALESCE($12,lng),
-       description=COALESCE($13,description), description_ar=COALESCE($14,description_ar),
-       responsable_cabinet=COALESCE($15,responsable_cabinet),
-       chef_projet=COALESCE($16,chef_projet),
-       statut=COALESCE($17,statut), maj_le=NOW()
+       type=COALESCE($4,type), type_label=COALESCE($5,type_label),
+       importance=COALESCE($6,importance),
+       date_evenement=COALESCE($7,date_evenement), heure=COALESCE($8,heure),
+       lieu=COALESCE($9,lieu), lieu_ar=COALESCE($10,lieu_ar),
+       commune_id=COALESCE($11,commune_id), lat=COALESCE($12,lat), lng=COALESCE($13,lng),
+       description=COALESCE($14,description), description_ar=COALESCE($15,description_ar),
+       itineraire_geojson=COALESCE($16,itineraire_geojson),
+       zones_geojson=COALESCE($17,zones_geojson),
+       itineraire_description=COALESCE($18,itineraire_description),
+       itineraire_description_ar=COALESCE($19,itineraire_description_ar),
+       responsable_cabinet=COALESCE($20,responsable_cabinet),
+       chef_projet=COALESCE($21,chef_projet),
+       statut=COALESCE($22,statut), maj_le=NOW()
      WHERE id=$1 RETURNING *`,
-    [req.params.id, b.titre, b.titre_ar, b.type, b.importance,
-     b.date_evenement, b.heure, b.lieu, b.lieu_ar, b.commune_id,
-     b.lat, b.lng, b.description, b.description_ar,
+    [req.params.id, b.titre, b.titre_ar, b.type, b.type_label,
+     b.importance, b.date_evenement, b.heure, b.lieu, b.lieu_ar,
+     b.commune_id, b.lat, b.lng, b.description, b.description_ar,
+     b.itineraire_geojson ? JSON.stringify(b.itineraire_geojson) : undefined,
+     b.zones_geojson ? JSON.stringify(b.zones_geojson) : undefined,
+     b.itineraire_description, b.itineraire_description_ar,
      b.responsable_cabinet, b.chef_projet, b.statut]);
   if (!rows.length) throw notFound();
   res.json(rows[0]);
@@ -170,7 +184,7 @@ router.post('/opord/:opordId/generer', requireFonction('cabinet'), asyncH(async 
   if (!gabarit_id) throw badRequest('gabarit_id requis');
 
   const axes = (await query(
-    `SELECT ga.axe, ga.titre, ga.titre_ar, ga.description, ga.description_ar, ga.ordre
+    `SELECT ga.axe, ga.titre, ga.titre_ar, ga.ordre
      FROM gabarit_axe ga WHERE ga.gabarit_id = $1 ORDER BY ga.ordre`, [gabarit_id])).rows;
   if (!axes.length) throw badRequest('Gabarit sans axes');
 
@@ -182,12 +196,10 @@ router.post('/opord/:opordId/generer', requireFonction('cabinet'), asyncH(async 
         'SELECT organisation_id FROM ccoe_axe_organisation WHERE axe=$1', [axe.axe])).rows[0];
 
       const ch = (await client.query(
-        `INSERT INTO chantier (opord_id, axe, organisation_id, titre, titre_ar,
-           description, description_ar, date_limite)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+        `INSERT INTO chantier (opord_id, axe, organisation_id, titre, titre_ar, date_limite)
+         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
         [req.params.opordId, axe.axe, orgRow?.organisation_id || null,
-         axe.titre, axe.titre_ar, axe.description, axe.description_ar,
-         date_limite || null])).rows[0];
+         axe.titre, axe.titre_ar, date_limite || null])).rows[0];
 
       // Copy checklist items from gabarit
       const items = (await client.query(
@@ -516,13 +528,192 @@ router.get('/dashboard', requireCCOE, asyncH(async (req, res) => {
 
 router.get('/carte', requireCCOE, asyncH(async (req, res) => {
   const orgFilter = isCabinet(req.user) ? '' : ' AND ch.organisation_id = ' + parseInt(req.user.organisation_id);
-  const { rows } = await query(`
+  const chantiers = (await query(`
     SELECT ch.id, ch.titre, ch.axe, ch.statut, ch.lat, ch.lng,
       org.nom AS organisation_nom, ch.date_limite
     FROM chantier ch
     LEFT JOIN organisations org ON org.id = ch.organisation_id
-    WHERE ch.lat IS NOT NULL AND ch.lng IS NOT NULL` + orgFilter);
+    WHERE ch.lat IS NOT NULL AND ch.lng IS NOT NULL` + orgFilter)).rows;
+  // Include event geo data (itineraires + zones)
+  const evenements = (await query(`
+    SELECT id, titre, itineraire_geojson, zones_geojson
+    FROM evenement WHERE itineraire_geojson IS NOT NULL OR zones_geojson IS NOT NULL
+    ORDER BY date_evenement DESC LIMIT 10`)).rows;
+  res.json({ chantiers, evenements });
+}));
+
+// ═══════════════════════════════════════════════════════
+// GÉNÉRATION CHANTIERS PAR AXES SÉLECTIONNÉS (type "autre")
+// ═══════════════════════════════════════════════════════
+
+router.post('/opord/:opordId/generer-axes', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const { axes, date_limite } = req.body;
+  if (!axes || !Array.isArray(axes) || !axes.length) throw badRequest('Au moins un axe requis');
+
+  const created = await withTransaction(async (client) => {
+    const results = [];
+    for (const axe of axes) {
+      const orgRow = (await client.query(
+        'SELECT organisation_id FROM ccoe_axe_organisation WHERE axe=$1', [axe])).rows[0];
+      // Get checklist from the default gabarit (first active)
+      const gabarit = (await client.query(
+        'SELECT id FROM gabarit_evenement WHERE actif=TRUE ORDER BY id LIMIT 1')).rows[0];
+      const gabaritAxe = gabarit ? (await client.query(
+        'SELECT id, titre, titre_ar FROM gabarit_axe WHERE gabarit_id=$1 AND axe=$2',
+        [gabarit.id, axe])).rows[0] : null;
+
+      const titre = gabaritAxe?.titre || axe.replace(/_/g, ' ');
+      const titre_ar = gabaritAxe?.titre_ar || null;
+
+      const ch = (await client.query(
+        `INSERT INTO chantier (opord_id, axe, organisation_id, titre, titre_ar, date_limite)
+         VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+        [req.params.opordId, axe, orgRow?.organisation_id || null,
+         titre, titre_ar, date_limite || null])).rows[0];
+
+      // Copy checklist items if gabarit has this axe
+      if (gabaritAxe) {
+        const items = (await client.query(
+          'SELECT libelle, libelle_ar, ordre FROM gabarit_checklist WHERE axe_id=$1 ORDER BY ordre',
+          [gabaritAxe.id])).rows;
+        for (const item of items) {
+          await client.query(
+            'INSERT INTO chantier_checklist (chantier_id, libelle, libelle_ar, ordre) VALUES ($1,$2,$3,$4)',
+            [ch.id, item.libelle, item.libelle_ar, item.ordre]);
+        }
+        results.push({ ...ch, nb_checklist: items.length });
+      } else {
+        results.push({ ...ch, nb_checklist: 0 });
+      }
+    }
+    return results;
+  });
+  res.status(201).json(created);
+}));
+
+// ═══════════════════════════════════════════════════════
+// CONTACT RESPONSABLE — fiche par chantier
+// ═══════════════════════════════════════════════════════
+
+router.get('/chantiers/:id/contact', requireCCOE, asyncH(async (req, res) => {
+  const ch = (await query('SELECT organisation_id, axe, responsable_id FROM chantier WHERE id=$1',
+    [req.params.id])).rows[0];
+  if (!ch) throw notFound();
+  if (!isCabinet(req.user) && ch.organisation_id !== req.user.organisation_id) {
+    throw forbidden('Accès réservé');
+  }
+  // 1. Try annuaire CCOE by axe+org
+  let contact = (await query(
+    `SELECT * FROM ccoe_contact WHERE axe=$1 AND organisation_id=$2 AND actif=TRUE LIMIT 1`,
+    [ch.axe, ch.organisation_id])).rows[0];
+  // 2. Fallback: responsable user
+  if (!contact && ch.responsable_id) {
+    const u = (await query(
+      `SELECT prenom, nom, telephone, email, organisation_id FROM utilisateur WHERE id=$1`,
+      [ch.responsable_id])).rows[0];
+    if (u) contact = { nom: u.nom || u.prenom, prenom: u.prenom, telephone: u.telephone, email: u.email, organisation_id: u.organisation_id };
+  }
+  // 3. Fallback: annuaire by axe only
+  if (!contact) {
+    contact = (await query('SELECT * FROM ccoe_contact WHERE axe=$1 AND actif=TRUE LIMIT 1', [ch.axe])).rows[0];
+  }
+  res.json(contact || { erreur: 'Aucun contact trouvé' });
+}));
+
+// ═══════════════════════════════════════════════════════
+// MESSAGERIE CHANTIER (commentaire typé + email)
+// ═══════════════════════════════════════════════════════
+
+router.post('/chantiers/:id/message', requireCCOE, asyncH(async (req, res) => {
+  const { type_message, message } = req.body;
+  if (!message) throw badRequest('message requis');
+  const TYPES = ['demande_precision', 'relance', 'point_situation', 'demande_rapport'];
+  if (type_message && !TYPES.includes(type_message)) throw badRequest('type_message invalide');
+
+  const ch = (await query('SELECT organisation_id, axe, titre FROM chantier WHERE id=$1',
+    [req.params.id])).rows[0];
+  if (!ch) throw notFound();
+  if (!isCabinet(req.user) && ch.organisation_id !== req.user.organisation_id) {
+    throw forbidden('Accès réservé');
+  }
+
+  // Save as typed comment
+  const { rows } = await query(
+    `INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+     VALUES ($1,$2,$3,$4) RETURNING *`,
+    [req.params.id, req.user.id, message, type_message || null]);
+
+  // Fire-and-forget email to responsable
+  try {
+    const contact = (await query(
+      `SELECT email FROM ccoe_contact WHERE axe=$1 AND organisation_id=$2 AND actif=TRUE LIMIT 1`,
+      [ch.axe, ch.organisation_id])).rows[0];
+    if (contact?.email) {
+      const { notify } = require('../../services/notifier');
+      const typeLabel = { demande_precision: 'Demande de précision', relance: 'Relance', point_situation: 'Point de situation', demande_rapport: 'Demande de rapport' };
+      notify({
+        email: contact.email,
+        subject: `[CCOE] ${typeLabel[type_message] || 'Message'} — ${ch.titre}`,
+        html: `<p><strong>${typeLabel[type_message] || 'Message'}</strong> sur le chantier <em>${ch.titre}</em></p><p>${message}</p>`
+      });
+      console.log('[CCOE] Email tenté vers', contact.email);
+    }
+  } catch (e) {
+    console.log('[CCOE] Email non envoyé (non bloquant):', e.message);
+  }
+
+  res.status(201).json(rows[0]);
+}));
+
+// ═══════════════════════════════════════════════════════
+// ANNUAIRE CCOE — CRUD (cabinet only)
+// ═══════════════════════════════════════════════════════
+
+router.get('/annuaire', requireCCOE, asyncH(async (req, res) => {
+  if (!isCabinet(req.user)) throw forbidden('Réservé au Cabinet');
+  const { rows } = await query(
+    `SELECT c.*, o.nom AS organisation_nom FROM ccoe_contact c
+     LEFT JOIN organisations o ON o.id = c.organisation_id
+     WHERE c.actif = TRUE ORDER BY c.axe, c.nom`);
   res.json(rows);
+}));
+
+router.get('/annuaire/:id', requireCCOE, asyncH(async (req, res) => {
+  if (!isCabinet(req.user)) throw forbidden('Réservé au Cabinet');
+  const { rows } = await query('SELECT * FROM ccoe_contact WHERE id=$1', [req.params.id]);
+  if (!rows.length) throw notFound();
+  res.json(rows[0]);
+}));
+
+router.post('/annuaire', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const b = req.body;
+  if (!b.nom) throw badRequest('nom requis');
+  const { rows } = await query(
+    `INSERT INTO ccoe_contact (nom, prenom, telephone, email, organisation_id, axe, fonction_label, fonction_label_ar)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+    [b.nom, b.prenom || null, b.telephone || null, b.email || null,
+     b.organisation_id || null, b.axe || null, b.fonction_label || null, b.fonction_label_ar || null]);
+  res.status(201).json(rows[0]);
+}));
+
+router.put('/annuaire/:id', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const b = req.body;
+  const { rows } = await query(
+    `UPDATE ccoe_contact SET nom=COALESCE($2,nom), prenom=COALESCE($3,prenom),
+       telephone=COALESCE($4,telephone), email=COALESCE($5,email),
+       organisation_id=COALESCE($6,organisation_id), axe=COALESCE($7,axe),
+       fonction_label=COALESCE($8,fonction_label), fonction_label_ar=COALESCE($9,fonction_label_ar),
+       maj_le=NOW()
+     WHERE id=$1 RETURNING *`,
+    [req.params.id, b.nom, b.prenom, b.telephone, b.email,
+     b.organisation_id, b.axe, b.fonction_label, b.fonction_label_ar]);
+  if (!rows.length) throw notFound();
+  res.json(rows[0]);
+}));
+
+router.delete('/annuaire/:id', requireFonction('cabinet'), asyncH(async (req, res) => {
+  await query('UPDATE ccoe_contact SET actif=FALSE, maj_le=NOW() WHERE id=$1', [req.params.id]);
+  res.json({ ok: true });
 }));
 
 module.exports = router;
