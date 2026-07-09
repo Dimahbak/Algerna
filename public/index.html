@@ -945,7 +945,7 @@
       justify-content: space-between;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 2000;
       box-shadow: 0 2px 12px rgba(6,59,90,0.15);
     }
 
@@ -2303,10 +2303,11 @@
         <span id="nav-username" data-i18n="nav.utilisateur">Utilisateur</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         <!-- Dropdown -->
-        <div id="user-dropdown" class="hidden" style="position:absolute;top:100%;right:0;margin-top:8px;background:white;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.18);min-width:240px;overflow:hidden;z-index:100;max-height:80vh;overflow-y:auto;">
+        <div id="user-dropdown" class="hidden" style="position:absolute;top:100%;right:0;margin-top:8px;background:white;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.18);min-width:240px;overflow:hidden;z-index:5000;max-height:80vh;overflow-y:auto;">
           <!-- Compte -->
           <div style="padding:6px 16px 2px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);" data-i18n="menu.compte">Compte</div>
           <a href="#" onclick="showView('profil');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--navy);text-decoration:none;font-size:13px;" data-i18n="menu.mon_profil">Mon profil</a>
+          <a href="#" onclick="showView('notifications');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--navy);text-decoration:none;font-size:13px;" data-i18n="menu.notifications">Notifications</a>
           <a href="#" onclick="showView('parametres');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);" data-i18n="menu.preferences">Préférences</a>
           <!-- Citoyen only -->
           <a id="menu-espace-citoyen" href="#" onclick="showView('espace-citoyen');toggleUserDropdown();return false;" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--navy);text-decoration:none;font-size:13px;border-bottom:1px solid var(--gray-100);" data-i18n="menu.espace_citoyen">Espace citoyen</a>
@@ -6182,21 +6183,21 @@ async function initApp() {
 
   // ── Sidebar par fonction (avec fallback sur rôle) ──
   var allNavItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .nav-label, .sidebar .nav-divider');
-  var transverses = ['notifications','profil','aide'];
+  // Transverses (profil, notifications, aide, déconnexion) vivent UNIQUEMENT dans le menu avatar
   var menusByFonction = {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
-    agent_traitant:       ['bo-agent'].concat(transverses),
-    cap:                  ['bo-cap'].concat(transverses),
-    entite_responsable:   (hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent']).concat(transverses),
-    superviseur:          (hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques']).concat(transverses),
+    agent_traitant:       ['bo-agent'],
+    cap:                  ['bo-cap'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
     citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
-    agent: ['bo-agent'].concat(transverses),
-    operateur: ['bo-agent'].concat(transverses),
-    admin_apc: ['bo-executive','rapports','admin-communiques'].concat(transverses),
-    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin'].concat(transverses),
+    agent: ['bo-agent'],
+    operateur: ['bo-agent'],
+    admin_apc: ['bo-executive','rapports','admin-communiques'],
+    admin_wilaya: ['bo-executive','rapports','admin-communiques','bo-admin'],
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -6233,19 +6234,13 @@ async function initApp() {
       if (sysLabel) sysLabel.style.display = 'none';
     }
   }
-  // Bloc transversal (Notifications, Profil, Aide, Déconnexion) — non-citoyen uniquement
+  // Bloc transversal supprimé de la sidebar — tout vit dans le menu avatar
   var transDiv = document.getElementById('sidebar-transversal-divider');
   var transLabel = document.getElementById('sidebar-transversal-label');
   var navDeconnexion = document.getElementById('nav-deconnexion');
-  if (role !== 'citoyen') {
-    if (transDiv) { transDiv.classList.remove('hidden'); transDiv.style.display = ''; }
-    if (transLabel) { transLabel.classList.remove('hidden'); transLabel.style.display = ''; }
-    if (navDeconnexion) { navDeconnexion.classList.remove('hidden'); navDeconnexion.style.display = ''; }
-  } else {
-    if (transDiv) transDiv.style.display = 'none';
-    if (transLabel) transLabel.style.display = 'none';
-    if (navDeconnexion) navDeconnexion.style.display = 'none';
-  }
+  if (transDiv) transDiv.style.display = 'none';
+  if (transLabel) transLabel.style.display = 'none';
+  if (navDeconnexion) navDeconnexion.style.display = 'none';
   var bottomNav = document.querySelector('.bottom-nav');
   if (bottomNav) { bottomNav.style.display = role === 'citoyen' ? '' : 'none'; }
   var appFooter = document.getElementById('app-footer');
@@ -6500,17 +6495,17 @@ function showView(name) {
   // Vues autorisées par fonction (avec fallback sur rôle)
   var viewsByFonction = {
     citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
-    agent_traitant:       ['bo-agent','profil','a-propos','aide','notifications'],
-    cap:                  ['bo-cap','signaler','profil','a-propos','aide','notifications'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','profil','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','a-propos','aide','notifications'],
+    agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
-    agent: ['bo-agent','profil','a-propos','aide','notifications'],
-    operateur: hasCapacite('civipark') ? ['civipark','profil','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','a-propos','aide','notifications'] : ['bo-agent','profil','a-propos','aide','notifications'],
-    admin_apc: ['bo-executive','admin-communiques','profil','a-propos','aide','notifications'],
-    admin_wilaya: ['bo-executive','admin-communiques','bo-admin','profil','a-propos','aide','notifications'],
+    agent: ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    admin_apc: ['bo-executive','admin-communiques','profil','parametres','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','admin-communiques','bo-admin','profil','parametres','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
@@ -10592,10 +10587,12 @@ async function initBoExecutive() {
   var isAr = currentLang === 'ar';
   var communeNom = '', communeLat = 36.7753, communeLng = 3.0588;
 
+  var communeNomAr = '';
   if (isCommune && u.commune_id && communes.length) {
     var c = communes.find(function(x) { return x.id === u.commune_id; });
     if (c) {
       communeNom = c.nom;
+      communeNomAr = c.nom_ar || c.nom;
       if (c.centre_lat) communeLat = c.centre_lat;
       if (c.centre_lng) communeLng = c.centre_lng;
     }
@@ -10606,7 +10603,7 @@ async function initBoExecutive() {
   if (nameEl) {
     if (isCommune) {
       nameEl.textContent = isAr
-        ? 'قاعة القيادة — بلدية ' + communeNom
+        ? 'قاعة القيادة — بلدية ' + communeNomAr
         : 'Salle de Commandement — APC de ' + communeNom;
     } else {
       nameEl.textContent = isAr
@@ -11647,14 +11644,15 @@ var _capFilter = '';
 
 async function initBoCap() {
   var u = currentUser || {};
-  document.getElementById('cap-welcome').textContent = t('bo.cap_titre') + ' — ' + (u.prenom || '');
+  var capGreeting = (currentLang === 'ar' ? 'مرحباً، ' : 'Bienvenue, ') + (u.prenom || 'Agent CAP');
+  document.getElementById('cap-welcome').textContent = capGreeting;
   document.getElementById('cap-secteur').textContent = t('cap.role_desc');
   var capIdUser = document.getElementById('cap-id-user');
   if (capIdUser) capIdUser.textContent = (u.prenom || '') + ' ' + (u.nom || '');
   var metaEl = document.getElementById('cap-meta');
   if (metaEl) {
     var today = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {weekday:'long', day:'numeric', month:'long'});
-    var communeLabel = u.commune_nom || (currentLang === 'ar' ? 'البلدية' : 'Commune');
+    var communeLabel = u.commune_nom || u.commune_nom_ar || (currentLang === 'ar' ? 'ولاية الجزائر' : 'Wilaya d\'Alger');
     metaEl.textContent = communeLabel + ' · ' + today;
   }
   await capLoadMissions();
@@ -14762,8 +14760,8 @@ async function handleUnifiedSignalement(e) {
 // Fournisseurs de tuiles testés et fonctionnels (sans clé API)
 // Stadia retiré : requiert une API key depuis 2023 (401 Unauthorized)
 const TILE_PROVIDERS = [
-  { name: 'CARTO', url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>', maxZoom: 19, subdomains: 'abcd' }},
+  { name: 'OSM-FR', url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+    opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> France', maxZoom: 19, subdomains: 'abc' }},
   { name: 'CARTO-Voyager', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     opts: { attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © CARTO', maxZoom: 19, subdomains: 'abcd' }},
   { name: 'OSM', url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',

@@ -12,7 +12,7 @@ router.get('/circonscriptions', asyncH(async (req, res) => {
 
 router.get('/communes', asyncH(async (req, res) => {
   const { rows } = await query(
-    `SELECT c.id,c.nom,c.circonscription_id,c.centre_lat,c.centre_lng, ci.nom AS circonscription
+    `SELECT c.id,c.nom,c.nom_ar,c.circonscription_id,c.centre_lat,c.centre_lng, ci.nom AS circonscription
        FROM commune c JOIN circonscription ci ON ci.id=c.circonscription_id
       ORDER BY c.nom`);
   res.json(rows);

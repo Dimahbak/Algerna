@@ -279,9 +279,11 @@ router.get('/me', authenticate, asyncH(async (req, res) => {
             u.commune_id, u.operateur_id, u.points,
             u.fonction, u.niveau_perimetre, u.perimetre_id,
             u.organisation_id, u.capacites,
-            o.nom AS organisation_nom
+            o.nom AS organisation_nom,
+            c.nom AS commune_nom, c.nom_ar AS commune_nom_ar
      FROM utilisateur u
      LEFT JOIN organisations o ON o.id = u.organisation_id
+     LEFT JOIN commune c ON c.id = u.commune_id
      WHERE u.id = $1`,
     [req.user.id]);
   res.json(rows[0]);
