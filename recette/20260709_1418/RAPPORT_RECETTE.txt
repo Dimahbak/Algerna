@@ -1,0 +1,75 @@
+═══ RECETTE VISUELLE AUTOMATISÉE — 2026-07-09T14:52:59.909Z ═══
+Captures: 68
+
+BLOQUANTS: 0 | GÊNANTS: 0 | COSMÉTIQUES: 0
+
+PROFIL    ÉCRAN                 DEVICE   LANG STATUT      ANOMALIE
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Amina     home                  desktop  fr   OK          —
+Amina     signaler              desktop  fr   OK          —
+Amina     mes-signalements      desktop  fr   OK          —
+Amina     communiques           desktop  fr   OK          —
+Amina     carte                 desktop  fr   OK          —
+Amina     profil                desktop  fr   OK          —
+Amina     home                  desktop  ar   OK          —
+Amina     signaler              desktop  ar   OK          —
+Amina     home                  mobile   fr   OK          —
+Amina     signaler              mobile   fr   OK          —
+Amina     mes-signalements      mobile   fr   OK          —
+Amina     communiques           mobile   fr   OK          —
+Amina     carte                 mobile   fr   OK          —
+Amina     profil                mobile   fr   OK          —
+Amina     home                  mobile   ar   OK          —
+Amina     signaler              mobile   ar   OK          —
+Youcef    bo-agent              desktop  fr   OK          —
+Youcef    profil                desktop  fr   OK          —
+Youcef    bo-agent              desktop  ar   OK          —
+Youcef    bo-agent              mobile   fr   OK          —
+Youcef    profil                mobile   fr   OK          —
+Youcef    bo-agent              mobile   ar   OK          —
+Rachid    bo-executive          desktop  fr   OK          —
+Rachid    rapports              desktop  fr   OK          —
+Rachid    annuaire              desktop  fr   OK          —
+Rachid    admin-communiques     desktop  fr   OK          —
+Rachid    profil                desktop  fr   OK          —
+Rachid    bo-executive          desktop  ar   OK          —
+Rachid    bo-executive          mobile   fr   OK          —
+Rachid    rapports              mobile   fr   OK          —
+Rachid    annuaire              mobile   fr   OK          —
+Rachid    admin-communiques     mobile   fr   OK          —
+Rachid    profil                mobile   fr   OK          —
+Rachid    bo-executive          mobile   ar   OK          —
+Mourad    bo-executive          desktop  fr   OK          —
+Mourad    rapports              desktop  fr   OK          —
+Mourad    admin-communiques     desktop  fr   OK          —
+Mourad    profil                desktop  fr   OK          —
+Mourad    bo-executive          desktop  ar   OK          —
+Mourad    bo-executive          mobile   fr   OK          —
+Mourad    rapports              mobile   fr   OK          —
+Mourad    admin-communiques     mobile   fr   OK          —
+Mourad    profil                mobile   fr   OK          —
+Mourad    bo-executive          mobile   ar   OK          —
+Karim     bo-cap                desktop  fr   OK          —
+Karim     profil                desktop  fr   OK          —
+Karim     bo-cap                mobile   fr   OK          —
+Karim     profil                mobile   fr   OK          —
+Nassim    bo-agent              desktop  fr   OK          —
+Nassim    profil                desktop  fr   OK          —
+Nassim    bo-agent              mobile   fr   OK          —
+Nassim    profil                mobile   fr   OK          —
+Nadia     bo-agent              desktop  fr   OK          —
+Nadia     profil                desktop  fr   OK          —
+Nadia     bo-agent              mobile   fr   OK          —
+Nadia     profil                mobile   fr   OK          —
+Farid     bo-agent              desktop  fr   OK          —
+Farid     profil                desktop  fr   OK          —
+Farid     bo-agent              mobile   fr   OK          —
+Farid     profil                mobile   fr   OK          —
+Khaled    civipark              desktop  fr   OK          —
+Khaled    profil                desktop  fr   OK          —
+Khaled    civipark              mobile   fr   OK          —
+Khaled    profil                mobile   fr   OK          —
+Samira    patrimoine            desktop  fr   OK          —
+Samira    profil                desktop  fr   OK          —
+Samira    patrimoine            mobile   fr   OK          —
+Samira    profil                mobile   fr   OK          —

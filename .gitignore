@@ -4,3 +4,4 @@ uploads/
 *.log
 db/*.sql
 public/*.bak*
+recette/
