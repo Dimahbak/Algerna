@@ -2400,7 +2400,7 @@
       <div class="nav-label hidden" id="admin-nav-label" data-i18n="bo.operations">Opérations</div>
       <button class="nav-item hidden" onclick="showView('bo-executive')" data-view="bo-executive" id="nav-bo-executive">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span data-i18n="sup.sdc">Salle de Commandement</span>
+        <span id="sidebar-sdc-label">Salle de Commandement</span>
       </button>
       <button class="nav-item hidden" onclick="showView('rapports')" data-view="rapports" id="nav-rapports">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -4258,7 +4258,7 @@
         <div class="wb-header" style="background:linear-gradient(135deg,#041F38,#063B5A,#0B6078);">
           <div class="wb-header-inner">
             <div style="flex:1;">
-              <div class="wb-greeting" id="exec-name" data-i18n="sup.sdc">Salle de Commandement</div>
+              <div class="wb-greeting" id="exec-name">Salle de Commandement</div>
               <div class="wb-subtitle" id="exec-subtitle">Vision consolidée du territoire — aide à la décision.</div>
               <div class="wb-meta" id="exec-date"></div>
             </div>
@@ -6256,6 +6256,21 @@ async function initApp() {
 
   await loadCommunes();
   if (role === 'citoyen') await loadRdvServices();
+
+  // Mettre à jour le label SdC dans la sidebar dès le login (avant applyTranslations)
+  var sdcLabel = document.getElementById('sidebar-sdc-label');
+  if (sdcLabel && u && (role !== 'citoyen')) {
+    var isComm = hasNiveau('commune');
+    var isAr = currentLang === 'ar';
+    if (isComm && u.commune_id && communes.length) {
+      var mc = communes.find(function(x){return x.id === u.commune_id;});
+      var cNom = mc ? mc.nom : '';
+      var cNomAr = mc ? (mc.nom_ar || mc.nom) : '';
+      sdcLabel.textContent = isAr ? 'قاعة القيادة — بلدية ' + cNomAr : 'Salle de Commandement — APC de ' + cNom;
+    } else {
+      sdcLabel.textContent = isAr ? 'قاعة القيادة — الولاية' : 'Salle de Commandement — Wilaya';
+    }
+  }
 
   if (role === 'admin_apc' || role === 'admin_wilaya') {
     var csExport = document.getElementById('cs-export-csv-btn');
@@ -10611,15 +10626,12 @@ async function initBoExecutive() {
     }
   }
   // Mettre à jour aussi le label sidebar
-  var navExec = document.getElementById('nav-bo-executive');
-  if (navExec) {
-    var spanSdc = navExec.querySelector('span[data-i18n="sup.sdc"]');
-    if (spanSdc) {
-      if (isCommune) {
-        spanSdc.textContent = isAr ? 'قاعة القيادة — البلدية' : 'Salle de Commandement — APC';
-      } else {
-        spanSdc.textContent = isAr ? 'قاعة القيادة — الولاية' : 'Salle de Commandement — Wilaya';
-      }
+  var spanSdc = document.getElementById('sidebar-sdc-label');
+  if (spanSdc) {
+    if (isCommune) {
+      spanSdc.textContent = isAr ? 'قاعة القيادة — بلدية ' + communeNomAr : 'Salle de Commandement — APC de ' + communeNom;
+    } else {
+      spanSdc.textContent = isAr ? 'قاعة القيادة — الولاية' : 'Salle de Commandement — Wilaya';
     }
   }
   var subtitleEl = document.getElementById('exec-subtitle');

@@ -1,0 +1,161 @@
+═══════════════════════════════════════════════════════════════════
+ INVENTAIRE DES ACRONYMES — PLATEFORME ALGERNA / CIVISMART
+ Généré le 2026-07-09 — Soumis à validation utilisateur
+═══════════════════════════════════════════════════════════════════
+
+1. ICUA
+   Signification : Indice Citoyen Urbain ALGERNA
+   Code source   : src/services/icua.js — score composite 0-100,
+                    6 composantes pondérées : engagement de service (40 %),
+                    taux de résolution (20 %), temps moyen (15 %),
+                    activité CAP (10 %), satisfaction (10 %),
+                    communication (5 %). Cache 10 min.
+   Explication FR : Score global de 0 à 100 mesurant la qualité des
+                    services publics. Plus le score est élevé, meilleur
+                    est le service rendu aux citoyens.
+   Explication AR : درجة شاملة من 0 إلى 100 تقيس جودة الخدمات العمومية.
+                    كلما ارتفعت الدرجة، كانت الخدمة أفضل.
+   Écrans         : SdC (gauge ICUA, indicateurs détaillés, radar,
+                    scores par axe, synthèse), Dashboard ICUA,
+                    sidebar « Indicateurs ICUA ».
+
+2. IQEP
+   Signification : Indice de Qualité de l'Espace Public
+   Code source   : Module EDEVAL — note 0-100 par parc, 6 axes
+                    (espaces verts, équipements, propreté, éclairage,
+                    sécurité, satisfaction citoyenne).
+   Explication FR : Note de 0 à 100 évaluant l'état des parcs, trottoirs
+                    et éclairage. Un score haut signifie des espaces
+                    bien entretenus.
+   Explication AR : تقييم من 0 إلى 100 لحالة الحدائق والأرصفة والإنارة.
+                    درجة عالية تعني فضاءات معتنى بها.
+   Écrans         : Dashboard (section Ma Houma), carte publique,
+                    boutons « IQEP Parcs ».
+
+3. SLA
+   Signification : Service Level Agreement (engagement de délai)
+   Code source   : src/services/sla.js — DEFAULT_TARGET_H = 48 heures.
+                    Fonctions : compute(), conformitePct(),
+                    sqlHorsDelai(), sqlConforme().
+   Explication FR : Engagement de délai de traitement — durée maximale
+                    (48 h par défaut) pour résoudre un signalement.
+                    Un SLA dépassé signifie un retard de traitement.
+   Explication AR : التزام بمهلة المعالجة — المدة القصوى (48 ساعة
+                    افتراضيا) لحل بلاغ. تجاوز المهلة يعني تأخرا.
+   Écrans         : SdC (tableau communes, colonne « SLA »),
+                    Cockpit (filtre alertes « SLA dépassé »).
+
+4. CAP
+   Signification : Corps des Agents de Proximité
+   Code source   : src/modules/cap/index.js — missions individuelles
+                    assignées via mission_cap.affecte_a. Capacités :
+                    terrain, inspection, assistance, tournées.
+   Explication FR : Agents de terrain qui constatent les problèmes
+                    sur place et accompagnent les citoyens.
+   Explication AR : أعوان القرب — أعوان ميدانيون يعاينون المشاكل
+                    في الميدان ويرافقون المواطنين.
+   Écrans         : SdC (performance agents CAP, couche carte),
+                    Cockpit (performance CAP), sidebar
+                    « Interventions CAP », modal « Envoyer un agent
+                    CAP », accueil bo-cap.
+
+5. EPIC
+   Signification : Établissement Public à caractère Industriel
+                    et Commercial
+   Code source   : Table organisations avec type='epic'.
+                    Entités : eau/SEAAL, propreté/Netcom,
+                    éclairage/ERMA, voirie/EGCTU, stationnement,
+                    espaces verts/EDEVAL.
+   Explication FR : Organisme public (eau, propreté, éclairage,
+                    voirie) chargé d'un service de la ville.
+   Explication AR : مؤسسة عمومية ذات طابع صناعي وتجاري — هيئة
+                    مكلفة بخدمة حضرية (مياه، نظافة، إنارة، طرقات).
+   Écrans         : SdC (« Les EPIC en un coup d'œil »), formulaire
+                    signalement (« Par service EPIC »), Cockpit
+                    (filtre « Responsable EPIC »).
+
+6. APC
+   Signification : Assemblée Populaire Communale
+   Code source   : Table commune — 57 communes pour la Wilaya
+                    d'Alger. Utilisée pour le périmètre superviseur
+                    commune et le filtrage territorial.
+   Explication FR : La mairie, l'administration locale de votre
+                    commune.
+   Explication AR : المجلس الشعبي البلدي — إدارة بلديتك المحلية.
+   Écrans         : SdC (titre « APC de Kouba »), équipements
+                    (filtre « APC »), contacts.
+
+7. SdC
+   Signification : Salle de Commandement
+   Code source   : Vue bo-executive dans public/index.html.
+                    Consolide ICUA, cartes EPIC, répartitions,
+                    carte opérationnelle, performances
+                    organisations/CAP, activité récente.
+   Explication FR : Écran de pilotage central pour superviser
+                    l'ensemble de l'activité du territoire.
+   Explication AR : قاعة القيادة — شاشة القيادة المركزية
+                    لمتابعة نشاط الإقليم.
+   Écrans         : Sidebar (menu « SdC — Wilaya » ou
+                    « SdC — APC »), en-tête de la vue executive,
+                    éléments HTML #sdc-*.
+
+8. KPI
+   Signification : Key Performance Indicator
+                    (indicateur clé de performance)
+   Code source   : Classes CSS .kpi-card, .kpi-value.
+                    Pas de texte « KPI » visible à l'utilisateur
+                    final — usage technique CSS uniquement.
+   Explication FR : Chiffre mesurant l'efficacité d'un service
+                    (dossiers traités, délai moyen, taux de
+                    résolution).
+   Explication AR : مؤشر أداء رئيسي — رقم يقيس فعالية خدمة
+                    (عدد الملفات المعالجة، متوسط المدة...).
+   Écrans         : Cockpit (cartes indicateurs), SdC (compteurs),
+                    bo-agent (compteurs). Le texte « KPI » n'est
+                    pas affiché — technique uniquement.
+
+9. CET
+   Signification : Centre d'Enfouissement Technique
+   Code source   : Dictionnaire ACRONYMES_FR dans index.html.
+   Explication FR : Décharge contrôlée pour l'enfouissement
+                    réglementaire des déchets.
+   Explication AR : مركز الدفن التقني (مكب نفايات مراقب).
+   Écrans         : Base de connaissances Saksini.
+
+10. PMR
+    Signification : Personne à Mobilité Réduite
+    Code source   : Dictionnaire ACRONYMES_FR dans index.html.
+                    Catégorie d'accessibilité dans les signalements.
+    Explication FR : Personne à mobilité réduite — concerne
+                     l'accessibilité des équipements publics.
+    Explication AR : شخص ذو حركة محدودة.
+    Écrans         : Catégories de signalement, filtres équipements.
+
+11. AADL
+    Signification : Agence nationale de l'Amélioration et du
+                    Développement du Logement
+    Code source   : Dictionnaire ACRONYMES_FR dans index.html.
+    Explication FR : Organisme public chargé du logement social
+                     et promotionnel.
+    Explication AR : الوكالة الوطنية لتحسين السكن وتطويره.
+    Écrans         : Base de connaissances Saksini.
+
+12. DPO
+    Signification : Délégué à la Protection des Données
+    Code source   : Dictionnaire ACRONYMES_FR dans index.html.
+    Explication FR : Responsable de la protection des données
+                     personnelles sur la plateforme (rôle RGPD).
+    Explication AR : المسؤول عن حماية البيانات الشخصية.
+    Écrans         : Mentions légales, politique de confidentialité.
+
+13. RGPD
+    Signification : Règlement Général sur la Protection des Données
+    Code source   : Dictionnaire ACRONYMES_FR dans index.html.
+    Explication FR : Cadre réglementaire encadrant la collecte et
+                     le traitement des données personnelles.
+    Explication AR : النظام العام لحماية البيانات الشخصية.
+    Écrans         : Mentions légales, politique de confidentialité.
+
+═══════════════════════════════════════════════════════════════════
+ Fin du document — 13 acronymes recensés.
+═══════════════════════════════════════════════════════════════════
