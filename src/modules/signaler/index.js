@@ -189,7 +189,7 @@ router.post('/signalements/rapide',
         "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
         [citoyenId]);
       if (countRows[0].n >= 15) {
-        return res.status(500).json({ erreur: 'Une erreur est survenue, veuillez réessayer plus tard.' });
+        return res.status(429).json({ erreur: 'Limite quotidienne de signalements atteinte (15 par jour). Réessayez demain.' });
       }
     }
 
@@ -258,7 +258,7 @@ router.post('/signalements',
         "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
         [citoyenId]);
       if (countRows[0].n >= 15) {
-        return res.status(500).json({ erreur: 'Une erreur est survenue, veuillez réessayer plus tard.' });
+        return res.status(429).json({ erreur: 'Limite quotidienne de signalements atteinte (15 par jour). Réessayez demain.' });
       }
     }
 

@@ -276,6 +276,17 @@ router.get('/chantiers/:id', requireCCOE, asyncH(async (req, res) => {
     throw forbidden('Accès réservé à votre organisation');
   }
 
+  // Auto-vu: first opening by org member after transmission
+  if (ch.transmis_le && !ch.vu_le && !isCabinet(req.user) && ch.organisation_id === req.user.organisation_id) {
+    await query('UPDATE chantier SET vu_le=NOW(), vu_par=$2 WHERE id=$1', [ch.id, req.user.id]);
+    ch.vu_le = new Date().toISOString();
+    ch.vu_par = req.user.id;
+    try {
+      await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+        VALUES ($1, $2, $3, 'systeme')`, [ch.id, req.user.id, 'Consulté par ' + (req.user.prenom || 'service')]);
+    } catch(e) {}
+  }
+
   // Checklist
   ch.checklist = (await query(
     `SELECT cl.*, u.prenom AS agent_prenom FROM chantier_checklist cl
@@ -864,12 +875,21 @@ async function transmettreChantier(chantierId, userId, userName) {
           '<p><strong>Événement :</strong> ' + (ch.evt_titre || '') + '</p>' +
           '<p><strong>Axe :</strong> ' + (ch.axe || '') + '</p>' +
           '<p><strong>Chantier :</strong> ' + (ch.titre || '') + '</p>' +
-          '<p><strong>Échéance :</strong> ' + (ch.date_limite ? new Date(ch.date_limite).toLocaleDateString('fr-FR') : 'non définie') + '</p>'
+          '<p><strong>Échéance :</strong> ' + (ch.date_limite ? new Date(ch.date_limite).toLocaleDateString('fr-FR') : 'non définie') + '</p>' +
+          '<p style="margin-top:16px;padding:10px;background:#FEF3C7;border-radius:6px;"><strong>Merci d\'accuser réception dans l\'application.</strong></p>'
       });
       console.log('[CCOE] Email ordre transmis →', contact.email);
+      // Trace email status in fil
+      try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Email envoyé au responsable (' + contact.email + ')']); } catch(e2) {}
+    } else {
+      try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Pas de contact email — canal in-app seul']); } catch(e2) {}
     }
   } catch(e) {
     console.log('[CCOE] Email non envoyé (non bloquant):', e.message);
+    try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+      VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Échec d\'envoi email — canal in-app seul']); } catch(e2) {}
   }
 
   return ch;
@@ -917,6 +937,7 @@ router.post('/evenements/:evtId/relancer', requireFonction('cabinet'), asyncH(as
      JOIN opord o ON o.id = ch.opord_id
      WHERE o.evenement_id = $1
        AND (ch.statut = 'non_commence'
+            OR (ch.transmis_le IS NOT NULL AND ch.accuse_le IS NULL)
             OR (ch.date_limite < NOW() AND ch.statut NOT IN ('termine','valide')))`,
     [req.params.evtId])).rows;
 
@@ -971,6 +992,64 @@ router.get('/evenements/:evtId/recap-transmission', requireFonction('cabinet'), 
        org.nom AS organisation_nom
      FROM chantier ch
      LEFT JOIN organisations org ON org.id = ch.organisation_id
+     JOIN opord o ON o.id = ch.opord_id
+     WHERE o.evenement_id = $1
+     ORDER BY ch.axe`, [req.params.evtId]);
+  res.json(rows);
+}));
+
+// ═══════════════════════════════════════════════════════
+// ACCUSÉ DE RÉCEPTION (service → Cabinet)
+// ═══════════════════════════════════════════════════════
+
+router.post('/chantiers/:id/accuser', requireCCOE, asyncH(async (req, res) => {
+  const ch = (await query('SELECT * FROM chantier WHERE id=$1', [req.params.id])).rows[0];
+  if (!ch) throw notFound();
+
+  // Only org members can accuse — Cabinet cannot
+  if (isCabinet(req.user)) throw forbidden('Le Cabinet ne peut pas accuser réception à la place du service');
+  if (ch.organisation_id !== req.user.organisation_id) throw forbidden('Accès réservé à votre organisation');
+  if (!ch.transmis_le) throw badRequest('Chantier non encore transmis');
+  if (ch.accuse_le) throw badRequest('Réception déjà accusée');
+
+  await query('UPDATE chantier SET accuse_le=NOW(), accuse_par=$2 WHERE id=$1', [req.params.id, req.user.id]);
+
+  // Trace in fil
+  await query(
+    `INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
+     VALUES ($1, $2, $3, 'accuse')`,
+    [req.params.id, req.user.id, 'Réception accusée par ' + (req.user.prenom || 'service')]);
+
+  // Notify Cabinet users
+  const cabinetUsers = (await query(
+    "SELECT id FROM utilisateur WHERE fonction='cabinet' AND actif=TRUE")).rows;
+  for (const u of cabinetUsers) {
+    try {
+      await query(
+        'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
+        [u.id, 'ccoe', 'Accusé de réception — ' + (ch.axe || ''),
+         (req.user.prenom || 'Service') + ' a accusé réception de ' + ch.titre,
+         '/ccoe#' + req.params.id]);
+    } catch(e) {}
+  }
+
+  res.json({ ok: true, accuse_le: new Date().toISOString() });
+}));
+
+// GET /ccoe/evenements/:evtId/suivi-transmission — tableau complet pour le Cabinet
+router.get('/evenements/:evtId/suivi-transmission', requireFonction('cabinet'), asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT ch.id, ch.titre, ch.axe, ch.statut, ch.date_limite,
+       ch.transmis_le, ch.transmis_par, ch.vu_le, ch.vu_par, ch.accuse_le, ch.accuse_par,
+       ch.organisation_id, org.nom AS organisation_nom,
+       u1.prenom AS transmis_par_prenom,
+       u2.prenom AS vu_par_prenom,
+       u3.prenom AS accuse_par_prenom
+     FROM chantier ch
+     LEFT JOIN organisations org ON org.id = ch.organisation_id
+     LEFT JOIN utilisateur u1 ON u1.id = ch.transmis_par
+     LEFT JOIN utilisateur u2 ON u2.id = ch.vu_par
+     LEFT JOIN utilisateur u3 ON u3.id = ch.accuse_par
      JOIN opord o ON o.id = ch.opord_id
      WHERE o.evenement_id = $1
      ORDER BY ch.axe`, [req.params.evtId]);
