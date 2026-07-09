@@ -875,12 +875,18 @@ async function transmettreChantier(chantierId, userId, userName) {
   return ch;
 }
 
-// POST /ccoe/evenements/:evtId/transmettre — transmettre tous les chantiers d'un événement
+// POST /ccoe/evenements/:evtId/transmettre — transmettre les chantiers sélectionnés (ou tous si pas de sélection)
 router.post('/evenements/:evtId/transmettre', requireFonction('cabinet'), asyncH(async (req, res) => {
-  const chantiers = (await query(
-    `SELECT ch.id FROM chantier ch
+  const { chantier_ids } = req.body || {};
+  let sql = `SELECT ch.id FROM chantier ch
      JOIN opord o ON o.id = ch.opord_id
-     WHERE o.evenement_id = $1 AND ch.transmis_le IS NULL`, [req.params.evtId])).rows;
+     WHERE o.evenement_id = $1 AND ch.transmis_le IS NULL`;
+  const params = [req.params.evtId];
+  if (chantier_ids && Array.isArray(chantier_ids) && chantier_ids.length) {
+    params.push(chantier_ids);
+    sql += ` AND ch.id = ANY($2::int[])`;
+  }
+  const chantiers = (await query(sql, params)).rows;
 
   const transmitted = [];
   for (const ch of chantiers) {

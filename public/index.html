@@ -9695,9 +9695,10 @@ function ccoeShowEvtDetail(evtId) {
   c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
   Promise.all([
     safeFetchJSON('/api/ccoe/evenements/' + evtId, null, true),
-    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/opord', null, true)
+    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/opord', null, true),
+    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/recap-transmission', null, true).catch(function() { return []; })
   ]).then(function(results) {
-    var evt = results[0], opords = results[1];
+    var evt = results[0], opords = results[1], recapChantiers = results[2] || [];
     _ccoeCurrentEvt = evt;
     var dateStr = ccoeFormatDateRange(evt);
     var html = '<div style="margin-bottom:12px;">' +
@@ -9720,8 +9721,15 @@ function ccoeShowEvtDetail(evtId) {
         '<button class="btn btn-primary" onclick="ccoeGenererComplet(' + evtId + ')" style="font-size:15px;padding:10px 30px;">' + (t('ccoe.generer_ordre') || 'Générer l\'ordre et les chantiers') + '</button>' +
         '<div style="margin-top:10px;"><button class="btn btn-sm btn-outline" onclick="ccoeShowOpordForm(' + evtId + ')">ou créer manuellement</button></div></div>';
     } else {
+      var nbTransmis = recapChantiers.filter(function(c) { return !!c.transmis_le; }).length;
+      var nbTotal = recapChantiers.length;
+      var transmisLabel = nbTotal > 0 ? (nbTransmis === nbTotal ? '✓ Transmis' : 'Transmis ' + nbTransmis + '/' + nbTotal) : '';
+      var transmisColor = nbTransmis === nbTotal && nbTotal > 0 ? '#059669' : '#92400E';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
         '<h4 style="margin:0;">Ordres d\'opération (' + opords.length + ')</h4>' +
+        (nbTotal > 0 ? '<span style="font-size:12px;padding:2px 10px;border-radius:10px;background:' + (nbTransmis === nbTotal ? '#D1FAE5' : '#FEF3C7') + ';color:' + transmisColor + ';font-weight:600;">' + transmisLabel + '</span>' : '') +
+        '</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
         '<button class="btn btn-sm btn-primary" style="background:#059669;" onclick="ccoeTransmettre(' + evtId + ')">📡 ' + (t('ccoe.transmettre') || 'Transmettre aux services') + '</button>' +
         '<button class="btn btn-sm btn-outline" onclick="ccoeRelancer(' + evtId + ')">🔄 ' + (t('ccoe.relancer') || 'Relancer') + '</button>' +
@@ -9799,21 +9807,98 @@ function ccoeGenererComplet(evtId) {
 // ── Transmission aux services ──
 function ccoeTransmettre(evtId) {
   safeFetchJSON('/api/ccoe/evenements/' + evtId + '/recap-transmission', null, true).then(function(chantiers) {
+    if (!chantiers.length) { showToast('Aucun chantier', 'info'); return; }
     var nonTransmis = chantiers.filter(function(c) { return !c.transmis_le; });
-    if (!nonTransmis.length) { showToast('Tous les chantiers sont déjà transmis', 'info'); return; }
-    var recap = nonTransmis.map(function(c) { return '• ' + c.axe + ' → ' + (c.organisation_nom || '—'); }).join('\n');
-    if (!confirm((t('ccoe.confirmer_transmission') || 'Transmettre aux services suivants ?') + '\n\n' + recap + '\n\n' + nonTransmis.length + ' chantier(s)')) return;
-    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/transmettre', {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
-    }, true).then(function(data) {
-      showToast(data.transmis + ' chantier(s) transmis — notifications envoyées', 'success');
-      ccoeShowEvtDetail(evtId);
-    }).catch(function(err) { showToast(err.message || err, 'error'); });
-  });
+    var dejaTransmis = chantiers.filter(function(c) { return !!c.transmis_le; });
+
+    // Build modal
+    var html = '<div id="ccoe-modal-transmit" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)this.remove()">' +
+      '<div class="card" style="padding:20px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;">' +
+      '<h4 style="margin:0 0 14px;color:var(--navy);">📡 ' + (t('ccoe.transmettre') || 'Transmettre aux services') + '</h4>';
+
+    // Non-transmitted: checkboxes
+    if (nonTransmis.length) {
+      html += '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
+        '<button class="btn btn-sm btn-outline" onclick="ccoeTransmitCheckAll(true)">' + (t('ccoe.tout_cocher') || 'Tout cocher') + '</button>' +
+        '<button class="btn btn-sm btn-outline" onclick="ccoeTransmitCheckAll(false)">' + (t('ccoe.tout_decocher') || 'Tout décocher') + '</button></div>';
+      nonTransmis.forEach(function(c) {
+        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer;">' +
+          '<input type="checkbox" class="ccoe-transmit-cb" value="' + c.id + '" checked onchange="ccoeTransmitUpdateCount()">' +
+          '<div style="flex:1;min-width:0;">' +
+          '<div style="font-weight:600;font-size:13px;">' + escHtml(c.axe.replace(/_/g,' ')) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);">→ ' + escHtml(c.organisation_nom || '—') +
+          (c.date_limite ? ' · ' + new Date(c.date_limite).toLocaleDateString('fr-FR') : '') + '</div></div>' +
+          '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#FEF3C7;color:#92400E;">⏳</span></label>';
+      });
+    }
+
+    // Already transmitted: grayed out
+    if (dejaTransmis.length) {
+      html += '<div style="margin-top:12px;padding-top:8px;border-top:1px solid #ddd;">' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">' + (t('ccoe.deja_transmis') || 'Déjà transmis') + '</div>';
+      dejaTransmis.forEach(function(c) {
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;opacity:0.5;">' +
+          '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;">' + escHtml(c.axe.replace(/_/g,' ')) + ' → ' + escHtml(c.organisation_nom || '—') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);">' + new Date(c.transmis_le).toLocaleString('fr-FR') + '</div></div>' +
+          '<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#D1FAE5;color:#059669;">✓</span></div>';
+      });
+      html += '</div>';
+    }
+
+    // Buttons
+    html += '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">' +
+      '<button class="btn btn-outline" onclick="document.getElementById(\'ccoe-modal-transmit\').remove()">' + (t('ccoe.annuler') || 'Annuler') + '</button>' +
+      '<button class="btn btn-primary" id="ccoe-transmit-btn" style="background:#059669;" onclick="ccoeTransmitSelection(' + evtId + ')"' + (nonTransmis.length ? '' : ' disabled') + '>' +
+      '📡 ' + (t('ccoe.transmettre_selection') || 'Transmettre la sélection') + ' (<span id="ccoe-transmit-count">' + nonTransmis.length + '</span>)</button></div>' +
+      '</div></div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function ccoeTransmitCheckAll(checked) {
+  document.querySelectorAll('.ccoe-transmit-cb').forEach(function(cb) { cb.checked = checked; });
+  ccoeTransmitUpdateCount();
+}
+
+function ccoeTransmitUpdateCount() {
+  var n = document.querySelectorAll('.ccoe-transmit-cb:checked').length;
+  var el = document.getElementById('ccoe-transmit-count');
+  if (el) el.textContent = n;
+  var btn = document.getElementById('ccoe-transmit-btn');
+  if (btn) btn.disabled = (n === 0);
+}
+
+function ccoeTransmitSelection(evtId) {
+  var ids = Array.from(document.querySelectorAll('.ccoe-transmit-cb:checked')).map(function(cb) { return parseInt(cb.value); });
+  if (!ids.length) return;
+  var modal = document.getElementById('ccoe-modal-transmit');
+  if (modal) modal.remove();
+  safeFetchJSON('/api/ccoe/evenements/' + evtId + '/transmettre', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ chantier_ids: ids })
+  }, true).then(function(data) {
+    showToast(data.transmis + ' chantier(s) transmis', 'success');
+    ccoeShowEvtDetail(evtId);
+  }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
 function ccoeRelancer(evtId) {
-  if (!confirm(t('ccoe.confirmer_relance') || 'Relancer les services sur les chantiers non commencés ou en retard ?')) return;
+  // Modal confirmation instead of confirm()
+  var html = '<div id="ccoe-modal-relance" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)this.remove()">' +
+    '<div class="card" style="padding:20px;max-width:400px;width:100%;text-align:center;">' +
+    '<h4 style="margin:0 0 10px;">🔄 ' + (t('ccoe.relancer') || 'Relancer') + '</h4>' +
+    '<p style="font-size:13px;color:var(--muted);margin-bottom:14px;">' + (t('ccoe.confirmer_relance') || 'Relancer les services sur les chantiers non commencés ou en retard ?') + '</p>' +
+    '<div style="display:flex;gap:8px;justify-content:center;">' +
+    '<button class="btn btn-outline" onclick="document.getElementById(\'ccoe-modal-relance\').remove()">' + (t('ccoe.annuler') || 'Annuler') + '</button>' +
+    '<button class="btn btn-primary" onclick="ccoeDoRelancer(' + evtId + ')">Confirmer</button></div></div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function ccoeDoRelancer(evtId) {
+  var modal = document.getElementById('ccoe-modal-relance');
+  if (modal) modal.remove();
   safeFetchJSON('/api/ccoe/evenements/' + evtId + '/relancer', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
   }, true).then(function(data) {
