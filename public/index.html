@@ -9248,7 +9248,7 @@ function ccoeTab(tab) {
 // ── Événements ──
 function ccoeLoadEvenements(container) {
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
-  apiFetch('/api/ccoe/evenements').then(function(data) {
+  safeFetchJSON('/api/ccoe/evenements', null, true).then(function(data) {
     if (!data || !data.length) {
       container.innerHTML = '<div class="card" style="padding:20px;text-align:center;">' +
         '<p style="color:var(--muted);margin-bottom:12px;">Aucun événement enregistré</p>' +
@@ -9325,8 +9325,8 @@ function ccoeShowEvtDetail(evtId) {
   var c = document.getElementById('ccoe-content');
   c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
   Promise.all([
-    apiFetch('/api/ccoe/evenements/' + evtId),
-    apiFetch('/api/ccoe/evenements/' + evtId + '/opord')
+    safeFetchJSON('/api/ccoe/evenements/' + evtId, null, true),
+    safeFetchJSON('/api/ccoe/evenements/' + evtId + '/opord', null, true)
   ]).then(function(results) {
     var evt = results[0], opords = results[1];
     _ccoeCurrentEvt = evt;
@@ -9392,14 +9392,14 @@ function ccoeSaveOpord(e, evtId) {
 }
 
 function ccoeGenererChantiers(opordId) {
-  apiFetch('/api/ccoe/gabarits').then(function(gabarits) {
+  safeFetchJSON('/api/ccoe/gabarits', null, true).then(function(gabarits) {
     if (!gabarits.length) return showToast('Aucun gabarit disponible', 'error');
     var g = gabarits[0]; // Default to first gabarit
     if (!confirm('Générer les chantiers depuis le gabarit "' + g.nom + '" (' + g.nb_axes + ' axes) ?')) return;
-    apiFetch('/api/ccoe/opord/' + opordId + '/generer', {
+    safeFetchJSON('/api/ccoe/opord/' + opordId + '/generer', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ gabarit_id: g.id })
-    }).then(function(chantiers) {
+    }, true).then(function(chantiers) {
       showToast(chantiers.length + ' chantiers générés', 'success');
       ccoeTab('chantiers');
     }).catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
@@ -9414,7 +9414,7 @@ function ccoeLoadOpordChantiers(opordId, evtId) {
 function ccoeLoadChantiers(container, opordId, evtId) {
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
   var url = '/api/ccoe/chantiers' + (opordId ? '?opord_id=' + opordId : '');
-  apiFetch(url).then(function(data) {
+  safeFetchJSON(url, null, true).then(function(data) {
     var html = '';
     if (evtId) {
       html += '<button class="btn btn-sm btn-outline" onclick="ccoeShowEvtDetail(' + evtId + ')" style="margin-bottom:10px;">← Retour OPORD</button>';
@@ -9450,7 +9450,7 @@ function ccoeLoadChantiers(container, opordId, evtId) {
 function ccoeShowChantierDetail(chantierId) {
   var c = document.getElementById('ccoe-content');
   c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
-  apiFetch('/api/ccoe/chantiers/' + chantierId).then(function(ch) {
+  safeFetchJSON('/api/ccoe/chantiers/' + chantierId, null, true).then(function(ch) {
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
     var html = '<button class="btn btn-sm btn-outline" onclick="ccoeTab(\'chantiers\')" style="margin-bottom:10px;">← Liste</button>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
@@ -9547,7 +9547,7 @@ function ccoeAddComment(e, chantierId) {
 // ── Carte ──
 function ccoeLoadCarte(container) {
   container.innerHTML = '<div id="ccoe-map-container" style="height:500px;border-radius:8px;overflow:hidden;"></div>';
-  apiFetch('/api/ccoe/carte').then(function(points) {
+  safeFetchJSON('/api/ccoe/carte', null, true).then(function(points) {
     if (_ccoeMap) { _ccoeMap.remove(); _ccoeMap = null; }
     _ccoeMap = L.map('ccoe-map-container').setView([36.753, 3.058], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OSM' }).addTo(_ccoeMap);
@@ -9571,7 +9571,7 @@ function ccoeLoadCarte(container) {
 // ── Dashboard ──
 function ccoeLoadDashboard(container) {
   container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
-  apiFetch('/api/ccoe/dashboard').then(function(data) {
+  safeFetchJSON('/api/ccoe/dashboard', null, true).then(function(data) {
     var s = data.stats;
     var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;">';
     var cards = [
