@@ -4491,8 +4491,9 @@
             <input type="date" id="rap-from" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
             <input type="date" id="rap-to" style="padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
           </div>
-          <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
+          <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <button class="btn btn-primary" onclick="genererRapport()" id="rap-btn-generer" data-i18n="sup.rap_generer">Générer le rapport</button>
+            <button class="btn btn-primary" onclick="genererRapportExecutif()" style="background:linear-gradient(135deg,#041F38,#063B5A);">Rapport exécutif enrichi</button>
             <span id="rap-status" style="font-size:12px;color:var(--muted);"></span>
           </div>
         </div>
@@ -10223,8 +10224,8 @@ async function loadMesRapports() {
   try {
     var rapports = await safeFetchJSON('/api/rapports/mes-rapports', { headers: authHeaders() }, true);
     if (!rapports.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);">Aucun rapport généré.</div>'; return; }
-    var typeIcons = { territoire: '📊', dossier: '📋', encaissements: '💰' };
-    var typeLabels = { territoire: 'Territoire', dossier: 'Dossier', encaissements: 'Encaissements' };
+    var typeIcons = { territoire: '📊', dossier: '📋', encaissements: '💰', executif: '📑' };
+    var typeLabels = { territoire: 'Territoire', dossier: 'Dossier', encaissements: 'Encaissements', executif: 'Rapport exécutif' };
     el.innerHTML = rapports.map(function(r) {
       var isAr = currentLang === 'ar';
       return '<div style="padding:10px 0;border-bottom:1px solid var(--line);">' +
@@ -10281,6 +10282,39 @@ async function genererRapport(opts) {
     }
   } catch(e) { showToast(e.message, 'error'); if (statusEl) statusEl.textContent = ''; }
   if (btnEl) btnEl.disabled = false;
+}
+
+async function genererRapportExecutif() {
+  var isAr = currentLang === 'ar';
+  var statusEl = document.getElementById('rap-status');
+  var body = {
+    periode: (document.getElementById('rap-periode') || {}).value || '30j',
+    commune_id: (document.getElementById('rap-commune') || {}).value || '',
+    from: (document.getElementById('rap-from') || {}).value || '',
+    to: (document.getElementById('rap-to') || {}).value || '',
+    lang: currentLang
+  };
+  if (statusEl) statusEl.textContent = isAr ? 'جاري إنشاء التقرير التنفيذي...' : 'Génération du rapport exécutif...';
+  try {
+    var res = await apiFetch('/api/rapports/executif', {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (data.ok && data.url) {
+      if (statusEl) statusEl.textContent = isAr ? 'تم إنشاء التقرير التنفيذي ✅' : 'Rapport exécutif généré ✅';
+      var resultEl = document.getElementById('rap-result');
+      if (resultEl) {
+        resultEl.style.display = '';
+        document.getElementById('rap-result-title').textContent = data.filename;
+        document.getElementById('rap-result-date').textContent = new Date().toLocaleString(isAr ? 'ar-DZ' : 'fr-DZ');
+        var link = document.getElementById('rap-download-link');
+        if (link) { link.href = data.url; link.textContent = isAr ? 'تحميل' : 'Télécharger'; }
+      }
+      loadMesRapports();
+      showToast(isAr ? 'التقرير التنفيذي جاهز' : 'Rapport exécutif prêt.');
+    } else { showToast(data.erreur || data.message || 'Erreur', 'error'); if (statusEl) statusEl.textContent = ''; }
+  } catch(e) { showToast(e.message, 'error'); if (statusEl) statusEl.textContent = ''; }
 }
 
 async function genererRapportDossier(sigId) {

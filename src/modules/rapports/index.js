@@ -514,6 +514,393 @@ router.post('/encaissements', authenticate, requirePilotage(), asyncH(async (req
   res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
 }));
 
+// ═══ POST /executif — rapport exécutif enrichi (8 sections) ═══
+router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res) => {
+  const { periode, from, to, commune_id, lang } = req.body;
+  const isAr = lang === 'ar';
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const effectiveCommuneId = isCommune ? req.user.commune_id : (commune_id || null);
+  const p = periodeSQL(periode, from, to);
+
+  // Build WHERE for current period
+  let where = `WHERE ${p.sql}`;
+  const params = [];
+  if (effectiveCommuneId) { params.push(Number(effectiveCommuneId)); where += ` AND s.commune_id = $${params.length}`; }
+  const fullWhere = where;
+
+  // Build WHERE for PREVIOUS period (comparison)
+  const prevPeriodeSQL = {
+    '7j': "s.cree_le >= NOW() - INTERVAL '14 days' AND s.cree_le < NOW() - INTERVAL '7 days'",
+    '30j': "s.cree_le >= NOW() - INTERVAL '60 days' AND s.cree_le < NOW() - INTERVAL '30 days'",
+    'trimestre': "s.cree_le >= NOW() - INTERVAL '180 days' AND s.cree_le < NOW() - INTERVAL '90 days'",
+    'annee': "s.cree_le >= (DATE_TRUNC('year', NOW()) - INTERVAL '1 year') AND s.cree_le < DATE_TRUNC('year', NOW())",
+  };
+  let prevWhere = `WHERE ${prevPeriodeSQL[periode] || prevPeriodeSQL['30j']}`;
+  if (effectiveCommuneId) prevWhere += ` AND s.commune_id = ${Number(effectiveCommuneId)}`;
+
+  // Commune name
+  let communeNom = isAr ? 'ولاية الجزائر' : 'Wilaya d\'Alger';
+  let communeNomAr = 'ولاية الجزائر';
+  if (effectiveCommuneId) {
+    const { rows: cRows } = await query('SELECT nom, nom_ar FROM commune WHERE id=$1', [effectiveCommuneId]);
+    if (cRows.length) { communeNom = cRows[0].nom; communeNomAr = cRows[0].nom_ar || cRows[0].nom; }
+  }
+  const perimetreTitre = isAr
+    ? (effectiveCommuneId ? 'بلدية ' + communeNomAr : 'ولاية الجزائر')
+    : (effectiveCommuneId ? 'APC de ' + communeNom : 'Wilaya d\'Alger');
+
+  // ── SECTION 1 DATA: KPIs current + previous ──
+  const [recus, resolus, enRetard, tempsMoy, slaConf] = await Promise.all([
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${fullWhere}`, params),
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${fullWhere} AND s.etat='resolu'`, params),
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${fullWhere} AND s.etat NOT IN ('resolu','rejete') AND s.cree_le < NOW()-INTERVAL '${SLA_H} hours'`, params),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600))::int AS h FROM signalement s ${fullWhere} AND s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le`, params),
+    query(`SELECT COUNT(*) FILTER (WHERE EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 <= ${SLA_H})::int AS conf, COUNT(*)::int AS total FROM signalement s ${fullWhere} AND s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le`, params),
+  ]);
+  const kR = recus.rows[0].n, kRs = resolus.rows[0].n, kRet = enRetard.rows[0].n, kT = tempsMoy.rows[0].h || 0;
+  const kTx = kR > 0 ? Math.round((kRs / kR) * 100) : 0;
+  const slaPct = slaConf.rows[0].total > 0 ? Math.round((slaConf.rows[0].conf / slaConf.rows[0].total) * 100) : 0;
+  const kEnCours = kR - kRs - kRet;
+
+  // Previous period KPIs
+  const [prevRecus, prevResolus, prevTemps] = await Promise.all([
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${prevWhere}`),
+    query(`SELECT COUNT(*)::int AS n FROM signalement s ${prevWhere} AND s.etat='resolu'`),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600))::int AS h FROM signalement s ${prevWhere} AND s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le`),
+  ]);
+  const pR = prevRecus.rows[0].n, pRs = prevResolus.rows[0].n, pT = prevTemps.rows[0].h || 0;
+  const pTx = pR > 0 ? Math.round((pRs / pR) * 100) : 0;
+
+  function arrow(cur, prev) { return cur > prev ? '↑' : cur < prev ? '↓' : '→'; }
+  function delta(cur, prev) { const d = cur - prev; return d > 0 ? `+${d}` : String(d); }
+
+  // ICUA (full, not period-scoped)
+  let icuaScore = 0;
+  try {
+    const icua = require('../../services/icua');
+    const icuaData = await icua.calculer(effectiveCommuneId || null);
+    icuaScore = icuaData.score;
+  } catch(e) { /* fallback */ }
+
+  // Previous ICUA from historique
+  let prevIcua = 0;
+  try {
+    const { rows: ih } = await query(`SELECT score FROM icua_historique WHERE (commune_id = $1 OR ($1 IS NULL AND commune_id IS NULL)) ORDER BY calcule_le DESC LIMIT 1 OFFSET 1`, [effectiveCommuneId || null]);
+    if (ih.length) prevIcua = ih[0].score;
+  } catch(e) {}
+
+  // Demandes d'explication count
+  let deCount = 0;
+  try {
+    let deSql = `SELECT COUNT(*)::int AS n FROM demande_explication de JOIN signalement s ON s.id=de.signalement_id ${fullWhere}`;
+    const { rows: deR } = await query(deSql, params);
+    deCount = deR[0].n;
+  } catch(e) {}
+
+  // ── SECTION 3 DATA: Performance directions by month ──
+  const { rows: orgPerf } = await query(`
+    SELECT o.nom, o.id,
+      COUNT(s.id)::int AS recus,
+      COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus,
+      ROUND(AVG(CASE WHEN s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le THEN EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 END))::int AS temps_h,
+      COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete') AND s.cree_le < NOW()-INTERVAL '${SLA_H} hours')::int AS retard,
+      COUNT(*) FILTER (WHERE s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le AND EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 <= ${SLA_H})::int AS sla_conf
+    FROM organisations o
+    LEFT JOIN utilisateur u ON u.organisation_id = o.id
+    LEFT JOIN signalement s ON s.assigne_a = u.id AND ${p.sql.replace(/^s\./, 's.')}
+      ${effectiveCommuneId ? ' AND s.commune_id = ' + Number(effectiveCommuneId) : ''}
+    WHERE o.type IN ('epic','direction') AND o.actif = TRUE
+    GROUP BY o.id, o.nom ORDER BY recus DESC`, []);
+
+  // ── SECTION 4 DATA: Zones récurrentes ──
+  const { rows: topZones } = await query(`
+    SELECT c.nom AS commune, COUNT(s.id)::int AS total,
+      MODE() WITHIN GROUP (ORDER BY COALESCE(cs.famille, s.domaine::text)) AS categorie_dom
+    FROM signalement s
+    JOIN commune c ON c.id = s.commune_id
+    LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+    ${fullWhere}
+    GROUP BY c.nom ORDER BY total DESC LIMIT 10`, params);
+
+  // Previous period top zones for comparison
+  const { rows: prevZones } = await query(`
+    SELECT c.nom AS commune, COUNT(s.id)::int AS total
+    FROM signalement s JOIN commune c ON c.id = s.commune_id ${prevWhere}
+    GROUP BY c.nom ORDER BY total DESC LIMIT 10`);
+  const prevZoneMap = {};
+  prevZones.forEach(z => { prevZoneMap[z.commune] = z.total; });
+
+  // ── SECTION 5 DATA: Taux par catégorie ──
+  const { rows: catStats } = await query(`
+    SELECT COALESCE(cs.famille, s.domaine::text) AS famille, COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus
+    FROM signalement s LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+    ${fullWhere} GROUP BY COALESCE(cs.famille, s.domaine::text) ORDER BY total DESC`, params);
+
+  // Previous catégories for degradation detection
+  const { rows: prevCats } = await query(`
+    SELECT COALESCE(cs.famille, s.domaine::text) AS famille, COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus
+    FROM signalement s LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+    ${prevWhere} GROUP BY COALESCE(cs.famille, s.domaine::text) ORDER BY total DESC`);
+  const prevCatMap = {};
+  prevCats.forEach(c => { prevCatMap[c.famille] = { total: c.total, resolus: c.resolus, taux: c.total > 0 ? Math.round(c.resolus / c.total * 100) : 0 }; });
+
+  // ── SECTION 7 DATA: Tendances 6 mois ──
+  let tendSql = `SELECT DATE_TRUNC('month', s.cree_le) AS mois,
+    COUNT(*)::int AS recus, COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus
+    FROM signalement s WHERE s.cree_le >= NOW() - INTERVAL '6 months'`;
+  if (effectiveCommuneId) tendSql += ` AND s.commune_id = ${Number(effectiveCommuneId)}`;
+  tendSql += ` GROUP BY mois ORDER BY mois ASC`;
+  const { rows: tendances } = await query(tendSql);
+
+  // ICUA historique 6 mois
+  const { rows: icuaHist } = await query(`SELECT calcule_le, score FROM icua_historique
+    WHERE (commune_id = $1 OR ($1 IS NULL AND commune_id IS NULL))
+    AND calcule_le >= NOW() - INTERVAL '6 months' ORDER BY calcule_le ASC`, [effectiveCommuneId || null]);
+
+  // ── SECTION 8 DATA: Situations notables ──
+  let deSql2 = `SELECT de.*, s.reference, o.nom AS org_nom,
+    CASE WHEN de.statut='repondu' THEN 'Répondue' WHEN de.echeance < NOW() THEN 'En retard' ELSE 'En attente' END AS statut_label
+    FROM demande_explication de
+    JOIN signalement s ON s.id = de.signalement_id
+    LEFT JOIN organisations o ON o.id = de.organisation_id
+    ${fullWhere.replace(/s\./g, 's.')}
+    ORDER BY de.cree_le DESC LIMIT 20`;
+  let deList = [];
+  try { const { rows } = await query(deSql2, params); deList = rows; } catch(e) {}
+
+  // Classés sans suite
+  const { rows: cssRows } = await query(`SELECT COUNT(*)::int AS n FROM signalement s ${fullWhere} AND s.etat='rejete'`, params);
+  const cssCount = cssRows[0].n;
+
+  // ══════════════════════════════════════════════
+  // ── GÉNÉRATION PDF ──
+  // ══════════════════════════════════════════════
+  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
+  const fonts = setupDoc(doc, isAr);
+  const filename = `rapport_executif_${Date.now()}.pdf`;
+  const filepath = path.join(UPLOAD_DIR, filename);
+  const stream = fs.createWriteStream(filepath);
+  doc.pipe(stream);
+
+  const W = doc.page.width - 80; // usable width
+
+  // ── PAGE DE GARDE (Section 1) ──
+  doc.rect(0, 0, doc.page.width, doc.page.height).fill('#041F38');
+  doc.font(fonts.fontB).fontSize(12).fillColor('#8ecae6');
+  doc.text(isAr ? 'ولاية الجزائر' : 'WILAYA D\'ALGER', 40, 180, { width: W, align: 'center' });
+  doc.moveDown(0.5);
+  doc.font(fonts.fontB).fontSize(22).fillColor('#FFFFFF');
+  doc.text(isAr ? 'تقرير النشاط' : 'RAPPORT D\'ACTIVITÉ', 40, doc.y, { width: W, align: 'center' });
+  doc.moveDown(0.8);
+  doc.font(fonts.fontR).fontSize(14).fillColor('#8ecae6');
+  doc.text(isAr ? p.labelAr : p.label, 40, doc.y, { width: W, align: 'center' });
+  doc.moveDown(1.5);
+  doc.font(fonts.fontR).fontSize(11).fillColor('#CCCCCC');
+  doc.text((isAr ? 'النطاق : ' : 'Périmètre : ') + perimetreTitre, 40, doc.y, { width: W, align: 'center' });
+  doc.moveDown(3);
+  doc.font(fonts.fontR).fontSize(9).fillColor('#999999');
+  doc.text((isAr ? 'تاريخ الإنشاء : ' : 'Généré le ') + new Date().toLocaleString('fr-DZ'), 40, doc.y, { width: W, align: 'center' });
+  doc.text('ALGERNA — Plateforme de gouvernance civique', 40, doc.page.height - 60, { width: W, align: 'center' });
+
+  // ── SYNTHÈSE EXÉCUTIVE (Section 2) ──
+  doc.addPage();
+  let y = drawHeader(doc, fonts,
+    isAr ? 'الملخص التنفيذي' : 'Synthèse exécutive',
+    isAr ? p.labelAr + ' — ' + perimetreTitre : p.label + ' — ' + perimetreTitre, isAr);
+
+  y = sectionTitle(doc, fonts, y, isAr ? 'المؤشرات الرئيسية' : 'Chiffres clés de la période');
+
+  const kpis = [
+    [isAr ? 'بلاغات واردة' : 'Signalements reçus', kR, delta(kR, pR) + ' ' + arrow(kR, pR)],
+    [isAr ? 'تمت معالجتها' : 'Résolus', kRs, delta(kRs, pRs) + ' ' + arrow(kRs, pRs)],
+    [isAr ? 'قيد المعالجة' : 'En cours', Math.max(0, kEnCours), ''],
+    [isAr ? 'معدل المعالجة' : 'Taux de résolution', kTx + '%', (pTx ? delta(kTx, pTx) + 'pts ' + arrow(kTx, pTx) : '')],
+    [isAr ? 'المدة المتوسطة (ساعة)' : 'Temps moyen (h)', kT || '—', (pT ? delta(kT, pT) + 'h ' + arrow(kT, pT) : '')],
+    [isAr ? 'الامتثال SLA' : 'Conformité SLA', slaPct + '%', ''],
+    [isAr ? 'متأخرة' : 'En retard (hors délai)', kRet, ''],
+    [isAr ? 'مؤشر ICUA' : 'Score ICUA', icuaScore, (prevIcua ? delta(icuaScore, prevIcua) + ' ' + arrow(icuaScore, prevIcua) : '')],
+    [isAr ? 'طلبات توضيح' : 'Demandes d\'explication', deCount, ''],
+  ];
+
+  kpis.forEach(([label, value, variation]) => {
+    doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { width: 200 });
+    doc.font(fonts.fontB).fontSize(11).fillColor('#041F38').text(String(value), 260, y);
+    if (variation) doc.font(fonts.fontR).fontSize(8).fillColor('#888').text(variation, 320, y);
+    y += 16;
+    if (y > 720) { doc.addPage(); y = 40; }
+  });
+  y += 10;
+
+  // ── PERFORMANCE DES DIRECTIONS (Section 3) ──
+  y = sectionTitle(doc, fonts, y, isAr ? 'أداء المديريات' : 'Performance des directions (EPIC)');
+  if (orgPerf.length) {
+    doc.font(fonts.fontB).fontSize(7).fillColor('#666');
+    const cols = [50, 200, 240, 280, 320, 370, 420];
+    const heads = isAr
+      ? ['المديرية','واردة','معالجة','المعدل','المدة','متأخرة','SLA']
+      : ['Direction','Reçus','Résol.','Taux','Temps','Retard','SLA'];
+    heads.forEach((h, i) => doc.text(h, cols[i], y, { width: 50 }));
+    y += 12;
+    orgPerf.forEach(o => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      const tx = o.recus > 0 ? Math.round(o.resolus / o.recus * 100) : 0;
+      const sla = o.recus > 0 ? Math.round((o.sla_conf || 0) / Math.max(1, o.resolus) * 100) : 0;
+      doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+      doc.text(o.nom.replace(/^EPIC — /, ''), cols[0], y, { width: 145 });
+      doc.text(String(o.recus), cols[1], y);
+      doc.text(String(o.resolus), cols[2], y);
+      doc.text(tx + '%', cols[3], y);
+      doc.text(o.temps_h ? o.temps_h + 'h' : '—', cols[4], y);
+      doc.fillColor(o.retard > 0 ? '#EF4444' : '#333').text(String(o.retard), cols[5], y);
+      doc.fillColor('#333').text(sla + '%', cols[6], y);
+      y += 13;
+    });
+  } else {
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y);
+  }
+  y += 15;
+
+  // ── ZONES RÉCURRENTES (Section 4) ──
+  if (y > 650) { doc.addPage(); y = 40; }
+  y = sectionTitle(doc, fonts, y, isAr ? 'المناطق المتكررة' : 'Zones récurrentes (top 10)');
+  const familleLabels = {eau:'Eau',proprete:'Propreté',general:'Divers',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement',assainissement:'Assainissement',securite:'Sécurité',environnement:'Environnement',batiments:'Bâtiments',mobilier_urbain:'Mobilier urbain',transport:'Transport',nuisances:'Nuisances',animaux:'Animaux',accessibilite:'Accessibilité'};
+  if (topZones.length) {
+    doc.font(fonts.fontB).fontSize(7).fillColor('#666');
+    doc.text(isAr ? 'البلدية' : 'Commune', 50, y); doc.text(isAr ? 'العدد' : 'Total', 230, y); doc.text(isAr ? 'التصنيف' : 'Catégorie dominante', 290, y); doc.text(isAr ? 'التطور' : 'Évolution', 440, y);
+    y += 12;
+    topZones.forEach(z => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      const prev = prevZoneMap[z.commune] || 0;
+      doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+      doc.text(z.commune, 50, y, { width: 175 }); doc.text(String(z.total), 230, y);
+      doc.text(familleLabels[z.categorie_dom] || z.categorie_dom || '—', 290, y, { width: 145 });
+      doc.fillColor(z.total > prev ? '#EF4444' : '#16a34a').text(arrow(z.total, prev) + ' ' + delta(z.total, prev), 440, y);
+      doc.fillColor('#333');
+      y += 13;
+    });
+  } else {
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y); y += 14;
+  }
+  y += 15;
+
+  // ── TAUX PAR CATÉGORIE (Section 5) ──
+  if (y > 600) { doc.addPage(); y = 40; }
+  y = sectionTitle(doc, fonts, y, isAr ? 'المعدل حسب التصنيف' : 'Taux de résolution par catégorie');
+  if (catStats.length) {
+    doc.font(fonts.fontB).fontSize(7).fillColor('#666');
+    doc.text(isAr ? 'التصنيف' : 'Catégorie', 50, y); doc.text(isAr ? 'العدد' : 'Total', 230, y); doc.text(isAr ? 'معالجة' : 'Résolus', 280, y); doc.text(isAr ? 'المعدل' : 'Taux', 340, y); doc.text(isAr ? 'التطور' : 'Tendance', 400, y);
+    y += 12;
+    catStats.forEach(c => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      const tx = c.total > 0 ? Math.round(c.resolus / c.total * 100) : 0;
+      const prev = prevCatMap[c.famille];
+      const prevTx = prev ? prev.taux : tx;
+      const degraded = prev && tx < prevTx - 5;
+      doc.font(fonts.fontR).fontSize(8).fillColor(degraded ? '#EF4444' : '#333');
+      doc.text(familleLabels[c.famille] || c.famille || '—', 50, y, { width: 175 });
+      doc.text(String(c.total), 230, y); doc.text(String(c.resolus), 280, y);
+      doc.text(tx + '%', 340, y);
+      doc.text(prev ? arrow(tx, prevTx) + ' ' + delta(tx, prevTx) + 'pts' : '—', 400, y);
+      if (degraded) doc.text(isAr ? '⚠ تدهور' : '⚠ dégradation', 460, y);
+      doc.fillColor('#333');
+      y += 13;
+    });
+  }
+  y += 15;
+
+  // ── SATISFACTION CITOYENNE (Section 6) ──
+  if (y > 650) { doc.addPage(); y = 40; }
+  y = sectionTitle(doc, fonts, y, isAr ? 'رضا المواطنين' : 'Satisfaction citoyenne');
+  doc.font(fonts.fontR).fontSize(9).fillColor('#666');
+  doc.text(isAr ? 'بيانات الرضا : لم يتم تفعيل الجمع بعد. سيتم دمج هذا القسم عند إطلاق استبيانات الرضا.' : 'Données de satisfaction : collecte non activée. Cette section sera alimentée à l\'activation des enquêtes de satisfaction citoyenne.', 50, y, { width: W, lineGap: 3 });
+  y = doc.y + 15;
+
+  // ── TENDANCES (Section 7) ──
+  if (y > 550) { doc.addPage(); y = 40; }
+  y = sectionTitle(doc, fonts, y, isAr ? 'الاتجاهات — 6 أشهر' : 'Tendances — 6 derniers mois');
+  if (tendances.length) {
+    doc.font(fonts.fontB).fontSize(7).fillColor('#666');
+    doc.text(isAr ? 'الشهر' : 'Mois', 50, y); doc.text(isAr ? 'واردة' : 'Reçus', 180, y); doc.text(isAr ? 'معالجة' : 'Résolus', 240, y); doc.text(isAr ? 'المعدل' : 'Taux', 310, y);
+    y += 12;
+    tendances.forEach(t => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      const tx = t.recus > 0 ? Math.round(t.resolus / t.recus * 100) : 0;
+      const moisLabel = new Date(t.mois).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { month: 'long', year: 'numeric' });
+      doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+      doc.text(moisLabel, 50, y, { width: 125 }); doc.text(String(t.recus), 180, y); doc.text(String(t.resolus), 240, y);
+      doc.text(tx + '%', 310, y);
+      y += 13;
+    });
+    y += 8;
+    // ICUA history
+    if (icuaHist.length) {
+      doc.font(fonts.fontB).fontSize(8).fillColor('#041F38').text(isAr ? 'تطور مؤشر ICUA' : 'Évolution ICUA', 50, y); y += 14;
+      icuaHist.forEach(h => {
+        const d = new Date(h.calcule_le).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { day: 'numeric', month: 'short', year: 'numeric' });
+        doc.font(fonts.fontR).fontSize(8).fillColor('#333').text(d + ' : ' + h.score + '/100', 60, y); y += 12;
+        if (y > 720) { doc.addPage(); y = 40; }
+      });
+    }
+  } else {
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات كافية' : 'Données insuffisantes', 50, y); y += 14;
+  }
+  y += 15;
+
+  // ── SITUATIONS NOTABLES (Section 8) ──
+  if (y > 550) { doc.addPage(); y = 40; }
+  y = sectionTitle(doc, fonts, y, isAr ? 'الحالات البارزة' : 'Situations notables');
+
+  // Demandes d'explication
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text(isAr ? 'طلبات التوضيح' : 'Demandes d\'explication émises', 50, y);
+  y += 14;
+  if (deList.length) {
+    deList.forEach(de => {
+      if (y > 720) { doc.addPage(); y = 40; }
+      doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+      doc.text(`#${de.reference} → ${de.org_nom || '—'} — ${de.statut_label} (${fmtDate(de.cree_le)})`, 60, y, { width: W - 20 });
+      y += 12;
+    });
+  } else {
+    doc.font(fonts.fontR).fontSize(8).fillColor('#999').text(isAr ? 'لا توجد طلبات توضيح' : 'Aucune demande d\'explication sur la période', 60, y);
+    y += 12;
+  }
+  y += 10;
+
+  // Classés sans suite
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text(isAr ? 'ملفات مغلقة بدون متابعة' : 'Dossiers classés sans suite', 50, y);
+  y += 14;
+  doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+  doc.text(cssCount > 0 ? `${cssCount} dossier${cssCount > 1 ? 's' : ''} classé${cssCount > 1 ? 's' : ''} sans suite sur la période.` : (isAr ? 'لا توجد ملفات مغلقة بدون متابعة' : 'Aucun dossier classé sans suite sur la période.'), 60, y, { width: W - 20 });
+
+  // ── FOOTER ──
+  doc.font(fonts.fontR).fontSize(7).fillColor('#999');
+  const pageCount = doc.bufferedPageRange().count;
+  for (let i = 0; i < pageCount; i++) {
+    doc.switchToPage(i);
+    if (i === 0) continue; // Skip cover page
+    doc.text(`ALGERNA — ${isAr ? 'تقرير سري' : 'Rapport confidentiel'} — Page ${i}/${pageCount - 1}`, 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center' });
+  }
+
+  doc.end();
+  await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
+
+  // Journal
+  const titre = isAr
+    ? `تقرير تنفيذي — ${perimetreTitre} — ${p.labelAr}`
+    : `Rapport exécutif — ${perimetreTitre} — ${p.label}`;
+  try {
+    await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+      SELECT id, etat, $1, 'rapport_executif', $2 FROM signalement LIMIT 1`, [req.user.id, titre]);
+  } catch(e) {}
+  await query(`INSERT INTO rapport_genere (url, filename, type, titre, genere_par) VALUES ($1,$2,$3,$4,$5)`,
+    ['/uploads/rapports/' + filename, filename, 'executif', titre, req.user.id]);
+
+  res.json({ ok: true, url: '/uploads/rapports/' + filename, filename });
+}));
+
 // ═══ GET /mes-rapports — liste des rapports générés ═══
 router.get('/mes-rapports', authenticate, requirePilotage(), asyncH(async (req, res) => {
   const { rows } = await query(
