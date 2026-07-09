@@ -59,7 +59,7 @@ async function calculer(communeId) {
   // 3. Temps moyen (inversé : plus c'est rapide, plus c'est haut)
   const tpsR = await query(`
     SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600))::int AS moy
-      FROM signalement s WHERE s.etat='resolu' AND s.resolu_le IS NOT NULL${where}`);
+      FROM signalement s WHERE s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le${where}`);
   const tpsMoy = tpsR.rows[0].moy || targetH;
   const tpsScore = Math.max(0, Math.min(100, Math.round((1 - tpsMoy / (targetH * 3)) * 100)));
 

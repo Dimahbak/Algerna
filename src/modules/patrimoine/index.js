@@ -6,32 +6,41 @@ const express = require('express');
 const { z } = require('zod');
 const { query, withTransaction } = require('../../db/pool');
 const { validate } = require('../../middleware/validation');
-const { authenticate, requireRole } = require('../../middleware/auth');
+const { authenticate, requireRole, hasPerimetre } = require('../../middleware/auth');
 const { asyncH, badRequest, notFound, makeReference } = require('../../utils/http');
 
 const router = express.Router();
 const AGENTS = ['admin_apc', 'admin_wilaya', 'operateur'];
 const ADMINS = ['admin_apc', 'admin_wilaya', 'operateur'];
 
-// Operateurs need capacité 'patrimoine' — blocks other EPICs
+// Patrimoine : réservé aux profils avec capacité 'patrimoine' ou rôle admin_wilaya.
+// Les superviseurs et EPIC sans capacité patrimoine sont bloqués.
 function requirePatrimoine(req, res, next) {
-  if (req.user.role === 'operateur' && !(Array.isArray(req.user.capacites) && req.user.capacites.includes('patrimoine'))) {
-    return res.status(403).json({ erreur: 'Accès refusé' });
-  }
-  next();
+  const caps = Array.isArray(req.user.capacites) ? req.user.capacites : [];
+  // admin_wilaya = accès dashboard en lecture (cockpit)
+  if (req.user.role === 'admin_wilaya') return next();
+  // Capacité patrimoine explicite = accès complet (Samira)
+  if (caps.includes('patrimoine')) return next();
+  // Superviseur commune via cockpit : accès dashboard en lecture seule (filtré)
+  if (req.user.fonction === 'superviseur' && req.path === '/dashboard') return next();
+  return res.status(403).json({ erreur: 'Accès réservé au service patrimoine.' });
 }
 router.use(authenticate, requirePatrimoine);
 
 // ─── GET /api/patrimoine/dashboard ───────────────────────
 router.get('/dashboard', authenticate, requireRole(...AGENTS), asyncH(async (req, res) => {
+  const isCommune = hasPerimetre(req.user, 'commune');
+  const cf = isCommune && req.user.commune_id ? ` WHERE commune_id = ${Number(req.user.commune_id)}` : '';
+  const cfAnd = isCommune && req.user.commune_id ? ` AND b.commune_id = ${Number(req.user.commune_id)}` : '';
   const [totaux, parStatut, loyersRes, alertesRes] = await Promise.all([
-    query('SELECT COUNT(*) AS total FROM bien_immobilier'),
-    query('SELECT statut, COUNT(*) AS n FROM bien_immobilier GROUP BY statut'),
-    query(`SELECT COALESCE(SUM(loyer_mensuel),0) AS total
-           FROM contrat_occupation WHERE actif=TRUE AND type_contrat='location'`),
-    query(`SELECT COUNT(*) AS n FROM contrat_occupation
-           WHERE actif=TRUE AND date_fin IS NOT NULL AND date_fin <= now() + interval '30 days'
-           AND date_fin >= now()`),
+    query('SELECT COUNT(*) AS total FROM bien_immobilier' + cf),
+    query('SELECT statut, COUNT(*) AS n FROM bien_immobilier' + cf + ' GROUP BY statut'),
+    query(`SELECT COALESCE(SUM(co.loyer_mensuel),0) AS total
+           FROM contrat_occupation co JOIN bien_immobilier b ON b.id = co.bien_id
+           WHERE co.actif=TRUE AND co.type_contrat='location'${cfAnd}`),
+    query(`SELECT COUNT(*) AS n FROM contrat_occupation co JOIN bien_immobilier b ON b.id = co.bien_id
+           WHERE co.actif=TRUE AND co.date_fin IS NOT NULL AND co.date_fin <= now() + interval '30 days'
+           AND co.date_fin >= now()${cfAnd}`),
   ]);
 
   const statutMap = {};

@@ -29,7 +29,7 @@ router.get('/kpis', authenticate, ROLE_GATE, asyncH(async (req, res) => {
   const [ouverts, resolusAuj, tempsAvg, missionsCap, critiques, total, conformes] = await Promise.all([
     query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE s.etat NOT IN ('resolu','rejete')${where}`),
     query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE s.etat='resolu' AND s.resolu_le >= CURRENT_DATE${where}`),
-    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le))/3600))::int AS h FROM signalement s WHERE s.etat='resolu' AND s.resolu_le IS NOT NULL${where}`),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le))/3600))::int AS h FROM signalement s WHERE s.etat='resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le${where}`),
     query(`SELECT COUNT(*)::int AS n FROM mission_cap m LEFT JOIN signalement s ON s.id=m.signalement_id WHERE m.etat NOT IN ('termine')${communeId ? ' AND s.commune_id='+Number(communeId) : ''}`),
     query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours'${where}`),
     query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE s.etat='resolu'${where}`),
@@ -89,7 +89,7 @@ router.get('/services', authenticate, ROLE_GATE, asyncH(async (req, res) => {
   const { rows } = await query(`
     SELECT e.sigle AS service, e.nom,
            COUNT(s.id)::int AS signalements,
-           ROUND(AVG(CASE WHEN s.resolu_le IS NOT NULL THEN EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 END))::int AS temps_moyen,
+           ROUND(AVG(CASE WHEN s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le THEN EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 END))::int AS temps_moyen,
            COUNT(*) FILTER (WHERE s.etat='resolu' AND EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 <= ${SLA_TARGET_H})::int AS conformes,
            COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus,
            COUNT(*) FILTER (WHERE s.etat='recu' AND s.cree_le < NOW()-INTERVAL '${SLA_TARGET_H} hours')::int AS en_retard
@@ -112,7 +112,7 @@ router.get('/communes', authenticate, ROLE_GATE, asyncH(async (req, res) => {
   const { rows } = await query(`
     SELECT c.id, c.nom AS commune,
            COUNT(s.id)::int AS signalements,
-           ROUND(AVG(CASE WHEN s.resolu_le IS NOT NULL THEN EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 END))::int AS delai_moyen,
+           ROUND(AVG(CASE WHEN s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le THEN EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 END))::int AS delai_moyen,
            COUNT(*) FILTER (WHERE s.etat='resolu' AND EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 <= ${SLA_TARGET_H})::int AS conformes,
            COUNT(*) FILTER (WHERE s.etat='resolu')::int AS resolus,
            COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS ouverts
@@ -213,7 +213,7 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
     // KPI 4 : À valider
     query(`SELECT COUNT(*)::int AS n FROM signalement s ${whereEnCours} AND s.etat = 'a_valider'`),
     // KPI 5 : Temps moyen (résolu_le - cree_le, en heures)
-    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le))/3600))::int AS h FROM signalement s ${wherePeriode} AND s.etat = 'resolu' AND s.resolu_le IS NOT NULL`),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le))/3600))::int AS h FROM signalement s ${wherePeriode} AND s.etat = 'resolu' AND s.resolu_le IS NOT NULL AND s.resolu_le >= s.cree_le`),
     // Évolution : période précédente pour KPI 1
     query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE ${intervalSQL.replace(/NOW\(\)|CURRENT_DATE/g, (m) => {
       if (periode === 'today') return "(CURRENT_DATE - INTERVAL '1 day')";
@@ -236,10 +236,10 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
               COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete'))::int AS en_cours,
               COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','rejete')
                 AND s.delai_prevu IS NOT NULL AND NOW() > s.delai_prevu)::int AS en_retard
-             FROM signalement s
-             JOIN utilisateur u ON u.id = s.assigne_a
-             JOIN organisations o ON o.id = u.organisation_id
-            ${wherePeriode}
+             FROM organisations o
+             LEFT JOIN utilisateur u ON u.organisation_id = o.id
+             LEFT JOIN signalement s ON s.assigne_a = u.id${communeFilter.replace('AND','AND')}
+            WHERE o.actif != FALSE AND o.type IN ('epic','direction')
             GROUP BY o.id, o.nom, o.nom_ar ORDER BY total DESC`),
     query(`SELECT s.domaine, COUNT(*)::int AS total
              FROM signalement s
@@ -502,7 +502,7 @@ router.get('/organisations-performance', authenticate, requirePilotage(), asyncH
   if (orgIds.length) {
     const { rows: tempsRows } = await query(
       `SELECT u_exec.organisation_id,
-              ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - h_debut.le))/3600))::int AS temps_moyen_h
+              ROUND(AVG(CASE WHEN s.resolu_le >= h_debut.le THEN EXTRACT(EPOCH FROM (s.resolu_le - h_debut.le))/3600 END))::int AS temps_moyen_h
          FROM signalement s
          JOIN LATERAL (
            SELECT h.par_utilisateur, h.le
