@@ -9251,6 +9251,27 @@ function initBoAdmin() { adminTab('config'); }
 var _ccoeMap = null;
 var _ccoeCurrentEvt = null;
 
+function ccoeFormatDateRange(evt) {
+  if (!evt.date_debut) return '—';
+  var d1 = new Date(evt.date_debut).toLocaleDateString('fr-FR');
+  var result = '';
+  if (evt.date_fin && evt.date_fin !== evt.date_debut && evt.date_fin.substring(0,10) !== evt.date_debut.substring(0,10)) {
+    var d2 = new Date(evt.date_fin).toLocaleDateString('fr-FR');
+    result = 'du ' + d1 + ' au ' + d2;
+  } else {
+    result = d1;
+  }
+  if (evt.heure_debut) {
+    var h1 = (evt.heure_debut || '').substring(0,5);
+    if (evt.heure_fin) {
+      result += ' · ' + h1 + '-' + (evt.heure_fin || '').substring(0,5);
+    } else {
+      result += ' · ' + h1;
+    }
+  }
+  return result;
+}
+
 function initCCOE() {
   var g = document.getElementById('ccoe-greeting');
   if (g && currentUser) g.textContent = 'CCOE — ' + (currentUser.prenom || 'Pilote');
@@ -9441,7 +9462,7 @@ function ccoeLoadEvenements(container) {
     data.forEach(function(e) {
       var badge = e.importance === 'critique' ? 'background:#DC2626;color:#fff;' :
                   e.importance === 'haute' ? 'background:#F59E0B;color:#000;' : 'background:#6B7280;color:#fff;';
-      var dateStr = e.date_evenement ? new Date(e.date_evenement).toLocaleDateString('fr-FR') : '—';
+      var dateStr = ccoeFormatDateRange(e);
       html += '<div class="card" style="padding:14px;margin-bottom:8px;cursor:pointer;" onclick="ccoeShowEvtDetail(' + e.id + ')">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<div><strong>' + escHtml(e.titre) + '</strong>' +
@@ -9478,8 +9499,12 @@ function ccoeShowEvtForm(evt) {
     allAxes.map(function(a) { return '<label style="font-size:13px;display:flex;align-items:center;gap:4px;"><input type="checkbox" name="ccoe-axe" value="' + a + '"> ' + a.replace(/_/g, ' ') + '</label>'; }).join('') +
     '</div></div></div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-    '<div class="form-group"><label>Date *</label><input type="date" id="ccoe-evt-date" required value="' + (isEdit ? evt.date_evenement : '') + '"></div>' +
-    '<div class="form-group"><label>Heure</label><input type="time" id="ccoe-evt-heure" value="' + (isEdit && evt.heure ? evt.heure : '') + '"></div>' +
+    '<div class="form-group"><label>' + (t('ccoe.date_debut') || 'Date de début') + ' *</label><input type="date" id="ccoe-evt-date-debut" required value="' + (isEdit ? (evt.date_debut || '').substring(0,10) : '') + '"></div>' +
+    '<div class="form-group"><label>' + (t('ccoe.date_fin') || 'Date de fin') + '</label><input type="date" id="ccoe-evt-date-fin" value="' + (isEdit && evt.date_fin ? evt.date_fin.substring(0,10) : '') + '"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+    '<div class="form-group"><label>' + (t('ccoe.heure_debut') || 'Heure de début') + '</label><input type="time" id="ccoe-evt-heure-debut" value="' + (isEdit && evt.heure_debut ? evt.heure_debut.substring(0,5) : '') + '"></div>' +
+    '<div class="form-group"><label>' + (t('ccoe.heure_fin') || 'Heure de fin') + '</label><input type="time" id="ccoe-evt-heure-fin" value="' + (isEdit && evt.heure_fin ? evt.heure_fin.substring(0,5) : '') + '"></div>' +
     '</div>' +
     '<div class="form-group"><label>Lieu</label><input type="text" id="ccoe-evt-lieu" value="' + (isEdit ? escHtml(evt.lieu || '') : '') + '"></div>' +
     '<div class="form-group"><label>Description itinéraire</label><textarea id="ccoe-evt-itin-desc" rows="2" placeholder="Étapes du parcours…">' + (isEdit ? escHtml(evt.itineraire_description || '') : '') + '</textarea></div>' +
@@ -9623,8 +9648,10 @@ function ccoeSaveEvt(e, id) {
     titre: document.getElementById('ccoe-evt-titre').value,
     type: typeVal,
     importance: document.getElementById('ccoe-evt-importance').value,
-    date_evenement: document.getElementById('ccoe-evt-date').value,
-    heure: document.getElementById('ccoe-evt-heure').value || null,
+    date_debut: document.getElementById('ccoe-evt-date-debut').value,
+    date_fin: document.getElementById('ccoe-evt-date-fin').value || null,
+    heure_debut: document.getElementById('ccoe-evt-heure-debut').value || null,
+    heure_fin: document.getElementById('ccoe-evt-heure-fin').value || null,
     lieu: document.getElementById('ccoe-evt-lieu').value || null,
     description: document.getElementById('ccoe-evt-desc').value || null,
     itineraire_description: document.getElementById('ccoe-evt-itin-desc').value || null,
@@ -9655,13 +9682,13 @@ function ccoeShowEvtDetail(evtId) {
   ]).then(function(results) {
     var evt = results[0], opords = results[1];
     _ccoeCurrentEvt = evt;
-    var dateStr = evt.date_evenement ? new Date(evt.date_evenement).toLocaleDateString('fr-FR') : '—';
+    var dateStr = ccoeFormatDateRange(evt);
     var html = '<div style="margin-bottom:12px;">' +
       '<button class="btn btn-sm btn-outline" onclick="ccoeTab(\'evenements\')" style="margin-right:8px;">← Liste</button>' +
       '<button class="btn btn-sm btn-outline" onclick="ccoeShowEvtForm(_ccoeCurrentEvt)">Modifier</button></div>' +
       '<div class="card" style="padding:16px;margin-bottom:12px;">' +
       '<h3 style="margin:0 0 6px;">' + escHtml(evt.titre) + '</h3>' +
-      '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">' + escHtml(evt.type === 'autre' && evt.type_label ? evt.type_label : evt.type) + ' · ' + dateStr + (evt.heure ? ' ' + evt.heure : '') + (evt.lieu ? ' · ' + escHtml(evt.lieu) : '') + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">' + escHtml(evt.type === 'autre' && evt.type_label ? evt.type_label : evt.type) + ' · ' + dateStr + (evt.lieu ? ' · ' + escHtml(evt.lieu) : '') + '</div>' +
       (evt.description ? '<p style="font-size:13px;">' + escHtml(evt.description) + '</p>' : '') +
       (evt.itineraire_description ? '<p style="font-size:13px;color:#0B6078;"><strong>Itinéraire :</strong> ' + escHtml(evt.itineraire_description) + '</p>' : '') +
       '</div>';
@@ -9949,7 +9976,7 @@ function ccoeLoadDashboard(container) {
       html += '<h4 style="margin:16px 0 8px;">Prochains événements</h4>';
       data.prochains.forEach(function(e) {
         html += '<div style="padding:6px 0;font-size:13px;border-bottom:1px solid #f0f0f0;">' +
-          '<strong>' + escHtml(e.titre) + '</strong> · ' + new Date(e.date_evenement).toLocaleDateString('fr-FR') +
+          '<strong>' + escHtml(e.titre) + '</strong> · ' + ccoeFormatDateRange(e) +
           ' <span style="font-size:11px;padding:1px 6px;border-radius:8px;background:#E5E7EB;">' + escHtml(e.importance) + '</span></div>';
       });
     }

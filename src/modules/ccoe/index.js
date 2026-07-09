@@ -48,7 +48,7 @@ router.get('/evenements', requireCCOE, asyncH(async (req, res) => {
              (SELECT COUNT(*) FROM opord o WHERE o.evenement_id=e.id) AS nb_opords
            FROM evenement e
            LEFT JOIN commune cm ON cm.id = e.commune_id
-           ORDER BY e.date_evenement DESC LIMIT 100`;
+           ORDER BY e.date_debut DESC LIMIT 100`;
     params = [];
   } else {
     sql = `SELECT DISTINCT e.*, cm.nom AS commune_nom,
@@ -57,7 +57,7 @@ router.get('/evenements', requireCCOE, asyncH(async (req, res) => {
            LEFT JOIN commune cm ON cm.id = e.commune_id
            JOIN opord o ON o.evenement_id = e.id
            JOIN chantier ch ON ch.opord_id = o.id AND ch.organisation_id = $1
-           ORDER BY e.date_evenement DESC LIMIT 100`;
+           ORDER BY e.date_debut DESC LIMIT 100`;
     params = [req.user.organisation_id];
   }
   const { rows } = await query(sql, params);
@@ -82,17 +82,21 @@ router.get('/evenements/:id', requireCCOE, asyncH(async (req, res) => {
 // POST /ccoe/evenements — créer (cabinet only)
 router.post('/evenements', requireFonction('cabinet'), asyncH(async (req, res) => {
   const b = req.body;
-  if (!b.titre || !b.type || !b.date_evenement) throw badRequest('titre, type, date_evenement requis');
+  if (!b.titre || !b.type || !b.date_debut) throw badRequest('titre, type, date_debut requis');
   if (b.type === 'autre' && !b.type_label) throw badRequest('Intitulé du type requis pour « Autre »');
+  if (b.date_fin && b.date_fin < b.date_debut) throw badRequest('date_fin doit être ≥ date_debut');
+  if (b.heure_debut && b.heure_fin && b.heure_fin <= b.heure_debut) throw badRequest('heure_fin doit être > heure_debut');
   const { rows } = await query(
-    `INSERT INTO evenement (titre, titre_ar, type, type_label, importance, date_evenement, heure,
+    `INSERT INTO evenement (titre, titre_ar, type, type_label, importance,
+       date_debut, date_fin, heure_debut, heure_fin,
        lieu, lieu_ar, commune_id, lat, lng, description, description_ar,
        itineraire_geojson, zones_geojson, itineraire_description, itineraire_description_ar,
        responsable_cabinet, chef_projet, cree_par)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
      RETURNING *`,
     [b.titre, b.titre_ar || null, b.type, b.type_label || null, b.importance || 'normale',
-     b.date_evenement, b.heure || null, b.lieu || null, b.lieu_ar || null,
+     b.date_debut, b.date_fin || null, b.heure_debut || null, b.heure_fin || null,
+     b.lieu || null, b.lieu_ar || null,
      b.commune_id || null, b.lat || null, b.lng || null,
      b.description || null, b.description_ar || null,
      b.itineraire_geojson ? JSON.stringify(b.itineraire_geojson) : null,
@@ -106,25 +110,29 @@ router.post('/evenements', requireFonction('cabinet'), asyncH(async (req, res) =
 router.put('/evenements/:id', requireFonction('cabinet'), asyncH(async (req, res) => {
   const b = req.body;
   if (b.type === 'autre' && b.type_label === '') throw badRequest('Intitulé du type requis pour « Autre »');
+  if (b.date_fin && b.date_debut && b.date_fin < b.date_debut) throw badRequest('date_fin doit être ≥ date_debut');
+  if (b.heure_debut && b.heure_fin && b.heure_fin <= b.heure_debut) throw badRequest('heure_fin doit être > heure_debut');
   const { rows } = await query(
     `UPDATE evenement SET
        titre=COALESCE($2,titre), titre_ar=COALESCE($3,titre_ar),
        type=COALESCE($4,type), type_label=COALESCE($5,type_label),
        importance=COALESCE($6,importance),
-       date_evenement=COALESCE($7,date_evenement), heure=COALESCE($8,heure),
-       lieu=COALESCE($9,lieu), lieu_ar=COALESCE($10,lieu_ar),
-       commune_id=COALESCE($11,commune_id), lat=COALESCE($12,lat), lng=COALESCE($13,lng),
-       description=COALESCE($14,description), description_ar=COALESCE($15,description_ar),
-       itineraire_geojson=COALESCE($16,itineraire_geojson),
-       zones_geojson=COALESCE($17,zones_geojson),
-       itineraire_description=COALESCE($18,itineraire_description),
-       itineraire_description_ar=COALESCE($19,itineraire_description_ar),
-       responsable_cabinet=COALESCE($20,responsable_cabinet),
-       chef_projet=COALESCE($21,chef_projet),
-       statut=COALESCE($22,statut), maj_le=NOW()
+       date_debut=COALESCE($7,date_debut), date_fin=$8,
+       heure_debut=$9, heure_fin=$10,
+       lieu=COALESCE($11,lieu), lieu_ar=COALESCE($12,lieu_ar),
+       commune_id=COALESCE($13,commune_id), lat=COALESCE($14,lat), lng=COALESCE($15,lng),
+       description=COALESCE($16,description), description_ar=COALESCE($17,description_ar),
+       itineraire_geojson=COALESCE($18,itineraire_geojson),
+       zones_geojson=COALESCE($19,zones_geojson),
+       itineraire_description=COALESCE($20,itineraire_description),
+       itineraire_description_ar=COALESCE($21,itineraire_description_ar),
+       responsable_cabinet=COALESCE($22,responsable_cabinet),
+       chef_projet=COALESCE($23,chef_projet),
+       statut=COALESCE($24,statut), maj_le=NOW()
      WHERE id=$1 RETURNING *`,
     [req.params.id, b.titre, b.titre_ar, b.type, b.type_label,
-     b.importance, b.date_evenement, b.heure, b.lieu, b.lieu_ar,
+     b.importance, b.date_debut, b.date_fin || null, b.heure_debut || null, b.heure_fin || null,
+     b.lieu, b.lieu_ar,
      b.commune_id, b.lat, b.lng, b.description, b.description_ar,
      b.itineraire_geojson ? JSON.stringify(b.itineraire_geojson) : undefined,
      b.zones_geojson ? JSON.stringify(b.zones_geojson) : undefined,
@@ -515,9 +523,9 @@ router.get('/dashboard', requireCCOE, asyncH(async (req, res) => {
     FROM chantier ch WHERE 1=1` + orgFilter + ` GROUP BY ch.axe ORDER BY ch.axe`)).rows;
 
   const prochains = (await query(`
-    SELECT e.id, e.titre, e.date_evenement, e.importance, e.statut
-    FROM evenement e WHERE e.date_evenement >= CURRENT_DATE
-    ORDER BY e.date_evenement LIMIT 5`)).rows;
+    SELECT e.id, e.titre, e.date_debut, e.importance, e.statut
+    FROM evenement e WHERE e.date_debut >= CURRENT_DATE
+    ORDER BY e.date_debut LIMIT 5`)).rows;
 
   res.json({ stats, parAxe, prochains });
 }));
@@ -538,7 +546,7 @@ router.get('/carte', requireCCOE, asyncH(async (req, res) => {
   const evenements = (await query(`
     SELECT id, titre, itineraire_geojson, zones_geojson
     FROM evenement WHERE itineraire_geojson IS NOT NULL OR zones_geojson IS NOT NULL
-    ORDER BY date_evenement DESC LIMIT 10`)).rows;
+    ORDER BY date_debut DESC LIMIT 10`)).rows;
   res.json({ chantiers, evenements });
 }));
 
