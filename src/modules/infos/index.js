@@ -129,12 +129,15 @@ router.post('/communiques', authenticate, requireAgentOrSuperviseur(), asyncH(as
   const { titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, statut, priorite,
           titre_ar, message_ar, detail_ar, service } = req.body;
   if (!titre || !message) throw badRequest('titre et message requis');
+  // Superviseur communal : forcer commune_id à sa propre commune
+  const effectiveCommuneId = hasPerimetre(req.user, 'commune') && req.user.commune_id
+    ? req.user.commune_id : (commune_id || null);
   const { rows } = await query(
     `INSERT INTO communique (titre, message, detail, categorie, niveau, commune_id, zone, date_debut, date_fin, canal, cree_par, statut, priorite)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
-    [titre, message, detail||null, categorie||'info', niveau||'info', commune_id||null, zone||null,
+    [titre, message, detail||null, categorie||'info', niveau||'info', effectiveCommuneId, zone||null,
      date_debut||new Date().toISOString(), date_fin||null, canal||'bandeau', req.user.id,
-     statut||'publie', priorite||'normale']);
+     statut||'brouillon', priorite||'normale']);
   // Audit
   try {
     await query(`INSERT INTO communique_audit (communique_id, action, par_utilisateur, details)
@@ -154,10 +157,19 @@ router.post('/communiques', authenticate, requireAgentOrSuperviseur(), asyncH(as
 
 // PATCH /communiques/:id — admin
 router.patch('/communiques/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
+  // Superviseur communal : ne peut modifier que ses propres communiqués
+  if (hasPerimetre(req.user, 'commune')) {
+    const { rows: own } = await query('SELECT cree_par FROM communique WHERE id=$1', [req.params.id]);
+    if (own.length && own[0].cree_par !== req.user.id) throw badRequest('Vous ne pouvez modifier que vos propres communiqués.');
+  }
   const fields = ['titre','message','detail','categorie','niveau','commune_id','zone','date_debut','date_fin','actif','canal','statut','priorite'];
   const sets = []; const vals = []; let i = 1;
   for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
   if (!sets.length) throw badRequest('Rien à modifier');
+  // Superviseur communal : interdire de changer commune_id
+  if (hasPerimetre(req.user, 'commune') && req.body.commune_id !== undefined && Number(req.body.commune_id) !== req.user.commune_id) {
+    throw badRequest('Vous ne pouvez pas changer la portée du communiqué.');
+  }
   sets.push(`maj_le=now()`);
   vals.push(req.params.id);
   const { rows } = await query(`UPDATE communique SET ${sets.join(',')} WHERE id=$${i} RETURNING *`, vals);
@@ -172,6 +184,11 @@ router.patch('/communiques/:id', authenticate, requireSuperviseur(), asyncH(asyn
 
 // DELETE /communiques/:id — admin
 router.delete('/communiques/:id', authenticate, requireSuperviseur(), asyncH(async (req, res) => {
+  // Superviseur communal : ne peut supprimer que ses propres communiqués
+  if (hasPerimetre(req.user, 'commune')) {
+    const { rows: own } = await query('SELECT cree_par FROM communique WHERE id=$1', [req.params.id]);
+    if (own.length && own[0].cree_par !== req.user.id) throw badRequest('Vous ne pouvez supprimer que vos propres communiqués.');
+  }
   // Audit avant suppression (cascade supprimera l'audit aussi, donc on log d'abord)
   try {
     await query(`INSERT INTO communique_audit (communique_id, action, par_utilisateur, details)

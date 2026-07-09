@@ -32,6 +32,14 @@ const config = require('../../config');
 const router = express.Router();
 const upload = multer({ dest: config.upload.dir, limits: { fileSize: config.upload.maxBytes } });
 
+// Vérifie qu'un superviseur communal accède à un dossier de sa commune
+async function checkCommuneAccess(req, signalementId) {
+  if (!hasPerimetre(req.user, 'commune') || !req.user.commune_id) return true;
+  const { rows } = await query('SELECT commune_id FROM signalement WHERE id=$1', [signalementId]);
+  if (!rows.length) return true; // 404 géré plus loin
+  return rows[0].commune_id === req.user.commune_id;
+}
+
 // Phase 3B — dual-mode : nouveau modèle avec fallback ancien
 const STAFF_FONCTIONS = ['agent_traitant', 'cap', 'entite_responsable', 'superviseur'];
 function requireStaff() {
@@ -457,9 +465,10 @@ router.get('/board',
       params.push(req.user.commune_id);
       sql += ` AND s.commune_id = $${params.length}`;
     }
-    // Entité responsable : ne voit que les dossiers assignés à son organisation
+    // Entité responsable : voit les dossiers assignés à son org OU transmis à son org
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
-      sql += ` AND s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${Number(req.user.organisation_id)})`;
+      const orgId = Number(req.user.organisation_id);
+      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}' OR s.epic_id = ${orgId})`;
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
     const { rows } = await query(sql, params);
@@ -488,6 +497,7 @@ router.get('/board/:id',
                   WHERE s.id = $1`;
     const { rows } = await query(sql, [req.params.id]);
     if (!rows.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     res.json(rows[0]);
   }));
 
@@ -498,6 +508,7 @@ router.patch('/board/:id/etat',
     const workflow = require('../../services/workflow');
     const { etat, commentaire, motifRejet, transmisA, delaiPrevu } = req.body;
     if (!etat) return res.status(400).json({ erreur: 'etat requis' });
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     try {
       const result = await workflow.transitionEtat(
         req.params.id, etat, req.user,
@@ -519,6 +530,7 @@ router.post('/board/:id/commentaire',
   asyncH(async (req, res) => {
     const { commentaire, type } = req.body;
     if (!commentaire) return res.status(400).json({ erreur: 'Commentaire requis.' });
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     const userCaps = Array.isArray(req.user.capacites) ? req.user.capacites : [];
     if (!userCaps.includes('reception') && !userCaps.includes('qualification') && !userCaps.includes('pilotage')) {
       return res.status(403).json({ erreur: 'Capacité insuffisante.' });
@@ -681,6 +693,7 @@ router.post('/board/:id/valider',
     if (req.user.fonction !== 'superviseur') {
       return res.status(403).json({ erreur: 'Réservé au superviseur.' });
     }
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     const userCaps = Array.isArray(req.user.capacites) ? req.user.capacites : [];
     if (!userCaps.includes('validation') && !userCaps.includes('pilotage')) {
       return res.status(403).json({ erreur: 'Capacité insuffisante (validation ou pilotage requise).' });
@@ -729,6 +742,7 @@ router.post('/board/:id/reprise',
     if (req.user.fonction !== 'superviseur') {
       return res.status(403).json({ erreur: 'Réservé au superviseur.' });
     }
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     const userCaps = Array.isArray(req.user.capacites) ? req.user.capacites : [];
     if (!userCaps.includes('validation') && !userCaps.includes('pilotage')) {
       return res.status(403).json({ erreur: 'Capacité insuffisante (validation ou pilotage requise).' });
@@ -780,6 +794,7 @@ router.post('/board/:id/reprise',
 router.post('/board/:id/mission-cap',
   authenticate, requireStaff(),
   asyncH(async (req, res) => {
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     const workflow = require('../../services/workflow');
     const { type, priorite, commentaire, secteur, affecte_a } = req.body;
     const mission = await workflow.creerMissionCap(
@@ -793,6 +808,7 @@ router.post('/board/:id/mission-cap',
 router.get('/board/:id/historique',
   authenticate, requireStaff(),
   asyncH(async (req, res) => {
+    if (!(await checkCommuneAccess(req, req.params.id))) return res.status(403).json({ erreur: 'Hors périmètre.' });
     const { rows } = await query(
       `SELECT h.*, u.prenom, u.nom, u.role
          FROM signalement_historique h

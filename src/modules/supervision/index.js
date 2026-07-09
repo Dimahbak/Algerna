@@ -828,8 +828,12 @@ router.post('/demandes-explication', authenticate, requirePilotage(), asyncH(asy
 
   // Trouver l'organisation assignée au dossier
   const { rows: sig } = await query(
-    `SELECT s.id, s.reference, s.assigne_a, u.organisation_id
+    `SELECT s.id, s.reference, s.assigne_a, s.commune_id, u.organisation_id
        FROM signalement s LEFT JOIN utilisateur u ON u.id = s.assigne_a WHERE s.id = $1`, [signalement_id]);
+  // Superviseur communal : vérifier périmètre
+  if (hasPerimetre(req.user, 'commune') && req.user.commune_id && sig.length && sig[0].commune_id !== req.user.commune_id) {
+    return res.status(403).json({ erreur: 'Hors périmètre.' });
+  }
   if (!sig.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
   const orgId = sig[0].organisation_id || null;
 

@@ -5700,7 +5700,7 @@ var ACRONYMES = {
   PMR:   'Personne à Mobilité Réduite',
   AADL:  'Agence nationale de l\'Amélioration et du Développement du Logement',
   CNI:   'Carte Nationale d\'Identité',
-  SEAAL: 'Direction Eau et Assainissement (service public)',
+  EPIC:  'Établissement Public à caractère Industriel et Commercial',
   DPO:   'Délégué à la Protection des Données',
   RGPD:  'Règlement Général sur la Protection des Données',
   KPI:   'Key Performance Indicator (indicateur clé)',
@@ -14399,7 +14399,7 @@ function sigSelectEpic(epicId, sigle) {
     `).join('');
     sigShowStep('souscas');
   } else {
-    // EPIC sans catégories directes (ex: NETCOM/EXTRANET → propreté)
+    // EPIC sans catégories directes (ex: Direction Propreté → propreté)
     // Montrer les catégories propreté
     const propCats = sigFamillesData['proprete'] || [];
     if (propCats.length) {
@@ -15554,13 +15554,13 @@ const SAKSINI_FAQ = [
   {k:['carte','quartier','houma','voisinage','proximite','autour','pres','zone','secteur','cartographie'],fr:"« Ma Houma » affiche la carte des signalements, les scores IQEP des parcs et les zones de stationnement de votre quartier.",ar:"« حومتي » تعرض خريطة البلاغات، تقييمات IQEP للحدائق ومناطق الركن في حيك."},
   {k:['inscription','inscrire','compte','creer','register','enregistrer','nouveau','rejoindre'],fr:"Cliquez sur « Inscription » sur la page de connexion. Remplissez prénom, nom, email, téléphone, commune et mot de passe.",ar:"اضغط على « تسجيل » في صفحة الدخول. املأ الاسم، البريد، الهاتف، البلدية وكلمة المرور."},
   {k:['connexion','connecter','login','identifiant','mot de passe','mdp','oublie','reinitialiser','acces'],fr:"Entrez votre numéro de téléphone et mot de passe. Si vous l'avez oublié, contactez support@algerna.dz.",ar:"أدخل رقم هاتفك وكلمة المرور. إذا نسيتها، تواصل مع support@algerna.dz."},
-  {k:['eau','fuite','coupure','seaal','pression','robinet','compteur','canalisation','tuyau','plomberie'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
-  {k:['dechet','poubelle','benne','depot','ordure','netcom','extranet','ramassage','collecte','recyclage','encombrant'],fr:"Pour les déchets (dépôt sauvage, benne pleine…), utilisez « Je signale » → famille Déchets. Routage automatique vers NETCOM ou EXTRANET.",ar:"للنفايات (رمي عشوائي، حاوية ممتلئة…)، استخدم « أبلّغ » → عائلة النفايات. توجيه تلقائي نحو NETCOM أو EXTRANET."},
+  {k:['eau','fuite','coupure','pression','robinet','compteur','canalisation','tuyau','plomberie'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
+  {k:['dechet','poubelle','benne','depot','ordure','ramassage','collecte','recyclage','encombrant'],fr:"Pour les déchets (dépôt sauvage, benne pleine…), utilisez « Je signale » → famille Déchets. Routage automatique vers la Direction Propreté compétente.",ar:"للنفايات (رمي عشوائي، حاوية ممتلئة…)، استخدم « أبلّغ » → عائلة النفايات. توجيه تلقائي نحو مديرية النظافة المختصة."},
   {k:['voirie','route','trottoir','nid de poule','chaussee','goudron','bitume','asphalte','trou','fissure','revêtement'],fr:"Problème de voirie ? « Je signale » → Voirie. Transmis à l'EGCTU (circulation et transports urbains).",ar:"مشكلة طرق؟ « أبلّغ » → الطرق. يُحال إلى EGCTU (الدورة المرورية والنقل الحضري)."},
   {k:['eclairage','lampadaire','lumiere','erma','ampoule','nuit','sombre','electrique','panne'],fr:"Lampadaire en panne ? « Je signale » → Éclairage. Transmis à l'ERMA (éclairage public).",ar:"عمود إنارة معطل؟ « أبلّغ » → الإنارة. يُحال إلى ERMA (الإنارة العمومية)."},
   {k:['espace vert','arbre','parc','jardin','edeval','pelouse','herbe','vegetation','plante','branche','taille'],fr:"Arbre dangereux ou parc dégradé ? « Je signale » → Espaces verts. Transmis à l'EDEVAL.",ar:"شجرة خطيرة أو حديقة متدهورة؟ « أبلّغ » → المساحات الخضراء. يُحال إلى EDEVAL."},
   {k:['stationnement','parking','genant','place','vehicule','gare','stationner','voiture','double file'],fr:"Stationnement gênant ? « Je signale » → Stationnement. Géré par l'EPIC Parkings.",ar:"ركن مزعج؟ « أبلّغ » → المواقف. يديره EPIC المواقف."},
-  {k:['epic','operateur','netcom','extranet','egctu','erma','edeval','etablissement','public'],fr:"Les EPIC sont les établissements publics de la Wilaya d'Alger (NETCOM, EXTRANET, EDEVAL, ERMA, EGCTU, CET, EPIC Parkings). Votre signalement est automatiquement routé vers le bon EPIC.",ar:"الـ EPIC هي المؤسسات العمومية لولاية الجزائر. يُوجَّه بلاغك تلقائيا نحو الـ EPIC المناسب."},
+  {k:['epic','operateur','etablissement','public','direction'],fr:"Les EPIC sont les établissements publics de la Wilaya d'Alger (Direction Propreté, Direction Voirie, Direction Éclairage, Direction Espaces Verts, Direction Eau, EPIC Parkings). Votre signalement est automatiquement routé vers le bon EPIC.",ar:"الـ EPIC هي المؤسسات العمومية لولاية الجزائر. يُوجَّه بلاغك تلقائيا نحو الـ EPIC المناسب."},
   {k:['permis','construire','urbanisme','foncier','livret','terrain','construction','batir','cu','conformite'],fr:"Pour le permis de construire ou le livret foncier, allez dans « Mes démarches » → Urbanisme. Délai réel : 2 à 12 mois.",ar:"لرخصة البناء أو الدفتر العقاري، اذهب إلى « إجراءاتي » → اختر إجراء التعمير. الأجل الفعلي: 2 إلى 12 شهرا."},
   {k:['aadl','logement','recours','social','appartement','hlm','attribution','liste','attente'],fr:"Suivi AADL ou recours logement social : « Mes démarches » → Logement. Apportez votre récépissé de dépôt.",ar:"متابعة AADL أو طعن سكن اجتماعي: « إجراءاتي » → السكن. أحضر وصل الإيداع."},
   {k:['certificat','bonne vie','moeurs','residence','attestation','document','papier','administratif'],fr:"Certificats communaux (bonne vie, résidence…) : « Mes démarches » → Certificats. Délai : immédiat à 48h.",ar:"الشهادات البلدية (حسن السيرة، الإقامة…): « إجراءاتي » → الشهادات. الأجل: فوري إلى 48 ساعة."},

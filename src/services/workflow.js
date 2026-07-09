@@ -30,7 +30,7 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
          FROM signalement s
          LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
          LEFT JOIN commune c ON c.id = s.commune_id
-        WHERE s.id = $1 FOR UPDATE`,
+        WHERE s.id = $1 FOR UPDATE OF s`,
       [signalementId]
     );
     if (!rows.length) throw new Error('Signalement introuvable');
@@ -66,7 +66,18 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
       params.push(opts.delaiPrevu);
       pi++;
     }
-    if (user.id) {
+    // Assignation : si transmission à une org, assigner au premier membre actif de cette org
+    if (opts.transmisA && nouveauEtat === 'transmis') {
+      const { rows: orgMembers } = await client.query(
+        'SELECT id FROM utilisateur WHERE organisation_id = $1 AND actif = TRUE LIMIT 1',
+        [Number(opts.transmisA)]
+      );
+      if (orgMembers.length) {
+        updates.push(`assigne_a = $${pi}`);
+        params.push(orgMembers[0].id);
+        pi++;
+      }
+    } else if (user.id) {
       updates.push(`assigne_a = $${pi}`);
       params.push(user.id);
       pi++;
