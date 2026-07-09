@@ -2446,6 +2446,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         <span data-i18n="sidebar.ccoe">CCOE</span>
       </button>
+      <button class="nav-item hidden" onclick="showView('mes-chantiers-ccoe')" data-view="mes-chantiers-ccoe" id="nav-mes-chantiers-ccoe">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span data-i18n="sidebar.mes_chantiers">Mes chantiers</span>
+      </button>
       <div class="nav-divider hidden" id="admin-sys-divider"></div>
       <div class="nav-label hidden" id="admin-sys-label" data-i18n="sidebar.administration">Administration</div>
       <button class="nav-item hidden" onclick="showView('bo-admin')" data-view="bo-admin" id="nav-bo-admin">
@@ -4779,6 +4783,21 @@
         <div id="ccoe-content" role="tabpanel"></div>
       </div>
 
+      <!-- ══ MES CHANTIERS CCOE (entité responsable) ══ -->
+      <div id="view-mes-chantiers-ccoe" class="view">
+        <button class="btn-back" onclick="showView(getDefaultView())" style="color:var(--muted);">← Retour</button>
+        <div class="wb-header" style="background:linear-gradient(135deg,#0B6078,#12A6A6);">
+          <div>
+            <div class="wb-greeting" id="mcc-greeting" data-i18n="ccoe.mes_chantiers_titre">Mes chantiers</div>
+            <div class="wb-subtitle" id="mcc-subtitle"></div>
+          </div>
+        </div>
+        <div class="module-identity" style="background:#f0f4f8;border-left:4px solid #0B6078;border-radius:8px;padding:12px 16px;margin-bottom:14px;">
+          <div style="font-size:13px;color:#333;" data-i18n="ccoe.mes_chantiers_desc">Suivez et faites avancer les chantiers assignés à votre organisation dans le cadre des événements coordonnés par le CCOE.</div>
+        </div>
+        <div id="mcc-content"></div>
+      </div>
+
       <!-- ══ ADMIN COMMUNIQUÉS VIEW ══ -->
       <div id="view-admin-communiques" class="view">
         <button class="btn-back" onclick="showView(getDefaultView())">← Retour</button>
@@ -6215,7 +6234,7 @@ async function initApp() {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark'] : hasCapacite('patrimoine') ? ['patrimoine'] : ['bo-agent'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques'],
     cabinet:              ['ccoe'],
   };
@@ -6541,7 +6560,7 @@ function showView(name) {
     citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','profil','parametres','a-propos','aide','notifications'],
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
@@ -6616,6 +6635,7 @@ function showView(name) {
   if (name === 'cockpit') cockpitLoad();
   if (name === 'bo-admin') initBoAdmin();
   if (name === 'ccoe') initCCOE();
+  if (name === 'mes-chantiers-ccoe') initMesChantiersCCOE();
   if (name === 'securite') { /* static view, nothing to init */ }
   if (name === 'admin-communiques') loadAdminCommuniques();
 
@@ -9232,6 +9252,160 @@ function initCCOE() {
   var g = document.getElementById('ccoe-greeting');
   if (g && currentUser) g.textContent = 'CCOE — ' + (currentUser.prenom || 'Pilote');
   ccoeTab('evenements');
+}
+
+// ─── MES CHANTIERS CCOE (entité responsable) ──────────────
+function initMesChantiersCCOE() {
+  var g = document.getElementById('mcc-greeting');
+  var s = document.getElementById('mcc-subtitle');
+  if (g && currentUser) g.textContent = t('ccoe.mes_chantiers_titre') || 'Mes chantiers';
+  if (s && currentUser) s.textContent = (currentUser.prenom || '') + ' — ' + (currentUser.organisation_nom || '');
+  mccLoadChantiers();
+}
+
+function mccLoadChantiers() {
+  var c = document.getElementById('mcc-content');
+  c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
+  safeFetchJSON('/api/ccoe/chantiers', null, true).then(function(data) {
+    if (!data || !data.length) {
+      c.innerHTML = '<div class="card" style="padding:20px;text-align:center;color:var(--muted);">' + (t('ccoe.aucun_chantier') || 'Aucun chantier assigné à votre organisation.') + '</div>';
+      return;
+    }
+    var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
+    var html = '<div style="font-weight:600;font-size:15px;margin-bottom:10px;">' + data.length + ' ' + (t('ccoe.chantiers_label') || 'chantier(s)') + '</div>';
+    data.forEach(function(ch) {
+      var pct = ch.nb_checklist > 0 ? Math.round((ch.nb_fait / ch.nb_checklist) * 100) : 0;
+      var enRetard = ch.date_limite && new Date(ch.date_limite) < new Date() && !['termine','valide'].includes(ch.statut);
+      html += '<div class="card" style="padding:14px;margin-bottom:8px;cursor:pointer;' + (enRetard ? 'border-left:3px solid #DC2626;' : '') + '" onclick="mccShowDetail(' + ch.id + ')">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+        '<div style="min-width:0;flex:1;"><strong>' + escHtml(ch.titre) + '</strong>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(ch.axe) + (ch.date_limite ? ' · ' + new Date(ch.date_limite).toLocaleDateString('fr-FR') : '') + '</div></div>' +
+        '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">' +
+        '<span style="font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;background:' + (statutColors[ch.statut] || '#6B7280') + ';">' + escHtml(ch.statut) + '</span>' +
+        '<span style="font-size:12px;font-weight:600;color:' + (pct === 100 ? '#059669' : 'var(--muted)') + ';">' + pct + '%</span>' +
+        (enRetard ? '<span style="font-size:10px;color:#DC2626;font-weight:600;">EN RETARD</span>' : '') +
+        '</div></div>' +
+        '<div style="margin-top:6px;background:#E5E7EB;border-radius:4px;height:4px;"><div style="width:' + pct + '%;height:100%;border-radius:4px;background:' + (statutColors[ch.statut] || '#6B7280') + ';"></div></div>' +
+        '</div>';
+    });
+    c.innerHTML = html;
+  }).catch(function(err) {
+    c.innerHTML = '<div class="alert alert-error">' + escHtml(err.message || err) + '</div>';
+  });
+}
+
+function mccShowDetail(chantierId) {
+  var c = document.getElementById('mcc-content');
+  c.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement…</div>';
+  safeFetchJSON('/api/ccoe/chantiers/' + chantierId, null, true).then(function(ch) {
+    var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
+    var isCab = currentUser && (currentUser.fonction === 'cabinet' || (currentUser.capacites && currentUser.capacites.includes('ccoe')));
+    var html = '<button class="btn btn-sm btn-outline" onclick="mccLoadChantiers()" style="margin-bottom:10px;">← ' + (t('ccoe.liste') || 'Liste') + '</button>' +
+      '<div class="card" style="padding:16px;margin-bottom:12px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+      '<h3 style="margin:0;min-width:0;">' + escHtml(ch.titre) + '</h3>' +
+      '<span style="font-size:12px;padding:3px 10px;border-radius:10px;color:#fff;background:' + (statutColors[ch.statut] || '#6B7280') + ';">' + escHtml(ch.statut) + '</span></div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-top:4px;">' + (t('ccoe.axe') || 'Axe') + ': ' + escHtml(ch.axe) + ' · ' + escHtml(ch.organisation_nom || '') + '</div>' +
+      (ch.description ? '<p style="font-size:13px;margin-top:8px;">' + escHtml(ch.description) + '</p>' : '') +
+      '</div>';
+
+    // Transition buttons (entite_responsable: no 'valide' button)
+    var transitions = {
+      non_commence: [{s:'en_preparation', l: t('ccoe.demarrer') || 'Démarrer prépa'},{s:'bloque', l: t('ccoe.bloquer') || 'Bloquer'}],
+      en_preparation: [{s:'en_cours', l: t('ccoe.lancer') || 'Lancer'},{s:'bloque', l: t('ccoe.bloquer') || 'Bloquer'}],
+      en_cours: [{s:'termine', l: t('ccoe.terminer') || 'Terminer'},{s:'bloque', l: t('ccoe.bloquer') || 'Bloquer'}],
+      bloque: [{s:'en_preparation', l: t('ccoe.reprendre') || 'Reprendre'}],
+      termine: []
+    };
+    if (isCab && ch.statut === 'termine') {
+      transitions.termine = [{s:'valide', l:'✓ Valider (Cabinet)'}];
+    }
+    var actions = transitions[ch.statut] || [];
+    if (actions.length || ch.statut === 'termine') {
+      html += '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">';
+      actions.forEach(function(a) {
+        var cls = a.s === 'bloque' ? 'btn-outline' : 'btn-primary';
+        html += '<button class="btn btn-sm ' + cls + '" onclick="mccTransition(' + ch.id + ',\'' + a.s + '\')">' + a.l + '</button>';
+      });
+      // Demander validation (entite_responsable, chantier en_cours or termine)
+      if (!isCab && ['en_cours','termine'].includes(ch.statut)) {
+        html += '<button class="btn btn-sm btn-primary" style="background:#0B6078;" onclick="mccDemanderValidation(' + ch.id + ')">' + (t('ccoe.demander_validation') || '📋 Demander validation') + '</button>';
+      }
+      html += '</div>';
+    }
+
+    // Checklist
+    html += '<h4 style="margin:0 0 8px;">Checklist (' + ch.checklist.length + ')</h4>';
+    ch.checklist.forEach(function(item) {
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0;">' +
+        '<input type="checkbox" ' + (item.coche ? 'checked' : '') + ' onchange="mccToggleChecklist(' + item.id + ',this.checked,' + ch.id + ')">' +
+        '<span style="flex:1;font-size:13px;' + (item.coche ? 'text-decoration:line-through;color:var(--muted);' : '') + '">' + escHtml(item.libelle) + '</span>' +
+        (item.agent_prenom ? '<span style="font-size:11px;color:var(--muted);">' + escHtml(item.agent_prenom) + '</span>' : '') +
+        (item.photo_path ? '<img src="' + escHtml(item.photo_path) + '" style="width:24px;height:24px;border-radius:4px;object-fit:cover;">' : '') +
+        '</div>';
+    });
+
+    // Commentaires
+    html += '<h4 style="margin:16px 0 8px;">' + (t('ccoe.commentaires') || 'Commentaires') + ' (' + ch.commentaires.length + ')</h4>';
+    ch.commentaires.forEach(function(cm) {
+      html += '<div style="padding:8px;background:#f9f9f9;border-radius:6px;margin-bottom:6px;">' +
+        '<div style="font-size:12px;color:var(--muted);">' + escHtml(cm.auteur_prenom || '?') + ' · ' + new Date(cm.le).toLocaleString('fr-FR') + '</div>' +
+        '<div style="font-size:13px;">' + escHtml(cm.message) + '</div>' +
+        (cm.photo_path ? '<img src="' + escHtml(cm.photo_path) + '" style="max-width:120px;margin-top:4px;border-radius:4px;">' : '') +
+        '</div>';
+    });
+    html += '<form onsubmit="mccAddComment(event,' + ch.id + ')" style="display:flex;gap:6px;margin-top:8px;">' +
+      '<input type="text" id="mcc-comment-msg" placeholder="' + (t('ccoe.ajouter_commentaire') || 'Ajouter un commentaire…') + '" style="flex:1;" required>' +
+      '<button type="submit" class="btn btn-sm btn-primary">' + (t('ccoe.envoyer') || 'Envoyer') + '</button></form>';
+
+    // Validations
+    if (ch.validations.length) {
+      html += '<h4 style="margin:16px 0 8px;">Validations</h4>';
+      ch.validations.forEach(function(v) {
+        var vColor = v.decision === 'valide' ? '#059669' : v.decision === 'refuse' ? '#DC2626' : '#F59E0B';
+        html += '<div style="padding:6px;font-size:13px;"><span style="color:' + vColor + ';font-weight:600;">' + escHtml(v.decision) + '</span> par ' + escHtml(v.auteur_prenom || '?') + ' · ' + new Date(v.le).toLocaleString('fr-FR') + (v.motif ? ' — ' + escHtml(v.motif) : '') + '</div>';
+      });
+    }
+
+    c.innerHTML = html;
+  }).catch(function(err) {
+    c.innerHTML = '<div class="alert alert-error">' + escHtml(err.message || err) + '</div>';
+  });
+}
+
+function mccTransition(id, statut) {
+  apiFetch('/api/ccoe/chantiers/' + id + '/statut', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ statut: statut })
+  }).then(function() { showToast('Statut → ' + statut, 'success'); mccShowDetail(id); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function mccToggleChecklist(itemId, checked, chantierId) {
+  apiFetch('/api/ccoe/checklist/' + itemId + '/cocher', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ coche: checked })
+  }).then(function() { mccShowDetail(chantierId); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function mccAddComment(e, chantierId) {
+  e.preventDefault();
+  var msg = document.getElementById('mcc-comment-msg').value;
+  apiFetch('/api/ccoe/chantiers/' + chantierId + '/commentaires', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ message: msg })
+  }).then(function() { mccShowDetail(chantierId); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+function mccDemanderValidation(chantierId) {
+  var msg = prompt(t('ccoe.motif_validation') || 'Message pour le Cabinet (optionnel) :');
+  apiFetch('/api/ccoe/chantiers/' + chantierId + '/demander-validation', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ message: msg || '' })
+  }).then(function() { showToast(t('ccoe.validation_demandee') || 'Demande de validation envoyée', 'success'); mccShowDetail(chantierId); })
+    .catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
 function ccoeTab(tab) {

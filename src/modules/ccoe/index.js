@@ -26,8 +26,15 @@ function isCabinet(user) {
   return user.fonction === 'cabinet' || hasCapacite(user, 'ccoe');
 }
 
-/** Middleware: require ccoe or pilotage capacite */
-const requireCCOE = requireCapacite('ccoe', 'pilotage', 'validation');
+/** Middleware: cabinet (ccoe/pilotage/validation) OR entite_responsable with an org */
+function requireCCOE(req, res, next) {
+  if (!req.user) return next(require('../../utils/http').unauthorized());
+  if (hasCapacite(req.user, 'ccoe', 'pilotage', 'validation')) return next();
+  if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) return next();
+  // superviseur can read events (lecture seule)
+  if (req.user.fonction === 'superviseur') return next();
+  return next(require('../../utils/http').forbidden());
+}
 
 // ═══════════════════════════════════════════════════════
 // ÉVÉNEMENTS
@@ -185,7 +192,7 @@ router.post('/opord/:opordId/generer', requireFonction('cabinet'), asyncH(async 
       // Copy checklist items from gabarit
       const items = (await client.query(
         `SELECT libelle, libelle_ar, ordre FROM gabarit_checklist
-         WHERE gabarit_axe_id = (SELECT id FROM gabarit_axe WHERE gabarit_id=$1 AND axe=$2)
+         WHERE axe_id = (SELECT id FROM gabarit_axe WHERE gabarit_id=$1 AND axe=$2)
          ORDER BY ordre`, [gabarit_id, axe.axe])).rows;
 
       for (const item of items) {
@@ -400,7 +407,33 @@ router.post('/chantiers/:id/commentaires', upload.single('photo'), requireCCOE, 
 }));
 
 // ═══════════════════════════════════════════════════════
-// VALIDATIONS
+// DEMANDE DE VALIDATION (entité responsable → Cabinet)
+// ═══════════════════════════════════════════════════════
+
+router.post('/chantiers/:id/demander-validation', requireCCOE, asyncH(async (req, res) => {
+  const ch = (await query('SELECT * FROM chantier WHERE id=$1', [req.params.id])).rows[0];
+  if (!ch) throw notFound();
+  if (!isCabinet(req.user) && ch.organisation_id !== req.user.organisation_id) {
+    throw forbidden('Accès réservé à votre organisation');
+  }
+  // Must be termine or en_cours to request validation
+  if (!['termine', 'en_cours'].includes(ch.statut)) {
+    throw badRequest('Le chantier doit être terminé ou en cours pour demander validation');
+  }
+  // Set to termine if not already
+  if (ch.statut !== 'termine') {
+    await query(`UPDATE chantier SET statut='termine', maj_le=NOW() WHERE id=$1`, [req.params.id]);
+  }
+  // Create a validation request record (decision = 'demande')
+  const { rows } = await query(
+    `INSERT INTO chantier_commentaire (chantier_id, auteur_id, message)
+     VALUES ($1, $2, $3) RETURNING *`,
+    [req.params.id, req.user.id, '📋 Demande de validation Cabinet' + (req.body.message ? ' — ' + req.body.message : '')]);
+  res.status(201).json(rows[0]);
+}));
+
+// ═══════════════════════════════════════════════════════
+// VALIDATIONS (Cabinet only)
 // ═══════════════════════════════════════════════════════
 
 router.post('/chantiers/:id/valider', requireCapacite('validation', 'ccoe'), asyncH(async (req, res) => {
@@ -439,7 +472,7 @@ router.get('/gabarits/:id', requireCCOE, asyncH(async (req, res) => {
   if (!g) throw notFound();
 
   g.axes = (await query(
-    `SELECT ga.*, (SELECT json_agg(gc ORDER BY gc.ordre) FROM gabarit_checklist gc WHERE gc.gabarit_axe_id=ga.id) AS checklists
+    `SELECT ga.*, (SELECT json_agg(gc ORDER BY gc.ordre) FROM gabarit_checklist gc WHERE gc.axe_id=ga.id) AS checklists
      FROM gabarit_axe ga WHERE ga.gabarit_id=$1 ORDER BY ga.ordre`, [req.params.id])).rows;
 
   res.json(g);
