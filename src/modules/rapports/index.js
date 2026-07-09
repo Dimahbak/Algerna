@@ -49,6 +49,7 @@ function setupDoc(doc, isAr) {
 }
 
 function drawHeader(doc, fonts, title, subtitle, isAr) {
+  const fo = isAr ? { features: ['rtla', 'rtlm'] } : {};
   doc.rect(0, 0, doc.page.width, 70).fill('#041F38');
   doc.font(fonts.fontB).fontSize(16).fillColor('#FFFFFF');
   doc.text('ALGERNA', 40, 18, { width: doc.page.width - 80 });
@@ -56,19 +57,20 @@ function drawHeader(doc, fonts, title, subtitle, isAr) {
   doc.text('Wilaya d\'Alger — Plateforme de gouvernance civique', 40, 38, { width: doc.page.width - 80 });
   doc.moveDown(2);
   doc.fillColor('#041F38').font(fonts.fontB).fontSize(14);
-  doc.text(title, 40, 85, { width: doc.page.width - 80 });
+  doc.text(title, 40, 85, { width: doc.page.width - 80, ...fo });
   doc.font(fonts.fontR).fontSize(9).fillColor('#666666');
-  doc.text(subtitle, 40, 105, { width: doc.page.width - 80 });
-  doc.text('Généré le ' + new Date().toLocaleString('fr-DZ'), 40, 118, { width: doc.page.width - 80 });
+  doc.text(subtitle, 40, 105, { width: doc.page.width - 80, ...fo });
+  doc.text((isAr ? 'تاريخ الإنشاء : ' : 'Généré le ') + new Date().toLocaleString(isAr ? 'ar-DZ' : 'fr-DZ'), 40, 118, { width: doc.page.width - 80, ...fo });
   doc.moveDown(3);
   return 140;
 }
 
-function sectionTitle(doc, fonts, y, label) {
+function sectionTitle(doc, fonts, y, label, isAr) {
   if (y > 700) { doc.addPage(); y = 40; }
+  const fo = isAr ? { features: ['rtla', 'rtlm'] } : {};
   doc.rect(40, y, doc.page.width - 80, 22).fill('#063B5A');
   doc.font(fonts.fontB).fontSize(10).fillColor('#FFFFFF');
-  doc.text(label, 50, y + 5, { width: doc.page.width - 100 });
+  doc.text(label, 50, y + 5, { width: doc.page.width - 100, ...fo });
   doc.fillColor('#333333');
   return y + 30;
 }
@@ -677,6 +679,30 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
   // ══════════════════════════════════════════════
   // ── GÉNÉRATION PDF ──
   // ══════════════════════════════════════════════
+
+  // Load org nom_ar for AR reports
+  let orgNomArMap = {};
+  if (isAr) {
+    try {
+      const { rows: orgsAr } = await query('SELECT id, nom, nom_ar FROM organisations WHERE actif = TRUE');
+      orgsAr.forEach(o => { orgNomArMap[o.nom] = o.nom_ar || o.nom; });
+    } catch(e) {}
+  }
+  // Load commune nom_ar map
+  let communeNomArMap = {};
+  if (isAr) {
+    try {
+      const { rows: cAr } = await query('SELECT nom, nom_ar FROM commune');
+      cAr.forEach(c => { communeNomArMap[c.nom] = c.nom_ar || c.nom; });
+    } catch(e) {}
+  }
+
+  // Arabic text helper: adds RTL features for proper shaping + BiDi
+  const arOpts = isAr ? { features: ['rtla', 'rtlm'] } : {};
+  function txt(text, x, yy, opts) {
+    doc.text(text, x, yy, { ...opts, ...(isAr ? arOpts : {}) });
+  }
+
   if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
   const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
   const fonts = setupDoc(doc, isAr);
@@ -686,24 +712,40 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
   doc.pipe(stream);
 
   const W = doc.page.width - 80; // usable width
+  const AL = isAr ? 'right' : 'left'; // text alignment
+  const AC = 'center'; // center alignment
 
-  // ── PAGE DE GARDE (Section 1) ──
-  doc.rect(0, 0, doc.page.width, doc.page.height).fill('#041F38');
-  doc.font(fonts.fontB).fontSize(12).fillColor('#8ecae6');
-  doc.text(isAr ? 'ولاية الجزائر' : 'WILAYA D\'ALGER', 40, 180, { width: W, align: 'center' });
-  doc.moveDown(0.5);
-  doc.font(fonts.fontB).fontSize(22).fillColor('#FFFFFF');
-  doc.text(isAr ? 'تقرير النشاط' : 'RAPPORT D\'ACTIVITÉ', 40, doc.y, { width: W, align: 'center' });
-  doc.moveDown(0.8);
-  doc.font(fonts.fontR).fontSize(14).fillColor('#8ecae6');
-  doc.text(isAr ? p.labelAr : p.label, 40, doc.y, { width: W, align: 'center' });
+  // ── PAGE DE GARDE (Section 1) — fond BLANC, sobre ──
+  // Filet institutionnel en haut
+  doc.rect(0, 0, doc.page.width, 6).fill('#063B5A');
+
+  // Logo centré
+  const logoPath = path.join(__dirname, '../../../public/assets/logo/algerna_icon.png');
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, (doc.page.width - 80) / 2, 120, { width: 80 });
+  }
+
+  doc.font(fonts.fontB).fontSize(13).fillColor('#063B5A');
+  txt(isAr ? 'ولاية الجزائر' : 'WILAYA D\'ALGER', 40, 220, { width: W, align: AC });
+  doc.moveDown(1);
+  doc.font(fonts.fontB).fontSize(24).fillColor('#041F38');
+  txt(isAr ? 'تقرير النشاط' : 'RAPPORT D\'ACTIVITÉ', 40, doc.y, { width: W, align: AC });
+  doc.moveDown(1);
+  // Filet décoratif
+  doc.rect(doc.page.width / 2 - 60, doc.y, 120, 2).fill('#063B5A');
   doc.moveDown(1.5);
-  doc.font(fonts.fontR).fontSize(11).fillColor('#CCCCCC');
-  doc.text((isAr ? 'النطاق : ' : 'Périmètre : ') + perimetreTitre, 40, doc.y, { width: W, align: 'center' });
-  doc.moveDown(3);
+  doc.font(fonts.fontR).fontSize(14).fillColor('#063B5A');
+  txt(isAr ? p.labelAr : p.label, 40, doc.y, { width: W, align: AC });
+  doc.moveDown(1);
+  doc.font(fonts.fontR).fontSize(11).fillColor('#666666');
+  txt((isAr ? 'النطاق : ' : 'Périmètre : ') + perimetreTitre, 40, doc.y, { width: W, align: AC });
+  doc.moveDown(4);
   doc.font(fonts.fontR).fontSize(9).fillColor('#999999');
-  doc.text((isAr ? 'تاريخ الإنشاء : ' : 'Généré le ') + new Date().toLocaleString('fr-DZ'), 40, doc.y, { width: W, align: 'center' });
-  doc.text('ALGERNA — Plateforme de gouvernance civique', 40, doc.page.height - 60, { width: W, align: 'center' });
+  txt((isAr ? 'تاريخ الإنشاء : ' : 'Généré le ') + new Date().toLocaleString(isAr ? 'ar-DZ' : 'fr-DZ'), 40, doc.y, { width: W, align: AC });
+  // Pied de page de garde
+  doc.rect(0, doc.page.height - 30, doc.page.width, 6).fill('#063B5A');
+  doc.font(fonts.fontR).fontSize(8).fillColor('#999999');
+  txt('ALGERNA — Plateforme de gouvernance civique', 40, doc.page.height - 50, { width: W, align: AC });
 
   // ── SYNTHÈSE EXÉCUTIVE (Section 2) ──
   doc.addPage();
@@ -711,7 +753,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     isAr ? 'الملخص التنفيذي' : 'Synthèse exécutive',
     isAr ? p.labelAr + ' — ' + perimetreTitre : p.label + ' — ' + perimetreTitre, isAr);
 
-  y = sectionTitle(doc, fonts, y, isAr ? 'المؤشرات الرئيسية' : 'Chiffres clés de la période');
+  y = sectionTitle(doc, fonts, y, isAr ? 'المؤشرات الرئيسية' : 'Chiffres clés de la période', isAr);
 
   const kpis = [
     [isAr ? 'بلاغات واردة' : 'Signalements reçus', kR, delta(kR, pR) + ' ' + arrow(kR, pR)],
@@ -719,79 +761,90 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     [isAr ? 'قيد المعالجة' : 'En cours', Math.max(0, kEnCours), ''],
     [isAr ? 'معدل المعالجة' : 'Taux de résolution', kTx + '%', (pTx ? delta(kTx, pTx) + 'pts ' + arrow(kTx, pTx) : '')],
     [isAr ? 'المدة المتوسطة (ساعة)' : 'Temps moyen (h)', kT || '—', (pT ? delta(kT, pT) + 'h ' + arrow(kT, pT) : '')],
-    [isAr ? 'الامتثال SLA' : 'Conformité SLA', slaPct + '%', ''],
+    [isAr ? 'نسبة الالتزام بالمهلة' : 'Conformité SLA', slaPct + '%', ''],
     [isAr ? 'متأخرة' : 'En retard (hors délai)', kRet, ''],
-    [isAr ? 'مؤشر ICUA' : 'Score ICUA', icuaScore, (prevIcua ? delta(icuaScore, prevIcua) + ' ' + arrow(icuaScore, prevIcua) : '')],
+    [isAr ? 'مؤشر الأداء الحضري' : 'Score ICUA', icuaScore, (prevIcua ? delta(icuaScore, prevIcua) + ' ' + arrow(icuaScore, prevIcua) : '')],
     [isAr ? 'طلبات توضيح' : 'Demandes d\'explication', deCount, ''],
   ];
 
   kpis.forEach(([label, value, variation]) => {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { width: 200 });
-    doc.font(fonts.fontB).fontSize(11).fillColor('#041F38').text(String(value), 260, y);
-    if (variation) doc.font(fonts.fontR).fontSize(8).fillColor('#888').text(variation, 320, y);
+    doc.font(fonts.fontR).fontSize(9).fillColor('#666');
+    txt(label, isAr ? 260 : 50, y, { width: 200 });
+    doc.font(fonts.fontB).fontSize(11).fillColor('#041F38');
+    txt(String(value), isAr ? 200 : 260, y, {});
+    if (variation) { doc.font(fonts.fontR).fontSize(8).fillColor('#888'); txt(variation, isAr ? 100 : 320, y, {}); }
     y += 16;
     if (y > 720) { doc.addPage(); y = 40; }
   });
   y += 10;
 
   // ── PERFORMANCE DES DIRECTIONS (Section 3) ──
-  y = sectionTitle(doc, fonts, y, isAr ? 'أداء المديريات' : 'Performance des directions (EPIC)');
+  y = sectionTitle(doc, fonts, y, isAr ? 'أداء المديريات' : 'Performance des directions (EPIC)', isAr);
   if (orgPerf.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
     const cols = [50, 200, 240, 280, 320, 370, 420];
     const heads = isAr
       ? ['المديرية','واردة','معالجة','المعدل','المدة','متأخرة','SLA']
       : ['Direction','Reçus','Résol.','Taux','Temps','Retard','SLA'];
-    heads.forEach((h, i) => doc.text(h, cols[i], y, { width: 50 }));
+    heads.forEach((h, i) => txt(h, cols[i], y, { width: 50 }));
     y += 12;
     orgPerf.forEach(o => {
       if (y > 720) { doc.addPage(); y = 40; }
       const tx = o.recus > 0 ? Math.round(o.resolus / o.recus * 100) : 0;
       const sla = o.recus > 0 ? Math.round((o.sla_conf || 0) / Math.max(1, o.resolus) * 100) : 0;
+      const orgLabel = isAr ? (orgNomArMap[o.nom] || o.nom).replace(/^EPIC — /, '') : o.nom.replace(/^EPIC — /, '');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      doc.text(o.nom.replace(/^EPIC — /, ''), cols[0], y, { width: 145 });
-      doc.text(String(o.recus), cols[1], y);
-      doc.text(String(o.resolus), cols[2], y);
-      doc.text(tx + '%', cols[3], y);
-      doc.text(o.temps_h ? o.temps_h + 'h' : '—', cols[4], y);
-      doc.fillColor(o.retard > 0 ? '#EF4444' : '#333').text(String(o.retard), cols[5], y);
-      doc.fillColor('#333').text(sla + '%', cols[6], y);
+      txt(orgLabel, cols[0], y, { width: 145 });
+      txt(String(o.recus), cols[1], y, {});
+      txt(String(o.resolus), cols[2], y, {});
+      txt(tx + '%', cols[3], y, {});
+      txt(o.temps_h ? o.temps_h + 'h' : '—', cols[4], y, {});
+      doc.fillColor(o.retard > 0 ? '#EF4444' : '#333');
+      txt(String(o.retard), cols[5], y, {});
+      doc.fillColor('#333');
+      txt(sla + '%', cols[6], y, {});
       y += 13;
     });
   } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y);
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
+    txt(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y, {});
   }
   y += 15;
 
   // ── ZONES RÉCURRENTES (Section 4) ──
   if (y > 650) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'المناطق المتكررة' : 'Zones récurrentes (top 10)');
+  y = sectionTitle(doc, fonts, y, isAr ? 'المناطق المتكررة' : 'Zones récurrentes (top 10)', isAr);
   const familleLabels = {eau:'Eau',proprete:'Propreté',general:'Divers',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement',assainissement:'Assainissement',securite:'Sécurité',environnement:'Environnement',batiments:'Bâtiments',mobilier_urbain:'Mobilier urbain',transport:'Transport',nuisances:'Nuisances',animaux:'Animaux',accessibilite:'Accessibilité'};
+  const familleLabelsAr = {eau:'مياه',proprete:'نظافة',general:'عام',voirie:'طرق',eclairage:'إنارة',espaces_verts:'مساحات خضراء',stationnement:'مواقف',assainissement:'صرف صحي',securite:'أمن',environnement:'بيئة',batiments:'مباني',mobilier_urbain:'تجهيزات حضرية',transport:'نقل',nuisances:'إزعاج',animaux:'حيوانات',accessibilite:'ولوجية'};
   if (topZones.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    doc.text(isAr ? 'البلدية' : 'Commune', 50, y); doc.text(isAr ? 'العدد' : 'Total', 230, y); doc.text(isAr ? 'التصنيف' : 'Catégorie dominante', 290, y); doc.text(isAr ? 'التطور' : 'Évolution', 440, y);
+    txt(isAr ? 'البلدية' : 'Commune', 50, y, {}); txt(isAr ? 'العدد' : 'Total', 230, y, {}); txt(isAr ? 'التصنيف' : 'Catégorie dominante', 290, y, {}); txt(isAr ? 'التطور' : 'Évolution', 440, y, {});
     y += 12;
     topZones.forEach(z => {
       if (y > 720) { doc.addPage(); y = 40; }
       const prev = prevZoneMap[z.commune] || 0;
+      const communeLabel = isAr ? (communeNomArMap[z.commune] || z.commune) : z.commune;
+      const catLabel = isAr ? (familleLabelsAr[z.categorie_dom] || z.categorie_dom || '—') : (familleLabels[z.categorie_dom] || z.categorie_dom || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      doc.text(z.commune, 50, y, { width: 175 }); doc.text(String(z.total), 230, y);
-      doc.text(familleLabels[z.categorie_dom] || z.categorie_dom || '—', 290, y, { width: 145 });
-      doc.fillColor(z.total > prev ? '#EF4444' : '#16a34a').text(arrow(z.total, prev) + ' ' + delta(z.total, prev), 440, y);
+      txt(communeLabel, 50, y, { width: 175 }); txt(String(z.total), 230, y, {});
+      txt(catLabel, 290, y, { width: 145 });
+      doc.fillColor(z.total > prev ? '#EF4444' : '#16a34a');
+      txt(arrow(z.total, prev) + ' ' + delta(z.total, prev), 440, y, {});
       doc.fillColor('#333');
       y += 13;
     });
   } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y); y += 14;
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
+    txt(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y, {}); y += 14;
   }
   y += 15;
 
   // ── TAUX PAR CATÉGORIE (Section 5) ──
   if (y > 600) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'المعدل حسب التصنيف' : 'Taux de résolution par catégorie');
+  y = sectionTitle(doc, fonts, y, isAr ? 'المعدل حسب التصنيف' : 'Taux de résolution par catégorie', isAr);
   if (catStats.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    doc.text(isAr ? 'التصنيف' : 'Catégorie', 50, y); doc.text(isAr ? 'العدد' : 'Total', 230, y); doc.text(isAr ? 'معالجة' : 'Résolus', 280, y); doc.text(isAr ? 'المعدل' : 'Taux', 340, y); doc.text(isAr ? 'التطور' : 'Tendance', 400, y);
+    txt(isAr ? 'التصنيف' : 'Catégorie', 50, y, {}); txt(isAr ? 'العدد' : 'Total', 230, y, {}); txt(isAr ? 'معالجة' : 'Résolus', 280, y, {}); txt(isAr ? 'المعدل' : 'Taux', 340, y, {}); txt(isAr ? 'التطور' : 'Tendance', 400, y, {});
     y += 12;
     catStats.forEach(c => {
       if (y > 720) { doc.addPage(); y = 40; }
@@ -799,12 +852,13 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
       const prev = prevCatMap[c.famille];
       const prevTx = prev ? prev.taux : tx;
       const degraded = prev && tx < prevTx - 5;
+      const catLabel = isAr ? (familleLabelsAr[c.famille] || c.famille || '—') : (familleLabels[c.famille] || c.famille || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor(degraded ? '#EF4444' : '#333');
-      doc.text(familleLabels[c.famille] || c.famille || '—', 50, y, { width: 175 });
-      doc.text(String(c.total), 230, y); doc.text(String(c.resolus), 280, y);
-      doc.text(tx + '%', 340, y);
-      doc.text(prev ? arrow(tx, prevTx) + ' ' + delta(tx, prevTx) + 'pts' : '—', 400, y);
-      if (degraded) doc.text(isAr ? '⚠ تدهور' : '⚠ dégradation', 460, y);
+      txt(catLabel, 50, y, { width: 175 });
+      txt(String(c.total), 230, y, {}); txt(String(c.resolus), 280, y, {});
+      txt(tx + '%', 340, y, {});
+      txt(prev ? arrow(tx, prevTx) + ' ' + delta(tx, prevTx) + 'pts' : '—', 400, y, {});
+      if (degraded) txt(isAr ? 'تدهور' : 'dégradation', 460, y, {});
       doc.fillColor('#333');
       y += 13;
     });
@@ -813,75 +867,80 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
 
   // ── SATISFACTION CITOYENNE (Section 6) ──
   if (y > 650) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'رضا المواطنين' : 'Satisfaction citoyenne');
+  y = sectionTitle(doc, fonts, y, isAr ? 'رضا المواطنين' : 'Satisfaction citoyenne', isAr);
   doc.font(fonts.fontR).fontSize(9).fillColor('#666');
-  doc.text(isAr ? 'بيانات الرضا : لم يتم تفعيل الجمع بعد. سيتم دمج هذا القسم عند إطلاق استبيانات الرضا.' : 'Données de satisfaction : collecte non activée. Cette section sera alimentée à l\'activation des enquêtes de satisfaction citoyenne.', 50, y, { width: W, lineGap: 3 });
+  txt(isAr ? 'بيانات الرضا : لم يتم تفعيل الجمع بعد. سيتم دمج هذا القسم عند إطلاق استبيانات الرضا.' : 'Données de satisfaction : collecte non activée. Cette section sera alimentée à l\'activation des enquêtes de satisfaction citoyenne.', 50, y, { width: W, lineGap: 3 });
   y = doc.y + 15;
 
   // ── TENDANCES (Section 7) ──
   if (y > 550) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'الاتجاهات — 6 أشهر' : 'Tendances — 6 derniers mois');
+  y = sectionTitle(doc, fonts, y, isAr ? 'الاتجاهات — 6 أشهر' : 'Tendances — 6 derniers mois', isAr);
   if (tendances.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    doc.text(isAr ? 'الشهر' : 'Mois', 50, y); doc.text(isAr ? 'واردة' : 'Reçus', 180, y); doc.text(isAr ? 'معالجة' : 'Résolus', 240, y); doc.text(isAr ? 'المعدل' : 'Taux', 310, y);
+    txt(isAr ? 'الشهر' : 'Mois', 50, y, {}); txt(isAr ? 'واردة' : 'Reçus', 180, y, {}); txt(isAr ? 'معالجة' : 'Résolus', 240, y, {}); txt(isAr ? 'المعدل' : 'Taux', 310, y, {});
     y += 12;
     tendances.forEach(t => {
       if (y > 720) { doc.addPage(); y = 40; }
       const tx = t.recus > 0 ? Math.round(t.resolus / t.recus * 100) : 0;
       const moisLabel = new Date(t.mois).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { month: 'long', year: 'numeric' });
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      doc.text(moisLabel, 50, y, { width: 125 }); doc.text(String(t.recus), 180, y); doc.text(String(t.resolus), 240, y);
-      doc.text(tx + '%', 310, y);
+      txt(moisLabel, 50, y, { width: 125 }); txt(String(t.recus), 180, y, {}); txt(String(t.resolus), 240, y, {});
+      txt(tx + '%', 310, y, {});
       y += 13;
     });
     y += 8;
-    // ICUA history
     if (icuaHist.length) {
-      doc.font(fonts.fontB).fontSize(8).fillColor('#041F38').text(isAr ? 'تطور مؤشر ICUA' : 'Évolution ICUA', 50, y); y += 14;
+      doc.font(fonts.fontB).fontSize(8).fillColor('#041F38');
+      txt(isAr ? 'تطور مؤشر ICUA' : 'Évolution ICUA', 50, y, {}); y += 14;
       icuaHist.forEach(h => {
         const d = new Date(h.calcule_le).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { day: 'numeric', month: 'short', year: 'numeric' });
-        doc.font(fonts.fontR).fontSize(8).fillColor('#333').text(d + ' : ' + h.score + '/100', 60, y); y += 12;
+        doc.font(fonts.fontR).fontSize(8).fillColor('#333');
+        txt(d + ' : ' + h.score + '/100', 60, y, {}); y += 12;
         if (y > 720) { doc.addPage(); y = 40; }
       });
     }
   } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999').text(isAr ? 'لا توجد بيانات كافية' : 'Données insuffisantes', 50, y); y += 14;
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
+    txt(isAr ? 'لا توجد بيانات كافية' : 'Données insuffisantes', 50, y, {}); y += 14;
   }
   y += 15;
 
   // ── SITUATIONS NOTABLES (Section 8) ──
   if (y > 550) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'الحالات البارزة' : 'Situations notables');
+  y = sectionTitle(doc, fonts, y, isAr ? 'الحالات البارزة' : 'Situations notables', isAr);
 
-  // Demandes d'explication
-  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text(isAr ? 'طلبات التوضيح' : 'Demandes d\'explication émises', 50, y);
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38');
+  txt(isAr ? 'طلبات التوضيح' : 'Demandes d\'explication émises', 50, y, {});
   y += 14;
   if (deList.length) {
     deList.forEach(de => {
       if (y > 720) { doc.addPage(); y = 40; }
+      const orgName = isAr ? (orgNomArMap[de.org_nom] || de.org_nom || '—') : (de.org_nom || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      doc.text(`#${de.reference} → ${de.org_nom || '—'} — ${de.statut_label} (${fmtDate(de.cree_le)})`, 60, y, { width: W - 20 });
+      txt(`#${de.reference} → ${orgName} — ${de.statut_label} (${fmtDate(de.cree_le)})`, 60, y, { width: W - 20 });
       y += 12;
     });
   } else {
-    doc.font(fonts.fontR).fontSize(8).fillColor('#999').text(isAr ? 'لا توجد طلبات توضيح' : 'Aucune demande d\'explication sur la période', 60, y);
+    doc.font(fonts.fontR).fontSize(8).fillColor('#999');
+    txt(isAr ? 'لا توجد طلبات توضيح' : 'Aucune demande d\'explication sur la période', 60, y, {});
     y += 12;
   }
   y += 10;
 
-  // Classés sans suite
-  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text(isAr ? 'ملفات مغلقة بدون متابعة' : 'Dossiers classés sans suite', 50, y);
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38');
+  txt(isAr ? 'ملفات مرفوضة' : 'Dossiers rejetés', 50, y, {});
   y += 14;
   doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-  doc.text(cssCount > 0 ? `${cssCount} dossier${cssCount > 1 ? 's' : ''} classé${cssCount > 1 ? 's' : ''} sans suite sur la période.` : (isAr ? 'لا توجد ملفات مغلقة بدون متابعة' : 'Aucun dossier classé sans suite sur la période.'), 60, y, { width: W - 20 });
+  txt(cssCount > 0
+    ? (isAr ? cssCount + ' ملف مرفوض في هذه الفترة' : `${cssCount} dossier${cssCount > 1 ? 's' : ''} rejeté${cssCount > 1 ? 's' : ''} sur la période.`)
+    : (isAr ? 'لا توجد ملفات مرفوضة' : 'Aucun dossier rejeté sur la période.'), 60, y, { width: W - 20 });
 
-  // ── FOOTER ──
-  doc.font(fonts.fontR).fontSize(7).fillColor('#999');
-  const pageCount = doc.bufferedPageRange().count;
-  for (let i = 0; i < pageCount; i++) {
+  // ── FOOTER (pages 1+ seulement, pas la couverture) ──
+  const contentPages = doc.bufferedPageRange().count;
+  for (let i = 1; i < contentPages; i++) {
     doc.switchToPage(i);
-    if (i === 0) continue; // Skip cover page
-    doc.text(`ALGERNA — ${isAr ? 'تقرير سري' : 'Rapport confidentiel'} — Page ${i}/${pageCount - 1}`, 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center' });
+    doc.font(fonts.fontR).fontSize(7).fillColor('#999');
+    doc.text(`ALGERNA — ${isAr ? 'تقرير سري' : 'Rapport confidentiel'} — Page ${i}/${contentPages - 1}`, 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center', lineBreak: false });
   }
 
   doc.end();
