@@ -697,254 +697,336 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     } catch(e) {}
   }
 
-  // Arabic text helper: adds RTL features for proper shaping + BiDi
-  const arOpts = isAr ? { features: ['rtla', 'rtlm'] } : {};
-  function txt(text, x, yy, opts) {
-    doc.text(text, x, yy, { ...opts, ...(isAr ? arOpts : {}) });
-  }
-
+  // ══════════════════════════════════════════════
+  // ── RENDU PDF ──
+  // AR = Puppeteer (HTML→PDF, RTL natif parfait)
+  // FR = PDFKit (rendu direct, pas de dépendance Chrome)
+  // ══════════════════════════════════════════════
   if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
-  const fonts = setupDoc(doc, isAr);
   const filename = `rapport_executif_${Date.now()}.pdf`;
   const filepath = path.join(UPLOAD_DIR, filename);
-  const stream = fs.createWriteStream(filepath);
-  doc.pipe(stream);
 
-  const W = doc.page.width - 80; // usable width
-  const AL = isAr ? 'right' : 'left'; // text alignment
-  const AC = 'center'; // center alignment
+  if (isAr) {
+    // ── RENDU ARABE VIA PUPPETEER ──
+    const puppeteer = require('puppeteer');
+    const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const fmtDt = d => d ? new Date(d).toLocaleDateString('ar-DZ',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    const familleLabelsAr = {eau:'مياه',proprete:'نظافة',general:'عام',voirie:'طرق',eclairage:'إنارة',espaces_verts:'مساحات خضراء',stationnement:'مواقف',assainissement:'صرف صحي',securite:'أمن',environnement:'بيئة',batiments:'مباني',mobilier_urbain:'تجهيزات حضرية',transport:'نقل',nuisances:'إزعاج',animaux:'حيوانات',accessibilite:'ولوجية'};
 
-  // ── PAGE DE GARDE (Section 1) — fond BLANC, sobre ──
-  // Filet institutionnel en haut
-  doc.rect(0, 0, doc.page.width, 6).fill('#063B5A');
+    // Build HTML
+    let orgRows = orgPerf.map(o => {
+      const tx = o.recus > 0 ? Math.round(o.resolus/o.recus*100) : 0;
+      const sla = o.recus > 0 ? Math.round((o.sla_conf||0)/Math.max(1,o.resolus)*100) : 0;
+      const nm = esc((orgNomArMap[o.nom]||o.nom).replace(/^EPIC — /,''));
+      return `<tr><td>${nm}</td><td>${o.recus}</td><td>${o.resolus}</td><td>${tx}%</td><td>${o.temps_h?o.temps_h+'س':'—'}</td><td class="${o.retard>0?'red':''}">${o.retard}</td><td>${sla}%</td></tr>`;
+    }).join('');
 
-  // Logo centré
-  const logoPath = path.join(__dirname, '../../../public/assets/logo/algerna_icon.png');
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, (doc.page.width - 80) / 2, 120, { width: 80 });
-  }
+    let zoneRows = topZones.map(z => {
+      const prev = prevZoneMap[z.commune]||0;
+      const cn = esc(communeNomArMap[z.commune]||z.commune);
+      const cl = esc(familleLabelsAr[z.categorie_dom]||z.categorie_dom||'—');
+      return `<tr><td>${cn}</td><td>${z.total}</td><td>${cl}</td><td class="${z.total>prev?'red':'green'}">${arrow(z.total,prev)} ${delta(z.total,prev)}</td></tr>`;
+    }).join('');
 
-  doc.font(fonts.fontB).fontSize(13).fillColor('#063B5A');
-  txt(isAr ? 'ولاية الجزائر' : 'WILAYA D\'ALGER', 40, 220, { width: W, align: AC });
-  doc.moveDown(1);
-  doc.font(fonts.fontB).fontSize(24).fillColor('#041F38');
-  txt(isAr ? 'تقرير النشاط' : 'RAPPORT D\'ACTIVITÉ', 40, doc.y, { width: W, align: AC });
-  doc.moveDown(1);
-  // Filet décoratif
-  doc.rect(doc.page.width / 2 - 60, doc.y, 120, 2).fill('#063B5A');
-  doc.moveDown(1.5);
-  doc.font(fonts.fontR).fontSize(14).fillColor('#063B5A');
-  txt(isAr ? p.labelAr : p.label, 40, doc.y, { width: W, align: AC });
-  doc.moveDown(1);
-  doc.font(fonts.fontR).fontSize(11).fillColor('#666666');
-  txt((isAr ? 'النطاق : ' : 'Périmètre : ') + perimetreTitre, 40, doc.y, { width: W, align: AC });
-  doc.moveDown(4);
-  doc.font(fonts.fontR).fontSize(9).fillColor('#999999');
-  txt((isAr ? 'تاريخ الإنشاء : ' : 'Généré le ') + new Date().toLocaleString(isAr ? 'ar-DZ' : 'fr-DZ'), 40, doc.y, { width: W, align: AC });
-  // Pied de page de garde
-  doc.rect(0, doc.page.height - 30, doc.page.width, 6).fill('#063B5A');
-  doc.font(fonts.fontR).fontSize(8).fillColor('#999999');
-  txt('ALGERNA — Plateforme de gouvernance civique', 40, doc.page.height - 50, { width: W, align: AC });
+    let catRows = catStats.map(c => {
+      const tx = c.total>0?Math.round(c.resolus/c.total*100):0;
+      const prev = prevCatMap[c.famille]; const prevTx = prev?prev.taux:tx;
+      const degraded = prev && tx < prevTx - 5;
+      const cl = esc(familleLabelsAr[c.famille]||c.famille||'—');
+      return `<tr class="${degraded?'degraded':''}"><td>${cl}</td><td>${c.total}</td><td>${c.resolus}</td><td>${tx}%</td><td>${prev?arrow(tx,prevTx)+' '+delta(tx,prevTx)+'pts':'—'}</td>${degraded?'<td class="red">تدهور</td>':'<td></td>'}</tr>`;
+    }).join('');
+
+    let tendRows = tendances.map(t => {
+      const tx = t.recus>0?Math.round(t.resolus/t.recus*100):0;
+      const ml = new Date(t.mois).toLocaleDateString('ar-DZ',{month:'long',year:'numeric'});
+      return `<tr><td>${ml}</td><td>${t.recus}</td><td>${t.resolus}</td><td>${tx}%</td></tr>`;
+    }).join('');
+
+    let icuaHistRows = icuaHist.map(h => {
+      const d = new Date(h.calcule_le).toLocaleDateString('ar-DZ',{day:'numeric',month:'long',year:'numeric'});
+      return `<div>${d} : ${h.score}/100</div>`;
+    }).join('');
+
+    let deRows = deList.length ? deList.map(de => {
+      const on = esc(orgNomArMap[de.org_nom]||de.org_nom||'—');
+      return `<div>#${de.reference} → ${on} — ${de.statut_label} (${fmtDt(de.cree_le)})</div>`;
+    }).join('') : '<div class="muted">لا توجد طلبات توضيح</div>';
+
+    const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Naskh Arabic','DejaVu Sans',serif; direction:rtl; color:#333; font-size:10px; line-height:1.6; }
+  .cover { page-break-after:always; text-align:center; padding-top:140px; min-height:100vh; position:relative; }
+  .cover .bar { position:absolute; top:0; left:0; right:0; height:6px; background:#063B5A; }
+  .cover .bar-bottom { position:absolute; bottom:0; left:0; right:0; height:6px; background:#063B5A; }
+  .cover h1 { font-size:13px; color:#063B5A; margin-bottom:12px; font-weight:700; }
+  .cover h2 { font-size:24px; color:#041F38; margin-bottom:16px; font-weight:700; }
+  .cover .line { width:120px; height:2px; background:#063B5A; margin:0 auto 24px; }
+  .cover .period { font-size:14px; color:#063B5A; margin-bottom:8px; }
+  .cover .perimetre { font-size:11px; color:#666; margin-bottom:40px; }
+  .cover .date { font-size:9px; color:#999; }
+  .cover .footer { position:absolute; bottom:30px; left:0; right:0; font-size:8px; color:#999; }
+  .header { background:#041F38; color:white; padding:14px 24px; margin-bottom:16px; }
+  .header h3 { font-size:14px; font-weight:700; color:white; margin-bottom:2px; }
+  .header .sub { font-size:9px; color:#8ecae6; }
+  .section { background:#063B5A; color:white; padding:5px 14px; border-radius:3px; font-size:10px; font-weight:700; margin:16px 0 8px; }
+  table { width:100%; border-collapse:collapse; font-size:9px; margin-bottom:8px; }
+  th { background:#f0f4f8; text-align:right; padding:5px 8px; font-weight:700; font-size:8px; color:#666; }
+  td { padding:5px 8px; border-bottom:1px solid #e5e7eb; }
+  .red { color:#EF4444; font-weight:700; }
+  .green { color:#16a34a; }
+  .degraded td { color:#EF4444; }
+  .muted { color:#999; font-style:italic; }
+  .kpi-grid { display:grid; grid-template-columns:1fr auto auto; gap:2px 16px; margin-bottom:8px; }
+  .kpi-label { color:#666; font-size:9px; }
+  .kpi-value { font-weight:700; font-size:12px; color:#041F38; }
+  .kpi-delta { font-size:8px; color:#888; }
+  .page-footer { text-align:center; font-size:7px; color:#999; margin-top:20px; }
+  .content { padding:0 24px; }
+</style></head><body>
+
+<div class="cover">
+  <div class="bar"></div>
+  <h1>ولاية الجزائر</h1>
+  <h2>تقرير النشاط</h2>
+  <div class="line"></div>
+  <div class="period">${esc(p.labelAr)}</div>
+  <div class="perimetre">النطاق : ${esc(perimetreTitre)}</div>
+  <div class="date">تاريخ الإنشاء : ${new Date().toLocaleString('ar-DZ')}</div>
+  <div class="footer">ALGERNA — منصة الحوكمة المدنية</div>
+  <div class="bar-bottom"></div>
+</div>
+
+<div class="header">
+  <h3>الملخص التنفيذي</h3>
+  <div class="sub">${esc(p.labelAr)} — ${esc(perimetreTitre)}</div>
+</div>
+<div class="content">
+
+<div class="section">المؤشرات الرئيسية</div>
+<div class="kpi-grid">
+  <div class="kpi-label">بلاغات واردة</div><div class="kpi-value">${kR}</div><div class="kpi-delta">${delta(kR,pR)} ${arrow(kR,pR)}</div>
+  <div class="kpi-label">تمت معالجتها</div><div class="kpi-value">${kRs}</div><div class="kpi-delta">${delta(kRs,pRs)} ${arrow(kRs,pRs)}</div>
+  <div class="kpi-label">قيد المعالجة</div><div class="kpi-value">${Math.max(0,kEnCours)}</div><div class="kpi-delta"></div>
+  <div class="kpi-label">معدل المعالجة</div><div class="kpi-value">${kTx}%</div><div class="kpi-delta">${pTx?delta(kTx,pTx)+'pts '+arrow(kTx,pTx):''}</div>
+  <div class="kpi-label">المدة المتوسطة (ساعة)</div><div class="kpi-value">${kT||'—'}</div><div class="kpi-delta">${pT?delta(kT,pT)+'س '+arrow(kT,pT):''}</div>
+  <div class="kpi-label">نسبة الالتزام بالمهلة</div><div class="kpi-value">${slaPct}%</div><div class="kpi-delta"></div>
+  <div class="kpi-label">متأخرة</div><div class="kpi-value">${kRet}</div><div class="kpi-delta"></div>
+  <div class="kpi-label">مؤشر الأداء الحضري (ICUA)</div><div class="kpi-value">${icuaScore}</div><div class="kpi-delta">${prevIcua?delta(icuaScore,prevIcua)+' '+arrow(icuaScore,prevIcua):''}</div>
+  <div class="kpi-label">طلبات توضيح</div><div class="kpi-value">${deCount}</div><div class="kpi-delta"></div>
+</div>
+
+<div class="section">أداء المديريات</div>
+<table><tr><th>المديرية</th><th>واردة</th><th>معالجة</th><th>المعدل</th><th>المدة</th><th>متأخرة</th><th>SLA</th></tr>${orgRows||'<tr><td colspan="7" class="muted">لا توجد بيانات</td></tr>'}</table>
+
+<div class="section">المناطق المتكررة</div>
+<table><tr><th>البلدية</th><th>العدد</th><th>التصنيف</th><th>التطور</th></tr>${zoneRows||'<tr><td colspan="4" class="muted">لا توجد بيانات</td></tr>'}</table>
+
+<div class="section">المعدل حسب التصنيف</div>
+<table><tr><th>التصنيف</th><th>العدد</th><th>معالجة</th><th>المعدل</th><th>التطور</th><th></th></tr>${catRows}</table>
+
+<div class="section">رضا المواطنين</div>
+<p class="muted" style="margin:8px 0;">بيانات الرضا : لم يتم تفعيل الجمع بعد. سيتم دمج هذا القسم عند إطلاق استبيانات الرضا.</p>
+
+<div class="section">الاتجاهات — 6 أشهر</div>
+${tendRows?'<table><tr><th>الشهر</th><th>واردة</th><th>معالجة</th><th>المعدل</th></tr>'+tendRows+'</table>':'<p class="muted">لا توجد بيانات كافية</p>'}
+${icuaHistRows?'<div style="margin-top:8px;"><strong>تطور مؤشر ICUA</strong>'+icuaHistRows+'</div>':''}
+
+<div class="section">الحالات البارزة</div>
+<div style="margin-bottom:8px;"><strong>طلبات التوضيح</strong></div>
+${deRows}
+<div style="margin-top:12px;"><strong>ملفات مرفوضة</strong></div>
+<div>${cssCount>0?cssCount+' ملف مرفوض في هذه الفترة':'لا توجد ملفات مرفوضة'}</div>
+
+</div>
+</body></html>`;
+
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
+    await page.pdf({ path: filepath, format: 'A4', margin: { top:'15mm', bottom:'15mm', left:'12mm', right:'12mm' }, printBackground: true });
+    await browser.close();
+
+  } else {
+    // ── RENDU FRANÇAIS VIA PDFKIT ──
+    const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
+    const fonts = setupDoc(doc, false);
+    const stream = fs.createWriteStream(filepath);
+    doc.pipe(stream);
+    const W = doc.page.width - 80;
+
+    // Page de garde blanche
+    doc.rect(0, 0, doc.page.width, 6).fill('#063B5A');
+    const logoPath = path.join(__dirname, '../../../public/assets/logo/algerna_icon.png');
+    if (fs.existsSync(logoPath)) doc.image(logoPath, (doc.page.width - 80) / 2, 120, { width: 80 });
+    doc.font(fonts.fontB).fontSize(13).fillColor('#063B5A').text('WILAYA D\'ALGER', 40, 220, { width: W, align: 'center' });
+    doc.moveDown(1);
+    doc.font(fonts.fontB).fontSize(24).fillColor('#041F38').text('RAPPORT D\'ACTIVITÉ', 40, doc.y, { width: W, align: 'center' });
+    doc.moveDown(1);
+    doc.rect(doc.page.width / 2 - 60, doc.y, 120, 2).fill('#063B5A');
+    doc.moveDown(1.5);
+    doc.font(fonts.fontR).fontSize(14).fillColor('#063B5A').text(p.label, 40, doc.y, { width: W, align: 'center' });
+    doc.moveDown(1);
+    doc.font(fonts.fontR).fontSize(11).fillColor('#666666').text('Périmètre : ' + perimetreTitre, 40, doc.y, { width: W, align: 'center' });
+    doc.moveDown(4);
+    doc.font(fonts.fontR).fontSize(9).fillColor('#999999').text('Généré le ' + new Date().toLocaleString('fr-DZ'), 40, doc.y, { width: W, align: 'center' });
+    doc.rect(0, doc.page.height - 30, doc.page.width, 6).fill('#063B5A');
+    doc.font(fonts.fontR).fontSize(8).fillColor('#999999').text('ALGERNA — Plateforme de gouvernance civique', 40, doc.page.height - 50, { width: W, align: 'center' });
 
   // ── SYNTHÈSE EXÉCUTIVE (Section 2) ──
   doc.addPage();
-  let y = drawHeader(doc, fonts,
-    isAr ? 'الملخص التنفيذي' : 'Synthèse exécutive',
-    isAr ? p.labelAr + ' — ' + perimetreTitre : p.label + ' — ' + perimetreTitre, isAr);
+  let y = drawHeader(doc, fonts, 'Synthèse exécutive', p.label + ' — ' + perimetreTitre, false);
 
-  y = sectionTitle(doc, fonts, y, isAr ? 'المؤشرات الرئيسية' : 'Chiffres clés de la période', isAr);
+  y = sectionTitle(doc, fonts, y, 'Chiffres clés de la période');
 
   const kpis = [
-    [isAr ? 'بلاغات واردة' : 'Signalements reçus', kR, delta(kR, pR) + ' ' + arrow(kR, pR)],
-    [isAr ? 'تمت معالجتها' : 'Résolus', kRs, delta(kRs, pRs) + ' ' + arrow(kRs, pRs)],
-    [isAr ? 'قيد المعالجة' : 'En cours', Math.max(0, kEnCours), ''],
-    [isAr ? 'معدل المعالجة' : 'Taux de résolution', kTx + '%', (pTx ? delta(kTx, pTx) + 'pts ' + arrow(kTx, pTx) : '')],
-    [isAr ? 'المدة المتوسطة (ساعة)' : 'Temps moyen (h)', kT || '—', (pT ? delta(kT, pT) + 'h ' + arrow(kT, pT) : '')],
-    [isAr ? 'نسبة الالتزام بالمهلة' : 'Conformité SLA', slaPct + '%', ''],
-    [isAr ? 'متأخرة' : 'En retard (hors délai)', kRet, ''],
-    [isAr ? 'مؤشر الأداء الحضري' : 'Score ICUA', icuaScore, (prevIcua ? delta(icuaScore, prevIcua) + ' ' + arrow(icuaScore, prevIcua) : '')],
-    [isAr ? 'طلبات توضيح' : 'Demandes d\'explication', deCount, ''],
+    ['Signalements reçus', kR, delta(kR, pR) + ' ' + arrow(kR, pR)],
+    ['Résolus', kRs, delta(kRs, pRs) + ' ' + arrow(kRs, pRs)],
+    ['En cours', Math.max(0, kEnCours), ''],
+    ['Taux de résolution', kTx + '%', (pTx ? delta(kTx, pTx) + 'pts ' + arrow(kTx, pTx) : '')],
+    ['Temps moyen (h)', kT || '—', (pT ? delta(kT, pT) + 'h ' + arrow(kT, pT) : '')],
+    ['Conformité SLA', slaPct + '%', ''],
+    ['En retard (hors délai)', kRet, ''],
+    ['Score ICUA', icuaScore, (prevIcua ? delta(icuaScore, prevIcua) + ' ' + arrow(icuaScore, prevIcua) : '')],
+    ['Demandes d\'explication', deCount, ''],
   ];
 
   kpis.forEach(([label, value, variation]) => {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#666');
-    txt(label, isAr ? 260 : 50, y, { width: 200 });
-    doc.font(fonts.fontB).fontSize(11).fillColor('#041F38');
-    txt(String(value), isAr ? 200 : 260, y, {});
-    if (variation) { doc.font(fonts.fontR).fontSize(8).fillColor('#888'); txt(variation, isAr ? 100 : 320, y, {}); }
+    doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { width: 200 });
+    doc.font(fonts.fontB).fontSize(11).fillColor('#041F38').text(String(value), 260, y);
+    if (variation) doc.font(fonts.fontR).fontSize(8).fillColor('#888').text(variation, 320, y);
     y += 16;
     if (y > 720) { doc.addPage(); y = 40; }
   });
   y += 10;
 
   // ── PERFORMANCE DES DIRECTIONS (Section 3) ──
-  y = sectionTitle(doc, fonts, y, isAr ? 'أداء المديريات' : 'Performance des directions (EPIC)', isAr);
+  y = sectionTitle(doc, fonts, y, 'Performance des directions (EPIC)');
+  const familleLabels = {eau:'Eau',proprete:'Propreté',general:'Divers',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement',assainissement:'Assainissement',securite:'Sécurité',environnement:'Environnement',batiments:'Bâtiments',mobilier_urbain:'Mobilier urbain',transport:'Transport',nuisances:'Nuisances',animaux:'Animaux',accessibilite:'Accessibilité'};
   if (orgPerf.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
     const cols = [50, 200, 240, 280, 320, 370, 420];
-    const heads = isAr
-      ? ['المديرية','واردة','معالجة','المعدل','المدة','متأخرة','SLA']
-      : ['Direction','Reçus','Résol.','Taux','Temps','Retard','SLA'];
-    heads.forEach((h, i) => txt(h, cols[i], y, { width: 50 }));
+    ['Direction','Reçus','Résol.','Taux','Temps','Retard','SLA'].forEach((h, i) => doc.text(h, cols[i], y, { width: 50 }));
     y += 12;
     orgPerf.forEach(o => {
       if (y > 720) { doc.addPage(); y = 40; }
       const tx = o.recus > 0 ? Math.round(o.resolus / o.recus * 100) : 0;
       const sla = o.recus > 0 ? Math.round((o.sla_conf || 0) / Math.max(1, o.resolus) * 100) : 0;
-      const orgLabel = isAr ? (orgNomArMap[o.nom] || o.nom).replace(/^EPIC — /, '') : o.nom.replace(/^EPIC — /, '');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      txt(orgLabel, cols[0], y, { width: 145 });
-      txt(String(o.recus), cols[1], y, {});
-      txt(String(o.resolus), cols[2], y, {});
-      txt(tx + '%', cols[3], y, {});
-      txt(o.temps_h ? o.temps_h + 'h' : '—', cols[4], y, {});
-      doc.fillColor(o.retard > 0 ? '#EF4444' : '#333');
-      txt(String(o.retard), cols[5], y, {});
-      doc.fillColor('#333');
-      txt(sla + '%', cols[6], y, {});
+      doc.text(o.nom.replace(/^EPIC — /, ''), cols[0], y, { width: 145 });
+      doc.text(String(o.recus), cols[1], y); doc.text(String(o.resolus), cols[2], y);
+      doc.text(tx + '%', cols[3], y); doc.text(o.temps_h ? o.temps_h + 'h' : '—', cols[4], y);
+      doc.fillColor(o.retard > 0 ? '#EF4444' : '#333').text(String(o.retard), cols[5], y);
+      doc.fillColor('#333').text(sla + '%', cols[6], y);
       y += 13;
     });
-  } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
-    txt(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y, {});
-  }
+  } else { doc.font(fonts.fontR).fontSize(9).fillColor('#999').text('Aucune donnée', 50, y); }
   y += 15;
 
   // ── ZONES RÉCURRENTES (Section 4) ──
   if (y > 650) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'المناطق المتكررة' : 'Zones récurrentes (top 10)', isAr);
-  const familleLabels = {eau:'Eau',proprete:'Propreté',general:'Divers',voirie:'Voirie',eclairage:'Éclairage',espaces_verts:'Espaces verts',stationnement:'Stationnement',assainissement:'Assainissement',securite:'Sécurité',environnement:'Environnement',batiments:'Bâtiments',mobilier_urbain:'Mobilier urbain',transport:'Transport',nuisances:'Nuisances',animaux:'Animaux',accessibilite:'Accessibilité'};
-  const familleLabelsAr = {eau:'مياه',proprete:'نظافة',general:'عام',voirie:'طرق',eclairage:'إنارة',espaces_verts:'مساحات خضراء',stationnement:'مواقف',assainissement:'صرف صحي',securite:'أمن',environnement:'بيئة',batiments:'مباني',mobilier_urbain:'تجهيزات حضرية',transport:'نقل',nuisances:'إزعاج',animaux:'حيوانات',accessibilite:'ولوجية'};
+  y = sectionTitle(doc, fonts, y, 'Zones récurrentes (top 10)');
   if (topZones.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    txt(isAr ? 'البلدية' : 'Commune', 50, y, {}); txt(isAr ? 'العدد' : 'Total', 230, y, {}); txt(isAr ? 'التصنيف' : 'Catégorie dominante', 290, y, {}); txt(isAr ? 'التطور' : 'Évolution', 440, y, {});
+    doc.text('Commune', 50, y); doc.text('Total', 230, y); doc.text('Catégorie dominante', 290, y); doc.text('Évolution', 440, y);
     y += 12;
     topZones.forEach(z => {
       if (y > 720) { doc.addPage(); y = 40; }
       const prev = prevZoneMap[z.commune] || 0;
-      const communeLabel = isAr ? (communeNomArMap[z.commune] || z.commune) : z.commune;
-      const catLabel = isAr ? (familleLabelsAr[z.categorie_dom] || z.categorie_dom || '—') : (familleLabels[z.categorie_dom] || z.categorie_dom || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      txt(communeLabel, 50, y, { width: 175 }); txt(String(z.total), 230, y, {});
-      txt(catLabel, 290, y, { width: 145 });
-      doc.fillColor(z.total > prev ? '#EF4444' : '#16a34a');
-      txt(arrow(z.total, prev) + ' ' + delta(z.total, prev), 440, y, {});
-      doc.fillColor('#333');
-      y += 13;
+      doc.text(z.commune, 50, y, { width: 175 }); doc.text(String(z.total), 230, y);
+      doc.text(familleLabels[z.categorie_dom] || z.categorie_dom || '—', 290, y, { width: 145 });
+      doc.fillColor(z.total > prev ? '#EF4444' : '#16a34a').text(arrow(z.total, prev) + ' ' + delta(z.total, prev), 440, y);
+      doc.fillColor('#333'); y += 13;
     });
-  } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
-    txt(isAr ? 'لا توجد بيانات' : 'Aucune donnée', 50, y, {}); y += 14;
-  }
+  } else { doc.font(fonts.fontR).fontSize(9).fillColor('#999').text('Aucune donnée', 50, y); y += 14; }
   y += 15;
 
   // ── TAUX PAR CATÉGORIE (Section 5) ──
   if (y > 600) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'المعدل حسب التصنيف' : 'Taux de résolution par catégorie', isAr);
+  y = sectionTitle(doc, fonts, y, 'Taux de résolution par catégorie');
   if (catStats.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    txt(isAr ? 'التصنيف' : 'Catégorie', 50, y, {}); txt(isAr ? 'العدد' : 'Total', 230, y, {}); txt(isAr ? 'معالجة' : 'Résolus', 280, y, {}); txt(isAr ? 'المعدل' : 'Taux', 340, y, {}); txt(isAr ? 'التطور' : 'Tendance', 400, y, {});
+    doc.text('Catégorie', 50, y); doc.text('Total', 230, y); doc.text('Résolus', 280, y); doc.text('Taux', 340, y); doc.text('Tendance', 400, y);
     y += 12;
     catStats.forEach(c => {
       if (y > 720) { doc.addPage(); y = 40; }
       const tx = c.total > 0 ? Math.round(c.resolus / c.total * 100) : 0;
-      const prev = prevCatMap[c.famille];
-      const prevTx = prev ? prev.taux : tx;
+      const prev = prevCatMap[c.famille]; const prevTx = prev ? prev.taux : tx;
       const degraded = prev && tx < prevTx - 5;
-      const catLabel = isAr ? (familleLabelsAr[c.famille] || c.famille || '—') : (familleLabels[c.famille] || c.famille || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor(degraded ? '#EF4444' : '#333');
-      txt(catLabel, 50, y, { width: 175 });
-      txt(String(c.total), 230, y, {}); txt(String(c.resolus), 280, y, {});
-      txt(tx + '%', 340, y, {});
-      txt(prev ? arrow(tx, prevTx) + ' ' + delta(tx, prevTx) + 'pts' : '—', 400, y, {});
-      if (degraded) txt(isAr ? 'تدهور' : 'dégradation', 460, y, {});
-      doc.fillColor('#333');
-      y += 13;
+      doc.text(familleLabels[c.famille] || c.famille || '—', 50, y, { width: 175 });
+      doc.text(String(c.total), 230, y); doc.text(String(c.resolus), 280, y);
+      doc.text(tx + '%', 340, y);
+      doc.text(prev ? arrow(tx, prevTx) + ' ' + delta(tx, prevTx) + 'pts' : '—', 400, y);
+      if (degraded) doc.text('dégradation', 460, y);
+      doc.fillColor('#333'); y += 13;
     });
   }
   y += 15;
 
   // ── SATISFACTION CITOYENNE (Section 6) ──
   if (y > 650) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'رضا المواطنين' : 'Satisfaction citoyenne', isAr);
+  y = sectionTitle(doc, fonts, y, 'Satisfaction citoyenne');
   doc.font(fonts.fontR).fontSize(9).fillColor('#666');
-  txt(isAr ? 'بيانات الرضا : لم يتم تفعيل الجمع بعد. سيتم دمج هذا القسم عند إطلاق استبيانات الرضا.' : 'Données de satisfaction : collecte non activée. Cette section sera alimentée à l\'activation des enquêtes de satisfaction citoyenne.', 50, y, { width: W, lineGap: 3 });
+  doc.text('Données de satisfaction : collecte non activée. Cette section sera alimentée à l\'activation des enquêtes de satisfaction citoyenne.', 50, y, { width: W, lineGap: 3 });
   y = doc.y + 15;
 
   // ── TENDANCES (Section 7) ──
   if (y > 550) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'الاتجاهات — 6 أشهر' : 'Tendances — 6 derniers mois', isAr);
+  y = sectionTitle(doc, fonts, y, 'Tendances — 6 derniers mois');
   if (tendances.length) {
     doc.font(fonts.fontB).fontSize(7).fillColor('#666');
-    txt(isAr ? 'الشهر' : 'Mois', 50, y, {}); txt(isAr ? 'واردة' : 'Reçus', 180, y, {}); txt(isAr ? 'معالجة' : 'Résolus', 240, y, {}); txt(isAr ? 'المعدل' : 'Taux', 310, y, {});
+    doc.text('Mois', 50, y); doc.text('Reçus', 180, y); doc.text('Résolus', 240, y); doc.text('Taux', 310, y);
     y += 12;
     tendances.forEach(t => {
       if (y > 720) { doc.addPage(); y = 40; }
       const tx = t.recus > 0 ? Math.round(t.resolus / t.recus * 100) : 0;
-      const moisLabel = new Date(t.mois).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { month: 'long', year: 'numeric' });
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      txt(moisLabel, 50, y, { width: 125 }); txt(String(t.recus), 180, y, {}); txt(String(t.resolus), 240, y, {});
-      txt(tx + '%', 310, y, {});
+      doc.text(new Date(t.mois).toLocaleDateString('fr-DZ', { month: 'long', year: 'numeric' }), 50, y, { width: 125 });
+      doc.text(String(t.recus), 180, y); doc.text(String(t.resolus), 240, y); doc.text(tx + '%', 310, y);
       y += 13;
     });
     y += 8;
     if (icuaHist.length) {
-      doc.font(fonts.fontB).fontSize(8).fillColor('#041F38');
-      txt(isAr ? 'تطور مؤشر ICUA' : 'Évolution ICUA', 50, y, {}); y += 14;
+      doc.font(fonts.fontB).fontSize(8).fillColor('#041F38').text('Évolution ICUA', 50, y); y += 14;
       icuaHist.forEach(h => {
-        const d = new Date(h.calcule_le).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { day: 'numeric', month: 'short', year: 'numeric' });
-        doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-        txt(d + ' : ' + h.score + '/100', 60, y, {}); y += 12;
+        const d = new Date(h.calcule_le).toLocaleDateString('fr-DZ', { day: 'numeric', month: 'short', year: 'numeric' });
+        doc.font(fonts.fontR).fontSize(8).fillColor('#333').text(d + ' : ' + h.score + '/100', 60, y); y += 12;
         if (y > 720) { doc.addPage(); y = 40; }
       });
     }
-  } else {
-    doc.font(fonts.fontR).fontSize(9).fillColor('#999');
-    txt(isAr ? 'لا توجد بيانات كافية' : 'Données insuffisantes', 50, y, {}); y += 14;
-  }
+  } else { doc.font(fonts.fontR).fontSize(9).fillColor('#999').text('Données insuffisantes', 50, y); y += 14; }
   y += 15;
 
   // ── SITUATIONS NOTABLES (Section 8) ──
   if (y > 550) { doc.addPage(); y = 40; }
-  y = sectionTitle(doc, fonts, y, isAr ? 'الحالات البارزة' : 'Situations notables', isAr);
-
-  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38');
-  txt(isAr ? 'طلبات التوضيح' : 'Demandes d\'explication émises', 50, y, {});
-  y += 14;
+  y = sectionTitle(doc, fonts, y, 'Situations notables');
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text('Demandes d\'explication émises', 50, y); y += 14;
   if (deList.length) {
     deList.forEach(de => {
       if (y > 720) { doc.addPage(); y = 40; }
-      const orgName = isAr ? (orgNomArMap[de.org_nom] || de.org_nom || '—') : (de.org_nom || '—');
       doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-      txt(`#${de.reference} → ${orgName} — ${de.statut_label} (${fmtDate(de.cree_le)})`, 60, y, { width: W - 20 });
-      y += 12;
+      doc.text(`#${de.reference} → ${de.org_nom || '—'} — ${de.statut_label} (${fmtDate(de.cree_le)})`, 60, y, { width: W - 20 }); y += 12;
     });
-  } else {
-    doc.font(fonts.fontR).fontSize(8).fillColor('#999');
-    txt(isAr ? 'لا توجد طلبات توضيح' : 'Aucune demande d\'explication sur la période', 60, y, {});
-    y += 12;
-  }
+  } else { doc.font(fonts.fontR).fontSize(8).fillColor('#999').text('Aucune demande d\'explication sur la période', 60, y); y += 12; }
   y += 10;
-
-  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38');
-  txt(isAr ? 'ملفات مرفوضة' : 'Dossiers rejetés', 50, y, {});
-  y += 14;
+  doc.font(fonts.fontB).fontSize(9).fillColor('#041F38').text('Dossiers rejetés', 50, y); y += 14;
   doc.font(fonts.fontR).fontSize(8).fillColor('#333');
-  txt(cssCount > 0
-    ? (isAr ? cssCount + ' ملف مرفوض في هذه الفترة' : `${cssCount} dossier${cssCount > 1 ? 's' : ''} rejeté${cssCount > 1 ? 's' : ''} sur la période.`)
-    : (isAr ? 'لا توجد ملفات مرفوضة' : 'Aucun dossier rejeté sur la période.'), 60, y, { width: W - 20 });
+  doc.text(cssCount > 0 ? `${cssCount} dossier${cssCount > 1 ? 's' : ''} rejeté${cssCount > 1 ? 's' : ''} sur la période.` : 'Aucun dossier rejeté sur la période.', 60, y, { width: W - 20 });
 
-  // ── FOOTER (pages 1+ seulement, pas la couverture) ──
+  // Footer
   const contentPages = doc.bufferedPageRange().count;
   for (let i = 1; i < contentPages; i++) {
     doc.switchToPage(i);
     doc.font(fonts.fontR).fontSize(7).fillColor('#999');
-    doc.text(`ALGERNA — ${isAr ? 'تقرير سري' : 'Rapport confidentiel'} — Page ${i}/${contentPages - 1}`, 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center', lineBreak: false });
+    doc.text('ALGERNA — Rapport confidentiel — Page ' + i + '/' + (contentPages - 1), 40, doc.page.height - 30, { width: doc.page.width - 80, align: 'center', lineBreak: false });
   }
 
   doc.end();
   await new Promise((resolve, reject) => { stream.on('finish', resolve); stream.on('error', reject); });
+  } // end else (FR PDFKit)
 
   // Journal
   const titre = isAr
