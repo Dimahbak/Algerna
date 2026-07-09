@@ -13323,6 +13323,14 @@ function showCommuniqueForm() {
   document.getElementById('comm-statut').value = 'brouillon';
   document.getElementById('comm-debut').value = new Date().toISOString().slice(0,16);
   document.getElementById('comm-fin').value = '';
+  // Superviseur commune : verrouiller le sélecteur commune
+  var commSel = document.getElementById('comm-commune');
+  if (commSel && currentUser && currentUser.niveau_perimetre === 'commune' && currentUser.commune_id) {
+    commSel.value = currentUser.commune_id;
+    commSel.disabled = true;
+  } else if (commSel) {
+    commSel.disabled = false;
+  }
   document.getElementById('communique-form-title').textContent = 'Nouvelle publication';
   document.getElementById('admin-communique-form').classList.remove('hidden');
 }

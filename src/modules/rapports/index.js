@@ -271,6 +271,10 @@ router.post('/dossier/:id', authenticate, requirePilotage(), asyncH(async (req, 
     WHERE s.id=$1`, [id]);
   if (!sigRows.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
   const s = sigRows[0];
+  // Vérification périmètre commune
+  if (hasPerimetre(req.user, 'commune') && req.user.commune_id && s.commune_id !== req.user.commune_id) {
+    return res.status(403).json({ erreur: 'Hors périmètre.' });
+  }
 
   // Historique
   const { rows: hist } = await query(`SELECT h.*, u.prenom, u.nom AS nom_u FROM signalement_historique h
@@ -381,7 +385,7 @@ router.post('/encaissements', authenticate, requirePilotage(), asyncH(async (req
   const { periode, from, to, commune_id, parking_zone_id, lang } = req.body;
   const isAr = lang === 'ar';
   const isCommune = hasPerimetre(req.user, 'commune');
-  const effectiveCommune = commune_id || (isCommune ? req.user.commune_id : null);
+  const effectiveCommune = isCommune ? req.user.commune_id : (commune_id || null);
 
   // Period filter (reuse s alias trick — alias pe as s for periodeSQL compat)
   const pRaw = periodeSQL(periode, from, to);
@@ -515,7 +519,9 @@ router.get('/mes-rapports', authenticate, requirePilotage(), asyncH(async (req, 
   const { rows } = await query(
     `SELECT r.*, u.prenom, u.nom FROM rapport_genere r
      LEFT JOIN utilisateur u ON u.id = r.genere_par
-     ORDER BY r.cree_le DESC LIMIT 50`);
+     WHERE r.genere_par = $1
+     ORDER BY r.cree_le DESC LIMIT 50`,
+    [req.user.id]);
   res.json(rows);
 }));
 
