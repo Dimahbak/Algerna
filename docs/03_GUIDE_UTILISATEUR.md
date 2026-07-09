@@ -153,7 +153,7 @@ Annuaire de 35 contacts essentiels organises en categories :
 | Categorie | Exemples |
 |-----------|----------|
 | Urgences | Protection civile, SAMU, Police |
-| Reseaux | SEAAL (eau), SONELGAZ (electricite/gaz) |
+| Reseaux | Direction Eau (eau), SONELGAZ (electricite/gaz) |
 | Transports | ETUSA, Metro d'Alger, Tramway |
 | Institutions | APC, Daira, Wilaya |
 

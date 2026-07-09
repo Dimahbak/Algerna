@@ -14,8 +14,8 @@
 | 2 | 0550000002 | Kaci | Youcef | `agent` | Agent de reception et de coordination | Centre de Reception et de Coordination | Valide |
 | 3 | 0550000003 | Mansouri | Rachid | `admin_wilaya` | Pilotage strategique | Cabinet — Secretariat General | Valide |
 | 4 | 0550000004 | Hadj | Mourad | `admin_apc` | Centre Operationnel | Centre Operationnel de Coordination | Valide |
-| 5 | 0550000005 | Brahimi | Karim | `operateur` | Responsable — Netcom Alger | Netcom Alger (proprete) | Valide |
-| 6 | 0550000006 | Aissaoui | Nadia | `operateur` | Responsable — SEAAL | SEAAL (eau) | Valide |
+| 5 | 0550000005 | Brahimi | Karim | `operateur` | Responsable — Direction Propreté | Direction Propreté (proprete) | Valide |
+| 6 | 0550000006 | Aissaoui | Nadia | `operateur` | Responsable — Direction Eau | Direction Eau (eau) | Valide |
 
 ## Agent de Proximite (CAP)
 

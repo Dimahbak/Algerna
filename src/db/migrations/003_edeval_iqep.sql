@@ -1,4 +1,4 @@
--- Migration 003 : EDEVAL Smart Green — Tables parc + IQEP + parc_id sur signalement
+-- Migration 003 : Espaces Verts — Tables parc + IQEP + parc_id sur signalement
 -- Appliquée le 2026-06-26
 
 -- ═══ UP ═══

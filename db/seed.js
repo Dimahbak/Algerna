@@ -1,7 +1,7 @@
 /**
  * Seed de données de base :
  *  - 13 circonscriptions, échantillon de communes
- *  - opérateurs Netcom / Extranet (déchets) et SEAAL (eau)
+ *  - opérateurs Direction Propreté / Direction Propreté Périphérie (déchets) et Direction Eau (eau)
  *  - catégories de signalement propreté + eau
  *  - services CiviAdmin (familles A/B)
  *  - un compte admin_wilaya de départ
@@ -112,17 +112,17 @@ async function seed() {
 
     // opérateurs
     const ops = {
-      netcom:   (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('Netcom','proprete','contact@netcom.dz') RETURNING id")).rows[0].id,
-      extranet: (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('Extranet','proprete','contact@extranet.dz') RETURNING id")).rows[0].id,
-      seaal:    (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('SEAAL','eau','1594') RETURNING id")).rows[0].id,
+      proprete:   (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('Direction Propreté','proprete','contact-proprete@demo.dz') RETURNING id")).rows[0].id,
+      proprete_p: (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('Direction Propreté Périphérie','proprete','contact-proprete-p@demo.dz') RETURNING id")).rows[0].id,
+      eau:    (await c.query("INSERT INTO operateur(nom,domaine,contact) VALUES ('Direction Eau','eau','1594') RETURNING id")).rows[0].id,
     };
 
-    // périmètres : Netcom = circ 1,2,3 (centre) ; Extranet = circ 4-13 (périphérie) ; SEAAL = toutes
+    // périmètres : Direction Propreté = circ 1,2,3 (centre) ; Direction Propreté Périphérie = circ 4-13 (périphérie) ; Direction Eau = toutes
     const communes = (await c.query('SELECT id,nom,circonscription_id FROM commune')).rows;
     for (const cm of communes) {
-      const prop = cm.circonscription_id <= 3 ? ops.netcom : ops.extranet;
+      const prop = cm.circonscription_id <= 3 ? ops.proprete : ops.proprete_p;
       await c.query('INSERT INTO operateur_perimetre(operateur_id,commune_id) VALUES ($1,$2)',[prop,cm.id]);
-      await c.query('INSERT INTO operateur_perimetre(operateur_id,commune_id) VALUES ($1,$2)',[ops.seaal,cm.id]);
+      await c.query('INSERT INTO operateur_perimetre(operateur_id,commune_id) VALUES ($1,$2)',[ops.eau,cm.id]);
     }
 
     for (const [dom,lib,crit] of CATEGORIES)

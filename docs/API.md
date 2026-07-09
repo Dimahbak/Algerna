@@ -22,7 +22,7 @@ Rôles : `citoyen`, `agent`, `admin_apc`, `admin_wilaya`, `operateur`.
 |---------|-------|------|-------------|
 | GET | `/circonscriptions` | — | Les 13 circonscriptions. |
 | GET | `/communes` | — | Communes + circonscription + centre géo. |
-| GET | `/operateurs` | — | Netcom, Extranet, SEAAL. |
+| GET | `/operateurs` | — | EPIC par domaine. |
 
 ---
 

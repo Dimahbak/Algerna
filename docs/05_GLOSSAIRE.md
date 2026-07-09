@@ -31,7 +31,7 @@
 | **PWA** | Progressive Web App | Application web progressive, installable sur les appareils mobiles, fonctionnant hors-ligne grace au Service Worker. |
 | **SW** | Service Worker | Script executant en arriere-plan dans le navigateur, gerant le cache et le fonctionnement hors-ligne de la PWA. |
 | **OLS** | OpenLiteSpeed | Serveur web haute performance utilise comme proxy inverse devant l'application Node.js. |
-| **EPIC** | Etablissement Public a caractere Industriel et Commercial | Forme juridique des etablissements publics algeriens de gestion des services urbains (SEAAL, SONELGAZ, etc.). |
+| **EPIC** | Etablissement Public a caractere Industriel et Commercial | Forme juridique des etablissements publics algeriens de gestion des services urbains (Direction Eau, SONELGAZ, etc.). |
 | **SLA** | Service Level Agreement | Accord de niveau de service. Terme technique interne designant les engagements de delai de traitement. Le terme public equivalent est « Engagement de Service ». *Usage interne uniquement.* |
 
 ---
@@ -128,13 +128,13 @@ Element identifie par le Centre d'Intelligence Operationnelle comme cause recurr
 | Sigle | Denomination complete | Domaine |
 |-------|----------------------|---------|
 | **EPIC** | Etablissement Public a caractere Industriel et Commercial | Forme juridique commune aux operateurs de services urbains algeriens. |
-| **SEAAL** | Societe des Eaux et de l'Assainissement d'Alger | Gestion de la distribution d'eau potable et du reseau d'assainissement de la Wilaya d'Alger. |
+| **Direction Eau** | Societe des Eaux et de l'Assainissement d'Alger | Gestion de la distribution d'eau potable et du reseau d'assainissement de la Wilaya d'Alger. |
 | **SONELGAZ** | Societe Nationale de l'Electricite et du Gaz | Production et distribution d'electricite et de gaz naturel sur l'ensemble du territoire national. |
-| **NETCOM** | Societe de Nettoiement et de Collecte des Ordures Menageres | Collecte et traitement des dechets menagers. Opere sous la tutelle de la Wilaya d'Alger. |
-| **EXTRANET** | Entreprise de Nettoiement de la Wilaya d'Alger | Nettoiement des espaces publics et voiries de la Wilaya d'Alger. |
-| **ERMA** | Entreprise de Realisation et de Maintenance de l'Eclairage public d'Alger | Installation et maintenance du reseau d'eclairage public de la Wilaya d'Alger. |
-| **EGCTU** | Entreprise de Gestion de la Circulation et des Transports Urbains | Gestion de la voirie, de la signalisation et de la circulation sur le territoire de la Wilaya d'Alger. |
-| **EDEVAL** | Entreprise de Developpement des Espaces Verts d'Alger | Amenagement et entretien des espaces verts, parcs et jardins publics de la Wilaya d'Alger. |
+| **Direction Propreté** | Societe de Nettoiement et de Collecte des Ordures Menageres | Collecte et traitement des dechets menagers. Opere sous la tutelle de la Wilaya d'Alger. |
+| **Direction Propreté Périphérie** | Entreprise de Nettoiement de la Wilaya d'Alger | Nettoiement des espaces publics et voiries de la Wilaya d'Alger. |
+| **Direction Éclairage** | Entreprise de Realisation et de Maintenance de l'Eclairage public d'Alger | Installation et maintenance du reseau d'eclairage public de la Wilaya d'Alger. |
+| **Direction Circulation** | Entreprise de Gestion de la Circulation et des Transports Urbains | Gestion de la voirie, de la signalisation et de la circulation sur le territoire de la Wilaya d'Alger. |
+| **Direction Espaces Verts** | Entreprise de Developpement des Espaces Verts d'Alger | Amenagement et entretien des espaces verts, parcs et jardins publics de la Wilaya d'Alger. |
 
 ---
 

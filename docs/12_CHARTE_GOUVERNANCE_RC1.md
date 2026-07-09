@@ -44,7 +44,7 @@ Acheminer intelligemment chaque signalement citoyen jusqu'au service competent, 
 | Champ | Valeur |
 |-------|--------|
 | Role RBAC | `operateur` |
-| Service | Voirie, Hygiene, Eclairage, Assainissement, Netcom, etc. |
+| Service | Voirie, Hygiene, Eclairage, Assainissement, Direction Propreté, etc. |
 | Autorite | Wilaya d'Alger |
 | Responsabilite | Organiser l'intervention, declarer la resolution |
 | Il recoit | Dossiers transmis par le Centre de Reception |

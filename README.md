@@ -54,7 +54,7 @@ src/
     referentiel/ Circonscriptions, communes, opérateurs
     rdv/         CiviAdmin — RDV & file virtuelle (familles A/B)
     proprete/    CiviSignal — déchets  ── socle commun de signalements ──┐
-    eau/         WaterSignal — fuites (SEAAL)  ← réutilise le même socle ─┘
+    eau/         WaterSignal — fuites (eau)    ← réutilise le même socle ─┘
     points/      Citoyen Sentinelle (solde + classement)
     dashboard/   Tableau de bord Wilaya + calcul ICUA
   app.js         Montage Express
@@ -83,7 +83,7 @@ développement marginal » du dossier, rendu vrai dans le code.**
 ## 4. Modèle de données (résumé)
 
 - **Référentiel** : `circonscription` (13), `commune`, `operateur`
-  (Netcom/Extranet/SEAAL), `operateur_perimetre` (qui sert quelle commune).
+  (EPIC par domaine), `operateur_perimetre` (qui sert quelle commune).
 - **Utilisateurs** : `utilisateur` avec rôles `citoyen | agent | admin_apc |
   admin_wilaya | operateur`.
 - **CiviAdmin** : `service` (famille A/B), `creneau`, `rdv` (file virtuelle,
@@ -106,7 +106,7 @@ délai moyen de réparation, points Citoyen Sentinelle, ICUA, durcissement
 sécurité de base.
 
 **À développer (jalonné dans le cahier des charges)** :
-- Interconnexion API réelle avec les opérateurs (Netcom, Extranet, SEAAL) —
+- Interconnexion API réelle avec les EPIC opérateurs —
   aujourd'hui : transmission autonome ; cible : échange bidirectionnel.
 - Notifications (SMS/push) sur changement d'état.
 - Calcul ICUA enrichi (dimension Vivre-ensemble) + job planifié de snapshot.

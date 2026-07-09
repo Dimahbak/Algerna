@@ -104,11 +104,11 @@ Aucun fallback sur l'ancien champ "role" — tout passe par le nouveau modèle.
 - Service de Réception
 - Cabinet
 - Coordination Opérationnelle
-- Netcom (EPIC propreté/déchets)
+- Direction Propreté (EPIC propreté/déchets)
 - Direction de la Voirie
 - Direction de l'Environnement
 - Direction de l'Urbanisme
-- SEAAL (EPIC eau/assainissement)
+- Direction Eau (EPIC eau/assainissement)
 
 
 4. MODULES ET FONCTIONNALITÉS
@@ -118,7 +118,7 @@ Aucun fallback sur l'ancien champ "role" — tout passe par le nouveau modèle.
 ------------------------------------
 - Création de signalement citoyen avec photo, géolocalisation, catégorie
 - 16 familles de catégories, 70 sous-catégories
-- Routage automatique catégorie → EPIC (propreté → Netcom, eau → SEAAL)
+- Routage automatique catégorie → EPIC (propreté → Direction Propreté, eau → Direction Eau)
 - Limite : 4 signalements/jour par citoyen (HTTP 429)
 - Board agent avec Kanban (Reçu, Transmis, Pris en charge, En intervention,
   À valider, Résolu, Rejeté)
@@ -397,7 +397,7 @@ FONCTIONNEL :
 - Workflow complet : réception → qualification → transmission → prise en
   charge → intervention → compte-rendu → validation → résolution
 - Board agent avec Kanban 7 colonnes
-- Board EPIC filtré par domaine (Netcom=propreté, SEAAL=eau)
+- Board EPIC filtré par domaine (Direction Propreté=propreté, Direction Eau=eau)
 - Missions CAP avec rapport terrain et GPS
 - RDV avec guichets, créneaux dynamiques, QR code
 - Cockpit superviseur avec KPIs, carte, alertes, performance
@@ -414,10 +414,10 @@ COMPTES DE DÉMONSTRATION :
 - 0550000002 : Agent traitant
 - 0550000003 : Superviseur Wilaya (Rachid Mansouri)
 - 0550000004 : Superviseur Commune
-- 0550000005 : Netcom (EPIC propreté)
+- 0550000005 : Direction Propreté (EPIC propreté)
 - 0550000006 : Nadia Aissaoui (Direction Voirie)
 - 0550000007 : Agent CAP
-- 0550000008 : SEAAL (EPIC eau)
+- 0550000008 : Direction Eau (EPIC eau)
 Mot de passe universel démo : admin1234
 
 

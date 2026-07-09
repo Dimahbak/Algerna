@@ -3,7 +3,7 @@
 > **Généré automatiquement le 26/06/2026 — mis à jour le 26/06/2026 (passe 2 : textes dynamiques JS)**
 > Toutes les traductions arabes ci-dessous ont été générées par IA (arabe standard moderne, registre administratif algérien).
 > **Chaque clé doit être relue et validée par un humain arabophone.**
-> Les noms propres et acronymes (CiviSmart, NETCOM, EDEVAL, ERMA, EGCTU, CET, ICUA, APC, Wilaya, SEAAL, CNIEC) sont conservés tels quels.
+> Les noms propres et acronymes (CiviSmart, ICUA, APC, CET, CNIEC) sont conservés tels quels.
 
 ---
 

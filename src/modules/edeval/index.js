@@ -1,5 +1,5 @@
 /**
- * Module EDEVAL Smart Green — Gestion des parcs + IQEP.
+ * Module Espaces Verts — Gestion des parcs + IQEP.
  *
  * IQEP = Indice Qualité des Espaces Publics (0–100 par parc).
  *

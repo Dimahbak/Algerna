@@ -63,9 +63,10 @@
    Signification : Établissement Public à caractère Industriel
                     et Commercial
    Code source   : Table organisations avec type='epic'.
-                    Entités : eau/SEAAL, propreté/Netcom,
-                    éclairage/ERMA, voirie/EGCTU, stationnement,
-                    espaces verts/EDEVAL.
+                    Domaines couverts : eau et assainissement,
+                    propreté et collecte, éclairage public,
+                    voirie et transport, stationnement,
+                    espaces verts et parcs.
    Explication FR : Organisme public (eau, propreté, éclairage,
                     voirie) chargé d'un service de la ville.
    Explication AR : مؤسسة عمومية ذات طابع صناعي وتجاري — هيئة

@@ -41,9 +41,9 @@ La version v1.0.0-alpha.2 consolide les developpements realises au cours de 10 s
 - Implementation du moteur de transitions d'etat des signalements
 - **Historique** complet des transitions avec horodatage et auteur
 - **Routage automatique** vers les services competents :
-  - ERMA (eclairage, reseaux)
-  - NETCOM (nettoyage, collecte)
-  - SEAAL (eau, assainissement)
+  - Direction Éclairage (eclairage, reseaux)
+  - Direction Propreté (nettoyage, collecte)
+  - Direction Eau (eau, assainissement)
   - Autres services selon la categorisation
 - **Notifications citoyennes** : le citoyen est informe a chaque changement de statut
 - **Journal d'audit** : traçabilite complete des actions
