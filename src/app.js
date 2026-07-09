@@ -164,6 +164,7 @@ const moduleMap = {
   admin:         require('./modules/admin'),
   icua:          require('./modules/icua'),
   intelligence:  require('./modules/intelligence'),
+  ccoe:          require('./modules/ccoe'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)
