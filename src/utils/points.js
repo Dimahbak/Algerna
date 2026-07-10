@@ -94,4 +94,4 @@ async function refreshNiveau(userId) {
   await query('UPDATE utilisateur SET niveau_id = $1 WHERE id = $2', [niveauId, userId]);
 }
 
-module.exports = { awardPoints, refreshNiveau };
+module.exports = { awardPoints };

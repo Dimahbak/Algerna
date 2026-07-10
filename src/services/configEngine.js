@@ -66,4 +66,4 @@ async function getEngagement(categorieId, famille) {
 
 function invalidateCache() { _cacheTime = 0; }
 
-module.exports = { get, getInt, getBool, set, getAll, getEngagement, loadAll, invalidateCache };
+module.exports = { get, getInt, set, getAll, invalidateCache };

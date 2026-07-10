@@ -68,11 +68,6 @@ app.get('/api/health', (req, res) => res.json({ ok: true, service: 'civismart', 
 app.get('/health', (req, res) => res.json({ ok: true, service: 'civismart', env: config.env }));
 
 // ── OLS Gateway (PATCH) ──
-// Debug: log all non-GET requests
-app.use((req, res, next) => {
-  if (req.method !== 'GET') console.log('[NON-GET]', req.method, req.url, req.path, JSON.stringify(req.body || {}).substring(0, 100));
-  next();
-});
 app.patch('/api/auth/preferences', (req, res, next) => {
   if (req.body && req.body._proxy) {
     const proxy = req.body._proxy;

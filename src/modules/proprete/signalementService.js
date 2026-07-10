@@ -230,7 +230,7 @@ async function delaiMoyenHeures(domaine, communeId) {
 }
 
 module.exports = {
-  listCategories, creer, lister, changerEtat,
+  listCategories, creer, lister,
   scoresParCommune, pointsNoirs, delaiMoyenHeures,
   resoudreOperateur,
 };

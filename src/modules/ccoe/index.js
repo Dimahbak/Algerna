@@ -878,7 +878,6 @@ async function transmettreChantier(chantierId, userId, userName) {
           '<p><strong>Échéance :</strong> ' + (ch.date_limite ? new Date(ch.date_limite).toLocaleDateString('fr-FR') : 'non définie') + '</p>' +
           '<p style="margin-top:16px;padding:10px;background:#FEF3C7;border-radius:6px;"><strong>Merci d\'accuser réception dans l\'application.</strong></p>'
       });
-      console.log('[CCOE] Email ordre transmis →', contact.email);
       // Trace email status in fil
       try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
         VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Email envoyé au responsable (' + contact.email + ')']); } catch(e2) {}

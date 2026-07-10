@@ -81,9 +81,4 @@ function sqlConforme(alias = 's', targetH) {
 
 module.exports = {
   DEFAULT_TARGET_H,
-  WARN_RATIO,
-  compute,
-  conformitePct,
-  sqlHorsDelai,
-  sqlConforme,
 };

@@ -120,4 +120,4 @@ function emailResolution({ reference, message, preuvePath }) {
   </div>`;
 }
 
-module.exports = { notify, sendEmail, sendSMS, emailCreation, emailResolution };
+module.exports = { notify, emailCreation, emailResolution };

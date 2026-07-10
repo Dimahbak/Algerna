@@ -56,12 +56,6 @@ router.get('/epics/:sigle', asyncH(async (req, res) => {
   res.json(rows[0]);
 }));
 
-// Debug: log ALL requests to referentiel
-router.use((req, res, next) => {
-  console.log('[REF]', req.method, req.url, req.baseUrl, req.path, req.originalUrl);
-  next();
-});
-
 // ── Data bridges (OLS doesn't proxy /api/equipements, /api/infos) ──
 router.get('/equipements', asyncH(async (req, res) => {
   const { type, commune_id, q } = req.query;

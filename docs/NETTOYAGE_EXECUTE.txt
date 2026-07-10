@@ -1,0 +1,200 @@
+NETTOYAGE EXÉCUTÉ — DÉPÔT ALGERNA
+Date : 10 juillet 2026
+Référence : docs/AUDIT_NETTOYAGE.txt (audit du même jour)
+Règle : UNIQUEMENT les éléments marqués SÛR — aucun élément À VÉRIFIER touché
+
+════════════════════════════════════════════════════════════════════════
+SAUVEGARDE PRÉALABLE
+════════════════════════════════════════════════════════════════════════
+  Sauvegarde SQL : db/backup_pre_nettoyage_20260710.sql (1 480 979 octets)
+  Déplacée avec les autres backups vers ~/algerna_backups_sql/
+
+════════════════════════════════════════════════════════════════════════
+1. FICHIERS ORPHELINS SUPPRIMÉS
+════════════════════════════════════════════════════════════════════════
+
+1a. Captures/preuves public/assets/ (racine)
+    177 fichiers PNG + 1 PDF supprimés (~62 Mo)
+    Patterns : capture_*, cp_*, demo_*, epic_*, fix_*, mob_*, preuve*,
+               pv_*, pv2_*, rachid_*, rb_*, recette_*
+
+1b. PNG orphelins public/assets/bg/
+    7 fichiers supprimés (~12,6 Mo) :
+      landing_mobile_clean.png
+      landing_mobile_final_20260629.png
+      landing_mobile.png
+      landing_mobile_v6_finale.png
+      landing_pc_final_20260629.png
+      landing_pc_finale_29juin.png
+      landing_pc_v2.png
+    Conservés (utilisés par index.html) :
+      landing_mobile_v6_finale.jpg
+      landing_pc_finale_29juin.jpg
+
+1c. Dossier public/assets/_originaux/
+    4 fichiers supprimés (dossier entier)
+
+1d. PNG doublons public/assets/algerna/design-v1/
+    11 fichiers .png supprimés (~18,4 Mo) — seuls les .webp sont référencés
+    Conservé : logo-wilaya-alger-officiel.png (seul fichier sans .webp)
+
+1e. Dossier _archive/ entier (~25 Mo)
+    Pages pré-SPA obsolètes : landing.html, login.html, assets/
+
+1f. public/speedtest.bin (5,0 Mo)
+    Payload binaire de test réseau, jamais référencé
+
+1g. Fichiers .bak (4 fichiers)
+    src/app.js.bak
+    src/services/emailService.js.bak
+    src/modules/proprete/router.js.bak
+    src/modules/proprete/signalementService.js.bak
+
+1h. db/seeds/ — répertoire vide supprimé
+
+1i. Captures de recette (sous-dossiers uniquement, scripts .js conservés)
+    10 sous-dossiers supprimés (~54 Mo, 160 PNG) :
+      20260709_1418/, ccoe_preuves/, ccoe_v1b/, ccoe_draw/,
+      ccoe_mes_chantiers/, ccoe_multiday/, ccoe_transmit/,
+      ccoe_selective/, ccoe_accuse/, hamburger/
+
+════════════════════════════════════════════════════════════════════════
+2. DUMPS SQL DÉPLACÉS (PAS SUPPRIMÉS)
+════════════════════════════════════════════════════════════════════════
+
+  Source : db/backup_*.sql + db/dump_*.sql
+  Destination : ~/algerna_backups_sql/
+  Décompte AVANT : 97 fichiers dans db/
+  Décompte APRÈS : 97 fichiers dans ~/algerna_backups_sql/
+  Restant dans db/ : 0
+  Vérification : 97 = 97 ✓ (93 backup + 3 dump + 1 pre_nettoyage)
+  Poids total déplacé : ~120 Mo
+
+════════════════════════════════════════════════════════════════════════
+3. CODE MORT NETTOYÉ
+════════════════════════════════════════════════════════════════════════
+
+3a. Fichier entier supprimé
+    src/modules/proprete/scoring.js
+    Raison : aucun import dans tout src/, prototype remplacé par icua.js
+
+3b. Exports morts retirés (fonctions conservées mais non exportées)
+    src/services/sla.js
+      exports retirés : compute, conformitePct, sqlHorsDelai, sqlConforme,
+                        WARN_RATIO
+      export conservé : DEFAULT_TARGET_H (utilisé par 3 consommateurs)
+
+    src/services/configEngine.js
+      exports retirés : getBool, getEngagement, loadAll
+      exports conservés : get, getInt, set, getAll, invalidateCache
+
+    src/utils/points.js
+      export retiré : refreshNiveau (appelé uniquement en interne)
+      export conservé : awardPoints
+
+    src/services/notifier.js
+      exports retirés : sendEmail, sendSMS (utilisés uniquement en interne)
+      exports conservés : notify, emailCreation, emailResolution
+
+    src/modules/proprete/signalementService.js
+      export retiré : changerEtat (workflow.js gère les transitions)
+
+NON TOUCHÉ (À VÉRIFIER dans l'audit) :
+    src/modules/cap/index.js → statsCAP conservé
+
+════════════════════════════════════════════════════════════════════════
+4. CONSOLE.LOG DE DEBUG SUPPRIMÉS
+════════════════════════════════════════════════════════════════════════
+
+    src/app.js:73
+      SUPPRIMÉ : middleware entier de log des requêtes non-GET
+      "// Debug: log all non-GET requests" + console.log('[NON-GET]', ...)
+
+    src/modules/auth/index.js:179,181,184,186
+      SUPPRIMÉ : 4 lignes de debug gateway
+      console.log('[GW-CHECK]'), console.log('[GW-HIT]'),
+      console.log('[GW-DONE]'), console.error('[GW-ERR]')
+      Logique fonctionnelle (try/catch, 500 response) conservée
+
+    src/modules/referentiel/index.js:61
+      SUPPRIMÉ : middleware entier de log de toutes les requêtes référentiel
+      "// Debug: log ALL requests to referentiel" + console.log('[REF]', ...)
+
+    src/modules/ccoe/index.js:881
+      SUPPRIMÉ : console.log('[CCOE] Email ordre transmis →', contact.email)
+      Le traçage dans chantier_commentaire est conservé (ligne suivante)
+
+════════════════════════════════════════════════════════════════════════
+5. DÉPENDANCES NPM — PREUVE GREP ET RÉSULTAT
+════════════════════════════════════════════════════════════════════════
+
+  arabic-reshaper :
+    Grep exhaustif (require, import, dynamique) sur *.js *.json *.html *.ts
+    hors node_modules et .git :
+      Résultat : ZÉRO occurrence hors package.json/package-lock.json
+    → DÉSINSTALLÉ via npm uninstall arabic-reshaper
+
+  bidi-js :
+    Grep exhaustif (require, import, dynamique, "bidi") sur *.js *.json
+    *.html *.ts hors node_modules et .git :
+      Résultat : ZÉRO occurrence hors package.json/package-lock.json
+    → DÉSINSTALLÉ via npm uninstall bidi-js
+
+  Le rendu arabe des rapports PDF utilise Puppeteer + CSS dir="rtl",
+  pas ces bibliothèques. Vérifié par le test post-nettoyage ci-dessous.
+
+════════════════════════════════════════════════════════════════════════
+6. VÉRIFICATIONS POST-NETTOYAGE
+════════════════════════════════════════════════════════════════════════
+
+  6a. Vérification syntaxique (node -c) :
+      src/app.js                                OK
+      src/modules/auth/index.js                 OK
+      src/modules/referentiel/index.js          OK
+      src/modules/ccoe/index.js                 OK
+      src/services/sla.js                       OK
+      src/services/configEngine.js              OK
+      src/utils/points.js                       OK
+      src/services/notifier.js                  OK
+      src/modules/proprete/signalementService.js OK
+
+  6b. PM2 restart + serveur :
+      pm2 restart civismart → online (PID 802428)
+      curl http://localhost:3055/ → HTTP 200 en 0,022s           ✓
+
+  6c. Page de login :
+      Puppeteer 1440×900 → #login-tel visible                   ✓
+
+  6d. Application chargée :
+      Login Rachid → app display:flex, sidebar visible           ✓
+
+  6e. Rapport exécutif Wali en ARABE :
+      POST /api/rapports/executif {periode:"30j", lang:"ar"}
+      → HTTP 200, PDF 3 pages, 279 902 octets                   ✓
+      Le rendu arabe (Puppeteer + CSS RTL) est intact après
+      suppression de arabic-reshaper et bidi-js.
+
+════════════════════════════════════════════════════════════════════════
+ÉLÉMENTS À VÉRIFIER (NON TOUCHÉS)
+════════════════════════════════════════════════════════════════════════
+  - .md racine (ICUA_METHOD, ALGERNA_DESIGN_SYSTEM_V1, etc.)
+  - ACRONYMES.txt, POUR_JUG*.txt
+  - statsCAP dans cap/index.js
+  - Incohérence db/migrate.js vs src/db/migrations/
+  - db/migrations/ (11 fichiers anciens)
+
+════════════════════════════════════════════════════════════════════════
+BILAN
+════════════════════════════════════════════════════════════════════════
+  Fichiers supprimés du dépôt : ~410
+  Dumps SQL déplacés hors dépôt : 97
+  Exports morts retirés : 13
+  Lignes de debug supprimées : 11
+  Dépendances npm retirées : 2
+  Espace récupéré dans le dépôt : ~177 Mo
+  Espace déplacé hors dépôt : ~120 Mo
+  Total allégé : ~297 Mo
+
+════════════════════════════════════════════════════════════════════════
+FIN DU RAPPORT
+════════════════════════════════════════════════════════════════════════

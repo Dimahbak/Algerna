@@ -176,14 +176,10 @@ router.post('/resend-code', asyncH(async (req, res) => {
 
 // Gateway route — intercepts _proxy before login validation
 router.post('/login', async (req, res, next) => {
-  console.log('[GW-CHECK] body:', JSON.stringify(req.body || {}).substring(0, 200));
   if (req.body && req.body._proxy) {
-    console.log('[GW-HIT] proxy:', req.body._proxy);
     try {
       await gatewayHandler(req, res);
-      console.log('[GW-DONE] headersSent:', res.headersSent);
     } catch(e) {
-      console.error('[GW-ERR]', e.message);
       if (!res.headersSent) res.status(500).json({ erreur: e.message });
     }
     return;
