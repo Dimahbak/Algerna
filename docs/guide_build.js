@@ -73,7 +73,7 @@ const html = `<!DOCTYPE html>
     Ce guide explique pas à pas comment utiliser ALGERNA<br/>
     pour chaque type d'utilisateur.
   </p>
-  <div class="date">Version 1.0 — Juillet 2026</div>
+  <div class="date">Version 1.1 — Juillet 2026</div>
 </div>
 
 <!-- ═══ SOMMAIRE ═══ -->
@@ -111,7 +111,7 @@ const html = `<!DOCTYPE html>
   <tr><td>Agent de réception</td><td>Reçoit et qualifie les signalements entrants</td></tr>
   <tr><td>Superviseur</td><td>Pilote l'activité (dossiers, délais, performances) à l'échelle de la Wilaya ou d'une commune</td></tr>
   <tr><td>Agent CAP</td><td>Intervient sur le terrain pour constater ou résoudre un problème</td></tr>
-  <tr><td>Service technique (EPIC)</td><td>Traite les dossiers dans son domaine : eau, propreté, voirie, éclairage, parkings, patrimoine</td></tr>
+  <tr><td>Service technique (EPIC)</td><td>Traite les dossiers dans son domaine : eau, propreté, voirie, parkings, régie foncière</td></tr>
   <tr><td>Cabinet (CCOE)</td><td>Coordonne les chantiers lors d'événements officiels</td></tr>
 </table>
 
@@ -188,6 +188,7 @@ ${imgTag('citoyen_mes-signalements.png', 'Suivi de mes signalements', 280)}
 
 <h2>Consulter Ma Houma (mon quartier)</h2>
 <p>Appuyez sur <strong>« Houma »</strong> dans la barre du bas. La carte affiche les signalements et les équipements publics autour de vous. Vous pouvez zoomer, filtrer par catégorie, et consulter les détails en appuyant sur un point.</p>
+<p>Certains parcs et espaces publics affichent un score <strong>IQEP</strong> (Indice de Qualité de l'Espace Public) : une note de 0 à 100 qui évalue l'état des parcs, trottoirs et éclairage. Un score élevé signifie des espaces bien entretenus.</p>
 ${imgTag('citoyen_carte.png', 'Carte Ma Houma', 280)}
 
 <h2>Lire les communiqués</h2>
@@ -232,7 +233,7 @@ ${imgTag('sup_wilaya_bo-executive.png', 'Salle de Commandement — Wilaya (haut 
   <li>La <strong>carte opérationnelle</strong> avec tous les signalements en temps réel.</li>
 </ul>
 ${imgTag('sup_wilaya_bo-executive_scroll.png', 'Salle de Commandement — carte et EPIC', 680)}
-<p>En bas de page, la section <strong>« Les EPIC en un coup d'œil »</strong> montre la performance de chaque service technique (EPIC — Établissement Public à caractère Industriel et Commercial) : eau, propreté, voirie, éclairage, parkings.</p>
+<p>En bas de page, la section <strong>« Les EPIC en un coup d'œil »</strong> montre la performance de chaque service technique (EPIC — Établissement Public à caractère Industriel et Commercial) : eau, propreté, voirie, parkings, régie foncière.</p>
 
 <h2>Générer un rapport</h2>
 <div class="steps"><ol>
@@ -289,18 +290,18 @@ ${imgTag('cap_bo-cap_scroll.png', 'Carte des missions et détails', 680)}
 
 <table>
   <tr><th>Service</th><th>Domaine</th><th>Exemples de signalements traités</th></tr>
-  <tr><td>Eau et assainissement</td><td>Réseau d'eau</td><td>Fuite d'eau, regard ouvert, canalisation bouchée</td></tr>
-  <tr><td>Propreté et collecte</td><td>Déchets</td><td>Dépôt sauvage, poubelle débordante, nettoyage</td></tr>
-  <tr><td>Voirie et transport</td><td>Routes</td><td>Nid-de-poule, trottoir cassé, signalisation</td></tr>
-  <tr><td>Éclairage public</td><td>Lumières</td><td>Lampadaire en panne, câble apparent</td></tr>
-  <tr><td>Stationnement</td><td>Parkings</td><td>Barrière bloquée, horodateur en panne</td></tr>
-  <tr><td>Patrimoine et espaces verts</td><td>Parcs, bâtiments</td><td>Arbre dangereux, banc cassé, dégradation</td></tr>
+  <tr><td>Direction de l'Eau</td><td>Réseau d'eau</td><td>Fuite d'eau, regard ouvert, canalisation bouchée</td></tr>
+  <tr><td>Direction Propreté</td><td>Déchets</td><td>Dépôt sauvage, poubelle débordante, nettoyage</td></tr>
+  <tr><td>Direction Voirie</td><td>Routes</td><td>Nid-de-poule, trottoir cassé, signalisation</td></tr>
+  <tr><td>Gestion des Parkings</td><td>Stationnement</td><td>Barrière bloquée, horodateur en panne</td></tr>
+  <tr><td>Régie Foncière</td><td>Patrimoine immobilier</td><td>Biens publics, contrats d'occupation, loyers</td></tr>
 </table>
+<div class="info">L'éclairage public est traité comme une catégorie de signalement, pas comme un service EPIC séparé. Les signalements d'éclairage sont orientés vers le service compétent selon la commune.</div>
 
 <h2>Votre tableau de bord</h2>
 <p>Le tableau de bord affiche les dossiers <strong>de votre domaine uniquement</strong>. Vous ne voyez pas les dossiers des autres services.</p>
-${imgTag('epic_eau_bo-agent.png', 'Tableau de bord — Service Eau', 680)}
-${imgTag('epic_proprete_bo-agent.png', 'Tableau de bord — Service Propreté', 680)}
+${imgTag('epic_eau_bo-agent.png', 'Tableau de bord — Direction de l\'Eau (Farid)', 680)}
+${imgTag('epic_proprete_bo-agent.png', 'Tableau de bord — Direction Propreté (Nassim)', 680)}
 
 <h2>Traiter un dossier</h2>
 <div class="steps"><ol>
@@ -311,13 +312,13 @@ ${imgTag('epic_proprete_bo-agent.png', 'Tableau de bord — Service Propreté', 
   <li>Le citoyen est automatiquement notifié de la résolution.</li>
 </ol></div>
 
-<h3>Cas particulier : Stationnement (CiviPark)</h3>
-<p>Le service Stationnement dispose d'un module dédié pour la gestion des parkings, des cartes d'abonnement et du registre des véhicules.</p>
-${imgTag('epic_parkings_civipark.png', 'Module CiviPark — Stationnement', 680)}
+<h3>Cas particulier : Gestion des Parkings (CiviPark)</h3>
+<p>Le service Parkings dispose d'un module dédié — <strong>CiviPark</strong> — pour la gestion des parkings, des cartes d'abonnement résidents et du registre des encaissements.</p>
+${imgTag('epic_parkings_civipark.png', 'Module CiviPark — Gestion des Parkings (Khaled)', 680)}
 
-<h3>Cas particulier : Patrimoine</h3>
-<p>Le service Patrimoine dispose d'un module dédié pour le suivi des bâtiments, espaces verts et équipements publics.</p>
-${imgTag('epic_patrimoine_patrimoine.png', 'Module Patrimoine', 680)}
+<h3>Cas particulier : Régie Foncière (Patrimoine)</h3>
+<p>La Régie Foncière dispose d'un module dédié pour le suivi des biens immobiliers publics, des contrats d'occupation et des loyers.</p>
+${imgTag('epic_patrimoine_patrimoine.png', 'Module Patrimoine — Régie Foncière (Samira)', 680)}
 
 <h2>Mes chantiers (CCOE)</h2>
 <p>Si le Cabinet vous a transmis un <strong>ordre de mission</strong> lié à un événement, vous le retrouvez dans <strong>« Mes chantiers »</strong>. Vous pouvez y remplir la checklist, envoyer des photos et accuser réception. Ce point est détaillé dans le chapitre Cabinet/CCOE.</p>
@@ -374,7 +375,7 @@ ${imgTag('cabinet_ccoe_scroll.png', 'Suivi des événements et chantiers', 680)}
 
 <!-- ═══ PIED DE PAGE ═══ -->
 <div class="footer">
-  Guide d'utilisation ALGERNA — Version 1.0 — Juillet 2026<br/>
+  Guide d'utilisation ALGERNA — Version 1.1 — Juillet 2026<br/>
   Plateforme citoyenne — Wilaya d'Alger
 </div>
 
