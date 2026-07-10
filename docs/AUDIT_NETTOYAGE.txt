@@ -1,0 +1,414 @@
+AUDIT DE NETTOYAGE — DÉPÔT ALGERNA
+Date : 10 juillet 2026
+Hash de référence : f2e158a (main)
+Méthode : grep exhaustif par nom de fichier, require/import, md5sum croisé
+Règle : AUCUNE SUPPRESSION — rapport d'inventaire uniquement
+
+════════════════════════════════════════════════════════════════════════
+1. FICHIERS ORPHELINS (jamais importés ni référencés par le code applicatif)
+════════════════════════════════════════════════════════════════════════
+
+1a. Captures d'écran/preuves dans public/assets/ (177 fichiers, ~62 Mo)
+────────────────────────────────────────────────────────────────────────
+Aucun de ces fichiers n'est référencé dans index.html, sw.js, manifest.json,
+reset.html, ni dans aucun fichier de src/. Ce sont des preuves de recette et
+captures de debug déposées pendant le développement.
+
+  capture_*.png                (5 fichiers)    — captures de session
+  cp_*.png + cp_f_*.pdf        (10 fichiers)   — preuves CiviPark
+  demo_*.png                   (7 fichiers)    — captures de démo Wali
+  epic_*.png                   (12 fichiers)   — preuves cloisonnement EPIC
+  fix_*.png                    (16 fichiers)   — captures avant/après correctifs
+  mob_*.png                    (7 fichiers)    — tests mobile
+  preuve_*.png / preuve[0-9]_* (9 fichiers)    — preuves génériques
+  pv_*.png / pv2_*.png         (~75 fichiers)  — preuves visuelles fonctionnelles
+  rachid_*.png                 (4 fichiers)    — preuves SdC
+  rb_*.png                     (5 fichiers)    — preuves régression
+  recette_*.png                (7 fichiers)    — preuves recette visuelle
+
+  Risque de suppression : SÛR — jamais servis, jamais référencés, poids mort
+
+1b. Fond d'écran inutilisés dans public/assets/bg/ (7 fichiers PNG, ~12,6 Mo)
+──────────────────────────────────────────────────────────────────────────────
+Seuls les .jpg sont référencés par index.html :
+  • landing_pc_finale_29juin.jpg  — UTILISÉ (desktop landing)
+  • landing_mobile_v6_finale.jpg  — UTILISÉ (mobile landing)
+
+Fichiers .png orphelins (versions antérieures ou doublons non compressés) :
+  bg/landing_mobile_clean.png             1,1 Mo    SÛR
+  bg/landing_mobile_final_20260629.png    2,2 Mo    SÛR
+  bg/landing_mobile.png                   1,6 Mo    SÛR
+  bg/landing_mobile_v6_finale.png         2,2 Mo    SÛR (doublon du .jpg utilisé)
+  bg/landing_pc_final_20260629.png        1,7 Mo    SÛR
+  bg/landing_pc_finale_29juin.png         2,2 Mo    SÛR (doublon du .jpg utilisé)
+  bg/landing_pc_v2.png                    1,6 Mo    SÛR
+
+1c. Dossier _originaux/ (4 fichiers, non référencés par chemin)
+───────────────────────────────────────────────────────────────
+  public/assets/_originaux/algerna_icon.png              SÛR
+  public/assets/_originaux/landing_mobile_v6_finale.png  SÛR
+  public/assets/_originaux/landing_pc_finale_29juin.png  SÛR
+  public/assets/_originaux/logo-wilaya-alger-officiel.png SÛR
+  Raison : copies sources des fichiers qui vivent dans logo/ et algerna/design-v1/
+
+1d. PNG doublons dans public/assets/algerna/design-v1/ (~18,4 Mo)
+─────────────────────────────────────────────────────────────────
+Les 11 illustrations existent en .webp + .png. Seuls les .webp sont
+référencés dans index.html. Les .png sont des sources jamais chargées :
+  background-pattern-v1.png               SÛR
+  hero-dashboard-alger-v2.png             SÛR
+  service-demarches-v1.png                SÛR
+  service-impact-v1.png                   SÛR
+  service-infos-utiles-v1.png             SÛR
+  service-mahouma-v1.png                  SÛR
+  service-participe-v1.png                SÛR
+  service-saksini-v1.png                  SÛR
+  service-signaler-v1.png                 SÛR
+  service-suivi-v1.png                    SÛR
+  sidebar-djamaa-night-v1.png             SÛR
+
+1e. Dossier _archive/ entier (~25 Mo)
+─────────────────────────────────────
+  _archive/pages_publiques/landing.html
+  _archive/pages_publiques/login.html
+  _archive/pages_publiques/assets/ (bg/, mockups, thumbs)
+  Raison : anciennes pages pré-SPA, jamais référencées par Express ni aucun code
+  Risque : SÛR
+
+1f. Fichier public/speedtest.bin (5,0 Mo)
+─────────────────────────────────────────
+  Payload binaire standard pour test de bande passante (exactement 5 242 880 octets).
+  Jamais référencé dans aucun code applicatif, aucun test, aucune route.
+  Risque : SÛR
+
+1g. Fichiers .bak dans src/ (4 fichiers, ~19 Ko)
+─────────────────────────────────────────────────
+  src/app.js.bak                              1,5 Ko  25 juin  SÛR
+  src/services/emailService.js.bak            7,4 Ko   8 juil  SÛR
+  src/modules/proprete/router.js.bak          3,1 Ko  25 juin  SÛR
+  src/modules/proprete/signalementService.js.bak 6,8 Ko 25 juin SÛR
+  Raison : copies manuelles de sécurité, non importées (Node ignore .bak)
+
+1h. Fichiers .md orphelins à la racine
+──────────────────────────────────────
+  ICUA_METHOD.md                     2,4 Ko    Documentation interne   À VÉRIFIER
+  ALGERNA_EQUIPEMENTS_V1_COMMAND.md  96 oct     Stub/note ponctuelle    SÛR
+  ALGERNA_DESIGN_SYSTEM_V1.md        4,7 Ko    Design system           À VÉRIFIER
+  INTELLIGENCE_OPERATIONNELLE.md     2,4 Ko    Documentation interne   À VÉRIFIER
+  ACRONYMES.txt                      —         Référence validée       À VÉRIFIER
+  POUR_JUG.txt                       —         Note pour Jug           À VÉRIFIER
+  POUR_JUG_EMAIL.txt                 —         Diagnostic DNS email    À VÉRIFIER
+  Raison : jamais référencés par le code, mais certains ont une valeur documentaire.
+  Suggestion : déplacer vers docs/ plutôt que supprimer.
+
+1i. Sauvegardes SQL dans db/ (94 fichiers, ~120 Mo)
+────────────────────────────────────────────────────
+  db/backup_*.sql                    93 fichiers  ~120 Mo
+  db/dump_20260626135910.sql          1 fichier     194 Ko
+  Raison : pg_dump manuels créés pendant le développement, non référencés
+  par le code ni par le système de migration.
+  Risque : SÛR (conserver une copie externe recommandé)
+
+1j. Captures de recette périmées dans recette/ (160 PNG, ~54 Mo)
+────────────────────────────────────────────────────────────────
+  recette/20260709_1418/              ~60 PNG    recette visuelle du 9 juillet
+  recette/ccoe_preuves/               PNG        preuves CCOE v1
+  recette/ccoe_v1b/                   PNG        preuves CCOE v1b
+  recette/ccoe_draw/                  PNG        preuves tracé
+  recette/ccoe_mes_chantiers/         PNG        preuves mes chantiers
+  recette/ccoe_multiday/              PNG        preuves multi-jours
+  recette/ccoe_transmit/              PNG        preuves transmission
+  recette/ccoe_selective/             PNG        preuves sélective
+  recette/ccoe_accuse/                PNG        preuves accusé
+  recette/hamburger/                  PNG        preuves hamburger (10 juil)
+  Les scripts .js dans recette/ sont ACTIFS — ne pas supprimer.
+  Seuls les sous-dossiers de captures sont supprimables.
+  Risque : SÛR (les scripts restent, les captures sont reproductibles)
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 1 : ~296 Mo récupérables
+  public/assets screenshots : 62 Mo
+  public/assets/bg PNG :      13 Mo
+  public/assets/_originaux :   ~5 Mo
+  algerna/design-v1 PNG :     18 Mo
+  _archive/ :                 25 Mo
+  speedtest.bin :              5 Mo
+  .bak :                      <1 Mo
+  db/backup_*.sql :          120 Mo
+  recette/ captures :         54 Mo
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+2. CODE MORT (fonctions / routes définies mais jamais appelées)
+════════════════════════════════════════════════════════════════════════
+
+2a. Fichier entier inutilisé
+────────────────────────────
+  src/modules/proprete/scoring.js
+  Exporte : calculerScore, detecterPointsNoirs, calculerIcua,
+            POIDS_CRITICITE, SEUIL_POINT_NOIR
+  Importé par : AUCUN fichier (vérifié par grep sur tout src/)
+  Raison : prototype de scoring remplacé par icua.js et signalementService.js
+  Risque : SÛR
+
+2b. Fonctions exportées mais jamais appelées en externe
+────────────────────────────────────────────────────────
+  src/services/sla.js
+    → compute()         jamais appelé (seul DEFAULT_TARGET_H est lu)      SÛR
+    → conformitePct()   jamais appelé                                     SÛR
+    → sqlHorsDelai()    jamais appelé                                     SÛR
+    → sqlConforme()     jamais appelé                                     SÛR
+    → ensureConfig()    jamais appelé                                     SÛR
+    → WARN_RATIO        jamais lu en externe                              SÛR
+
+  src/services/configEngine.js
+    → getBool()         jamais appelé (ni interne ni externe)             SÛR
+    → getEngagement()   jamais appelé en externe                          SÛR
+    → loadAll()         appelé par get() interne, export inutile          SÛR
+
+  src/utils/points.js
+    → refreshNiveau()   appelé en interne uniquement, export inutile      SÛR
+
+  src/modules/cap/index.js
+    → statsCAP()        définie ligne 196, jamais consommée               À VÉRIFIER
+    Note : pourrait être câblée au dashboard ultérieurement
+
+  src/modules/proprete/signalementService.js
+    → changerEtat()     jamais appelé (workflow.js gère les transitions)  SÛR
+
+  src/services/notifier.js
+    → sendEmail()       appelé uniquement en interne par notify()         SÛR
+    → sendSMS()         appelé uniquement en interne par notify()         SÛR
+    Note : rendre privé (retirer de module.exports) plutôt que supprimer
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 2 : 1 fichier entier + 13 fonctions/exports morts
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+3. CONSOLE.LOG / INSTRUCTIONS DE DÉBOGAGE
+════════════════════════════════════════════════════════════════════════
+
+3a. Debug actif en production — À SUPPRIMER
+───────────────────────────────────────────
+  src/app.js:73
+    console.log('[NON-GET]', req.method, req.url, ...)
+    Commentaire au-dessus : "// Debug: log all non-GET requests"
+    Impact : log sur CHAQUE POST/PUT/PATCH/DELETE en production          SÛR
+
+  src/modules/auth/index.js:179,181,184,186
+    console.log('[GW-CHECK] body:', ...)
+    console.log('[GW-HIT] proxy:', ...)
+    console.log('[GW-DONE] headersSent:', ...)
+    console.error('[GW-ERR]', ...)
+    Impact : dump du body de chaque login (champs potentiellement
+    sensibles tronqués à 200 chars)                                      SÛR
+
+  src/modules/referentiel/index.js:61
+    console.log('[REF]', req.method, req.url, ...)
+    Commentaire : "// Debug: log ALL requests to referentiel"
+    Impact : log sur chaque appel API référentiel                        SÛR
+
+  src/modules/ccoe/index.js:881
+    console.log('[CCOE] Email ordre transmis →', contact.email)
+    Impact : log d'adresse email en clair à chaque transmission          SÛR
+
+3b. Logs opérationnels légitimes — CONSERVER
+────────────────────────────────────────────
+  src/server.js:26       — bannière de démarrage
+  src/db/pool.js:17      — erreur pool PostgreSQL
+  src/middleware/validation.js:20 — erreur globale non gérée
+  src/modules/auth/index.js:120,172,266 — warn email non-fatal
+  src/modules/cap/index.js:359 — warn notification
+  src/modules/infos/index.js:147,155,192,207 — warn audit/notif
+  src/modules/signaler/index.js:127,239,241,320,343 — warn routage/email
+  src/modules/ccoe/index.js:678,681,890,979 — warn email CCOE
+  src/services/emailService.js:76,126,190,192,199,201 — statut envoi
+  src/services/notifier.js:33,38,41,53,60 — statut SMTP/SMS
+  src/utils/points.js:23,60 — warn barème
+
+3c. Client (public/index.html) — 1 seul
+────────────────────────────────────────
+  index.html:16476
+    console.log('[SW] Version mismatch', ...)
+    Contexte : purge du cache SW lors d'un changement de version.
+    Légitime — ne se déclenche qu'au changement de cache.               CONSERVER
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 3 : 4 blocs de debug à supprimer (7 lignes)
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+4. SCRIPTS PONCTUELS DEVENUS INUTILES
+════════════════════════════════════════════════════════════════════════
+
+4a. Scripts de recette (conserver les .js, supprimer les captures)
+─────────────────────────────────────────────────────────────────
+  recette/run_recette.js              ACTIF — recette visuelle globale
+  recette/ccoe_preuves.js             ACTIF — test CCOE v1
+  recette/ccoe_v1b_preuves.js         ACTIF — test CCOE v1b
+  recette/ccoe_draw_preuves.js        ACTIF — test tracé
+  recette/ccoe_mes_chantiers_preuves.js ACTIF — test chantiers
+  recette/ccoe_multiday_preuves.js    ACTIF — test multi-jours
+  recette/ccoe_transmit_preuves.js    ACTIF — test transmission
+  recette/ccoe_selective_preuves.js   ACTIF — test sélective
+  recette/ccoe_accuse_preuves.js      ACTIF — test accusé réception
+  recette/hamburger_preuves.js        ACTIF — test hamburger
+  recette/hamburger_final.js          ACTIF — test hamburger final
+
+4b. Script utilitaire
+─────────────────────
+  scripts/reset-password.js           ACTIF — outil admin ponctuel    CONSERVER
+
+4c. Système de migration obsolète
+─────────────────────────────────
+  db/migrate.js
+    Lit db/migrations/ (11 fichiers anciens, 001→010b, du 24-30 juin).
+    Les migrations actuelles sont dans src/db/migrations/ (19 fichiers,
+    003→021, auto-enregistrées via INSERT INTO _migrations).
+    npm run migrate exécute db/migrate.js → ne voit PAS les 19 migrations
+    actuelles. Incohérence structurelle.                                 À VÉRIFIER
+
+  db/migrations/ (11 fichiers)
+    Première génération de schéma, partiellement couverte par
+    src/db/migrations/. Dont 002_patrimoine.sql = 0 octets (vide).
+    Risque : À VÉRIFIER (ne pas supprimer sans aligner db/migrate.js)
+
+  db/seeds/ — répertoire vide                                           SÛR
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 4 : 1 répertoire vide + 1 incohérence migration
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+5. DÉPENDANCES NPM NON UTILISÉES
+════════════════════════════════════════════════════════════════════════
+
+  arabic-reshaper (^1.1.0)
+    Aucun require('arabic-reshaper') dans src/. Le rendu arabe des PDF
+    passe par Puppeteer + CSS dir="rtl", pas par ce package.
+    Risque : SÛR
+
+  bidi-js (^1.0.3)
+    Aucun require('bidi-js') dans src/. Le réordonnancement BiDi est
+    géré par le moteur navigateur dans Puppeteer.
+    Risque : SÛR
+
+Toutes les autres dépendances (bcryptjs, compression, cors, dotenv,
+express, express-rate-limit, helmet, jsonwebtoken, multer, nodemailer,
+pdfkit, pg, puppeteer, zod, nodemon) sont importées et utilisées.
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 5 : 2 dépendances à retirer
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+6. SEEDS / DUMPS RÉSIDUELS
+════════════════════════════════════════════════════════════════════════
+
+Traité en 1i. Rappel :
+  db/backup_*.sql    93 fichiers   ~120 Mo   SÛR
+  db/dump_*.sql       1 fichier      194 Ko  SÛR
+  db/seeds/          répertoire vide          SÛR
+
+Pas d'autres dumps ou seeds détectés hors de db/.
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 6 : 94 fichiers, ~120 Mo
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+7. DOUBLONS DE FICHIERS
+════════════════════════════════════════════════════════════════════════
+
+7a. Doublons inter-répertoires (public/assets/bg ↔ _archive)
+─────────────────────────────────────────────────────────────
+7 fichiers bg/ sont byte-for-byte identiques à leur copie dans
+_archive/pages_publiques/assets/bg/. Supprimer l'un des deux suffit.
+  landing_mobile_clean.png
+  landing_mobile_final_20260629.png
+  landing_mobile.png
+  landing_pc_final_20260629.png
+  landing_pc_v2.png
+  Risque : SÛR (les deux copies sont orphelines)
+
+2 fichiers existent en triple (bg/ + _archive/ + _originaux/) :
+  landing_mobile_v6_finale.png     (3 copies identiques)
+  landing_pc_finale_29juin.png     (3 copies identiques)
+  Risque : SÛR
+
+7b. Doublons dans public/assets/ (captures identiques sous noms différents)
+───────────────────────────────────────────────────────────────────────────
+  epic_regie_final.png = epic_regie_main.png
+  pv_fr_intact.png = pv_rachid_intact_v290.png
+  pv_rdv_clean.png = pv_rdv_filtered.png
+  pv2_eye_desktop.png = pv_login_eye.png
+  pv_5epic_rachid_rep.png = pv_sdc_repartitions_eau.png
+  rb_a_desktop.png = rb_e_stale.png
+  pv_farid_eau_full.png = pv_farid_no_patri.png
+  pv_monsuivi_fixed.png = pv_monsuivi_private.png
+  pv_ar2_orgperf.png = pv_ar2_repartitions.png
+  capture_after_login.png = capture_sdc.png
+  fix_first_visit.png = rb_b_mobile.png
+  capture_retour_accueil.png = capture_retour_login.png
+  epic_parkings_final.png = epic_parkings_main.png
+  pv_sdc_epic_desktop.png = pv_sdc_top_intact.png
+  demo_2_signale.png = recette_2_je_signale.png
+  pv_fantome_test.png = pv_ouvrir_ok.png
+  pv_epic_samira.png = pv_samira_patrilocal.png
+  pv_5epic_rachid.png = pv_5epic_rachid_top.png
+  Quintuple : epic_parkings_clean.png = pv_epic_khaled.png
+              = pv_khaled_civipark_kept.png = pv_khaled_no_patri.png
+              = pv_khaled_parkings.png (5 copies identiques)
+  Triple : capture_landing_restored.png = preuve1_landing.png
+           = preuve_a_landing.png
+  Triple : demo_1_amina.png = rb_c_amina.png
+           = recette_1_amina_accueil.png
+  Risque : SÛR (tous orphelins, cf. catégorie 1a)
+
+7c. Doublon PDF
+───────────────
+  public/assets/cp_f_encaissements.pdf = uploads/rapports/encaissements_*.pdf
+  Risque : SÛR (le fichier dans public/assets n'est pas référencé)
+
+7d. Doublons dans recette/ (captures générées plusieurs fois)
+─────────────────────────────────────────────────────────────
+  8 paires identiques entre sous-dossiers de recette/.
+  Détail non listé car toutes les captures recette/ sont supprimables (cf. 1j).
+  Risque : SÛR
+
+────────────────────────────────────────────────────────────────
+TOTAL CATÉGORIE 7 : ~30 groupes de doublons (tous déjà orphelins)
+════════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════════
+DÉCOMPTE FINAL
+════════════════════════════════════════════════════════════════════════
+
+  Catégorie                         Éléments   Poids     SÛR  À VÉRIFIER
+  ─────────────────────────────────────────────────────────────────────
+  1. Fichiers orphelins              ~500       ~296 Mo   ~490    ~10
+  2. Code mort                        14         <1 Ko     12      2
+  3. Console.log debug                 4 blocs    —         4      0
+  4. Scripts/migration obsolètes       3         <1 Mo      1      2
+  5. Dépendances npm inutilisées       2         —          2      0
+  6. Seeds/dumps résiduels            94        ~120 Mo    94      0
+  7. Doublons                        ~30 grp.   (inclus)  ~30      0
+  ─────────────────────────────────────────────────────────────────────
+  TOTAL                             ~620        ~296 Mo   ~633    ~14
+
+  Gain estimé si tout ce qui est SÛR est supprimé : ~290 Mo
+  (dont 120 Mo de backups SQL, 62 Mo de captures assets, 54 Mo de
+   captures recette, 25 Mo d'archive, 18 Mo de PNG doublons design,
+   13 Mo de bg PNG orphelins, 5 Mo speedtest.bin)
+
+════════════════════════════════════════════════════════════════════════
+FIN DU RAPPORT — aucune modification effectuée
+════════════════════════════════════════════════════════════════════════
