@@ -1,0 +1,74 @@
+RÉCAPITULATIF D'ACTIVITÉS ALGERNA — 2 AU 9 JUILLET 2026
+Direction produit : Hamid — Document de suivi interne
+
+VUE D'ENSEMBLE
+Versions v293 -> v320 (27 mises en production). ~35 missions livrées avec preuves,
+critères binaires, commit+push. Fil conducteur : assainissement structurel post-démo
+Wali, puis deux extensions stratégiques (CCOE pour le Chef du Protocole, cadrage
+Alger Propre 2030 pour le SG).
+
+1. AUTHENTIFICATION : œil mot de passe partout, login par email réparé (champ type=tel),
+mot de passe oublié complet (jeton 1h usage unique, page reset réparée), diagnostic
+DNS email (rejets silencieux Gmail/Protonmail -> dossier POUR_JUG_EMAIL.txt),
+script reset manuel, règle permanente "jamais de test sur compte réel",
+limite signalements 15/j en 429 explicite (plus de 500).
+
+2. RÉFÉRENTIEL COMMUNES : 57 communes officielles — fusions de doublons sans orphelin
+(Gué de Constantine, Séhaoula), ajouts Belouizdad et Hammamet, orthographes officielles,
+arabes corrigés (H'Raoua), Rahmania confirmée.
+
+3. CLOISONNEMENT ET GOUVERNANCE : doctrine "un pilote par dossier, la hiérarchie
+supervise sans traiter". Mourad re-rattaché de Alger-Centre vers Kouba (board, cockpit,
+rapports re-scopés). Visibilité EPIC corrigée (fuite "même domaine" supprimée, boards =
+base pour les 5 EPIC). Qualification manuelle confirmée. Périmètre commune durci serveur
+(dossiers, explications, APIs supervision/ICUA, rapports, communiqués). Cockpit : fuite
+patrimoine/finances corrigée, temps négatifs éliminés, tableau des 8 organisations
+complété. Chaîne communiqués : commune soumet, wilaya seule publie (403 serveur).
+Classer sans suite complet (motif, traçabilité, vue citoyen). Profils EPIC démo
+finalisés, situation critique fantôme résolue + filtre anti-orphelin.
+
+4. NAVIGATION/UX : transverses regroupées au menu avatar, sidebars = modules métier,
+hamburger mobile réparé pour tous les rôles (navy sur navy), échelle z-index unique
+(déconnexion possible sur écrans à carte, infobulle SLA visible), intitulés
+"SdC — Wilaya"/"SdC — APC de Kouba" FR/AR, infobulles acronymes (ACRONYMES.txt validé,
+13 entrées), fonds de carte en français, accueil CAP personnalisé, communiqués citoyens
+réparés.
+
+5. ASSAINISSEMENT ET RECETTES : chasse intégrale aux noms d'organismes réels (code,
+base, chatbot, docs, seeds, dumps) -> génériques partout ; 2 fichiers sensibles publics
+supprimés ; 94 dumps sortis de Git (conservés disque). Pages légales déjà conformes
+loi 18-07. Recette visuelle Puppeteer 68 captures (10 profils x 2 formats, FR+AR) +
+recette API complète. Sauvegardes SQL avant chaque migration. Incident 500 signalement
+élucidé (limite quotidienne, pas une régression).
+
+6. RAPPORTS EXÉCUTIFS WALI : nouveau type enrichi (8 sections : synthèse avec
+variations, performance directions/mois, zones récurrentes, catégories, satisfaction,
+tendances 6 mois, situations notables). Chiffres identiques écran/rapport (prouvé).
+Version AR au niveau institutionnel (rendu Chromium : ligatures, BiDi, noms arabes),
+page de garde blanche avec logo.
+
+7. MODULE CCOE (nouveau, complet — demande du Chef du Protocole) :
+Événements 8 types + "Autre" à composition libre, mono/multi-jours avec plages horaires.
+Itinéraire et zones tracés à la souris (GeoJSON, superposés à la carte des chantiers).
+OPORD et chantiers générés automatiquement (mapping propre : + Direction Éclairage
+Public, Direction Santé et Protection Civile, Cellule Communication — Cabinet).
+"Mes chantiers" côté services (checklist+photos, commentaires, demande de validation,
+mobile), cloisonnement 403 prouvé. Transmission SÉLECTIVE par service (modale à cases,
+états N/M), triple canal (in-app + email tracé + fil). Accusé de réception nominatif :
+transmis / vu auto / accusé explicite, tableau de suivi Cabinet ambre/rouge, relance
+ciblée des silencieux, Cabinet ne peut pas accuser à la place d'un service. Validation
+2 niveaux signée, refus motivé, auto-validation impossible. Contacts + messagerie typée
+par chantier, annuaire CCOE (CRUD Cabinet). FR/AR. Compte démo Cabinet : 0550000011.
+Test humain de bout en bout validé — présentable au Protocole.
+
+8. DOCUMENTS PRODUITS : CC CCOE (Word) ; CC Alger Propre 2030 — Gestion Intelligente
+des Déchets (Word, demande SG : 5 piliers, quartiers/horaires, IPU, régulation
+progressive, Passeport collectif recommandé, phasage A/B/C) ; 2 diapositives impact
+économique (total estimé 0,9 à 2 Mds DA/an, hypothèses prudentes) ; ACRONYMES.txt ;
+POUR_JUG_EMAIL.txt ; le présent récapitulatif.
+
+EN ATTENTE : décisions Alger Propre Phase A (ambassadeurs, quartiers pilotes,
+Passeport) ; présentation CCOE au Protocole (atelier gabarits, décision Daïra) ;
+Jug (sauvegardes automatiques à confirmer, DNS email) ; relecture arabophone globale ;
+dettes mineures (flash inter-profils, collecte satisfaction, hamburger citoyen
+masqué — choix à confirmer à l'usage).
