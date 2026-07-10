@@ -872,6 +872,11 @@ const I18N = {
     "civipark.registre": "Registre",
     "civipark.clotures": "Clôtures",
 
+    // ─── ALGER PROPRE 2030 ───
+    "ap.titre": "Alger Propre 2030 — Quartiers et créneaux",
+    "ap.sous_titre": "Référentiel des quartiers et des créneaux de dépôt des déchets",
+    "ap.quartiers": "Quartiers",
+
     // ─── EDEVAL SMART GREEN ───
     "edeval.titre": "EDEVAL — Espaces Verts",
     "edeval.sous_titre": "Qualité des espaces publics — Wilaya d'Alger",
@@ -2188,6 +2193,11 @@ const I18N = {
     "civipark.parkings": "المواقف",
     "civipark.registre": "السجل",
     "civipark.clotures": "الإقفالات",
+
+    // ─── ALGER PROPRE 2030 ───
+    "ap.titre": "الجزائر نظيفة 2030 — الأحياء والمواعيد",
+    "ap.sous_titre": "مرجع الأحياء ومواعيد إيداع النفايات",
+    "ap.quartiers": "الأحياء",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "EDEVAL — المساحات الخضراء",
