@@ -1747,7 +1747,7 @@
 
     /* ─── RESPONSIVE ─── */
     /* Hamburger button */
-    .hamburger-btn { display:none; background:none; border:none; color:var(--navy); font-size:24px; cursor:pointer; padding:8px; line-height:1; }
+    .hamburger-btn { display:none; background:none; border:none; color:#fff; font-size:28px; cursor:pointer; padding:8px; line-height:1; min-width:44px; min-height:44px; }
     /* Sidebar mobile drawer */
     .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
     .sidebar-overlay.active { display:block; }
@@ -6293,6 +6293,8 @@ async function initApp() {
   if (navDeconnexion) navDeconnexion.style.display = 'none';
   var bottomNav = document.querySelector('.bottom-nav');
   if (bottomNav) { bottomNav.style.display = role === 'citoyen' ? '' : 'none'; }
+  var hamburgerBtn = document.querySelector('.hamburger-btn');
+  if (hamburgerBtn) { hamburgerBtn.style.display = role === 'citoyen' ? 'none' : ''; }
   var appFooter = document.getElementById('app-footer');
   if (appFooter) { appFooter.style.display = role === 'citoyen' ? '' : 'none'; }
   // Menu dropdown — masquer les entrées citoyennes pour les profils professionnels
