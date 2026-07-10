@@ -5136,10 +5136,10 @@
 
         <!-- Onglets CiviPark -->
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-primary" id="cp-tab-parkings" onclick="cpShowTab('parkings')">Parkings</button>
-          <button class="btn btn-sm btn-outline" id="cp-tab-cartes" onclick="cpShowTab('cartes')">Cartes résident</button>
-          <button class="btn btn-sm btn-outline" id="cp-tab-encaissements" onclick="cpShowTab('encaissements')">Registre</button>
-          <button class="btn btn-sm btn-outline" id="cp-tab-clotures" onclick="cpShowTab('clotures')">Clôtures</button>
+          <button class="btn btn-sm btn-primary" id="cp-tab-parkings" onclick="cpShowTab('parkings')" data-i18n="civipark.parkings">Parkings</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-cartes" onclick="cpShowTab('cartes')" data-i18n="civipark.cartes">Cartes résident</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-encaissements" onclick="cpShowTab('encaissements')" data-i18n="civipark.registre">Registre</button>
+          <button class="btn btn-sm btn-outline" id="cp-tab-clotures" onclick="cpShowTab('clotures')" data-i18n="civipark.clotures">Clôtures</button>
         </div>
 
         <!-- Panel parkings -->
@@ -8286,7 +8286,7 @@ async function cpLoadParkings() {
   } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">Erreur de chargement</p>'; }
 }
 
-function isGest() { return currentUser && ['admin_apc','admin_wilaya'].includes(currentUser.role); }
+function isGest() { return currentUser && (['admin_apc','admin_wilaya'].includes(currentUser.role) || hasCapacite('civipark')); }
 
 async function cpParkingDetail(id) {
   var det = document.getElementById('cp-detail');
@@ -8306,9 +8306,14 @@ async function cpParkingDetail(id) {
     html += '<div><strong>Statut :</strong> ' + (z.statut||'actif') + '</div>';
     html += '</div>';
     if (isGest()) {
-      html += '<div style="display:flex;gap:6px;margin-top:12px;">';
-      html += '<button class="btn btn-sm btn-outline" onclick="cpParkingForm('+z.id+')">Modifier</button>';
-      html += '<button class="btn btn-sm" style="background:#ef4444;color:white;" onclick="cpDeleteParking('+z.id+')">Supprimer</button>';
+      var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
+      html += '<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">';
+      html += '<button class="btn btn-sm btn-outline" onclick="cpParkingForm('+z.id+')">' + (isAr?'تعديل':'Modifier') + '</button>';
+      if (z.statut === 'inactif') {
+        html += '<button class="btn btn-sm" style="background:#16a34a;color:white;" onclick="cpToggleParking('+z.id+',\'actif\')">' + (isAr?'إعادة التفعيل':'Réactiver') + '</button>';
+      } else {
+        html += '<button class="btn btn-sm" style="background:#f59e0b;color:white;" onclick="cpToggleParking('+z.id+',\'inactif\')">' + (isAr?'إلغاء التفعيل':'Désactiver') + '</button>';
+      }
       html += '</div>';
     }
     html += '</div>';
@@ -8333,23 +8338,28 @@ function cpParkingForm(editId) {
   var det = document.getElementById('cp-detail');
   det.classList.remove('hidden');
   var z = editId ? _cpZones.find(function(x){return x.id===editId;}) : {};
-  det.innerHTML = '<div class="card" style="padding:16px;"><h4>' + (editId?'Modifier':'Nouveau') + ' parking</h4>' +
+  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
+  var labels = isAr ? {title_new:'موقف جديد',title_edit:'تعديل موقف',nom:'الاسم (فرنسي)',nom_ar:'الاسم (عربي)',commune:'البلدية',adresse:'العنوان',capacite:'السعة',pmr:'أماكن ذوي الاحتياجات',tarif:'التعريفة (دج/سا)',horaires:'المواقيت',statut:'الحالة',actif:'نشط',travaux:'أشغال',ferme:'مغلق',save:'حفظ'}
+    : {title_new:'Nouveau parking',title_edit:'Modifier le parking',nom:'Nom (français)',nom_ar:'Nom (arabe)',commune:'Commune',adresse:'Adresse',capacite:'Nombre de places',pmr:'Places PMR',tarif:'Tarif (DA/h)',horaires:'Horaires',statut:'Statut',actif:'Actif',travaux:'Travaux',ferme:'Fermé',save:'Enregistrer'};
+  det.innerHTML = '<div class="card" style="padding:16px;"><h4>' + (editId ? labels.title_edit : labels.title_new) + '</h4>' +
     '<form onsubmit="cpSaveParking(event,' + (editId||'null') + ')">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-    '<div class="form-group" style="margin:0;"><label>Nom</label><input type="text" id="cp-pk-nom" required value="' + escHtml((z&&z.nom)||'') + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Commune</label><select id="cp-pk-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(z&&z.commune_id==c.id?' selected':'')+'>'+escHtml(c.nom)+'</option>';}).join('') + '</select></div>' +
-    '<div class="form-group" style="margin:0;"><label>Adresse</label><input type="text" id="cp-pk-adresse" value="' + escHtml((z&&z.adresse)||'') + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Capacité</label><input type="number" id="cp-pk-places" min="0" value="' + ((z&&z.places_total)||0) + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Places PMR</label><input type="number" id="cp-pk-pmr" min="0" value="' + ((z&&z.places_pmr)||0) + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Tarif (DA/h)</label><input type="number" id="cp-pk-tarif" min="0" value="' + ((z&&z.tarif_horaire)||0) + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Horaires</label><input type="text" id="cp-pk-horaires" value="' + escHtml((z&&z.horaires)||'') + '" placeholder="Ex: 7h-22h"></div>' +
-    '<div class="form-group" style="margin:0;"><label>Statut</label><select id="cp-pk-statut"><option value="actif"'+(z&&z.statut==='actif'?' selected':'')+'>Actif</option><option value="travaux"'+(z&&z.statut==='travaux'?' selected':'')+'>Travaux</option><option value="ferme"'+(z&&z.statut==='ferme'?' selected':'')+'>Fermé</option></select></div>' +
-    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">Enregistrer</button></form></div>';
+    '<div class="form-group" style="margin:0;"><label>' + labels.nom + '</label><input type="text" id="cp-pk-nom" required value="' + escHtml((z&&z.nom)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.nom_ar + '</label><input type="text" id="cp-pk-nom-ar" dir="rtl" value="' + escHtml((z&&z.nom_ar)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.commune + '</label><select id="cp-pk-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(z&&z.commune_id==c.id?' selected':'')+'>'+escHtml(c.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.adresse + '</label><input type="text" id="cp-pk-adresse" value="' + escHtml((z&&z.adresse)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.capacite + '</label><input type="number" id="cp-pk-places" min="0" value="' + ((z&&z.places_total)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.pmr + '</label><input type="number" id="cp-pk-pmr" min="0" value="' + ((z&&z.places_pmr)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.tarif + '</label><input type="number" id="cp-pk-tarif" min="0" value="' + ((z&&z.tarif_horaire)||0) + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.horaires + '</label><input type="text" id="cp-pk-horaires" value="' + escHtml((z&&z.horaires)||'') + '" placeholder="Ex: 7h-22h"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + labels.statut + '</label><select id="cp-pk-statut"><option value="actif"'+(z&&z.statut==='actif'?' selected':'')+'>'+labels.actif+'</option><option value="travaux"'+(z&&z.statut==='travaux'?' selected':'')+'>'+labels.travaux+'</option><option value="ferme"'+(z&&z.statut==='ferme'?' selected':'')+'>'+labels.ferme+'</option></select></div>' +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">' + labels.save + '</button></form></div>';
 }
 
 async function cpSaveParking(e, editId) {
   e.preventDefault();
-  var body = { nom: document.getElementById('cp-pk-nom').value, commune_id: Number(document.getElementById('cp-pk-commune').value),
+  var body = { nom: document.getElementById('cp-pk-nom').value, nom_ar: document.getElementById('cp-pk-nom-ar').value,
+    commune_id: Number(document.getElementById('cp-pk-commune').value),
     adresse: document.getElementById('cp-pk-adresse').value, places_total: Number(document.getElementById('cp-pk-places').value),
     places_pmr: Number(document.getElementById('cp-pk-pmr').value), tarif_horaire: Number(document.getElementById('cp-pk-tarif').value),
     horaires: document.getElementById('cp-pk-horaires').value, statut: document.getElementById('cp-pk-statut').value };
@@ -8361,12 +8371,16 @@ async function cpSaveParking(e, editId) {
   } catch(e) { showToast('Erreur réseau', 'error'); }
 }
 
-async function cpDeleteParking(id) {
-  if (!confirm('Supprimer ce parking ?')) return;
+async function cpToggleParking(id, newStatut) {
+  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
+  var msg = newStatut === 'inactif'
+    ? (isAr ? 'تعطيل هذا الموقف؟ لا يمكن حذفه إذا كان له سجل تحصيلات.' : 'Désactiver ce parking ? Il ne peut pas être supprimé car il possède un historique d\'encaissements.')
+    : (isAr ? 'إعادة تفعيل هذا الموقف؟' : 'Réactiver ce parking ?');
+  if (!confirm(msg)) return;
   try {
-    var res = await apiFetch('/api/civipark/zones/' + id, { method: 'DELETE', headers: authHeaders() });
+    var res = await apiFetch('/api/civipark/zones/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ statut: newStatut }) });
     var d = await res.json();
-    if (res.ok) { showToast('Parking supprimé.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadParkings(); }
+    if (res.ok) { showToast(isAr ? 'تم التحديث' : 'Statut mis à jour.'); cpParkingDetail(id); cpLoadParkings(); }
     else showToast(d.erreur || 'Erreur', 'error');
   } catch(e) { showToast('Erreur réseau', 'error'); }
 }

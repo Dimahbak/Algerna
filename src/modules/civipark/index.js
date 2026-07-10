@@ -23,10 +23,16 @@ async function notifier(userId, titre, message, lien) {
 }
 
 function isGestionnaire(user) {
-  return ['admin_apc', 'admin_wilaya'].includes(user.role);
+  if (['admin_apc', 'admin_wilaya'].includes(user.role)) return true;
+  return Array.isArray(user.capacites) && user.capacites.includes('civipark');
 }
 function isAgent(user) {
   return ['agent', 'operateur', 'admin_apc', 'admin_wilaya'].includes(user.role);
+}
+function requireGestionParking(req, res, next) {
+  if (!req.user) return next(forbidden());
+  if (isGestionnaire(req.user)) return next();
+  return next(forbidden());
 }
 function communeFilter(user) {
   if (user.role === 'admin_wilaya') return { sql: '', params: [], idx: 0 };
@@ -66,27 +72,27 @@ router.get('/zones/:id', asyncH(async (req, res) => {
 }));
 
 // POST /zones — créer un parking
-router.post('/zones', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
-  const { nom, commune_id, adresse, lat, lng, places_total, places_pmr, horaires, type } = req.body;
+router.post('/zones', authenticate, requireGestionParking, asyncH(async (req, res) => {
+  const { nom, nom_ar, commune_id, adresse, lat, lng, places_total, places_pmr, horaires, type } = req.body;
   if (!nom || !commune_id) throw badRequest('nom et commune_id requis');
   // Generate reference PRK-<COMMUNE>-<n°>
   const cc = communeCode(commune_id);
   const { rows: seqR } = await query(`SELECT COALESCE(MAX(id),0)+1 AS n FROM parking_zone`);
   const reference = `PRK-${cc}-${String(seqR[0].n).padStart(4, '0')}`;
   const { rows } = await query(
-    `INSERT INTO parking_zone (nom, commune_id, adresse, lat, lng, places_total, places_pmr, horaires, type, reference, tarif_horaire)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-    [nom, commune_id, adresse || null, lat || null, lng || null, places_total || 0, places_pmr || 0,
+    `INSERT INTO parking_zone (nom, nom_ar, commune_id, adresse, lat, lng, places_total, places_pmr, horaires, type, reference, tarif_horaire)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+    [nom, nom_ar || null, commune_id, adresse || null, lat || null, lng || null, places_total || 0, places_pmr || 0,
      horaires || null, type || 'bleue', reference, req.body.tarif_horaire || 0]);
   await audit('parking', rows[0].id, 'creation', null, null, nom, req.user.id);
   res.status(201).json(rows[0]);
 }));
 
 // PATCH /zones/:id — modifier un parking
-router.patch('/zones/:id', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/zones/:id', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const { rows: old } = await query('SELECT * FROM parking_zone WHERE id=$1', [req.params.id]);
   if (!old.length) throw notFound('Parking introuvable');
-  const fields = ['nom', 'adresse', 'lat', 'lng', 'places_total', 'places_pmr', 'horaires', 'type', 'tarif_horaire', 'statut', 'motif_desactivation'];
+  const fields = ['nom', 'nom_ar', 'adresse', 'lat', 'lng', 'places_total', 'places_pmr', 'horaires', 'type', 'tarif_horaire', 'statut', 'motif_desactivation'];
   const sets = []; const vals = []; let i = 1;
   for (const f of fields) {
     if (req.body[f] !== undefined && String(req.body[f]) !== String(old[0][f])) {
@@ -101,7 +107,7 @@ router.patch('/zones/:id', authenticate, requireRole('admin_apc', 'admin_wilaya'
 }));
 
 // DELETE /zones/:id — suppression si zéro historique, sinon refus
-router.delete('/zones/:id', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.delete('/zones/:id', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const id = req.params.id;
   const { rows: enc } = await query('SELECT COUNT(*)::int AS n FROM parking_encaissement WHERE parking_zone_id=$1', [id]);
   const { rows: cr } = await query('SELECT COUNT(*)::int AS n FROM carte_resident WHERE parking_zone_id=$1', [id]);
@@ -226,7 +232,7 @@ router.get('/config/tarif', asyncH(async (req, res) => {
 }));
 
 // PATCH /config/tarif — modifier tarif (gestionnaire EPIC)
-router.patch('/config/tarif', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/config/tarif', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const { tarif } = req.body;
   if (!tarif || tarif <= 0) throw badRequest('tarif invalide');
   const { rows: old } = await query("SELECT valeur FROM civipark_config WHERE cle = 'tarif_carte_resident'");
@@ -321,7 +327,7 @@ router.post('/encaissements', authenticate, requireRole('agent', 'operateur', 'a
 }));
 
 // POST /encaissements/:id/annuler — annulation (écriture négative)
-router.post('/encaissements/:id/annuler', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.post('/encaissements/:id/annuler', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const { motif } = req.body;
   if (!motif) throw badRequest('motif requis');
   const { rows: orig } = await query('SELECT * FROM parking_encaissement WHERE id=$1', [req.params.id]);
@@ -351,7 +357,7 @@ router.post('/encaissements/:id/annuler', authenticate, requireRole('admin_apc',
 }));
 
 // GET /encaissements/stats
-router.get('/encaissements/stats', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.get('/encaissements/stats', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const cWhere = (req.user.role === 'admin_apc' && req.user.commune_id) ? `AND pz.commune_id = ${Number(req.user.commune_id)}` : '';
   const { rows } = await query(
     `SELECT COUNT(*)::int AS total_encaissements,
@@ -403,7 +409,7 @@ router.post('/clotures', authenticate, requireRole('agent', 'operateur', 'admin_
 }));
 
 // PATCH /clotures/:id/valider — validation par responsable
-router.patch('/clotures/:id/valider', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.patch('/clotures/:id/valider', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const { rows: cl } = await query('SELECT * FROM civipark_cloture WHERE id=$1', [req.params.id]);
   if (!cl.length) throw notFound('Clôture introuvable');
   if (cl[0].cloturee_par === req.user.id) throw badRequest('Le responsable ne peut pas valider sa propre clôture');
@@ -415,7 +421,7 @@ router.patch('/clotures/:id/valider', authenticate, requireRole('admin_apc', 'ad
 // ══════════════════════════════════════════════════════════
 // 5. JOURNAL D'AUDIT
 // ══════════════════════════════════════════════════════════
-router.get('/audit', authenticate, requireRole('admin_apc', 'admin_wilaya'), asyncH(async (req, res) => {
+router.get('/audit', authenticate, requireGestionParking, asyncH(async (req, res) => {
   const where = []; const vals = []; let i = 1;
   if (req.query.entity_type) { where.push(`a.entity_type=$${i++}`); vals.push(req.query.entity_type); }
   if (req.query.entity_id) { where.push(`a.entity_id=$${i++}`); vals.push(req.query.entity_id); }

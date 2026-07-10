@@ -868,6 +868,9 @@ const I18N = {
     "civipark.rechercher": "Rechercher",
     "civipark.filtre_plaque": "Filtrer par plaque",
     "civipark.filtre_ticket": "Filtrer par N° ticket",
+    "civipark.parkings": "Parkings",
+    "civipark.registre": "Registre",
+    "civipark.clotures": "Clôtures",
 
     // ─── EDEVAL SMART GREEN ───
     "edeval.titre": "EDEVAL — Espaces Verts",
@@ -2182,6 +2185,9 @@ const I18N = {
     "civipark.rechercher": "بحث",
     "civipark.filtre_plaque": "تصفية حسب اللوحة",
     "civipark.filtre_ticket": "تصفية حسب رقم التذكرة",
+    "civipark.parkings": "المواقف",
+    "civipark.registre": "السجل",
+    "civipark.clotures": "الإقفالات",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "EDEVAL — المساحات الخضراء",
