@@ -41,6 +41,8 @@ const I18N = {
     "global.inconnue": "Inconnue",
 
     // ─── AUTH ───
+    "auth.wilaya_l1": "WILAYA",
+    "auth.wilaya_l2": "D'ALGER",
     "auth.bienvenue_titre": "Bienvenue",
     "auth.bienvenue_sous": "Connectez-vous à votre espace citoyen.",
     "auth.pas_de_compte": "Pas encore de compte ?",
@@ -1496,6 +1498,8 @@ const I18N = {
     "global.inconnue": "غير معروف", // À RELIRE
 
     // ─── AUTH ─── // À RELIRE
+    "auth.wilaya_l1": "ولاية",
+    "auth.wilaya_l2": "الجزائر",
     "auth.bienvenue_titre": "أهلاً",
     "auth.bienvenue_sous": "سجّل الدخول إلى فضائك المواطني.",
     "auth.pas_de_compte": "ليس لديك حساب؟",
