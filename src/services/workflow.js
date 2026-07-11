@@ -37,9 +37,10 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     const sig = rows[0];
     const ancienEtat = sig.etat;
 
-    // 2. Vérifier la transition
+    // 2. Vérifier la transition (transmis→transmis autorisé si transmisA fourni = affectation service)
     const allowed = VALID_TRANSITIONS[ancienEtat] || [];
-    if (!allowed.includes(nouveauEtat)) {
+    const sameStateAssignment = ancienEtat === nouveauEtat && ancienEtat === 'transmis' && opts.transmisA;
+    if (!sameStateAssignment && !allowed.includes(nouveauEtat)) {
       throw new Error(`Transition ${ancienEtat} → ${nouveauEtat} non autorisée`);
     }
     // Rejet/classement sans suite : réservé aux superviseurs

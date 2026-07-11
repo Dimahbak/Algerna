@@ -14980,13 +14980,16 @@ async function boShowTransmettreModal() {
 
 async function boConfirmTransmettre() {
   var sel = document.getElementById('transmettre-service');
-  if (!sel || !sel.value) { showToast('Choisissez un service.', 'error'); return; }
+  if (!sel || !sel.value) { showToast(t('bo.transmettre_choisir'), 'error'); return; }
   var serviceName = sel.options[sel.selectedIndex].textContent;
+  var transmisA = sel.value;
   var modal = document.getElementById('generic-modal');
   if (modal) modal.remove();
-  await boAction('en_intervention', {
+  // Rester en état "transmis" (le dossier est déjà qualifié), écrire transmis_a
+  await boAction('transmis', {
     commentaire: 'Transmis à ' + serviceName,
-    toastMsg: 'Transmis à ' + serviceName
+    toastMsg: 'Transmis à ' + serviceName,
+    transmisA: transmisA
   });
 }
 async function boConfirmRejet() {
