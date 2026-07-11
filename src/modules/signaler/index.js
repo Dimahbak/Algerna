@@ -465,10 +465,21 @@ router.get('/board',
       params.push(req.user.commune_id);
       sql += ` AND s.commune_id = $${params.length}`;
     }
-    // Entité responsable : voit les dossiers assignés à son org OU transmis à son org
+    // Entité responsable : voit les dossiers assignés à son org OU transmis à son org OU routés vers les EPIC liés
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
       const orgId = Number(req.user.organisation_id);
-      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}' OR s.epic_id = ${orgId})`;
+      // Mapping organisation_id → epic IDs (les deux tables ne partagent pas les mêmes IDs)
+      const ORG_EPIC_MAP = {
+        5: [1, 2],      // Direction Propreté → DIR-PRO Centre (1) + Périphérie (2)
+        6: [30],         // Direction Voirie → DIR-CIRC (30)
+        16: [31],        // Gestion Parkings → DIR-PARK (31)
+        18: [17],        // Direction Eau → DIR-EAU (17)
+        13: [3, 4],      // Direction Environnement → DIR-EVT (3) + DIR-OUED (4)
+        23: [8],         // Direction Éclairage → DIR-ECL (8)
+      };
+      const epicIds = ORG_EPIC_MAP[orgId] || [];
+      const epicFilter = epicIds.length ? ` OR s.epic_id IN (${epicIds.join(',')})` : '';
+      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}'${epicFilter})`;
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
     const { rows } = await query(sql, params);
