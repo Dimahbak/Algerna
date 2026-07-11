@@ -114,7 +114,7 @@ const I18N = {
     "univers.signale_court": "Signaler",
     "univers.nouveau_signalement": "Nouveau signalement",
     "univers.quartier": "Ma Houma",
-    "univers.quartier_desc": "Carte, scores, IQEP parcs",
+    "univers.quartier_desc": "Carte, équipements, parking, propreté",
     "univers.quartier_court": "Houma",
     "univers.iqep_parcs": "IQEP Parcs",
     "univers.participe": "Je participe",
@@ -954,8 +954,11 @@ const I18N = {
     "ap.cit_quartier_enregistre": "Quartier enregistré !",
 
     // ─── EDEVAL SMART GREEN ───
-    "edeval.titre": "EDEVAL — Espaces Verts",
+    "edeval.titre": "IQEP — Espaces Publics",
     "edeval.sous_titre": "Qualité des espaces publics — Wilaya d'Alger",
+    "edeval.sidebar": "IQEP Parcs",
+    "edeval.chatbot_fr": "L'IQEP (Indice Qualité des Espaces Publics) note chaque parc de 0 à 100 selon les signalements ouverts et résolus. Cet indicateur est utilisé par les responsables pour piloter la qualité des espaces verts.",
+    "edeval.chatbot_ar": "IQEP (مؤشر جودة الفضاءات العمومية) يقيّم كل حديقة من 0 إلى 100 بناءً على البلاغات المفتوحة والمحلولة. يستخدمه المسؤولون لمتابعة جودة المساحات الخضراء.",
     "edeval.iqep": "IQEP",
     "edeval.iqep_long": "Indice Qualité des Espaces Publics",
     "edeval.parcs_titre": "Parcs et jardins",
@@ -1518,7 +1521,7 @@ const I18N = {
     "univers.signale_court": "إبلاغ",
     "univers.nouveau_signalement": "بلاغ جديد",
     "univers.quartier": "حومتي",
-    "univers.quartier_desc": "الخريطة، التقييمات، IQEP الحدائق",
+    "univers.quartier_desc": "الخريطة، التجهيزات، المواقف، النظافة",
     "univers.quartier_court": "حومتي",
     "univers.iqep_parcs": "IQEP الحدائق",
     "univers.participe": "أشارك",
@@ -2352,8 +2355,11 @@ const I18N = {
     "ap.cit_quartier_enregistre": "تم حفظ الحي!",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
-    "edeval.titre": "EDEVAL — المساحات الخضراء",
+    "edeval.titre": "IQEP — الفضاءات العمومية",
     "edeval.sous_titre": "جودة الفضاءات العمومية — ولاية الجزائر",
+    "edeval.sidebar": "IQEP الحدائق",
+    "edeval.chatbot_fr": "L'IQEP (Indice Qualité des Espaces Publics) note chaque parc de 0 à 100 selon les signalements ouverts et résolus. Cet indicateur est utilisé par les responsables pour piloter la qualité des espaces verts.",
+    "edeval.chatbot_ar": "IQEP (مؤشر جودة الفضاءات العمومية) يقيّم كل حديقة من 0 إلى 100 بناءً على البلاغات المفتوحة والمحلولة. يستخدمه المسؤولون لمتابعة جودة المساحات الخضراء.",
     "edeval.iqep": "IQEP",
     "edeval.iqep_long": "مؤشر جودة الفضاءات العمومية",
     "edeval.parcs_titre": "الحدائق والمتنزهات",

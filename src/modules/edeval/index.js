@@ -25,7 +25,7 @@
 const express = require('express');
 const { query } = require('../../db/pool');
 const { authenticate, requireRole } = require('../../middleware/auth');
-const { asyncH, badRequest, notFound } = require('../../utils/http');
+const { asyncH, badRequest, notFound, forbidden } = require('../../utils/http');
 
 const router = express.Router();
 
@@ -89,22 +89,41 @@ async function moyenneIqep() {
   return rows[0]?.moy ?? null;
 }
 
+// ── Middleware : restreint aux superviseurs (admin_apc, admin_wilaya) ──
+const ROLES_PILOTAGE = ['admin_apc', 'admin_wilaya'];
+
+function communeFilter(req) {
+  // admin_wilaya voit tous les parcs ; admin_apc voit uniquement sa commune
+  if (req.user.role === 'admin_wilaya') return { clause: '', params: [] };
+  return { clause: ' AND p.commune_id = $', params: [req.user.commune_id] };
+}
+
+async function checkParcCommune(req, parcId) {
+  if (req.user.role === 'admin_wilaya') return;
+  const { rows } = await query('SELECT commune_id FROM parc WHERE id = $1', [parcId]);
+  if (!rows.length) throw notFound('Parc introuvable');
+  if (rows[0].commune_id !== req.user.commune_id) throw forbidden('Accès réservé à votre commune');
+}
+
 // ── ROUTES ──────────────────────────────────────
 
-// GET /parcs — liste publique
-router.get('/parcs', asyncH(async (req, res) => {
+// GET /parcs — liste (pilotage uniquement)
+router.get('/parcs', authenticate, requireRole(...ROLES_PILOTAGE), asyncH(async (req, res) => {
+  const cf = communeFilter(req);
+  const paramIdx = cf.params.length ? cf.clause + '1' : '';
   const { rows } = await query(
     `SELECT p.*, c.nom AS commune_nom,
             COALESCE(i.note_manuelle, i.note_auto) AS iqep
        FROM parc p
        LEFT JOIN commune c ON c.id = p.commune_id
        LEFT JOIN iqep i ON i.parc_id = p.id
-      WHERE p.actif = TRUE ORDER BY p.nom`);
+      WHERE p.actif = TRUE${paramIdx} ORDER BY p.nom`, cf.params);
   res.json(rows);
 }));
 
 // GET /parcs/:id
-router.get('/parcs/:id', asyncH(async (req, res) => {
+router.get('/parcs/:id', authenticate, requireRole(...ROLES_PILOTAGE), asyncH(async (req, res) => {
+  await checkParcCommune(req, Number(req.params.id));
   const { rows } = await query(
     `SELECT p.*, c.nom AS commune_nom,
             COALESCE(i.note_manuelle, i.note_auto) AS iqep,
@@ -120,12 +139,15 @@ router.get('/parcs/:id', asyncH(async (req, res) => {
   res.json(rows[0]);
 }));
 
-// GET /iqep — liste parcs + note finale
-router.get('/iqep', asyncH(async (req, res) => {
-  // Recalcule les notes auto
-  const { rows: parcs } = await query('SELECT id FROM parc WHERE actif = TRUE');
+// GET /iqep — liste parcs + note finale (pilotage)
+router.get('/iqep', authenticate, requireRole(...ROLES_PILOTAGE), asyncH(async (req, res) => {
+  const cf = communeFilter(req);
+  // Recalcule les notes auto (limité à la portée du user)
+  const filterSql = cf.params.length ? ' AND commune_id = $1' : '';
+  const { rows: parcs } = await query('SELECT id FROM parc WHERE actif = TRUE' + filterSql, cf.params);
   for (const p of parcs) await refreshIqep(p.id);
 
+  const paramIdx = cf.params.length ? cf.clause + '1' : '';
   const { rows } = await query(
     `SELECT p.id, p.nom, c.nom AS commune_nom, p.lat, p.lng,
             i.note_auto, i.note_manuelle,
@@ -134,22 +156,23 @@ router.get('/iqep', asyncH(async (req, res) => {
        FROM parc p
        LEFT JOIN commune c ON c.id = p.commune_id
        LEFT JOIN iqep i ON i.parc_id = p.id
-      WHERE p.actif = TRUE ORDER BY p.nom`);
+      WHERE p.actif = TRUE${paramIdx} ORDER BY p.nom`, cf.params);
   res.json(rows);
 }));
 
 // GET /iqep/moyenne — pour l'ICUA (AVANT :parcId pour éviter capture)
 router.get('/iqep/moyenne',
   authenticate,
-  requireRole('admin_apc', 'admin_wilaya'),
+  requireRole(...ROLES_PILOTAGE),
   asyncH(async (req, res) => {
     const moy = await moyenneIqep();
     res.json({ moyenne_iqep: moy });
   }));
 
-// GET /iqep/:parcId — détail + sous-critères
-router.get('/iqep/:parcId', asyncH(async (req, res) => {
+// GET /iqep/:parcId — détail + sous-critères (pilotage)
+router.get('/iqep/:parcId', authenticate, requireRole(...ROLES_PILOTAGE), asyncH(async (req, res) => {
   const parcId = Number(req.params.parcId);
+  await checkParcCommune(req, parcId);
   await refreshIqep(parcId);
   const { rows } = await query(
     `SELECT p.id, p.nom, c.nom AS commune_nom,
@@ -163,10 +186,10 @@ router.get('/iqep/:parcId', asyncH(async (req, res) => {
   res.json(rows[0]);
 }));
 
-// PATCH /iqep/:parcId — ajustement manuel (agent/admin)
+// PATCH /iqep/:parcId — ajustement manuel (admin_wilaya seulement)
 router.patch('/iqep/:parcId',
   authenticate,
-  requireRole('agent', 'operateur', 'admin_apc', 'admin_wilaya'),
+  requireRole('admin_wilaya'),
   asyncH(async (req, res) => {
     const parcId = Number(req.params.parcId);
     const { note_manuelle, sc_espaces_verts, sc_equipements, sc_proprete,

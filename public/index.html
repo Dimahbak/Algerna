@@ -2440,6 +2440,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span data-i18n="ap.quartiers">Quartiers</span>
       </button>
+      <button class="nav-item hidden" onclick="showView('edeval')" data-view="edeval" id="nav-edeval">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4.97 0 9-2.69 9-6v-4c0-3.31-4.03-6-9-6s-9 2.69-9 6v4c0 3.31 4.03 6 9 6z"/><path d="M12 14c4.97 0 9-2.69 9-6"/><path d="M3 8c0 3.31 4.03 6 9 6"/></svg>
+        <span data-i18n="edeval.sidebar">IQEP Parcs</span>
+      </button>
       <button class="nav-item hidden" onclick="showView('civipark')" data-view="civipark" id="nav-civipark">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
         CiviPark
@@ -4974,7 +4978,6 @@
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-primary" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" style="flex:1;min-width:0;"><span class="acro" tabindex="0" data-def="Indice de Qualité de l'Espace Public">IQEP</span> Parcs</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
           <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
@@ -5012,25 +5015,16 @@
 
 
 
-      <!-- ══ ESPACES VERTS VIEW ══ -->
+      <!-- ══ IQEP PARCS — PILOTAGE (admin_wilaya / admin_apc) ══ -->
       <div id="view-edeval" class="view">
-        <button class="btn-back" onclick="showView('carte')">← Retour</button>
+        <button class="btn-back" onclick="showView(getDefaultView())" data-i18n="common.retour">← Retour</button>
         <div class="page-header">
-          <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p style="color:var(--muted);font-size:13px;line-height:1.5;">L'IQEP est un indice de qualité des espaces publics. Il permet de suivre l'état des parcs, équipements, propreté, éclairage et cadre de vie.</p>
+          <h2 data-i18n="edeval.titre">IQEP — Espaces Publics</h2>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;" data-i18n="edeval.sous_titre">Qualité des espaces publics — Wilaya d'Alger</p>
         </div>
-        <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
-          <button class="btn btn-sm btn-primary" onclick="showView('edeval')" data-subview="edeval" style="flex:1;min-width:0;">IQEP Parcs</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
-        </div>
-
         <!-- Liste des parcs avec IQEP -->
         <div id="edeval-parcs-list"></div>
-
-        <!-- Détail/ajustement IQEP (agent/admin) -->
+        <!-- Détail/ajustement IQEP -->
         <div id="edeval-detail" class="hidden" style="margin-top:20px;">
           <div class="card" id="edeval-detail-card"></div>
         </div>
@@ -5141,7 +5135,6 @@
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" style="flex:1;min-width:0;">IQEP Parcs</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
           <button class="btn btn-sm btn-primary" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
@@ -5205,7 +5198,6 @@
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" style="flex:1;min-width:0;">IQEP Parcs</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-primary" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
           <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
@@ -5251,7 +5243,6 @@
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('edeval')" data-subview="edeval" style="flex:1;min-width:0;">IQEP Parcs</button>
           <button class="btn btn-sm btn-primary" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
           <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
@@ -6282,7 +6273,7 @@ async function initApp() {
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
     cabinet:              ['ccoe'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
@@ -6290,8 +6281,8 @@ async function initApp() {
     citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
-    admin_apc: ['bo-executive','rapports','admin-communiques','quartiers'],
-    admin_wilaya: ['bo-executive','rapports','admin-communiques','quartiers','bo-admin'],
+    admin_apc: ['bo-executive','rapports','admin-communiques','quartiers','edeval'],
+    admin_wilaya: ['bo-executive','rapports','admin-communiques','quartiers','edeval','bo-admin'],
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -6558,7 +6549,7 @@ function initAssistant(questions) {
 const UNIVERS_MAP = {
   civiadmin: 'demarches',
   signaler: 'signale', civisignal: 'signale', watersignal: 'signale',
-  carte: 'quartier', edeval: 'quartier', parkzones: 'quartier', equipements: 'quartier', proprete: 'quartier',
+  carte: 'quartier', parkzones: 'quartier', equipements: 'quartier', proprete: 'quartier',
   participe: 'participe',
   'mes-signalements': 'suivi',
   sentinelle: 'profil'
@@ -6606,19 +6597,19 @@ function showView(name) {
   // Vues autorisées par rôle (doit correspondre à menusByRole dans initApp)
   // Vues autorisées par fonction (avec fallback sur rôle)
   var viewsByFonction = {
-    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','profil','parametres','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
-    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
-    admin_apc: ['bo-executive','admin-communiques','quartiers','profil','parametres','a-propos','aide','notifications'],
-    admin_wilaya: ['bo-executive','admin-communiques','quartiers','bo-admin','profil','parametres','a-propos','aide','notifications'],
+    admin_apc: ['bo-executive','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
@@ -6753,7 +6744,6 @@ async function loadHomePoints() {
         { v: data.signalements?.ouverts || 0, l: t('home.sig_ouverts'), c: '#ef4444', click: "showView('mes-signalements')" },
         { v: data.signalements?.resolus || 0, l: t('home.sig_resolus'), c: '#16a34a', click: "showView('mes-signalements')" },
         { v: data.notifications_non_lues || 0, l: t('notif.titre'), c: '#2563eb', click: "showView('notifications')" },
-        { v: data.iqep !== null ? data.iqep + '/100' : '—', l: acro('IQEP'), c: '#7C3AED', click: "showView('carte')", rawLabel: true },
       ];
       if (data.prochain_rdv) {
         const dt = new Date(data.prochain_rdv.debut);
@@ -7956,7 +7946,7 @@ async function initEdeval() {
   el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + t('edeval.chargement') + '</div>';
   document.getElementById('edeval-detail').classList.add('hidden');
   try {
-    const parcs = await safeFetchJSON('/api/edeval/iqep');
+    const parcs = await safeFetchJSON('/api/edeval/iqep', { headers: authHeaders() });
     if (!parcs.length) { el.innerHTML = '<div class="empty-state"><p>' + t('edeval.aucun_parc') + '</p></div>'; return; }
     el.innerHTML = parcs.map(p => {
       const note = p.note_finale ?? 100;
@@ -7992,10 +7982,10 @@ async function showIqepDetail(parcId) {
   wrap.classList.remove('hidden');
   card.innerHTML = '<div style="text-align:center;padding:20px;">' + t('global.chargement') + '</div>';
   try {
-    const d = await safeFetchJSON('/api/edeval/iqep/' + parcId);
+    const d = await safeFetchJSON('/api/edeval/iqep/' + parcId, { headers: authHeaders() });
     const note = d.note_finale ?? d.note_auto ?? 100;
     const color = iqepColor(note);
-    const isAdmin = isSuperAdmin() || isAgent();
+    const isAdmin = currentUser && currentUser.role === 'admin_wilaya';
     const scFields = ['sc_espaces_verts','sc_equipements','sc_proprete','sc_eclairage','sc_securite','sc_satisfaction'];
 
     card.innerHTML = `
@@ -16489,7 +16479,6 @@ async function loadQuartierDashboard() {
     if (d.resolus_ce_mois !== undefined) items.push({ label: t('quartier.resolus_mois'), value: d.resolus_ce_mois, color: '#16a34a' });
     if (d.pct_resolus !== null) items.push({ label: t('quartier.pct_resolus'), value: d.pct_resolus + '%', color: '#2563eb' });
     if (d.delai_moyen_heures) items.push({ label: t('quartier.delai_moyen'), value: d.delai_moyen_heures + 'h', color: '#f59e0b' });
-    if (d.iqep_moyen) items.push({ label: acro('IQEP'), value: d.iqep_moyen + '/100', color: '#7C3AED', rawLabel: true });
     if (!items.length) { el.innerHTML = ''; return; }
     el.innerHTML = items.map(i =>
       `<div style="flex:1;min-width:80px;padding:8px 10px;background:${i.color}10;border-radius:8px;text-align:center;">
@@ -17336,7 +17325,7 @@ const SAKSINI_FAQ = [
   {k:['rdv','rendez-vous','rendezvous','reservation','reserver','creneau','horaire','disponibilite','agenda','planning'],fr:"Allez dans « Mes démarches », sélectionnez commune + service, choisissez un jour puis un créneau horaire.",ar:"اذهب إلى « إجراءاتي »، اختر البلدية + الخدمة، اختر يوما ثم فترة زمنية."},
   {k:['suivi','suivre','etat','statut','avancement','resolution','traitement','traite','resolu','progression'],fr:"Consultez « Je suis » pour voir l'état de vos signalements et RDV. Vous recevrez un email à chaque changement d'état.",ar:"راجع « أتابع » لمعرفة حالة بلاغاتك ومواعيدك. ستتلقى بريدا إلكترونيا عند كل تغيير."},
   {k:['points','impact','niveau','badge','recompense','citoyennete','merite','score','progres','contribution'],fr:"Chaque signalement rapporte des points. La validation après résolution rapporte +20. Consultez « Mon impact » pour voir votre niveau et vos badges.",ar:"كل بلاغ يمنحك نقاطا. التحقق بعد الحل يمنح +20. راجع « تأثيري » لمعرفة مستواك وشاراتك."},
-  {k:['carte','quartier','houma','voisinage','proximite','autour','pres','zone','secteur','cartographie'],fr:"« Ma Houma » affiche la carte des signalements, les scores IQEP des parcs et les zones de stationnement de votre quartier.",ar:"« حومتي » تعرض خريطة البلاغات، تقييمات IQEP للحدائق ومناطق الركن في حيك."},
+  {k:['carte','quartier','houma','voisinage','proximite','autour','pres','zone','secteur','cartographie'],fr:"« Ma Houma » affiche la carte des signalements, les zones de stationnement, les équipements publics et les créneaux de collecte de votre quartier.",ar:"« حومتي » تعرض خريطة البلاغات، مناطق الركن، التجهيزات العمومية ومواعيد الجمع في حيك."},
   {k:['inscription','inscrire','compte','creer','register','enregistrer','nouveau','rejoindre'],fr:"Cliquez sur « Inscription » sur la page de connexion. Remplissez prénom, nom, email, téléphone, commune et mot de passe.",ar:"اضغط على « تسجيل » في صفحة الدخول. املأ الاسم، البريد، الهاتف، البلدية وكلمة المرور."},
   {k:['connexion','connecter','login','identifiant','mot de passe','mdp','oublie','reinitialiser','acces'],fr:"Entrez votre numéro de téléphone et mot de passe. Si vous l'avez oublié, contactez support@algerna.dz.",ar:"أدخل رقم هاتفك وكلمة المرور. إذا نسيتها، تواصل مع support@algerna.dz."},
   {k:['eau','fuite','coupure','pression','robinet','compteur','canalisation','tuyau','plomberie'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
@@ -17353,7 +17342,7 @@ const SAKSINI_FAQ = [
   {k:['prioritaire','handicap','enceinte','age','pmr','mobilite','fauteuil','senior','accessibilite'],fr:"Lors de la réservation d'un créneau, vous pouvez déclarer un accès prioritaire (personne âgée, handicap, femme enceinte).",ar:"عند حجز فترة زمنية، يمكنك التصريح بأولوية الوصول (شخص مسن، إعاقة، امرأة حامل)."},
   {k:['evaluer','evaluation','satisfaction','noter','avis','retour','feedback','qualite','appreciation'],fr:"Après un RDV traité, un bouton « Évaluer » apparaît dans vos RDV. Notez de 1 à 5 — votre avis alimente l'ICUA.",ar:"بعد موعد مُعالَج، يظهر زر « تقييم » في مواعيدك. قيّم من 1 إلى 5 — رأيك يغذي مؤشر ICUA."},
   {k:['icua','indice','qualite','ville','indicateur','mesure','performance','gouvernance'],fr:"L'ICUA est l'Indice de Citoyenneté Urbaine Active. Il mesure la qualité de vie : propreté, réactivité, espaces verts, fluidité, engagement.",ar:"ICUA هو مؤشر المواطنة الحضرية النشطة. يقيس جودة الحياة: نظافة، استجابة، مساحات خضراء، سيولة، مشاركة."},
-  {k:['iqep','espaces publics','note','parc','qualite parc','evaluation parc','score parc','vert'],fr:"L'IQEP (Indice Qualité des Espaces Publics) note chaque parc de 0 à 100. Consultez-le dans « Ma Houma » → IQEP Parcs.",ar:"IQEP (مؤشر جودة الفضاءات العمومية) يقيّم كل حديقة من 0 إلى 100. راجعه في « حومتي » → IQEP الحدائق."},
+  {k:['iqep','espaces publics','note','parc','qualite parc','evaluation parc','score parc','vert'],get fr(){ return t('edeval.chatbot_fr'); },get ar(){ return t('edeval.chatbot_ar'); }},
   {k:['famille a','dematerialise','portail','national','en ligne','internet','numerique','digital'],fr:"Les démarches Famille A (extrait de naissance, résidence…) sont dématérialisées. ALGERNA vous redirige vers le portail national.",ar:"الإجراءات فئة أ (مستخرج ميلاد، إقامة…) مُرقمنة. ALGERNA يوجهك نحو البوابة الوطنية."},
   {k:['famille b','presentiel','physique','guichet','bureau','sur place'],fr:"Les démarches Famille B nécessitent une présence physique. Réservez un créneau via « Mes démarches ».",ar:"الإجراءات فئة ب تتطلب حضورا شخصيا. احجز فترة زمنية عبر « إجراءاتي »."},
   {k:['photo','preuve','image','piece jointe','camera','appareil','capture','prise'],fr:"Ajoutez une photo à votre signalement — elle aide les agents à identifier et prioriser le problème. +5 points bonus.",ar:"أضف صورة لبلاغك — تساعد الأعوان في تحديد المشكلة وترتيب الأولويات. +5 نقاط إضافية."},
