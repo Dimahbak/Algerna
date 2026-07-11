@@ -8291,6 +8291,9 @@ async function apLoadQuartiers() {
   if (!el) return;
   el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
   document.getElementById('ap-detail').classList.add('hidden');
+  el.classList.remove('hidden');
+  document.getElementById('ap-actions').classList.remove('hidden');
+  document.getElementById('ap-filtre-commune').classList.remove('hidden');
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
   var url = '/api/quartiers';
@@ -8324,15 +8327,19 @@ async function apLoadQuartiers() {
 
 async function apQuartierDetail(id) {
   var det = document.getElementById('ap-detail');
+  document.getElementById('ap-liste').classList.add('hidden');
+  document.getElementById('ap-actions').classList.add('hidden');
+  document.getElementById('ap-filtre-commune').classList.add('hidden');
   det.classList.remove('hidden');
   det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  det.scrollIntoView({behavior:'smooth',block:'start'});
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
   var jours = isAr ? _apJoursAr : _apJours;
   var types = isAr ? _apTypesAr : _apTypes;
   try {
     var q = await safeFetchJSON('/api/quartiers/' + id, {headers:authHeaders()});
-    var html = '<button class="btn-back" onclick="document.getElementById(\'ap-detail\').classList.add(\'hidden\')">' + (isAr?'→ عودة':'← Retour') + '</button>';
+    var html = '<button class="btn-back" onclick="apBackToList()">' + (isAr?'→ عودة':'← Retour') + '</button>';
     html += '<div class="card" style="padding:16px;margin-top:8px;">';
     html += '<h3 style="margin:0 0 8px;">' + escHtml(isAr?(q.nom_ar||q.nom):q.nom) + '</h3>';
     html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + ' · ' + q.statut + (q.source==='demo'?' · démo':'') + '</div>';
@@ -8363,8 +8370,18 @@ async function apQuartierDetail(id) {
   } catch(e) { det.innerHTML = '<p style="color:var(--red);">' + escHtml(e.message) + '</p>'; }
 }
 
+function apBackToList() {
+  document.getElementById('ap-detail').classList.add('hidden');
+  document.getElementById('ap-liste').classList.remove('hidden');
+  document.getElementById('ap-actions').classList.remove('hidden');
+  document.getElementById('ap-filtre-commune').classList.remove('hidden');
+}
+
 function apQuartierForm(editId) {
   var det = document.getElementById('ap-detail');
+  document.getElementById('ap-liste').classList.add('hidden');
+  document.getElementById('ap-actions').classList.add('hidden');
+  document.getElementById('ap-filtre-commune').classList.add('hidden');
   det.classList.remove('hidden');
   var q = editId ? _apQuartiers.find(function(x){return x.id===editId;}) : {};
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
@@ -8389,7 +8406,7 @@ async function apSaveQuartier(e, editId) {
   try {
     var url = editId ? '/api/quartiers/' + editId : '/api/quartiers';
     var res = await apiFetch(url, { method: editId ? 'PATCH' : 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.ok) { showToast('Quartier enregistré.'); document.getElementById('ap-detail').classList.add('hidden'); apLoadQuartiers(); }
+    if (res.ok) { showToast('Quartier enregistré.'); apBackToList(); apLoadQuartiers(); }
     else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast('Erreur réseau', 'error'); }
 }
