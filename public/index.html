@@ -10563,8 +10563,11 @@ function ccoeSaveEvt(e, id) {
   var method = id ? 'PUT' : 'POST';
   var url = id ? '/api/ccoe/evenements/' + id : '/api/ccoe/evenements';
   apiFetch(url, { method: method, body: JSON.stringify(body), headers: {'Content-Type':'application/json'} })
-    .then(function() { showToast(id ? 'Événement modifié' : 'Événement créé', 'success'); ccoeTab('evenements'); })
-    .catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
+    .then(async function(res) {
+      if (!res.ok) { var err = await res.json().catch(function() { return {}; }); throw new Error(err.erreur || err.error || 'Erreur serveur (' + res.status + ')'); }
+      showToast(id ? t('ccoe.evt_modifie') : t('ccoe.evt_cree'), 'success'); ccoeTab('evenements');
+    })
+    .catch(function(err) { showToast(t('ccoe.evt_erreur') + ' ' + (err.message || err), 'error'); });
 }
 
 function ccoeShowEvtDetail(evtId) {
