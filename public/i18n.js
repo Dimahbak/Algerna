@@ -873,9 +873,9 @@ const I18N = {
     "civipark.clotures": "Clôtures",
 
     // ─── ALGER PROPRE 2030 ───
-    "ap.titre": "Alger Propre 2030 — Quartiers et créneaux",
-    "ap.sous_titre": "Référentiel des quartiers et des créneaux de dépôt des déchets",
-    "ap.quartiers": "Quartiers",
+    "ap.titre": "Créneaux ramassage poubelles par quartier",
+    "ap.sous_titre": "Horaires de ramassage des poubelles par quartier",
+    "ap.quartiers": "Poubelles / Quartier",
     "ap.toutes_communes": "Toutes les communes",
     "ap.nouveau_quartier": "+ Nouveau quartier",
     "ap.chargement": "Chargement...",
@@ -2274,9 +2274,9 @@ const I18N = {
     "civipark.clotures": "الإقفالات",
 
     // ─── ALGER PROPRE 2030 ───
-    "ap.titre": "الجزائر نظيفة 2030 — الأحياء والمواعيد",
-    "ap.sous_titre": "مرجع الأحياء ومواعيد إيداع النفايات",
-    "ap.quartiers": "الأحياء",
+    "ap.titre": "مواعيد جمع الحاويات حسب الحي",
+    "ap.sous_titre": "مواعيد جمع الحاويات حسب الحي",
+    "ap.quartiers": "حاويات / حي",
     "ap.toutes_communes": "كل البلديات",
     "ap.nouveau_quartier": "+ حي جديد",
     "ap.chargement": "جاري التحميل...",
