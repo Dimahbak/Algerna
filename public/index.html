@@ -6293,7 +6293,7 @@ async function initApp() {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
     cabinet:              ['ccoe'],
   };
@@ -6582,14 +6582,14 @@ function getDefaultView() {
   var fn = currentUser.fonction;
   if (fn === 'agent_traitant') return 'bo-agent';
   if (fn === 'cap') return 'bo-cap';
-  if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : hasCapacite('collecte_dechets') ? 'collecte-dechets' : 'bo-agent';
+  if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
   if (fn === 'superviseur') return 'bo-executive';
   if (fn === 'cabinet') return 'ccoe';
   if (fn === 'citoyen') return 'home';
   // Fallback sur role
   var r = currentUser.role;
   if (r === 'agent') return 'bo-agent';
-  if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : hasCapacite('collecte_dechets') ? 'collecte-dechets' : 'bo-agent';
+  if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
   if (r === 'admin_apc') return 'bo-executive';
   if (r === 'admin_wilaya') return 'bo-executive';
   return 'home';
@@ -6621,7 +6621,7 @@ function showView(name) {
     citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
