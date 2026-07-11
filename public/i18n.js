@@ -114,7 +114,7 @@ const I18N = {
     "univers.signale_court": "Signaler",
     "univers.nouveau_signalement": "Nouveau signalement",
     "univers.quartier": "Ma Houma",
-    "univers.quartier_desc": "Carte, équipements, parking, propreté",
+    "univers.quartier_desc": "Carte, équipements, parking, poubelles",
     "univers.quartier_court": "Houma",
     "univers.iqep_parcs": "IQEP Parcs",
     "univers.participe": "Je participe",
@@ -921,7 +921,7 @@ const I18N = {
     "ap.type_tri": "Tri sélectif",
     "ap.type_encombrants": "Encombrants",
     // Propreté citoyen (M2)
-    "ap.cit_titre": "Propreté — Mon quartier",
+    "ap.cit_titre": "Poubelles — Mon quartier",
     "ap.cit_sous_titre": "Horaires de collecte et rappels",
     "ap.cit_aucun_quartier": "Vous n'avez pas encore choisi votre quartier.",
     "ap.cit_choisir": "Choisir mon quartier",
@@ -948,10 +948,11 @@ const I18N = {
     "ap.cit_demain": "Demain",
     "ap.cit_demain_matin": "Demain matin",
     "ap.cit_demain_soir": "Demain soir",
-    "ap.cit_nav": "Propreté",
+    "ap.cit_nav": "Poubelles",
     "ap.cit_selectionnez_commune": "Sélectionnez une commune",
     "ap.cit_selectionnez_quartier": "Sélectionnez un quartier",
     "ap.cit_quartier_enregistre": "Quartier enregistré !",
+    "saksini.poubelles": "Consultez les horaires de collecte et gérez vos rappels dans « Ma Houma » → onglet Poubelles. Pour signaler un dépôt sauvage ou une benne pleine, utilisez « Je signale » → famille Déchets.",
 
     // ─── EDEVAL SMART GREEN ───
     "edeval.titre": "IQEP — Espaces Publics",
@@ -1520,7 +1521,7 @@ const I18N = {
     "univers.signale_court": "إبلاغ",
     "univers.nouveau_signalement": "بلاغ جديد",
     "univers.quartier": "حومتي",
-    "univers.quartier_desc": "الخريطة، التجهيزات، المواقف، النظافة",
+    "univers.quartier_desc": "الخريطة، التجهيزات، المواقف، حاويات",
     "univers.quartier_court": "حومتي",
     "univers.iqep_parcs": "IQEP الحدائق",
     "univers.participe": "أشارك",
@@ -2321,7 +2322,7 @@ const I18N = {
     "ap.type_tri": "فرز انتقائي",
     "ap.type_encombrants": "ضخمة",
     // Propreté citoyen (M2)
-    "ap.cit_titre": "النظافة — حيّي",
+    "ap.cit_titre": "حاويات — حيّي",
     "ap.cit_sous_titre": "مواعيد الجمع والتذكيرات",
     "ap.cit_aucun_quartier": "لم تختر حيّك بعد.",
     "ap.cit_choisir": "اختيار حيّي",
@@ -2348,10 +2349,11 @@ const I18N = {
     "ap.cit_demain": "غدًا",
     "ap.cit_demain_matin": "غدًا صباحًا",
     "ap.cit_demain_soir": "غدًا مساءً",
-    "ap.cit_nav": "النظافة",
+    "ap.cit_nav": "حاويات",
     "ap.cit_selectionnez_commune": "اختر البلدية",
     "ap.cit_selectionnez_quartier": "اختر الحي",
     "ap.cit_quartier_enregistre": "تم حفظ الحي!",
+    "saksini.poubelles": "راجعوا مواعيد الجمع وأديروا التذكيرات في « حومتي » → تبويب حاويات. للتبليغ عن رمي عشوائي أو حاوية ممتلئة، استخدموا « أبلّغ » → عائلة النفايات.",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",

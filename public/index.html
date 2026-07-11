@@ -4980,7 +4980,7 @@
           <button class="btn btn-sm btn-primary" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Poubelles</button>
         </div>
         <!-- Dashboard quartier citoyen -->
         <div id="quartier-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
@@ -5131,13 +5131,13 @@
         <button class="btn-back" onclick="showView('carte')">← Retour</button>
         <div class="page-header">
           <h2 data-i18n="univers.quartier">Ma Houma</h2>
-          <p style="color:var(--muted);font-size:13px;line-height:1.5;" data-i18n="ap.cit_sous_titre">Consultez les créneaux de collecte et gérez vos rappels propreté.</p>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;" data-i18n="ap.cit_sous_titre">Horaires de collecte et rappels</p>
         </div>
         <div class="univers-subnav" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
-          <button class="btn btn-sm btn-primary" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
+          <button class="btn btn-sm btn-primary" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Poubelles</button>
         </div>
         <div id="proprete-content"></div>
       </div>
@@ -5200,7 +5200,7 @@
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
           <button class="btn btn-sm btn-outline" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-primary" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Poubelles</button>
         </div>
         <!-- Recherche -->
         <div style="margin-bottom:10px;">
@@ -5245,7 +5245,7 @@
           <button class="btn btn-sm btn-outline" onclick="showView('carte')" data-subview="carte" style="flex:1;min-width:0;">📍 Carte</button>
           <button class="btn btn-sm btn-primary" onclick="showView('parkzones')" data-subview="parkzones" style="flex:1;min-width:0;">🅿️ Parking</button>
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
-          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Propreté</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Poubelles</button>
         </div>
         <div id="parkzones-list"></div>
       </div>
@@ -17329,7 +17329,7 @@ const SAKSINI_FAQ = [
   {k:['inscription','inscrire','compte','creer','register','enregistrer','nouveau','rejoindre'],fr:"Cliquez sur « Inscription » sur la page de connexion. Remplissez prénom, nom, email, téléphone, commune et mot de passe.",ar:"اضغط على « تسجيل » في صفحة الدخول. املأ الاسم، البريد، الهاتف، البلدية وكلمة المرور."},
   {k:['connexion','connecter','login','identifiant','mot de passe','mdp','oublie','reinitialiser','acces'],fr:"Entrez votre numéro de téléphone et mot de passe. Si vous l'avez oublié, contactez support@algerna.dz.",ar:"أدخل رقم هاتفك وكلمة المرور. إذا نسيتها، تواصل مع support@algerna.dz."},
   {k:['eau','fuite','coupure','pression','robinet','compteur','canalisation','tuyau','plomberie'],fr:"Pour un problème d'eau (fuite, coupure, pression), utilisez « Je signale » → famille Eau. Le signalement est transmis au gestionnaire de l'eau.",ar:"لمشكلة مياه (تسرب، انقطاع، ضغط)، استخدم « أبلّغ » → عائلة المياه. يُحال البلاغ إلى مسيّر المياه."},
-  {k:['dechet','poubelle','benne','depot','ordure','ramassage','collecte','recyclage','encombrant'],fr:"Pour les déchets (dépôt sauvage, benne pleine…), utilisez « Je signale » → famille Déchets. Routage automatique vers la Direction Propreté compétente.",ar:"للنفايات (رمي عشوائي، حاوية ممتلئة…)، استخدم « أبلّغ » → عائلة النفايات. توجيه تلقائي نحو مديرية النظافة المختصة."},
+  {k:['dechet','poubelle','benne','depot','ordure','ramassage','collecte','recyclage','encombrant','tri','horaire','creneau','نفايات','حاويات','قمامة','جمع','فرز','ضخمة'],get fr(){ return t('saksini.poubelles'); },get ar(){ return t('saksini.poubelles'); }},
   {k:['voirie','route','trottoir','nid de poule','chaussee','goudron','bitume','asphalte','trou','fissure','revêtement'],fr:"Problème de voirie ? « Je signale » → Voirie. Transmis à la Direction Circulation et Transports.",ar:"مشكلة طرق؟ « أبلّغ » → الطرق. يُحال إلى مديرية الدورة المرورية والنقل الحضري."},
   {k:['eclairage','lampadaire','lumiere','ampoule','nuit','sombre','electrique','panne'],fr:"Lampadaire en panne ? « Je signale » → Éclairage. Transmis à la Direction Éclairage Public.",ar:"عمود إنارة معطل؟ « أبلّغ » → الإنارة. يُحال إلى مديرية الإنارة العمومية."},
   {k:['espace vert','arbre','parc','jardin','pelouse','herbe','vegetation','plante','branche','taille'],fr:"Arbre dangereux ou parc dégradé ? « Je signale » → Espaces verts. Transmis à la Direction Espaces Verts.",ar:"شجرة خطيرة أو حديقة متدهورة؟ « أبلّغ » → المساحات الخضراء. يُحال إلى مديرية المساحات الخضراء."},
