@@ -48,6 +48,49 @@ router.get('/', authenticate, requireSuperviseur, asyncH(async (req, res) => {
   res.json(rows);
 }));
 
+// ══════════════════════════════════════════════════════════
+// CITOYEN — Propreté Mon Quartier (avant /:id pour éviter le conflit)
+// ══════════════════════════════════════════════════════════
+
+// GET /public/communes/:cid — quartiers actifs d'une commune (tout utilisateur authentifié)
+router.get('/public/communes/:cid', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT id, nom, nom_ar FROM quartier WHERE commune_id = $1 AND statut = 'actif' ORDER BY nom`,
+    [req.params.cid]);
+  res.json(rows);
+}));
+
+// GET /mon-quartier — quartier + créneaux du citoyen connecté
+router.get('/mon-quartier', authenticate, asyncH(async (req, res) => {
+  const { rows: u } = await query('SELECT quartier_id, rappel_proprete FROM utilisateur WHERE id=$1', [req.user.id]);
+  if (!u.length || !u[0].quartier_id) return res.json({ quartier: null, rappel: u.length ? u[0].rappel_proprete : true });
+  const { rows } = await query(
+    `SELECT q.*, c.nom AS commune_nom, c.nom_ar AS commune_nom_ar
+     FROM quartier q LEFT JOIN commune c ON c.id = q.commune_id WHERE q.id = $1`, [u[0].quartier_id]);
+  if (!rows.length) return res.json({ quartier: null, rappel: u[0].rappel_proprete });
+  const { rows: creneaux } = await query(
+    'SELECT * FROM creneau_depot WHERE quartier_id = $1 ORDER BY jour, heure_debut', [u[0].quartier_id]);
+  res.json({ quartier: { ...rows[0], creneaux }, rappel: u[0].rappel_proprete });
+}));
+
+// PATCH /mon-quartier — choisir/changer son quartier
+router.patch('/mon-quartier', authenticate, asyncH(async (req, res) => {
+  const { quartier_id } = req.body;
+  if (quartier_id !== null && quartier_id !== undefined) {
+    const { rows: q } = await query("SELECT id FROM quartier WHERE id=$1 AND statut='actif'", [quartier_id]);
+    if (!q.length) throw badRequest('Quartier introuvable ou inactif');
+  }
+  await query('UPDATE utilisateur SET quartier_id=$1 WHERE id=$2', [quartier_id || null, req.user.id]);
+  res.json({ ok: true });
+}));
+
+// PATCH /rappel — activer/désactiver les rappels propreté
+router.patch('/rappel', authenticate, asyncH(async (req, res) => {
+  const { actif } = req.body;
+  await query('UPDATE utilisateur SET rappel_proprete=$1 WHERE id=$2', [!!actif, req.user.id]);
+  res.json({ ok: true, rappel: !!actif });
+}));
+
 // GET /:id — fiche quartier avec créneaux
 router.get('/:id', authenticate, requireSuperviseur, asyncH(async (req, res) => {
   const { rows } = await query(

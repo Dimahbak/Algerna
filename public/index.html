@@ -2382,6 +2382,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
         Ma Houma
       </button>
+      <button class="nav-item" onclick="showView('proprete')" data-view="proprete" data-univers="proprete" data-i18n="ap.cit_nav">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Propreté
+      </button>
       <button class="nav-item" onclick="showView('participe')" data-view="participe" data-univers="participe" data-i18n="univers.participe">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Je participe
@@ -5130,6 +5134,11 @@
         </div>
       </div>
 
+      <!-- ══ PROPRETÉ CITOYEN ══ -->
+      <div id="view-proprete" class="view">
+        <div id="proprete-content"></div>
+      </div>
+
       <!-- ══ QUARTIERS — Alger Propre 2030 ══ -->
       <div id="view-quartiers" class="view">
         <div id="ap-header">
@@ -6257,7 +6266,7 @@ async function initApp() {
   var allNavItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .nav-label, .sidebar .nav-divider');
   // Transverses (profil, notifications, aide, déconnexion) vivent UNIQUEMENT dans le menu avatar
   var menusByFonction = {
-    citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
+    citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','proprete','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
@@ -6266,7 +6275,7 @@ async function initApp() {
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
-    citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
+    citoyen: ['home','civiadmin','signaler','infos','communiques','carte','proprete','participe','mes-signalements','sentinelle'],
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
     admin_apc: ['bo-executive','rapports','admin-communiques','quartiers'],
@@ -6585,7 +6594,7 @@ function showView(name) {
   // Vues autorisées par rôle (doit correspondre à menusByRole dans initApp)
   // Vues autorisées par fonction (avec fallback sur rôle)
   var viewsByFonction = {
-    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
@@ -6593,7 +6602,7 @@ function showView(name) {
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
-    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','edeval','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','quartiers','profil','parametres','a-propos','aide','notifications'],
@@ -6646,6 +6655,7 @@ function showView(name) {
   if (name === 'notifications') { initNotifFilters(); loadNotifications(); }
   if (name === 'cap') initCap();
   if (name === 'quartiers') initQuartiers();
+  if (name === 'proprete') initProprete();
   if (name === 'civipark') initCivipark();
   if (name === 'patrimoine') initPatrimoine();
   if (name === 'operateur') initOperateur();
@@ -8258,6 +8268,189 @@ async function capLoadAlertes() {
 // ─── CIVIPARK — STATIONNEMENT ────────────────────────────────
 const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge:'#ef4444' };
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// PROPRETÉ CITOYEN — Mon Quartier (M2)
+// ══════════════════════════════════════════════════════════
+
+async function initProprete() {
+  var el = document.getElementById('proprete-content');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">' + t('ap.chargement') + '</div>';
+  try {
+    var data = await safeFetchJSON('/api/quartiers/mon-quartier', {headers: authHeaders()});
+    if (!data.quartier) {
+      _propreteNoQuartier(el);
+    } else {
+      _propreteAfficher(el, data);
+    }
+  } catch(e) {
+    el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('ap.toast_erreur') + '</p>';
+  }
+}
+
+function _propreteNoQuartier(el) {
+  el.innerHTML = '<div style="padding:20px;max-width:480px;margin:0 auto;text-align:center;">' +
+    '<h2 style="margin:0 0 6px;">' + t('ap.cit_titre') + '</h2>' +
+    '<p style="color:var(--muted);font-size:13px;margin-bottom:20px;">' + t('ap.cit_sous_titre') + '</p>' +
+    '<div class="card" style="padding:24px;text-align:center;">' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+    '<p style="font-size:14px;color:var(--navy);margin-bottom:16px;">' + t('ap.cit_aucun_quartier') + '</p>' +
+    '<button class="btn btn-primary" onclick="_propreteSelecteur()" style="width:100%;">' + t('ap.cit_choisir') + '</button>' +
+    '</div></div>';
+}
+
+function _propreteSelecteur() {
+  var el = document.getElementById('proprete-content');
+  var isAr = _apIsAr();
+  var html = '<div style="padding:20px;max-width:480px;margin:0 auto;">' +
+    '<h2 style="margin:0 0 6px;">' + t('ap.cit_choisir') + '</h2>' +
+    '<div class="card" style="padding:16px;margin-top:12px;">' +
+    '<div class="form-group"><label>' + t('ap.cit_commune') + '</label>' +
+    '<select id="prop-commune" onchange="_propreteLoadQuartiers()" style="width:100%;padding:10px;border:1px solid var(--gray-300);border-radius:8px;">' +
+    '<option value="">' + t('ap.cit_selectionnez_commune') + '</option>' +
+    communes.map(function(c){ return '<option value="'+c.id+'">'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>'; }).join('') +
+    '</select></div>' +
+    '<div class="form-group"><label>' + t('ap.cit_quartier') + '</label>' +
+    '<select id="prop-quartier" disabled style="width:100%;padding:10px;border:1px solid var(--gray-300);border-radius:8px;">' +
+    '<option value="">' + t('ap.cit_selectionnez_quartier') + '</option></select></div>' +
+    '<div style="display:flex;gap:8px;margin-top:12px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="_propreteSaveQuartier()">' + t('ap.cit_valider') + '</button>' +
+    '<button class="btn btn-outline" style="flex:1;" onclick="initProprete()">' + t('ap.cit_annuler') + '</button>' +
+    '</div></div></div>';
+  el.innerHTML = html;
+}
+
+async function _propreteLoadQuartiers() {
+  var cid = document.getElementById('prop-commune').value;
+  var sel = document.getElementById('prop-quartier');
+  var isAr = _apIsAr();
+  if (!cid) { sel.disabled = true; sel.innerHTML = '<option value="">' + t('ap.cit_selectionnez_quartier') + '</option>'; return; }
+  var quartiers = await safeFetchJSON('/api/quartiers/public/communes/' + cid, {headers: authHeaders()});
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">' + t('ap.cit_selectionnez_quartier') + '</option>' +
+    quartiers.map(function(q){ return '<option value="'+q.id+'">'+escHtml(isAr?(q.nom_ar||q.nom):q.nom)+'</option>'; }).join('');
+}
+
+async function _propreteSaveQuartier() {
+  var qid = document.getElementById('prop-quartier').value;
+  if (!qid) return;
+  await apiFetch('/api/quartiers/mon-quartier', { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({quartier_id:Number(qid)}) });
+  showToast(t('ap.cit_quartier_enregistre'));
+  initProprete();
+}
+
+function _propreteAfficher(el, data) {
+  var q = data.quartier;
+  var creneaux = q.creneaux || [];
+  var isAr = _apIsAr();
+  var qNom = isAr ? (q.nom_ar || q.nom) : q.nom;
+  var cNom = isAr ? (q.commune_nom_ar || q.commune_nom) : q.commune_nom;
+
+  var html = '<div style="padding:16px 20px;max-width:480px;margin:0 auto;">';
+  // Header
+  html += '<h2 style="margin:0 0 2px;">' + t('ap.cit_titre') + '</h2>';
+  html += '<p style="color:var(--muted);font-size:13px;margin:0 0 16px;">' + escHtml(qNom) + ' — ' + escHtml(cNom) + '</p>';
+
+  // Prochaine collecte
+  var prochaine = _propreteProchaineCollecte(creneaux);
+  html += '<div class="card" style="padding:14px;margin-bottom:12px;border-left:4px solid ' + (prochaine ? '#16a34a' : '#94a3b8') + ';">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">' + t('ap.cit_prochaine') + '</div>';
+  if (prochaine) {
+    var timeStr = '<span dir="ltr" style="unicode-bidi:embed;">' + prochaine.heure_debut.substring(0,5) + ' – ' + prochaine.heure_fin.substring(0,5) + '</span>';
+    html += '<div style="font-size:16px;font-weight:700;color:var(--navy);">' + prochaine.quand + ', ' + _apTypeName(prochaine.type_collecte) + '</div>';
+    html += '<div style="font-size:13px;color:var(--muted);">' + timeStr + '</div>';
+  } else {
+    html += '<div style="font-size:14px;color:var(--muted);">' + t('ap.cit_aucune_collecte') + '</div>';
+  }
+  html += '</div>';
+
+  // Planning semaine
+  html += '<div class="card" style="padding:14px;margin-bottom:12px;">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">' + t('ap.cit_planning') + '</div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  var aujourdhui = new Date().getDay();
+  for (var j = 0; j < 7; j++) {
+    var jourIdx = (aujourdhui + j) % 7;
+    var jourCreneaux = creneaux.filter(function(c){ return c.jour === jourIdx; });
+    if (!jourCreneaux.length) continue;
+    var isToday = j === 0;
+    var bgStyle = isToday ? 'background:#f0fdf4;' : '';
+    jourCreneaux.forEach(function(c, ci) {
+      var typeColor = c.type_collecte==='menagers'?'#16a34a':c.type_collecte==='tri'?'#2563eb':'#f59e0b';
+      var timeR = '<span dir="ltr" style="unicode-bidi:embed;">' + c.heure_debut.substring(0,5) + ' – ' + c.heure_fin.substring(0,5) + '</span>';
+      html += '<tr style="'+bgStyle+'">';
+      if (ci === 0) html += '<td style="padding:6px 8px;border-bottom:1px solid var(--line);font-weight:'+(isToday?'700':'500')+';" rowspan="'+jourCreneaux.length+'">' + _apJour(jourIdx) + (isToday?' •':'') + '</td>';
+      html += '<td style="padding:6px 8px;border-bottom:1px solid var(--line);">' + timeR + '</td>';
+      html += '<td style="padding:6px 8px;border-bottom:1px solid var(--line);"><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:'+typeColor+'22;color:'+typeColor+';font-weight:600;font-size:11px;">' + _apTypeName(c.type_collecte) + '</span></td></tr>';
+    });
+  }
+  html += '</table></div>';
+
+  // Conseil
+  html += '<div class="card" style="padding:14px;margin-bottom:12px;border-left:4px solid #2563eb;">';
+  html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#2563eb;margin-bottom:4px;">' + t('ap.cit_conseil_titre') + '</div>';
+  html += '<p style="font-size:13px;margin:0;color:var(--navy);">' + t('ap.cit_conseil') + '</p>';
+  html += '</div>';
+
+  // Rappels toggle
+  html += '<div class="card" style="padding:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">';
+  html += '<div><div style="font-weight:600;font-size:13px;">' + t('ap.cit_rappels') + '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);" id="prop-rappel-label">' + t(data.rappel ? 'ap.cit_rappels_actifs' : 'ap.cit_rappels_inactifs') + '</div></div>';
+  html += '<label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">';
+  html += '<input type="checkbox" id="prop-rappel-toggle" ' + (data.rappel ? 'checked' : '') + ' onchange="_propreteToggleRappel(this.checked)" style="opacity:0;width:0;height:0;">';
+  html += '<span style="position:absolute;inset:0;background:' + (data.rappel ? '#16a34a' : '#ccc') + ';border-radius:24px;transition:.3s;"></span>';
+  html += '<span style="position:absolute;top:2px;' + (isAr ? 'right' : 'left') + ':' + (data.rappel ? '22px' : '2px') + ';width:20px;height:20px;background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>';
+  html += '</label></div>';
+
+  // Changer de quartier
+  html += '<button class="btn btn-outline btn-sm" onclick="_propreteSelecteur()" style="width:100%;margin-bottom:16px;">' + t('ap.cit_changer') + '</button>';
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function _propreteProchaineCollecte(creneaux) {
+  if (!creneaux.length) return null;
+  var now = new Date();
+  var jourActuel = now.getDay();
+  var hh = now.getHours();
+  var mm = now.getMinutes();
+  var nowMinutes = hh * 60 + mm;
+  // Check today first, then next days
+  for (var d = 0; d < 7; d++) {
+    var jourIdx = (jourActuel + d) % 7;
+    var jourC = creneaux.filter(function(c){ return c.jour === jourIdx; });
+    for (var i = 0; i < jourC.length; i++) {
+      var c = jourC[i];
+      var parts = c.heure_fin.split(':');
+      var finMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      if (d === 0 && finMin <= nowMinutes) continue; // past
+      var quand = d === 0 ? t('ap.cit_ce_soir') : (d === 1 ? t('ap.cit_demain') : _apJour(jourIdx));
+      if (d === 0) {
+        var debutParts = c.heure_debut.split(':');
+        var debutMin = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
+        if (debutMin <= nowMinutes) quand = t('ap.cit_aujourdhui');
+      }
+      return { ...c, quand: quand };
+    }
+  }
+  return null;
+}
+
+async function _propreteToggleRappel(actif) {
+  await apiFetch('/api/quartiers/rappel', { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({actif:actif}) });
+  var lbl = document.getElementById('prop-rappel-label');
+  if (lbl) lbl.textContent = t(actif ? 'ap.cit_rappels_actifs' : 'ap.cit_rappels_inactifs');
+  // Update toggle visual
+  var tog = document.getElementById('prop-rappel-toggle');
+  if (tog) {
+    var slider = tog.nextElementSibling;
+    var knob = slider.nextElementSibling;
+    slider.style.background = actif ? '#16a34a' : '#ccc';
+    knob.style[_apIsAr()?'right':'left'] = actif ? '22px' : '2px';
+  }
+}
+
 // ALGER PROPRE 2030 — QUARTIERS ET CRÉNEAUX
 // ══════════════════════════════════════════════════════════
 var _apQuartiers = [];

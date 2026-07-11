@@ -24,6 +24,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(config.port, () => {
   console.log(`ALGERNA — API démarrée sur le port ${config.port} (${config.env})`);
+  // Rappels propreté (notifications in-app, toutes les 15 min)
+  require('./services/rappelProprete').start();
 });
 
 // Arrêt propre
