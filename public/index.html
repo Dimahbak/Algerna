@@ -8261,28 +8261,29 @@ const ZONE_COLORS = { blanche:'#94a3b8', bleue:'#3b82f6', jaune:'#eab308', rouge
 // ALGER PROPRE 2030 — QUARTIERS ET CRÉNEAUX
 // ══════════════════════════════════════════════════════════
 var _apQuartiers = [];
-var _apJours = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-var _apJoursAr = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-var _apTypes = {menagers:'Ménagers',tri:'Tri sélectif',encombrants:'Encombrants'};
-var _apTypesAr = {menagers:'منزلية',tri:'فرز انتقائي',encombrants:'ضخمة'};
+
+function _apIsAr() { return (typeof currentLang !== 'undefined' ? currentLang : (localStorage.getItem('civismart_lang')||'fr')) === 'ar'; }
+function _apJour(i) { return t('ap.jour_'+i); }
+function _apJours() { return [0,1,2,3,4,5,6].map(function(i){return t('ap.jour_'+i);}); }
+function _apTypeName(k) { return t('ap.type_'+k, k); }
+function _apTypeKeys() { return ['menagers','tri','encombrants']; }
+function _apLocalName(obj, field) { return _apIsAr() ? (obj[field+'_ar']||obj[field]) : obj[field]; }
+function _apCommuneName(q) { return _apIsAr() ? (q.commune_nom_ar||q.commune_nom) : q.commune_nom; }
 
 async function initQuartiers() {
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
-  // Filtre commune
   var filtreEl = document.getElementById('ap-filtre-commune');
   if (filtreEl) {
     if (isWilaya) {
       filtreEl.innerHTML = '<select id="ap-commune-select" onchange="apLoadQuartiers()" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:8px;font-size:13px;">' +
-        '<option value="">' + (isAr?'كل البلديات':'Toutes les communes') + '</option>' +
-        communes.map(function(c){return '<option value="'+c.id+'">'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select>';
+        '<option value="">' + t('ap.toutes_communes') + '</option>' +
+        communes.map(function(c){return '<option value="'+c.id+'">'+escHtml(_apIsAr()?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select>';
     } else { filtreEl.innerHTML = ''; }
   }
-  // Actions
   var actEl = document.getElementById('ap-actions');
   if (actEl) {
     if (isWilaya) {
-      actEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="apQuartierForm()">' + (isAr?'+ حي جديد':'+ Nouveau quartier') + '</button>';
+      actEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="apQuartierForm()">' + t('ap.nouveau_quartier') + '</button>';
     } else { actEl.innerHTML = ''; }
   }
   apLoadQuartiers();
@@ -8291,43 +8292,41 @@ async function initQuartiers() {
 async function apLoadQuartiers() {
   var el = document.getElementById('ap-liste');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('ap.chargement') + '</div>';
   document.getElementById('ap-detail').classList.add('hidden');
   el.classList.remove('hidden');
   document.getElementById('ap-actions').classList.remove('hidden');
   document.getElementById('ap-filtre-commune').classList.remove('hidden');
   document.getElementById('ap-header').classList.remove('hidden');
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
-  var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
   var url = '/api/quartiers';
   var sel = document.getElementById('ap-commune-select');
   if (sel && sel.value) url += '?commune_id=' + sel.value;
   try {
     _apQuartiers = await safeFetchJSON(url, {headers:authHeaders()});
-    if (!_apQuartiers.length) { el.innerHTML = '<div class="empty-state"><p>' + (isAr?'لا توجد أحياء':'Aucun quartier enregistré.') + '</p></div>'; return; }
+    if (!_apQuartiers.length) { el.innerHTML = '<div class="empty-state"><p>' + t('ap.aucun_quartier') + '</p></div>'; return; }
     var html = '';
     var curCommune = '';
     _apQuartiers.forEach(function(q) {
       if (q.commune_nom !== curCommune) {
         curCommune = q.commune_nom;
-        html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 6px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + '</div>';
+        html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 6px;">' + escHtml(_apCommuneName(q)) + '</div>';
       }
       var statColor = q.statut==='actif'?'#16a34a':'#94a3b8';
-      var statLabel = q.statut==='actif'?(isAr?'نشط':'actif'):(isAr?'غير نشط':'inactif');
-      var srcLabel = q.source==='demo'?(isAr?' · <em>تجريبي</em>':' · <em>démo</em>'):'';
+      var statLabel = t(q.statut==='actif'?'ap.actif':'ap.inactif');
+      var srcLabel = q.source==='demo'?' · <em>'+t('ap.demo')+'</em>':'';
       html += '<div class="card" style="margin-bottom:6px;padding:12px;border-left:4px solid '+statColor+';cursor:pointer;" onclick="apQuartierDetail('+q.id+')">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
         '<div style="flex:1;min-width:180px;">' +
-          '<div style="font-weight:700;color:var(--navy);">' + escHtml(isAr?(q.nom_ar||q.nom):q.nom) + '</div>' +
-          '<div style="font-size:12px;color:var(--muted);">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + srcLabel + '</div>' +
+          '<div style="font-weight:700;color:var(--navy);">' + escHtml(_apLocalName(q,'nom')) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);">' + escHtml(_apCommuneName(q)) + srcLabel + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
           '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+statColor+'22;color:'+statColor+';font-weight:600;">' + statLabel + '</span>' +
-          '<span style="font-size:11px;color:var(--muted);">' + q.nb_creneaux + ' ' + (isAr?'مواعيد':'créneaux') + '</span>' +
+          '<span style="font-size:11px;color:var(--muted);">' + q.nb_creneaux + ' ' + t('ap.creneaux') + '</span>' +
         '</div></div></div>';
     });
     el.innerHTML = html;
-  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">Erreur: ' + escHtml(e.message) + '</p>'; }
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('ap.toast_erreur') + ': ' + escHtml(e.message) + '</p>'; }
 }
 
 function apShowDetail() {
@@ -8341,42 +8340,38 @@ function apShowDetail() {
 async function apQuartierDetail(id) {
   var det = document.getElementById('ap-detail');
   apShowDetail();
-  det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
+  det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('ap.chargement') + '</div>';
   det.scrollIntoView({behavior:'smooth',block:'start'});
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
-  var jours = isAr ? _apJoursAr : _apJours;
-  var types = isAr ? _apTypesAr : _apTypes;
+  var isAr = _apIsAr();
+  var thAlign = isAr?'text-align:right;':'text-align:left;';
   try {
     var q = await safeFetchJSON('/api/quartiers/' + id, {headers:authHeaders()});
-    var detStatLabel = q.statut==='actif'?(isAr?'نشط':'actif'):(isAr?'غير نشط':'inactif');
-    var detSrcLabel = q.source==='demo'?(isAr?' · تجريبي':' · démo'):'';
-    var thAlign = isAr?'text-align:right;':'text-align:left;';
-    var html = '<button class="btn-back" onclick="apBackToList()">' + (isAr?'→ عودة':'← Retour') + '</button>';
+    var detStatLabel = t(q.statut==='actif'?'ap.actif':'ap.inactif');
+    var detSrcLabel = q.source==='demo'?' · '+t('ap.demo'):'';
+    var html = '<button class="btn-back" onclick="apBackToList()">' + t('ap.retour') + '</button>';
     html += '<div class="card" style="padding:16px;margin-top:8px;">';
-    html += '<h3 style="margin:0 0 8px;">' + escHtml(isAr?(q.nom_ar||q.nom):q.nom) + '</h3>';
+    html += '<h3 style="margin:0 0 8px;">' + escHtml(_apLocalName(q,'nom')) + '</h3>';
     html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + ' · ' + detStatLabel + detSrcLabel + '</div>';
-    // Créneaux
-    html += '<h4 style="margin:12px 0 6px;">' + (isAr?'مواعيد الإيداع':'Créneaux de dépôt') + '</h4>';
+    html += '<h4 style="margin:12px 0 6px;">' + t('ap.creneaux_depot') + '</h4>';
     if (q.creneaux && q.creneaux.length) {
       html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-      html += '<tr><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'اليوم':'Jour') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'الساعة':'Horaire') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'النوع':'Type') + '</th></tr>';
+      html += '<tr><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + t('ap.col_jour') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + t('ap.col_horaire') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + t('ap.col_type') + '</th></tr>';
       q.creneaux.forEach(function(c) {
         var typeColor = c.type_collecte==='menagers'?'#16a34a':c.type_collecte==='tri'?'#2563eb':'#f59e0b';
         var timeRange = '<span dir="ltr" style="unicode-bidi:embed;">' + c.heure_debut.substring(0,5) + ' – ' + c.heure_fin.substring(0,5) + '</span>';
-        html += '<tr><td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + jours[c.jour] + '</td>' +
+        html += '<tr><td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + _apJour(c.jour) + '</td>' +
           '<td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + timeRange + '</td>' +
-          '<td style="padding:6px 10px;border-bottom:1px solid var(--line);"><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:'+typeColor+'22;color:'+typeColor+';font-weight:600;font-size:11px;">' + (types[c.type_collecte]||c.type_collecte) + '</span></td></tr>';
+          '<td style="padding:6px 10px;border-bottom:1px solid var(--line);"><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:'+typeColor+'22;color:'+typeColor+';font-weight:600;font-size:11px;">' + _apTypeName(c.type_collecte) + '</span></td></tr>';
       });
       html += '</table>';
-    } else { html += '<p style="color:var(--muted);font-size:12px;">' + (isAr?'لا توجد مواعيد':'Aucun créneau défini.') + '</p>'; }
-    // Actions (Wilaya only)
+    } else { html += '<p style="color:var(--muted);font-size:12px;">' + t('ap.aucun_creneau') + '</p>'; }
     if (isWilaya) {
       html += '<div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;">';
-      html += '<button class="btn btn-sm btn-outline" onclick="apQuartierForm('+q.id+')">' + (isAr?'تعديل':'Modifier') + '</button>';
-      html += '<button class="btn btn-sm btn-outline" onclick="apCreneauxForm('+q.id+')">' + (isAr?'إدارة المواعيد':'Gérer les créneaux') + '</button>';
-      if (q.statut === 'actif') html += '<button class="btn btn-sm" style="background:#f59e0b;color:white;" onclick="apToggleQuartier('+q.id+',\'inactif\')">' + (isAr?'تعطيل':'Désactiver') + '</button>';
-      else html += '<button class="btn btn-sm" style="background:#16a34a;color:white;" onclick="apToggleQuartier('+q.id+',\'actif\')">' + (isAr?'تفعيل':'Réactiver') + '</button>';
+      html += '<button class="btn btn-sm btn-outline" onclick="apQuartierForm('+q.id+')">' + t('ap.btn_modifier') + '</button>';
+      html += '<button class="btn btn-sm btn-outline" onclick="apCreneauxForm('+q.id+')">' + t('ap.btn_gerer_creneaux') + '</button>';
+      if (q.statut === 'actif') html += '<button class="btn btn-sm" style="background:#f59e0b;color:white;" onclick="apToggleQuartier('+q.id+',\'inactif\')">' + t('ap.btn_desactiver') + '</button>';
+      else html += '<button class="btn btn-sm" style="background:#16a34a;color:white;" onclick="apToggleQuartier('+q.id+',\'actif\')">' + t('ap.btn_reactiver') + '</button>';
       html += '</div>';
     }
     html += '</div>';
@@ -8396,18 +8391,15 @@ function apQuartierForm(editId) {
   var det = document.getElementById('ap-detail');
   apShowDetail();
   var q = editId ? _apQuartiers.find(function(x){return x.id===editId;}) : {};
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
-  var l = isAr ? {title_new:'حي جديد',title_edit:'تعديل الحي',nom:'الاسم (فرنسي)',nom_ar:'الاسم (عربي)',commune:'البلدية',statut:'الحالة',actif:'نشط',inactif:'غير نشط',save:'حفظ'}
-    : {title_new:'Nouveau quartier',title_edit:'Modifier le quartier',nom:'Nom (français)',nom_ar:'Nom (arabe)',commune:'Commune',statut:'Statut',actif:'Actif',inactif:'Inactif',save:'Enregistrer'};
-  det.innerHTML = '<button class="btn-back" onclick="apBackToList()">' + (isAr?'→ عودة':'← Retour') + '</button>' +
-    '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + (editId?l.title_edit:l.title_new) + '</h4>' +
+  det.innerHTML = '<button class="btn-back" onclick="apBackToList()">' + t('ap.retour') + '</button>' +
+    '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + t(editId?'ap.form_modifier':'ap.form_nouveau') + '</h4>' +
     '<form onsubmit="apSaveQuartier(event,' + (editId||'null') + ')">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-    '<div class="form-group" style="margin:0;"><label>' + l.nom + '</label><input type="text" id="ap-q-nom" required value="' + escHtml((q&&q.nom)||'') + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>' + l.nom_ar + '</label><input type="text" id="ap-q-nom-ar" dir="rtl" value="' + escHtml((q&&q.nom_ar)||'') + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>' + l.commune + '</label><select id="ap-q-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(q&&q.commune_id==c.id?' selected':'')+'>'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select></div>' +
-    (editId?'<div class="form-group" style="margin:0;"><label>'+l.statut+'</label><select id="ap-q-statut"><option value="actif"'+(q&&q.statut==='actif'?' selected':'')+'>'+l.actif+'</option><option value="inactif"'+(q&&q.statut==='inactif'?' selected':'')+'>'+l.inactif+'</option></select></div>':'') +
-    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">' + l.save + '</button></form></div>';
+    '<div class="form-group" style="margin:0;"><label>' + t('ap.form_nom') + '</label><input type="text" id="ap-q-nom" required value="' + escHtml((q&&q.nom)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + t('ap.form_nom_ar') + '</label><input type="text" id="ap-q-nom-ar" dir="rtl" value="' + escHtml((q&&q.nom_ar)||'') + '"></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + t('ap.form_commune') + '</label><select id="ap-q-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(q&&q.commune_id==c.id?' selected':'')+'>'+escHtml(_apIsAr()?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select></div>' +
+    (editId?'<div class="form-group" style="margin:0;"><label>'+t('ap.form_statut')+'</label><select id="ap-q-statut"><option value="actif"'+(q&&q.statut==='actif'?' selected':'')+'>'+t('ap.form_actif')+'</option><option value="inactif"'+(q&&q.statut==='inactif'?' selected':'')+'>'+t('ap.form_inactif')+'</option></select></div>':'') +
+    '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">' + t('ap.form_enregistrer') + '</button></form></div>';
 }
 
 async function apSaveQuartier(e, editId) {
@@ -8419,34 +8411,32 @@ async function apSaveQuartier(e, editId) {
   try {
     var url = editId ? '/api/quartiers/' + editId : '/api/quartiers';
     var res = await apiFetch(url, { method: editId ? 'PATCH' : 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.ok) { showToast('Quartier enregistré.'); apBackToList(); apLoadQuartiers(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('ap.toast_quartier_ok')); apBackToList(); apLoadQuartiers(); }
+    else { var d = await res.json(); showToast(d.erreur || t('ap.toast_erreur'), 'error'); }
+  } catch(e) { showToast(t('ap.toast_erreur_reseau'), 'error'); }
 }
 
 async function apToggleQuartier(id, newStatut) {
   try {
     var res = await apiFetch('/api/quartiers/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ statut: newStatut }) });
-    if (res.ok) { showToast('Statut mis à jour.'); apQuartierDetail(id); apLoadQuartiers(); }
-  } catch(e) { showToast('Erreur', 'error'); }
+    if (res.ok) { showToast(t('ap.toast_statut_ok')); apQuartierDetail(id); apLoadQuartiers(); }
+  } catch(e) { showToast(t('ap.toast_erreur'), 'error'); }
 }
 
 function apCreneauxForm(quartierIdParam) {
   var det = document.getElementById('ap-detail');
   apShowDetail();
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
-  var jours = isAr ? _apJoursAr : _apJours;
+  var jours = _apJours();
   var q = _apQuartiers.find(function(x){return x.id===quartierIdParam;});
-  // Fetch current creneaux
   safeFetchJSON('/api/quartiers/' + quartierIdParam, {headers:authHeaders()}).then(function(data) {
     var creneaux = data.creneaux || [];
-    var html = '<button class="btn-back" onclick="apQuartierDetail('+quartierIdParam+')">' + (isAr?'→ عودة':'← Retour') + '</button>';
-    html += '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + (isAr?'مواعيد الإيداع — ':'Créneaux de dépôt — ') + escHtml(isAr?(q&&q.nom_ar||q&&q.nom||''):q&&q.nom||'') + '</h4>';
+    var html = '<button class="btn-back" onclick="apQuartierDetail('+quartierIdParam+')">' + t('ap.retour') + '</button>';
+    html += '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + t('ap.creneaux_depot') + ' — ' + escHtml(_apLocalName(q||{},'nom')) + '</h4>';
     html += '<div id="ap-creneaux-rows">';
-    creneaux.forEach(function(c, idx) { html += apCreneauRow(idx, c, jours, isAr); });
+    creneaux.forEach(function(c, idx) { html += apCreneauRow(idx, c, jours); });
     html += '</div>';
-    html += '<button type="button" class="btn btn-sm btn-outline" style="margin-top:6px;" onclick="apAddCreneauRow()">' + (isAr?'+ إضافة':'+ Ajouter un créneau') + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;" onclick="apSaveCreneaux('+quartierIdParam+')">' + (isAr?'حفظ المواعيد':'Enregistrer les créneaux') + '</button>';
+    html += '<button type="button" class="btn btn-sm btn-outline" style="margin-top:6px;" onclick="apAddCreneauRow()">' + t('ap.btn_ajouter_creneau') + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;" onclick="apSaveCreneaux('+quartierIdParam+')">' + t('ap.btn_enregistrer_creneaux') + '</button>';
     html += '</div>';
     det.innerHTML = html;
     det._apQid = quartierIdParam;
@@ -8454,22 +8444,21 @@ function apCreneauxForm(quartierIdParam) {
 }
 
 var _apCreneauIdx = 0;
-function apCreneauRow(idx, c, jours, isAr) {
+function apCreneauRow(idx, c, jours) {
   _apCreneauIdx = Math.max(_apCreneauIdx, idx + 1);
-  var types = isAr ? _apTypesAr : _apTypes;
+  var typeKeys = _apTypeKeys();
   return '<div class="ap-creneau-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:4px;align-items:end;">' +
     '<select class="ap-cr-jour" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' + jours.map(function(j,i){return '<option value="'+i+'"'+(c&&c.jour===i?' selected':'')+'>'+j+'</option>';}).join('') + '</select>' +
     '<input type="time" class="ap-cr-debut" value="' + ((c&&c.heure_debut)||'19:00').substring(0,5) + '" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' +
     '<input type="time" class="ap-cr-fin" value="' + ((c&&c.heure_fin)||'21:00').substring(0,5) + '" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' +
-    '<select class="ap-cr-type" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' + Object.keys(types).map(function(k){return '<option value="'+k+'"'+(c&&c.type_collecte===k?' selected':'')+'>'+types[k]+'</option>';}).join('') + '</select>' +
+    '<select class="ap-cr-type" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' + typeKeys.map(function(k){return '<option value="'+k+'"'+(c&&c.type_collecte===k?' selected':'')+'>'+_apTypeName(k)+'</option>';}).join('') + '</select>' +
     '<button type="button" onclick="this.parentElement.remove()" style="background:#ef4444;color:white;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;">✕</button></div>';
 }
 
 function apAddCreneauRow() {
-  var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
-  var jours = isAr ? _apJoursAr : _apJours;
+  var jours = _apJours();
   var container = document.getElementById('ap-creneaux-rows');
-  container.insertAdjacentHTML('beforeend', apCreneauRow(_apCreneauIdx++, null, jours, isAr));
+  container.insertAdjacentHTML('beforeend', apCreneauRow(_apCreneauIdx++, null, jours));
 }
 
 async function apSaveCreneaux(qid) {
@@ -8488,9 +8477,9 @@ async function apSaveCreneaux(qid) {
       method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ creneaux: creneaux })
     });
-    if (res.ok) { showToast('Créneaux enregistrés.'); apQuartierDetail(qid); apLoadQuartiers(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('ap.toast_creneaux_ok')); apQuartierDetail(qid); apLoadQuartiers(); }
+    else { var d = await res.json(); showToast(d.erreur || t('ap.toast_erreur'), 'error'); }
+  } catch(e) { showToast(t('ap.toast_erreur_reseau'), 'error'); }
 }
 
 // ── CiviPark ──
