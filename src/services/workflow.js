@@ -132,7 +132,32 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
       }
     }
 
-    // 7. Points citoyen si résolu
+    // 7. Notification EPIC — quand un dossier est transmis à une organisation
+    if (nouveauEtat === 'transmis' && opts.transmisA) {
+      try {
+        const orgId = Number(opts.transmisA);
+        const { rows: epicUsers } = await client.query(
+          `SELECT id FROM utilisateur
+           WHERE organisation_id = $1 AND actif = TRUE AND fonction = 'entite_responsable'`,
+          [orgId]);
+        if (epicUsers.length) {
+          const ref = sig.reference || '';
+          const cat = sig.categorie || '';
+          const com = sig.commune_nom || '';
+          const ctx = [ref, cat, com].filter(Boolean).join(' · ');
+          const titre = 'Nouveau dossier transmis — ' + ctx;
+          const message = `Le dossier #${ref} (${cat}) a été transmis à votre service. Commune : ${com || 'non précisée'}.`;
+          for (const u of epicUsers) {
+            await client.query(
+              `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+               VALUES ($1, 'signalement', $2, $3, '/bo-agent')`,
+              [u.id, titre, message]);
+          }
+        }
+      } catch (e) { /* notification EPIC non bloquante */ }
+    }
+
+    // 8. Points citoyen si résolu
     if (nouveauEtat === 'resolu' && sig.citoyen_id) {
       try {
         const { awardPoints } = require('../utils/points');
