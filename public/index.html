@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="/i18n.js"></script>
+  <script src="/i18n.js?v=336"></script>
   <script defer src="https://unpkg.com/lucide@1.23.0/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -6580,14 +6580,14 @@ function getDefaultView() {
   var fn = currentUser.fonction;
   if (fn === 'agent_traitant') return 'bo-agent';
   if (fn === 'cap') return 'bo-cap';
-  if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
+  if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : hasCapacite('collecte_dechets') ? 'collecte-dechets' : 'bo-agent';
   if (fn === 'superviseur') return 'bo-executive';
   if (fn === 'cabinet') return 'ccoe';
   if (fn === 'citoyen') return 'home';
   // Fallback sur role
   var r = currentUser.role;
   if (r === 'agent') return 'bo-agent';
-  if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
+  if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : hasCapacite('collecte_dechets') ? 'collecte-dechets' : 'bo-agent';
   if (r === 'admin_apc') return 'bo-executive';
   if (r === 'admin_wilaya') return 'bo-executive';
   return 'home';
