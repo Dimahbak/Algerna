@@ -84,30 +84,29 @@ module.exports = router;
 router.get('/communiques', asyncH(async (req, res) => {
   const { admin, statut, commune_id: qCommune, priorite: qPriorite } = req.query;
 
-  // Mode admin : authentifié + rôle admin
+  // Mode admin : authentifié + fonction superviseur uniquement
   if (admin === 'true') {
-    // vérifier auth manuellement
-    return authenticate(req, res, () => {
-      requireSuperviseur()(req, res, async () => {
-        try {
-          let sql = `SELECT c.*, cm.nom AS commune_nom
-                       FROM communique c
-                       LEFT JOIN commune cm ON cm.id = c.commune_id WHERE 1=1`;
-          const params = [];
-          if (statut) { params.push(statut); sql += ` AND c.statut = $${params.length}`; }
-          if (qPriorite) { params.push(qPriorite); sql += ` AND c.priorite = $${params.length}`; }
-          if (qCommune) { params.push(qCommune); sql += ` AND c.commune_id = $${params.length}`; }
-          // Superviseur communal : restreindre à sa commune ou wilaya-wide
-          var isCommune = hasPerimetre(req.user, 'commune');
-          if (isCommune && req.user.commune_id) {
-            params.push(req.user.commune_id);
-            sql += ` AND (c.commune_id = $${params.length} OR c.commune_id IS NULL)`;
-          }
-          sql += ` ORDER BY c.cree_le DESC`;
-          const { rows } = await query(sql, params);
-          res.json(rows);
-        } catch (e) { res.status(500).json({ error: e.message }); }
-      });
+    return authenticate(req, res, async () => {
+      if (!req.user || req.user.fonction !== 'superviseur') {
+        return res.status(403).json({ erreur: 'Accès réservé aux superviseurs' });
+      }
+      try {
+        let sql = `SELECT c.*, cm.nom AS commune_nom
+                     FROM communique c
+                     LEFT JOIN commune cm ON cm.id = c.commune_id WHERE 1=1`;
+        const params = [];
+        if (statut) { params.push(statut); sql += ` AND c.statut = $${params.length}`; }
+        if (qPriorite) { params.push(qPriorite); sql += ` AND c.priorite = $${params.length}`; }
+        if (qCommune) { params.push(qCommune); sql += ` AND c.commune_id = $${params.length}`; }
+        var isCommune = hasPerimetre(req.user, 'commune');
+        if (isCommune && req.user.commune_id) {
+          params.push(req.user.commune_id);
+          sql += ` AND (c.commune_id = $${params.length} OR c.commune_id IS NULL)`;
+        }
+        sql += ` ORDER BY c.cree_le DESC`;
+        const { rows } = await query(sql, params);
+        res.json(rows);
+      } catch (e) { res.status(500).json({ error: e.message }); }
     });
   }
 
