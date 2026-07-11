@@ -8409,29 +8409,52 @@ function _propreteAfficher(el, data) {
   el.innerHTML = html;
 }
 
-function _propreteProchaineCollecte(creneaux) {
+// Exported for testing: compute next collection from créneaux list.
+// nowOverride: optional {day, hh, mm} to override current time for tests.
+function _propreteProchaineCollecte(creneaux, nowOverride) {
   if (!creneaux.length) return null;
-  var now = new Date();
-  var jourActuel = now.getDay();
-  var hh = now.getHours();
-  var mm = now.getMinutes();
+  var now = nowOverride || {};
+  var jourActuel = now.day !== undefined ? now.day : new Date().getDay();
+  var hh = now.hh !== undefined ? now.hh : new Date().getHours();
+  var mm = now.mm !== undefined ? now.mm : new Date().getMinutes();
   var nowMinutes = hh * 60 + mm;
-  // Check today first, then next days
+
   for (var d = 0; d < 7; d++) {
     var jourIdx = (jourActuel + d) % 7;
     var jourC = creneaux.filter(function(c){ return c.jour === jourIdx; });
+    // Sort by heure_debut within a day
+    jourC.sort(function(a,b){ return a.heure_debut < b.heure_debut ? -1 : 1; });
     for (var i = 0; i < jourC.length; i++) {
       var c = jourC[i];
-      var parts = c.heure_fin.split(':');
-      var finMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-      if (d === 0 && finMin <= nowMinutes) continue; // past
-      var quand = d === 0 ? t('ap.cit_ce_soir') : (d === 1 ? t('ap.cit_demain') : _apJour(jourIdx));
+      var finParts = c.heure_fin.split(':');
+      var finMin = parseInt(finParts[0]) * 60 + parseInt(finParts[1]);
+      // Skip only if today AND the créneau end time is already past
+      if (d === 0 && finMin <= nowMinutes) continue;
+
+      var debutParts = c.heure_debut.split(':');
+      var debutMin = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
+
+      var quand;
       if (d === 0) {
-        var debutParts = c.heure_debut.split(':');
-        var debutMin = parseInt(debutParts[0]) * 60 + parseInt(debutParts[1]);
-        if (debutMin <= nowMinutes) quand = t('ap.cit_aujourdhui');
+        // Today: adapt label to time of day
+        if (debutMin <= nowMinutes && finMin > nowMinutes) {
+          quand = t('ap.cit_en_cours');
+        } else if (debutMin >= 17 * 60) {
+          quand = t('ap.cit_ce_soir');
+        } else if (debutMin >= 12 * 60) {
+          quand = t('ap.cit_cet_aprem');
+        } else {
+          quand = t('ap.cit_ce_matin');
+        }
+      } else if (d === 1) {
+        if (debutMin >= 17 * 60) quand = t('ap.cit_demain_soir');
+        else if (debutMin < 12 * 60) quand = t('ap.cit_demain_matin');
+        else quand = t('ap.cit_demain');
+      } else {
+        quand = _apJour(jourIdx);
       }
-      return { ...c, quand: quand };
+
+      return { type_collecte: c.type_collecte, heure_debut: c.heure_debut, heure_fin: c.heure_fin, jour: c.jour, quand: quand };
     }
   }
   return null;

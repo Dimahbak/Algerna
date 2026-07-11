@@ -41,10 +41,14 @@ async function envoyerRappels() {
       const typeFr = TYPES_FR[c.type_collecte] || c.type_collecte;
       const typeAr = TYPES_AR[c.type_collecte] || c.type_collecte;
 
+      const debutH = parseInt(hDebut.split(':')[0], 10);
+      const momentFr = debutH >= 17 ? 'ce soir' : debutH >= 12 ? 'cet après-midi' : 'ce matin';
+      const momentAr = debutH >= 17 ? 'هذا المساء' : debutH >= 12 ? 'بعد الظهر' : 'هذا الصباح';
+
       const titreFr = 'Rappel collecte — ' + c.quartier_nom;
       const titreAr = 'تذكير جمع — ' + (c.quartier_nom_ar || c.quartier_nom);
-      const msgFr = `Dépôt des ${typeFr} de ${hDebut} à ${hFin} ce soir dans votre quartier.`;
-      const msgAr = `إيداع ${typeAr} من ${hDebut} إلى ${hFin} هذا المساء في حيكم.`;
+      const msgFr = `Dépôt des ${typeFr} de ${hDebut} à ${hFin} ${momentFr} dans votre quartier.`;
+      const msgAr = `إيداع ${typeAr} من ${hDebut} إلى ${hFin} ${momentAr} في حيكم.`;
 
       // Find users with this quartier + rappel enabled, no duplicate for today
       const { rows: users } = await query(
