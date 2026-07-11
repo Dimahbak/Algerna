@@ -12,9 +12,11 @@ const router = express.Router();
 // ── Auth helpers ──
 function isWilaya(user) { return user.role === 'admin_wilaya'; }
 function isCommune(user) { return user.role === 'admin_apc' && !!user.commune_id; }
+function isEpicProprete(user) { return user.fonction === 'entite_responsable' && Array.isArray(user.capacites) && user.capacites.includes('collecte_dechets'); }
+function canWrite(user) { return isWilaya(user) || isEpicProprete(user); }
 function requireSuperviseur(req, res, next) {
   if (!req.user) return next(forbidden());
-  if (isWilaya(req.user) || isCommune(req.user)) return next();
+  if (isWilaya(req.user) || isCommune(req.user) || isEpicProprete(req.user)) return next();
   return next(forbidden());
 }
 
@@ -93,6 +95,44 @@ router.patch('/rappel', authenticate, asyncH(async (req, res) => {
   res.json({ ok: true, rappel: mode });
 }));
 
+// ══════════════════════════════════════════════════════════
+// CATÉGORIES DE DÉCHETS (avant /:id pour éviter capture)
+// ══════════════════════════════════════════════════════════
+
+// GET /categories-dechets — liste
+router.get('/categories-dechets', authenticate, requireSuperviseur, asyncH(async (req, res) => {
+  const { rows } = await query('SELECT * FROM categorie_dechet ORDER BY id');
+  res.json(rows);
+}));
+
+// POST /categories-dechets — créer (Wilaya ou EPIC Propreté)
+router.post('/categories-dechets', authenticate, asyncH(async (req, res) => {
+  if (!canWrite(req.user)) throw forbidden();
+  const { nom_fr, nom_ar, rappel_defaut } = req.body;
+  if (!nom_fr) throw badRequest('nom_fr requis');
+  const { rows } = await query(
+    `INSERT INTO categorie_dechet (nom_fr, nom_ar, rappel_defaut)
+     VALUES ($1, $2, $3) RETURNING *`,
+    [nom_fr, nom_ar || null, rappel_defaut === true]);
+  res.status(201).json(rows[0]);
+}));
+
+// PATCH /categories-dechets/:id — modifier (Wilaya ou EPIC Propreté)
+router.patch('/categories-dechets/:id', authenticate, asyncH(async (req, res) => {
+  if (!canWrite(req.user)) throw forbidden();
+  const { rows: old } = await query('SELECT * FROM categorie_dechet WHERE id=$1', [req.params.id]);
+  if (!old.length) throw notFound('Catégorie introuvable');
+  const fields = ['nom_fr', 'nom_ar', 'rappel_defaut', 'statut'];
+  const sets = []; const vals = []; let i = 1;
+  for (const f of fields) {
+    if (req.body[f] !== undefined) { sets.push(`${f} = $${i++}`); vals.push(req.body[f]); }
+  }
+  if (!sets.length) throw badRequest('Rien à modifier');
+  vals.push(req.params.id);
+  const { rows } = await query(`UPDATE categorie_dechet SET ${sets.join(', ')} WHERE id = $${i} RETURNING *`, vals);
+  res.json(rows[0]);
+}));
+
 // GET /:id — fiche quartier avec créneaux
 router.get('/:id', authenticate, requireSuperviseur, asyncH(async (req, res) => {
   const { rows } = await query(
@@ -107,9 +147,9 @@ router.get('/:id', authenticate, requireSuperviseur, asyncH(async (req, res) => 
   res.json({ ...rows[0], creneaux });
 }));
 
-// POST / — créer un quartier (Wilaya uniquement)
+// POST / — créer un quartier (Wilaya ou EPIC Propreté)
 router.post('/', authenticate, asyncH(async (req, res) => {
-  if (!isWilaya(req.user)) throw forbidden();
+  if (!canWrite(req.user)) throw forbidden();
   const { nom, nom_ar, commune_id, perimetre, source } = req.body;
   if (!nom || !commune_id) throw badRequest('nom et commune_id requis');
   const { rows } = await query(
@@ -119,9 +159,9 @@ router.post('/', authenticate, asyncH(async (req, res) => {
   res.status(201).json(rows[0]);
 }));
 
-// PATCH /:id — modifier un quartier (Wilaya uniquement)
+// PATCH /:id — modifier un quartier (Wilaya ou EPIC Propreté)
 router.patch('/:id', authenticate, asyncH(async (req, res) => {
-  if (!isWilaya(req.user)) throw forbidden();
+  if (!canWrite(req.user)) throw forbidden();
   const { rows: old } = await query('SELECT * FROM quartier WHERE id=$1', [req.params.id]);
   if (!old.length) throw notFound('Quartier introuvable');
   const fields = ['nom', 'nom_ar', 'commune_id', 'perimetre', 'statut', 'source'];
@@ -144,9 +184,9 @@ router.patch('/:id', authenticate, asyncH(async (req, res) => {
 // CRÉNEAUX DE DÉPÔT
 // ══════════════════════════════════════════════════════════
 
-// PUT /:id/creneaux — remplace tous les créneaux d'un quartier (Wilaya uniquement)
+// PUT /:id/creneaux — remplace tous les créneaux d'un quartier (Wilaya ou EPIC Propreté)
 router.put('/:id/creneaux', authenticate, asyncH(async (req, res) => {
-  if (!isWilaya(req.user)) throw forbidden();
+  if (!canWrite(req.user)) throw forbidden();
   const { rows: qr } = await query('SELECT id FROM quartier WHERE id=$1', [req.params.id]);
   if (!qr.length) throw notFound('Quartier introuvable');
   const creneaux = req.body.creneaux;

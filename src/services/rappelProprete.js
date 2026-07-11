@@ -51,10 +51,14 @@ async function envoyerRappels() {
       const msgAr = `إيداع ${typeAr} من ${hDebut} إلى ${hFin} ${momentAr} في حيكم.`;
 
       // Find users with this quartier + rappel mode compatible
-      // 'tous' = all types, 'utiles' = tri+encombrants only, 'aucun' = none
-      const modeFilter = c.type_collecte === 'menagers'
-        ? "AND u.rappel_proprete = 'tous'"                    // ménagers: only for 'tous'
-        : "AND u.rappel_proprete IN ('tous', 'utiles')";      // tri/encombrants: 'tous' or 'utiles'
+      // 'tous' = all types, 'utiles' = categories with rappel_defaut=true only, 'aucun' = none
+      // Reads rappel_defaut from categorie_dechet table (driven by data, not hardcoded)
+      const { rows: catRows } = await query(
+        `SELECT rappel_defaut FROM categorie_dechet WHERE nom_fr = $1`, [c.type_collecte]);
+      const rappelDefaut = catRows.length ? catRows[0].rappel_defaut : false;
+      const modeFilter = rappelDefaut
+        ? "AND u.rappel_proprete IN ('tous', 'utiles')"       // rappel_defaut=true: 'tous' + 'utiles'
+        : "AND u.rappel_proprete = 'tous'";                    // rappel_defaut=false: only 'tous'
       const { rows: users } = await query(
         `SELECT u.id, COALESCE(u.langue, 'fr') AS langue FROM utilisateur u
          WHERE u.quartier_id = $1 AND u.actif = TRUE ${modeFilter}

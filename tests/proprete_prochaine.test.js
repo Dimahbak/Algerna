@@ -53,12 +53,19 @@ function _propreteProchaineCollecte(creneaux, nowOverride) {
   return null;
 }
 
-// ── Rappel mode filtering logic (mirrors cron SQL) ──
+// ── Rappel mode filtering logic (mirrors cron SQL via categorie_dechet.rappel_defaut) ──
+// Simulates the categorie_dechet table
+const CATEGORIES = {
+  menagers:    { rappel_defaut: false },
+  tri:         { rappel_defaut: true },
+  encombrants: { rappel_defaut: true },
+};
 function shouldNotify(type_collecte, rappelMode) {
   if (rappelMode === 'aucun') return false;
   if (rappelMode === 'tous') return true;
-  // 'utiles': only non-daily types (tri + encombrants)
-  return type_collecte !== 'menagers';
+  // 'utiles': follows categorie_dechet.rappel_defaut
+  var cat = CATEGORIES[type_collecte];
+  return cat ? cat.rappel_defaut : false;
 }
 
 // ── Test Data ──
@@ -166,6 +173,25 @@ console.log('\n11. Mode "aucun" — rien');
   assert('menagers → NON', !shouldNotify('menagers', 'aucun'));
   assert('tri → NON', !shouldNotify('tri', 'aucun'));
   assert('encombrants → NON', !shouldNotify('encombrants', 'aucun'));
+}
+
+console.log('\n12. rappel_defaut=false custom category → only "tous" notifies');
+{
+  // Simulate a new category with rappel_defaut=false
+  CATEGORIES['verre'] = { rappel_defaut: false };
+  assert('verre + tous → oui', shouldNotify('verre', 'tous'));
+  assert('verre + utiles → NON', !shouldNotify('verre', 'utiles'));
+  assert('verre + aucun → NON', !shouldNotify('verre', 'aucun'));
+  delete CATEGORIES['verre'];
+}
+
+console.log('\n13. rappel_defaut=true custom category → "tous" + "utiles" notify');
+{
+  CATEGORIES['dangereux'] = { rappel_defaut: true };
+  assert('dangereux + tous → oui', shouldNotify('dangereux', 'tous'));
+  assert('dangereux + utiles → oui', shouldNotify('dangereux', 'utiles'));
+  assert('dangereux + aucun → NON', !shouldNotify('dangereux', 'aucun'));
+  delete CATEGORIES['dangereux'];
 }
 
 // ═══ Summary ═══

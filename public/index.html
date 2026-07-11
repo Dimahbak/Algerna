@@ -2460,6 +2460,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <span data-i18n="sidebar.mes_chantiers">Mes chantiers</span>
       </button>
+      <button class="nav-item hidden" onclick="showView('collecte-dechets')" data-view="collecte-dechets" id="nav-collecte-dechets">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span data-i18n="cd.sidebar">Collecte des déchets</span>
+      </button>
       <div class="nav-divider hidden" id="admin-sys-divider"></div>
       <div class="nav-label hidden" id="admin-sys-label" data-i18n="sidebar.administration">Administration</div>
       <button class="nav-item hidden" onclick="showView('bo-admin')" data-view="bo-admin" id="nav-bo-admin">
@@ -4806,7 +4810,22 @@
         <div class="module-identity" style="background:#f0f4f8;border-left:4px solid #0B6078;border-radius:8px;padding:12px 16px;margin-bottom:14px;">
           <div style="font-size:13px;color:#333;" data-i18n="ccoe.mes_chantiers_desc">Suivez et faites avancer les chantiers assignés à votre organisation dans le cadre des événements coordonnés par le CCOE.</div>
         </div>
-        <div id="mcc-content"></div>
+        <div id="mcc-content" style="max-width:800px;"></div>
+      </div>
+
+      <!-- ══ COLLECTE DES DÉCHETS (EPIC Propreté) ══ -->
+      <div id="view-collecte-dechets" class="view">
+        <button class="btn-back" onclick="showView(getDefaultView())" data-i18n="common.retour">← Retour</button>
+        <div class="page-header">
+          <h2 data-i18n="cd.titre">Collecte des déchets</h2>
+          <p style="color:var(--muted);font-size:13px;" data-i18n="cd.sous_titre">Gestion des quartiers, créneaux et catégories de déchets</p>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;" id="cd-tabs">
+          <button class="btn btn-sm btn-primary" id="cd-tab-quartiers" onclick="cdShowTab('quartiers')" data-i18n="cd.tab_quartiers">Quartiers & Créneaux</button>
+          <button class="btn btn-sm btn-outline" id="cd-tab-categories" onclick="cdShowTab('categories')" data-i18n="cd.tab_categories">Catégories</button>
+          <button class="btn btn-sm btn-outline" id="cd-tab-notes" onclick="cdShowTab('notes')"><span data-i18n="cd.tab_notes">Notes</span> <span id="cd-notes-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>
+        </div>
+        <div id="cd-content"></div>
       </div>
 
       <!-- ══ ADMIN COMMUNIQUÉS VIEW ══ -->
@@ -6272,7 +6291,7 @@ async function initApp() {
     citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
     cabinet:              ['ccoe'],
   };
@@ -6600,7 +6619,7 @@ function showView(name) {
     citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
-    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
+    entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
@@ -6680,6 +6699,7 @@ function showView(name) {
   if (name === 'mes-chantiers-ccoe') initMesChantiersCCOE();
   if (name === 'securite') { /* static view, nothing to init */ }
   if (name === 'admin-communiques') loadAdminCommuniques();
+  if (name === 'collecte-dechets') initCollecteDechets();
 
   window.scrollTo(0, 0);
   applyTranslations();
@@ -8512,6 +8532,7 @@ async function initQuartiers() {
     } else { actEl.innerHTML = ''; }
   }
   apLoadQuartiers();
+  apInitNotesTabs();
 }
 
 async function apLoadQuartiers() {
@@ -9880,13 +9901,13 @@ function mccShowDetail(chantierId) {
     }
 
     // Checklist
-    html += '<h4 style="margin:0 0 8px;">Checklist (' + ch.checklist.length + ')</h4>';
+    html += '<h4 style="margin:0 0 8px;">' + (t('ccoe.checklist') || 'Checklist') + ' (' + ch.checklist.length + ')</h4>';
     ch.checklist.forEach(function(item) {
-      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0;">' +
-        '<input type="checkbox" ' + (item.coche ? 'checked' : '') + ' onchange="mccToggleChecklist(' + item.id + ',this.checked,' + ch.id + ')">' +
-        '<span style="flex:1;font-size:13px;' + (item.coche ? 'text-decoration:line-through;color:var(--muted);' : '') + '">' + escHtml(item.libelle) + '</span>' +
-        (item.agent_prenom ? '<span style="font-size:11px;color:var(--muted);">' + escHtml(item.agent_prenom) + '</span>' : '') +
-        (item.photo_path ? '<img src="' + escHtml(item.photo_path) + '" style="width:24px;height:24px;border-radius:4px;object-fit:cover;">' : '') +
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;">' +
+        '<input type="checkbox" style="flex-shrink:0;margin-top:2px;" ' + (item.coche ? 'checked' : '') + ' onchange="mccToggleChecklist(' + item.id + ',this.checked,' + ch.id + ')">' +
+        '<span style="flex:1;min-width:0;word-break:break-word;font-size:13px;line-height:1.4;' + (item.coche ? 'text-decoration:line-through;color:var(--muted);' : '') + '">' + escHtml(item.libelle) + '</span>' +
+        (item.agent_prenom ? '<span style="flex-shrink:0;font-size:11px;color:var(--muted);">' + escHtml(item.agent_prenom) + '</span>' : '') +
+        (item.photo_path ? '<img src="' + escHtml(item.photo_path) + '" style="flex-shrink:0;width:28px;height:28px;border-radius:4px;object-fit:cover;">' : '') +
         '</div>';
     });
 
@@ -9900,8 +9921,8 @@ function mccShowDetail(chantierId) {
         (cm.photo_path ? '<img src="' + escHtml(cm.photo_path) + '" style="max-width:120px;margin-top:4px;border-radius:4px;">' : '') +
         '</div>';
     });
-    html += '<form onsubmit="mccAddComment(event,' + ch.id + ')" style="display:flex;gap:6px;margin-top:8px;">' +
-      '<input type="text" id="mcc-comment-msg" placeholder="' + (t('ccoe.ajouter_commentaire') || 'Ajouter un commentaire…') + '" style="flex:1;" required>' +
+    html += '<form onsubmit="mccAddComment(event,' + ch.id + ')" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+      '<input type="text" id="mcc-comment-msg" placeholder="' + (t('ccoe.ajouter_commentaire') || 'Ajouter un commentaire…') + '" style="flex:1;min-width:200px;" required>' +
       '<button type="submit" class="btn btn-sm btn-primary">' + (t('ccoe.envoyer') || 'Envoyer') + '</button></form>';
 
     // Validations
@@ -9959,6 +9980,352 @@ function mccDemanderValidation(chantierId) {
     body: JSON.stringify({ message: msg || '' })
   }).then(function() { showToast(t('ccoe.validation_demandee') || 'Demande de validation envoyée', 'success'); mccShowDetail(chantierId); })
     .catch(function(err) { showToast(err.message || err, 'error'); });
+}
+
+// ─── COLLECTE DES DÉCHETS (EPIC Propreté / admin_wilaya) ─────────────
+var _cdTab = 'quartiers';
+
+function initCollecteDechets() {
+  _cdTab = 'quartiers';
+  cdShowTab('quartiers');
+  cdLoadNotesBadge();
+}
+
+function cdShowTab(tab) {
+  _cdTab = tab;
+  ['quartiers','categories','notes'].forEach(function(t) {
+    var btn = document.getElementById('cd-tab-' + t);
+    if (btn) { btn.className = 'btn btn-sm ' + (t === tab ? 'btn-primary' : 'btn-outline'); }
+  });
+  var el = document.getElementById('cd-content');
+  if (tab === 'quartiers') cdLoadQuartiers(el);
+  else if (tab === 'categories') cdLoadCategories(el);
+  else if (tab === 'notes') cdLoadNotes(el);
+}
+
+// ── Quartiers & Créneaux ──
+async function cdLoadQuartiers(el) {
+  if (!el) el = document.getElementById('cd-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('cd.chargement') + '</div>';
+  try {
+    var quartiers = await safeFetchJSON('/api/quartiers', { headers: authHeaders() });
+    var html = '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '<button class="btn btn-sm btn-primary" onclick="cdQuartierForm()">' + t('cd.nouveau_quartier') + '</button></div>';
+    if (!quartiers.length) { html += '<div class="card" style="padding:16px;text-align:center;color:var(--muted);">' + t('cd.aucun_quartier') + '</div>'; }
+    else {
+      quartiers.forEach(function(q) {
+        var isAr = currentLang === 'ar';
+        var nom = isAr ? (q.nom_ar || q.nom) : q.nom;
+        var cNom = isAr ? (q.commune_nom_ar || q.commune_nom) : q.commune_nom;
+        html += '<div class="card" style="padding:12px;margin-bottom:6px;cursor:pointer;" onclick="cdQuartierDetail(' + q.id + ')">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+          '<div><strong>' + escHtml(nom) + '</strong><div style="font-size:12px;color:var(--muted);">' + escHtml(cNom || '') + ' · ' + (q.source || '') + '</div></div>' +
+          '<div style="display:flex;gap:6px;align-items:center;">' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + (q.statut === 'actif' ? '#D1FAE5' : '#FEE2E2') + ';color:' + (q.statut === 'actif' ? '#059669' : '#DC2626') + ';">' + t('cd.statut_' + q.statut) + '</span>' +
+          '<span style="font-size:12px;color:var(--muted);">' + (q.nb_creneaux || 0) + ' ' + t('cd.creneaux') + '</span>' +
+          '</div></div></div>';
+      });
+    }
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('cd.erreur') + '</p>'; }
+}
+
+async function cdQuartierDetail(id) {
+  var el = document.getElementById('cd-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('cd.chargement') + '</div>';
+  try {
+    var q = await safeFetchJSON('/api/quartiers/' + id, { headers: authHeaders() });
+    var isAr = currentLang === 'ar';
+    var nom = isAr ? (q.nom_ar || q.nom) : q.nom;
+    var creneaux = q.creneaux || [];
+    var html = '<button class="btn btn-sm btn-outline" onclick="cdLoadQuartiers()" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+    html += '<div class="card" style="padding:16px;margin-bottom:12px;">';
+    html += '<h3 style="margin:0 0 4px;">' + escHtml(nom) + '</h3>';
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">' + escHtml(q.commune_nom || '') + ' · ' + (q.statut || '') + '</div>';
+    html += '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '<button class="btn btn-sm btn-outline" onclick="cdQuartierForm(' + id + ')">' + t('cd.modifier') + '</button>' +
+      '<button class="btn btn-sm btn-primary" onclick="cdCreneauxForm(' + id + ')">' + t('cd.gerer_creneaux') + '</button></div>';
+    // Planning
+    if (creneaux.length) {
+      var jours = [t('ap.jour_0'),t('ap.jour_1'),t('ap.jour_2'),t('ap.jour_3'),t('ap.jour_4'),t('ap.jour_5'),t('ap.jour_6')];
+      html += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+      creneaux.forEach(function(c) {
+        var typeColor = c.type_collecte==='menagers'?'#16a34a':c.type_collecte==='tri'?'#2563eb':'#f59e0b';
+        html += '<tr><td style="padding:6px 8px;border-bottom:1px solid var(--line);font-weight:600;">' + jours[c.jour] + '</td>' +
+          '<td style="padding:6px 8px;border-bottom:1px solid var(--line);"><span dir="ltr" style="unicode-bidi:embed;">' + c.heure_debut.substring(0,5) + ' – ' + c.heure_fin.substring(0,5) + '</span></td>' +
+          '<td style="padding:6px 8px;border-bottom:1px solid var(--line);"><span style="padding:2px 8px;border-radius:10px;background:'+typeColor+'22;color:'+typeColor+';font-weight:600;font-size:11px;">' + t('ap.type_' + c.type_collecte) + '</span></td></tr>';
+      });
+      html += '</table>';
+    } else { html += '<p style="color:var(--muted);font-size:13px;">' + t('cd.aucun_creneau') + '</p>'; }
+    html += '</div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('cd.erreur') + '</p>'; }
+}
+
+async function cdQuartierForm(editId) {
+  var el = document.getElementById('cd-content');
+  var isEdit = !!editId;
+  var q = null;
+  if (isEdit) { q = await safeFetchJSON('/api/quartiers/' + editId, { headers: authHeaders() }); }
+  var isAr = currentLang === 'ar';
+  var html = '<button class="btn btn-sm btn-outline" onclick="' + (isEdit ? 'cdQuartierDetail(' + editId + ')' : 'cdLoadQuartiers()') + '" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+  html += '<div class="card" style="padding:16px;"><h3 style="margin:0 0 12px;">' + (isEdit ? t('cd.modifier_quartier') : t('cd.nouveau_quartier')) + '</h3>';
+  html += '<form onsubmit="cdSaveQuartier(event,' + (editId || 'null') + ')">';
+  html += '<div class="form-group"><label>' + t('cd.nom_fr') + '</label><input type="text" id="cd-q-nom" required value="' + escHtml(q ? q.nom : '') + '"></div>';
+  html += '<div class="form-group"><label>' + t('cd.nom_ar') + '</label><input type="text" id="cd-q-nom-ar" value="' + escHtml(q ? (q.nom_ar || '') : '') + '"></div>';
+  html += '<div class="form-group"><label>' + t('cd.commune') + '</label><select id="cd-q-commune" required>' +
+    communes.map(function(c){ return '<option value="'+c.id+'"'+(q&&q.commune_id==c.id?' selected':'')+'>'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>'; }).join('') + '</select></div>';
+  html += '<div class="form-group"><label>' + t('cd.source') + '</label><select id="cd-q-source"><option value="demo"' + (q && q.source === 'demo' ? ' selected' : '') + '>demo</option><option value="officiel"' + (q && q.source === 'officiel' ? ' selected' : '') + '>officiel</option></select></div>';
+  if (isEdit) {
+    html += '<div class="form-group"><label>' + t('cd.statut') + '</label><select id="cd-q-statut"><option value="actif"' + (q.statut === 'actif' ? ' selected' : '') + '>' + t('cd.statut_actif') + '</option><option value="inactif"' + (q.statut === 'inactif' ? ' selected' : '') + '>' + t('cd.statut_inactif') + '</option></select></div>';
+  }
+  html += '<button type="submit" class="btn btn-primary" style="width:100%;">' + t('cd.enregistrer') + '</button></form></div>';
+  el.innerHTML = html;
+}
+
+async function cdSaveQuartier(e, editId) {
+  e.preventDefault();
+  var body = { nom: document.getElementById('cd-q-nom').value, nom_ar: document.getElementById('cd-q-nom-ar').value || null, commune_id: Number(document.getElementById('cd-q-commune').value), source: document.getElementById('cd-q-source').value };
+  var statEl = document.getElementById('cd-q-statut');
+  if (statEl) body.statut = statEl.value;
+  var method = editId ? 'PATCH' : 'POST';
+  var url = editId ? '/api/quartiers/' + editId : '/api/quartiers';
+  await apiFetch(url, { method: method, headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  showToast(t('cd.quartier_ok'));
+  if (editId) cdQuartierDetail(editId); else cdLoadQuartiers();
+}
+
+async function cdCreneauxForm(qid) {
+  var el = document.getElementById('cd-content');
+  var q = await safeFetchJSON('/api/quartiers/' + qid, { headers: authHeaders() });
+  var creneaux = q.creneaux || [];
+  var jours = [t('ap.jour_0'),t('ap.jour_1'),t('ap.jour_2'),t('ap.jour_3'),t('ap.jour_4'),t('ap.jour_5'),t('ap.jour_6')];
+  var html = '<button class="btn btn-sm btn-outline" onclick="cdQuartierDetail(' + qid + ')" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+  html += '<div class="card" style="padding:16px;"><h3 style="margin:0 0 12px;">' + t('cd.gerer_creneaux') + ' — ' + escHtml(q.nom) + '</h3>';
+  html += '<div id="cd-cr-rows">';
+  creneaux.forEach(function(c, idx) {
+    html += cdCreneauRow(c, idx, jours);
+  });
+  html += '</div>';
+  html += '<button type="button" class="btn btn-sm btn-outline" onclick="cdAddCreneauRow()" style="margin:8px 0;">+ ' + t('cd.ajouter_creneau') + '</button>';
+  html += '<button class="btn btn-primary" onclick="cdSaveCreneaux(' + qid + ')" style="width:100%;margin-top:8px;">' + t('cd.enregistrer') + '</button></div>';
+  el.innerHTML = html;
+}
+
+function cdCreneauRow(c, idx, jours) {
+  if (!jours) jours = [t('ap.jour_0'),t('ap.jour_1'),t('ap.jour_2'),t('ap.jour_3'),t('ap.jour_4'),t('ap.jour_5'),t('ap.jour_6')];
+  return '<div class="cd-cr-row" style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;">' +
+    '<select class="cd-cr-jour" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' + jours.map(function(j, i) { return '<option value="'+i+'"'+(c && c.jour===i?' selected':'')+'>'+j+'</option>'; }).join('') + '</select>' +
+    '<input type="time" class="cd-cr-debut" value="' + (c ? c.heure_debut.substring(0,5) : '08:00') + '" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' +
+    '<input type="time" class="cd-cr-fin" value="' + (c ? c.heure_fin.substring(0,5) : '10:00') + '" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' +
+    '<select class="cd-cr-type" style="padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;">' +
+    '<option value="menagers"' + (c && c.type_collecte === 'menagers' ? ' selected' : '') + '>' + t('ap.type_menagers') + '</option>' +
+    '<option value="tri"' + (c && c.type_collecte === 'tri' ? ' selected' : '') + '>' + t('ap.type_tri') + '</option>' +
+    '<option value="encombrants"' + (c && c.type_collecte === 'encombrants' ? ' selected' : '') + '>' + t('ap.type_encombrants') + '</option>' +
+    '</select>' +
+    '<button type="button" onclick="this.parentElement.remove()" style="color:var(--red);border:none;background:none;cursor:pointer;font-size:16px;">✕</button></div>';
+}
+
+function cdAddCreneauRow() {
+  var div = document.getElementById('cd-cr-rows');
+  div.insertAdjacentHTML('beforeend', cdCreneauRow(null, div.children.length));
+}
+
+async function cdSaveCreneaux(qid) {
+  var rows = document.querySelectorAll('.cd-cr-row');
+  var creneaux = [];
+  rows.forEach(function(row) {
+    creneaux.push({
+      jour: Number(row.querySelector('.cd-cr-jour').value),
+      heure_debut: row.querySelector('.cd-cr-debut').value + ':00',
+      heure_fin: row.querySelector('.cd-cr-fin').value + ':00',
+      type_collecte: row.querySelector('.cd-cr-type').value
+    });
+  });
+  await apiFetch('/api/quartiers/' + qid + '/creneaux', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ creneaux: creneaux }) });
+  showToast(t('cd.creneaux_ok'));
+  cdQuartierDetail(qid);
+}
+
+// ── Catégories de déchets ──
+async function cdLoadCategories(el) {
+  if (!el) el = document.getElementById('cd-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('cd.chargement') + '</div>';
+  try {
+    var cats = await safeFetchJSON('/api/quartiers/categories-dechets', { headers: authHeaders() });
+    var html = '<button class="btn btn-sm btn-primary" onclick="cdCategorieForm()" style="margin-bottom:12px;">' + t('cd.nouvelle_categorie') + '</button>';
+    cats.forEach(function(c) {
+      html += '<div class="card" style="padding:12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+        '<div><strong>' + escHtml(c.nom_fr) + '</strong>' + (c.nom_ar ? ' <span style="color:var(--muted);">(' + escHtml(c.nom_ar) + ')</span>' : '') + '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
+        '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + (c.rappel_defaut ? '#DBEAFE' : '#F3F4F6') + ';color:' + (c.rappel_defaut ? '#2563eb' : 'var(--muted)') + ';">' + t(c.rappel_defaut ? 'cd.rappel_oui' : 'cd.rappel_non') + '</span>' +
+        '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + (c.statut === 'actif' ? '#D1FAE5' : '#FEE2E2') + ';color:' + (c.statut === 'actif' ? '#059669' : '#DC2626') + ';">' + t('cd.statut_' + c.statut) + '</span>' +
+        '<button class="btn btn-sm btn-outline" onclick="cdCategorieForm(' + c.id + ')" style="padding:2px 8px;font-size:11px;">' + t('cd.modifier') + '</button>' +
+        '</div></div>';
+    });
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('cd.erreur') + '</p>'; }
+}
+
+async function cdCategorieForm(editId) {
+  var el = document.getElementById('cd-content');
+  var c = null;
+  if (editId) {
+    var cats = await safeFetchJSON('/api/quartiers/categories-dechets', { headers: authHeaders() });
+    c = cats.find(function(x) { return x.id === editId; });
+  }
+  var html = '<button class="btn btn-sm btn-outline" onclick="cdLoadCategories()" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+  html += '<div class="card" style="padding:16px;"><h3 style="margin:0 0 12px;">' + (c ? t('cd.modifier_categorie') : t('cd.nouvelle_categorie')) + '</h3>';
+  html += '<form onsubmit="cdSaveCategorie(event,' + (editId || 'null') + ')">';
+  html += '<div class="form-group"><label>' + t('cd.nom_fr') + '</label><input type="text" id="cd-cat-nom-fr" required value="' + escHtml(c ? c.nom_fr : '') + '"></div>';
+  html += '<div class="form-group"><label>' + t('cd.nom_ar') + '</label><input type="text" id="cd-cat-nom-ar" value="' + escHtml(c ? (c.nom_ar || '') : '') + '"></div>';
+  html += '<div class="form-group"><label><input type="checkbox" id="cd-cat-rappel"' + (c && c.rappel_defaut ? ' checked' : '') + '> ' + t('cd.rappel_defaut') + '</label></div>';
+  if (editId) {
+    html += '<div class="form-group"><label>' + t('cd.statut') + '</label><select id="cd-cat-statut"><option value="actif"' + (c.statut === 'actif' ? ' selected' : '') + '>' + t('cd.statut_actif') + '</option><option value="inactif"' + (c.statut === 'inactif' ? ' selected' : '') + '>' + t('cd.statut_inactif') + '</option></select></div>';
+  }
+  html += '<button type="submit" class="btn btn-primary" style="width:100%;">' + t('cd.enregistrer') + '</button></form></div>';
+  el.innerHTML = html;
+}
+
+async function cdSaveCategorie(e, editId) {
+  e.preventDefault();
+  var body = { nom_fr: document.getElementById('cd-cat-nom-fr').value, nom_ar: document.getElementById('cd-cat-nom-ar').value || null, rappel_defaut: document.getElementById('cd-cat-rappel').checked };
+  var statEl = document.getElementById('cd-cat-statut');
+  if (statEl) body.statut = statEl.value;
+  var method = editId ? 'PATCH' : 'POST';
+  var url = editId ? '/api/quartiers/categories-dechets/' + editId : '/api/quartiers/categories-dechets';
+  await apiFetch(url, { method: method, headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  showToast(t('cd.categorie_ok'));
+  cdLoadCategories();
+}
+
+// ── Notes ──
+async function cdLoadNotes(el) {
+  if (!el) el = document.getElementById('cd-content');
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('cd.chargement') + '</div>';
+  try {
+    var isWriter = currentUser && (currentUser.role === 'admin_wilaya' || (Array.isArray(currentUser.capacites) && currentUser.capacites.includes('collecte_dechets')));
+    var notes = await safeFetchJSON('/api/notes-proprete', { headers: authHeaders() });
+    var html = '';
+    if (isWriter) {
+      html += '<button class="btn btn-sm btn-primary" onclick="cdNoteForm()" style="margin-bottom:12px;">' + t('cd.nouvelle_note') + '</button>';
+    }
+    if (!notes.length) { html += '<div class="card" style="padding:16px;text-align:center;color:var(--muted);">' + t('cd.aucune_note') + '</div>'; }
+    else {
+      var niveauColors = { info: '#3B82F6', important: '#F59E0B', urgent: '#DC2626' };
+      notes.forEach(function(n) {
+        var col = niveauColors[n.niveau] || '#6B7280';
+        html += '<div class="card" style="padding:12px;margin-bottom:6px;border-left:3px solid ' + col + ';' + (n.non_lu ? 'background:#FEFCE8;' : '') + 'cursor:pointer;" onclick="cdNoteDetail(' + n.id + ')">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">' +
+          '<div><strong>' + escHtml(n.titre) + '</strong>' + (n.non_lu ? ' <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#FEF3C7;color:#92400E;">' + t('cd.non_lu') + '</span>' : '') + '</div>' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + col + '22;color:' + col + ';font-weight:600;">' + t('cd.niveau_' + n.niveau) + '</span></div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + escHtml(n.auteur_prenom || '') + ' ' + escHtml(n.auteur_nom || '') + ' · ' + new Date(n.cree_le).toLocaleDateString('fr-FR') + '</div>' +
+          '</div>';
+      });
+    }
+    el.innerHTML = html;
+    cdLoadNotesBadge();
+  } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">' + t('cd.erreur') + '</p>'; }
+}
+
+async function cdLoadNotesBadge() {
+  try {
+    var d = await safeFetchJSON('/api/notes-proprete/count', { headers: authHeaders() });
+    var badge = document.getElementById('cd-notes-badge');
+    if (!badge) return;
+    if (d.unread > 0) { badge.textContent = d.unread; badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
+  } catch(e) { /* ignore */ }
+}
+
+async function cdNoteDetail(id) {
+  var el = document.getElementById('cd-content');
+  // Mark as read
+  await apiFetch('/api/notes-proprete/' + id + '/lu', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: '{}' });
+  var notes = await safeFetchJSON('/api/notes-proprete', { headers: authHeaders() });
+  var n = notes.find(function(x) { return x.id === id; });
+  if (!n) { cdLoadNotes(el); return; }
+  var niveauColors = { info: '#3B82F6', important: '#F59E0B', urgent: '#DC2626' };
+  var col = niveauColors[n.niveau] || '#6B7280';
+  var html = '<button class="btn btn-sm btn-outline" onclick="cdLoadNotes()" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+  html += '<div class="card" style="padding:16px;border-left:4px solid ' + col + ';">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px;">';
+  html += '<h3 style="margin:0;">' + escHtml(n.titre) + '</h3>';
+  html += '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + col + '22;color:' + col + ';font-weight:600;">' + t('cd.niveau_' + n.niveau) + '</span></div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">' + escHtml(n.auteur_prenom || '') + ' ' + escHtml(n.auteur_nom || '') + ' · ' + new Date(n.cree_le).toLocaleString('fr-FR') + '</div>';
+  html += '<p style="font-size:14px;line-height:1.6;white-space:pre-wrap;">' + escHtml(n.texte) + '</p>';
+  if (n.auteur_id === (currentUser && currentUser.id)) {
+    html += '<button class="btn btn-sm btn-outline" onclick="cdDeleteNote(' + n.id + ')" style="margin-top:12px;color:var(--red);">' + t('cd.supprimer') + '</button>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  cdLoadNotesBadge();
+}
+
+async function cdNoteForm() {
+  var el = document.getElementById('cd-content');
+  var html = '<button class="btn btn-sm btn-outline" onclick="cdLoadNotes()" style="margin-bottom:10px;">← ' + t('cd.retour_liste') + '</button>';
+  html += '<div class="card" style="padding:16px;"><h3 style="margin:0 0 12px;">' + t('cd.nouvelle_note') + '</h3>';
+  html += '<form onsubmit="cdSaveNote(event)">';
+  html += '<div class="form-group"><label>' + t('cd.note_titre') + '</label><input type="text" id="cd-n-titre" required></div>';
+  html += '<div class="form-group"><label>' + t('cd.note_texte') + '</label><textarea id="cd-n-texte" rows="4" required style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:8px;"></textarea></div>';
+  html += '<div class="form-group"><label>' + t('cd.note_niveau') + '</label><select id="cd-n-niveau"><option value="info">' + t('cd.niveau_info') + '</option><option value="important">' + t('cd.niveau_important') + '</option><option value="urgent">' + t('cd.niveau_urgent') + '</option></select></div>';
+  html += '<button type="submit" class="btn btn-primary" style="width:100%;">' + t('cd.enregistrer') + '</button></form></div>';
+  el.innerHTML = html;
+}
+
+async function cdSaveNote(e) {
+  e.preventDefault();
+  var body = { titre: document.getElementById('cd-n-titre').value, texte: document.getElementById('cd-n-texte').value, niveau: document.getElementById('cd-n-niveau').value };
+  await apiFetch('/api/notes-proprete', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  showToast(t('cd.note_ok'));
+  cdLoadNotes();
+}
+
+async function cdDeleteNote(id) {
+  await apiFetch('/api/notes-proprete/' + id, { method: 'DELETE', headers: authHeaders() });
+  showToast(t('cd.note_supprimee'));
+  cdLoadNotes();
+}
+
+// ── Notes tab in Rachid's quartiers view ──
+function apInitNotesTabs() {
+  var isWil = currentUser && currentUser.role === 'admin_wilaya';
+  var isApc = currentUser && currentUser.role === 'admin_apc';
+  if (!isWil && !isApc) return;
+  var tabsEl = document.getElementById('ap-extra-tabs');
+  if (tabsEl) return; // already init
+  var header = document.getElementById('ap-header');
+  if (!header) return;
+  var html = '<div id="ap-extra-tabs" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">';
+  html += '<button class="btn btn-sm btn-primary" id="ap-tab-quartiers" onclick="apExtraTab(\'quartiers\')" data-i18n="cd.tab_quartiers">' + t('cd.tab_quartiers') + '</button>';
+  if (isWil) html += '<button class="btn btn-sm btn-outline" id="ap-tab-categories" onclick="apExtraTab(\'categories\')" data-i18n="cd.tab_categories">' + t('cd.tab_categories') + '</button>';
+  html += '<button class="btn btn-sm btn-outline" id="ap-tab-notes" onclick="apExtraTab(\'notes\')"><span data-i18n="cd.tab_notes">' + t('cd.tab_notes') + '</span> <span id="ap-notes-badge" style="display:none;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>';
+  html += '</div><div id="ap-extra-content" class="hidden"></div>';
+  header.insertAdjacentHTML('afterend', html);
+  // Load notes badge
+  safeFetchJSON('/api/notes-proprete/count', { headers: authHeaders() }).then(function(d) {
+    var b = document.getElementById('ap-notes-badge');
+    if (b && d.unread > 0) { b.textContent = d.unread; b.style.display = ''; }
+  }).catch(function() {});
+}
+
+function apExtraTab(tab) {
+  ['quartiers','categories','notes'].forEach(function(t) {
+    var btn = document.getElementById('ap-tab-' + t);
+    if (btn) btn.className = 'btn btn-sm ' + (t === tab ? 'btn-primary' : 'btn-outline');
+  });
+  var extra = document.getElementById('ap-extra-content');
+  var main = document.getElementById('ap-list') || document.querySelector('#view-quartiers > div:not(#ap-header):not(#ap-extra-tabs):not(#ap-extra-content)');
+  if (tab === 'quartiers') {
+    if (extra) extra.classList.add('hidden');
+    document.querySelectorAll('#view-quartiers > *:not(#ap-header):not(#ap-extra-tabs):not(#ap-extra-content)').forEach(function(el) { el.style.display = ''; });
+  } else {
+    document.querySelectorAll('#view-quartiers > *:not(#ap-header):not(#ap-extra-tabs):not(#ap-extra-content)').forEach(function(el) { if (el.id !== 'ap-header') el.style.display = 'none'; });
+    if (extra) { extra.classList.remove('hidden'); }
+    if (tab === 'categories') cdLoadCategories(extra);
+    else if (tab === 'notes') cdLoadNotes(extra);
+  }
 }
 
 function ccoeTab(tab) {

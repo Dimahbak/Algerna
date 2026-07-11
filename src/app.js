@@ -161,6 +161,7 @@ const moduleMap = {
   intelligence:  require('./modules/intelligence'),
   ccoe:          require('./modules/ccoe'),
   quartiers:     require('./modules/quartiers'),
+  'notes-proprete': require('./modules/notes-proprete'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)
