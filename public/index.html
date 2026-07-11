@@ -5132,10 +5132,12 @@
 
       <!-- ══ QUARTIERS — Alger Propre 2030 ══ -->
       <div id="view-quartiers" class="view">
-        <button class="btn-back" onclick="showView(getDefaultView())" data-i18n="common.retour">← Retour</button>
-        <div class="page-header">
-          <h2 data-i18n="ap.titre">Alger Propre 2030 — Quartiers et créneaux</h2>
-          <p style="color:var(--muted);font-size:13px;" data-i18n="ap.sous_titre">Référentiel des quartiers et des créneaux de dépôt des déchets</p>
+        <div id="ap-header">
+          <button class="btn-back" onclick="showView(getDefaultView())" data-i18n="common.retour">← Retour</button>
+          <div class="page-header">
+            <h2 data-i18n="ap.titre">Alger Propre 2030 — Quartiers et créneaux</h2>
+            <p style="color:var(--muted);font-size:13px;" data-i18n="ap.sous_titre">Référentiel des quartiers et des créneaux de dépôt des déchets</p>
+          </div>
         </div>
         <!-- Filtre commune (Wilaya uniquement) -->
         <div id="ap-filtre-commune" style="margin-bottom:12px;"></div>
@@ -8273,7 +8275,7 @@ async function initQuartiers() {
     if (isWilaya) {
       filtreEl.innerHTML = '<select id="ap-commune-select" onchange="apLoadQuartiers()" style="padding:8px 12px;border:1px solid var(--gray-300);border-radius:8px;font-size:13px;">' +
         '<option value="">' + (isAr?'كل البلديات':'Toutes les communes') + '</option>' +
-        communes.map(function(c){return '<option value="'+c.id+'">'+escHtml(c.nom)+'</option>';}).join('') + '</select>';
+        communes.map(function(c){return '<option value="'+c.id+'">'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select>';
     } else { filtreEl.innerHTML = ''; }
   }
   // Actions
@@ -8294,6 +8296,7 @@ async function apLoadQuartiers() {
   el.classList.remove('hidden');
   document.getElementById('ap-actions').classList.remove('hidden');
   document.getElementById('ap-filtre-commune').classList.remove('hidden');
+  document.getElementById('ap-header').classList.remove('hidden');
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var isWilaya = currentUser && currentUser.role === 'admin_wilaya';
   var url = '/api/quartiers';
@@ -8310,14 +8313,16 @@ async function apLoadQuartiers() {
         html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 6px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + '</div>';
       }
       var statColor = q.statut==='actif'?'#16a34a':'#94a3b8';
+      var statLabel = q.statut==='actif'?(isAr?'نشط':'actif'):(isAr?'غير نشط':'inactif');
+      var srcLabel = q.source==='demo'?(isAr?' · <em>تجريبي</em>':' · <em>démo</em>'):'';
       html += '<div class="card" style="margin-bottom:6px;padding:12px;border-left:4px solid '+statColor+';cursor:pointer;" onclick="apQuartierDetail('+q.id+')">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
         '<div style="flex:1;min-width:180px;">' +
           '<div style="font-weight:700;color:var(--navy);">' + escHtml(isAr?(q.nom_ar||q.nom):q.nom) + '</div>' +
-          '<div style="font-size:12px;color:var(--muted);">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + (q.source==='demo'?' · <em>démo</em>':'') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + srcLabel + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
-          '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+statColor+'22;color:'+statColor+';font-weight:600;">' + q.statut + '</span>' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:12px;background:'+statColor+'22;color:'+statColor+';font-weight:600;">' + statLabel + '</span>' +
           '<span style="font-size:11px;color:var(--muted);">' + q.nb_creneaux + ' ' + (isAr?'مواعيد':'créneaux') + '</span>' +
         '</div></div></div>';
     });
@@ -8325,12 +8330,17 @@ async function apLoadQuartiers() {
   } catch(e) { el.innerHTML = '<p style="color:var(--red);padding:16px;">Erreur: ' + escHtml(e.message) + '</p>'; }
 }
 
-async function apQuartierDetail(id) {
-  var det = document.getElementById('ap-detail');
+function apShowDetail() {
   document.getElementById('ap-liste').classList.add('hidden');
   document.getElementById('ap-actions').classList.add('hidden');
   document.getElementById('ap-filtre-commune').classList.add('hidden');
-  det.classList.remove('hidden');
+  document.getElementById('ap-header').classList.add('hidden');
+  document.getElementById('ap-detail').classList.remove('hidden');
+}
+
+async function apQuartierDetail(id) {
+  var det = document.getElementById('ap-detail');
+  apShowDetail();
   det.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Chargement...</div>';
   det.scrollIntoView({behavior:'smooth',block:'start'});
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
@@ -8339,19 +8349,23 @@ async function apQuartierDetail(id) {
   var types = isAr ? _apTypesAr : _apTypes;
   try {
     var q = await safeFetchJSON('/api/quartiers/' + id, {headers:authHeaders()});
+    var detStatLabel = q.statut==='actif'?(isAr?'نشط':'actif'):(isAr?'غير نشط':'inactif');
+    var detSrcLabel = q.source==='demo'?(isAr?' · تجريبي':' · démo'):'';
+    var thAlign = isAr?'text-align:right;':'text-align:left;';
     var html = '<button class="btn-back" onclick="apBackToList()">' + (isAr?'→ عودة':'← Retour') + '</button>';
     html += '<div class="card" style="padding:16px;margin-top:8px;">';
     html += '<h3 style="margin:0 0 8px;">' + escHtml(isAr?(q.nom_ar||q.nom):q.nom) + '</h3>';
-    html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + ' · ' + q.statut + (q.source==='demo'?' · démo':'') + '</div>';
+    html += '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">' + escHtml(isAr?(q.commune_nom_ar||q.commune_nom):q.commune_nom) + ' · ' + detStatLabel + detSrcLabel + '</div>';
     // Créneaux
     html += '<h4 style="margin:12px 0 6px;">' + (isAr?'مواعيد الإيداع':'Créneaux de dépôt') + '</h4>';
     if (q.creneaux && q.creneaux.length) {
       html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-      html += '<tr><th style="background:var(--navy);color:white;padding:6px 10px;text-align:left;">' + (isAr?'اليوم':'Jour') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;">' + (isAr?'الساعة':'Horaire') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;">' + (isAr?'النوع':'Type') + '</th></tr>';
+      html += '<tr><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'اليوم':'Jour') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'الساعة':'Horaire') + '</th><th style="background:var(--navy);color:white;padding:6px 10px;'+thAlign+'">' + (isAr?'النوع':'Type') + '</th></tr>';
       q.creneaux.forEach(function(c) {
         var typeColor = c.type_collecte==='menagers'?'#16a34a':c.type_collecte==='tri'?'#2563eb':'#f59e0b';
+        var timeRange = '<span dir="ltr" style="unicode-bidi:embed;">' + c.heure_debut.substring(0,5) + ' – ' + c.heure_fin.substring(0,5) + '</span>';
         html += '<tr><td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + jours[c.jour] + '</td>' +
-          '<td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + c.heure_debut.substring(0,5) + ' – ' + c.heure_fin.substring(0,5) + '</td>' +
+          '<td style="padding:6px 10px;border-bottom:1px solid var(--line);">' + timeRange + '</td>' +
           '<td style="padding:6px 10px;border-bottom:1px solid var(--line);"><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:'+typeColor+'22;color:'+typeColor+';font-weight:600;font-size:11px;">' + (types[c.type_collecte]||c.type_collecte) + '</span></td></tr>';
       });
       html += '</table>';
@@ -8360,7 +8374,7 @@ async function apQuartierDetail(id) {
     if (isWilaya) {
       html += '<div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;">';
       html += '<button class="btn btn-sm btn-outline" onclick="apQuartierForm('+q.id+')">' + (isAr?'تعديل':'Modifier') + '</button>';
-      html += '<button class="btn btn-sm btn-outline" onclick="apCreneauxForm('+q.id+')">' + (isAr?'تعديل المواعيد':'Gérer les créneaux') + '</button>';
+      html += '<button class="btn btn-sm btn-outline" onclick="apCreneauxForm('+q.id+')">' + (isAr?'إدارة المواعيد':'Gérer les créneaux') + '</button>';
       if (q.statut === 'actif') html += '<button class="btn btn-sm" style="background:#f59e0b;color:white;" onclick="apToggleQuartier('+q.id+',\'inactif\')">' + (isAr?'تعطيل':'Désactiver') + '</button>';
       else html += '<button class="btn btn-sm" style="background:#16a34a;color:white;" onclick="apToggleQuartier('+q.id+',\'actif\')">' + (isAr?'تفعيل':'Réactiver') + '</button>';
       html += '</div>';
@@ -8375,24 +8389,23 @@ function apBackToList() {
   document.getElementById('ap-liste').classList.remove('hidden');
   document.getElementById('ap-actions').classList.remove('hidden');
   document.getElementById('ap-filtre-commune').classList.remove('hidden');
+  document.getElementById('ap-header').classList.remove('hidden');
 }
 
 function apQuartierForm(editId) {
   var det = document.getElementById('ap-detail');
-  document.getElementById('ap-liste').classList.add('hidden');
-  document.getElementById('ap-actions').classList.add('hidden');
-  document.getElementById('ap-filtre-commune').classList.add('hidden');
-  det.classList.remove('hidden');
+  apShowDetail();
   var q = editId ? _apQuartiers.find(function(x){return x.id===editId;}) : {};
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var l = isAr ? {title_new:'حي جديد',title_edit:'تعديل الحي',nom:'الاسم (فرنسي)',nom_ar:'الاسم (عربي)',commune:'البلدية',statut:'الحالة',actif:'نشط',inactif:'غير نشط',save:'حفظ'}
     : {title_new:'Nouveau quartier',title_edit:'Modifier le quartier',nom:'Nom (français)',nom_ar:'Nom (arabe)',commune:'Commune',statut:'Statut',actif:'Actif',inactif:'Inactif',save:'Enregistrer'};
-  det.innerHTML = '<div class="card" style="padding:16px;"><h4>' + (editId?l.title_edit:l.title_new) + '</h4>' +
+  det.innerHTML = '<button class="btn-back" onclick="apBackToList()">' + (isAr?'→ عودة':'← Retour') + '</button>' +
+    '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + (editId?l.title_edit:l.title_new) + '</h4>' +
     '<form onsubmit="apSaveQuartier(event,' + (editId||'null') + ')">' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
     '<div class="form-group" style="margin:0;"><label>' + l.nom + '</label><input type="text" id="ap-q-nom" required value="' + escHtml((q&&q.nom)||'') + '"></div>' +
     '<div class="form-group" style="margin:0;"><label>' + l.nom_ar + '</label><input type="text" id="ap-q-nom-ar" dir="rtl" value="' + escHtml((q&&q.nom_ar)||'') + '"></div>' +
-    '<div class="form-group" style="margin:0;"><label>' + l.commune + '</label><select id="ap-q-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(q&&q.commune_id==c.id?' selected':'')+'>'+escHtml(c.nom)+'</option>';}).join('') + '</select></div>' +
+    '<div class="form-group" style="margin:0;"><label>' + l.commune + '</label><select id="ap-q-commune" required>' + communes.map(function(c){return '<option value="'+c.id+'"'+(q&&q.commune_id==c.id?' selected':'')+'>'+escHtml(isAr?(c.nom_ar||c.nom):c.nom)+'</option>';}).join('') + '</select></div>' +
     (editId?'<div class="form-group" style="margin:0;"><label>'+l.statut+'</label><select id="ap-q-statut"><option value="actif"'+(q&&q.statut==='actif'?' selected':'')+'>'+l.actif+'</option><option value="inactif"'+(q&&q.statut==='inactif'?' selected':'')+'>'+l.inactif+'</option></select></div>':'') +
     '</div><button type="submit" class="btn btn-primary btn-sm" style="width:100%;margin-top:10px;">' + l.save + '</button></form></div>';
 }
@@ -8420,14 +8433,15 @@ async function apToggleQuartier(id, newStatut) {
 
 function apCreneauxForm(quartierIdParam) {
   var det = document.getElementById('ap-detail');
-  det.classList.remove('hidden');
+  apShowDetail();
   var isAr = (localStorage.getItem('algerna_lang')||'fr') === 'ar';
   var jours = isAr ? _apJoursAr : _apJours;
   var q = _apQuartiers.find(function(x){return x.id===quartierIdParam;});
   // Fetch current creneaux
   safeFetchJSON('/api/quartiers/' + quartierIdParam, {headers:authHeaders()}).then(function(data) {
     var creneaux = data.creneaux || [];
-    var html = '<div class="card" style="padding:16px;"><h4>' + (isAr?'مواعيد الإيداع — ':'Créneaux de dépôt — ') + escHtml(isAr?(q&&q.nom_ar||q&&q.nom||''):q&&q.nom||'') + '</h4>';
+    var html = '<button class="btn-back" onclick="apQuartierDetail('+quartierIdParam+')">' + (isAr?'→ عودة':'← Retour') + '</button>';
+    html += '<div class="card" style="padding:16px;margin-top:8px;"><h4>' + (isAr?'مواعيد الإيداع — ':'Créneaux de dépôt — ') + escHtml(isAr?(q&&q.nom_ar||q&&q.nom||''):q&&q.nom||'') + '</h4>';
     html += '<div id="ap-creneaux-rows">';
     creneaux.forEach(function(c, idx) { html += apCreneauRow(idx, c, jours, isAr); });
     html += '</div>';
