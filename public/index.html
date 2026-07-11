@@ -8392,15 +8392,19 @@ function _propreteAfficher(el, data) {
   html += '<p style="font-size:13px;margin:0;color:var(--navy);">' + t('ap.cit_conseil') + '</p>';
   html += '</div>';
 
-  // Rappels toggle
-  html += '<div class="card" style="padding:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">';
-  html += '<div><div style="font-weight:600;font-size:13px;">' + t('ap.cit_rappels') + '</div>';
-  html += '<div style="font-size:12px;color:var(--muted);" id="prop-rappel-label">' + t(data.rappel ? 'ap.cit_rappels_actifs' : 'ap.cit_rappels_inactifs') + '</div></div>';
-  html += '<label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">';
-  html += '<input type="checkbox" id="prop-rappel-toggle" ' + (data.rappel ? 'checked' : '') + ' onchange="_propreteToggleRappel(this.checked)" style="opacity:0;width:0;height:0;">';
-  html += '<span style="position:absolute;inset:0;background:' + (data.rappel ? '#16a34a' : '#ccc') + ';border-radius:24px;transition:.3s;"></span>';
-  html += '<span style="position:absolute;top:2px;' + (isAr ? 'right' : 'left') + ':' + (data.rappel ? '22px' : '2px') + ';width:20px;height:20px;background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>';
-  html += '</label></div>';
+  // Rappels — 3 positions
+  var rappelMode = data.rappel || 'utiles';
+  html += '<div class="card" style="padding:14px;margin-bottom:12px;">';
+  html += '<div style="font-weight:600;font-size:13px;margin-bottom:8px;">' + t('ap.cit_rappels') + '</div>';
+  html += '<div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--gray-300);margin-bottom:6px;" id="prop-rappel-seg">';
+  ['tous','utiles','aucun'].forEach(function(m) {
+    var sel = m === rappelMode;
+    html += '<button onclick="_propreteSetRappel(\''+m+'\')" style="flex:1;padding:8px 4px;font-size:12px;font-weight:'+(sel?'700':'400')+';border:none;cursor:pointer;transition:.2s;' +
+      'background:'+(sel?'var(--navy)':'white')+';color:'+(sel?'white':'var(--navy)')+';">' + t('ap.cit_rappels_'+m) + '</button>';
+  });
+  html += '</div>';
+  html += '<div style="font-size:11px;color:var(--muted);" id="prop-rappel-desc">' + t('ap.cit_rappels_utiles_desc') + '</div>';
+  html += '</div>';
 
   // Changer de quartier
   html += '<button class="btn btn-outline btn-sm" onclick="_propreteSelecteur()" style="width:100%;margin-bottom:16px;">' + t('ap.cit_changer') + '</button>';
@@ -8460,18 +8464,21 @@ function _propreteProchaineCollecte(creneaux, nowOverride) {
   return null;
 }
 
-async function _propreteToggleRappel(actif) {
-  await apiFetch('/api/quartiers/rappel', { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({actif:actif}) });
-  var lbl = document.getElementById('prop-rappel-label');
-  if (lbl) lbl.textContent = t(actif ? 'ap.cit_rappels_actifs' : 'ap.cit_rappels_inactifs');
-  // Update toggle visual
-  var tog = document.getElementById('prop-rappel-toggle');
-  if (tog) {
-    var slider = tog.nextElementSibling;
-    var knob = slider.nextElementSibling;
-    slider.style.background = actif ? '#16a34a' : '#ccc';
-    knob.style[_apIsAr()?'right':'left'] = actif ? '22px' : '2px';
+async function _propreteSetRappel(mode) {
+  await apiFetch('/api/quartiers/rappel', { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({mode:mode}) });
+  // Update segmented control visually
+  var seg = document.getElementById('prop-rappel-seg');
+  if (seg) {
+    var btns = seg.querySelectorAll('button');
+    ['tous','utiles','aucun'].forEach(function(m, i) {
+      var sel = m === mode;
+      btns[i].style.background = sel ? 'var(--navy)' : 'white';
+      btns[i].style.color = sel ? 'white' : 'var(--navy)';
+      btns[i].style.fontWeight = sel ? '700' : '400';
+    });
   }
+  var desc = document.getElementById('prop-rappel-desc');
+  if (desc) desc.textContent = t('ap.cit_rappels_utiles_desc');
 }
 
 // ALGER PROPRE 2030 — QUARTIERS ET CRÉNEAUX

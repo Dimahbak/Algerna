@@ -50,10 +50,14 @@ async function envoyerRappels() {
       const msgFr = `Dépôt des ${typeFr} de ${hDebut} à ${hFin} ${momentFr} dans votre quartier.`;
       const msgAr = `إيداع ${typeAr} من ${hDebut} إلى ${hFin} ${momentAr} في حيكم.`;
 
-      // Find users with this quartier + rappel enabled, no duplicate for today
+      // Find users with this quartier + rappel mode compatible
+      // 'tous' = all types, 'utiles' = tri+encombrants only, 'aucun' = none
+      const modeFilter = c.type_collecte === 'menagers'
+        ? "AND u.rappel_proprete = 'tous'"                    // ménagers: only for 'tous'
+        : "AND u.rappel_proprete IN ('tous', 'utiles')";      // tri/encombrants: 'tous' or 'utiles'
       const { rows: users } = await query(
         `SELECT u.id, COALESCE(u.langue, 'fr') AS langue FROM utilisateur u
-         WHERE u.quartier_id = $1 AND u.rappel_proprete = TRUE AND u.actif = TRUE
+         WHERE u.quartier_id = $1 AND u.actif = TRUE ${modeFilter}
            AND NOT EXISTS (
              SELECT 1 FROM notification n
              WHERE n.utilisateur_id = u.id AND n.type = 'rappel_proprete'
@@ -62,6 +66,9 @@ async function envoyerRappels() {
            )`,
         [c.quartier_id, '%' + hDebut + '%' + c.type_collecte + '%']);
 
+      if (users.length) {
+        console.log(`[RappelProprete] ${c.type_collecte} ${hDebut}-${hFin} ${c.quartier_nom}: ${users.length} notif(s)`);
+      }
       for (const user of users) {
         const titre = user.langue === 'ar' ? titreAr : titreFr;
         const msg = user.langue === 'ar' ? msgAr : msgFr;

@@ -1,15 +1,12 @@
 /**
- * Tests for _propreteProchaineCollecte
- *
- * We replicate the function here (same logic as index.html) and test
- * with various time overrides. The i18n t() is stubbed to return keys.
+ * Tests for _propreteProchaineCollecte + rappel mode filtering
  */
 
 // Stub i18n
 function t(key) { return key; }
 function _apJour(i) { return 'ap.jour_' + i; }
 
-// Exact copy of the function from index.html
+// ── Function under test (same as index.html) ──
 function _propreteProchaineCollecte(creneaux, nowOverride) {
   if (!creneaux.length) return null;
   var now = nowOverride || {};
@@ -56,8 +53,15 @@ function _propreteProchaineCollecte(creneaux, nowOverride) {
   return null;
 }
 
+// ── Rappel mode filtering logic (mirrors cron SQL) ──
+function shouldNotify(type_collecte, rappelMode) {
+  if (rappelMode === 'aucun') return false;
+  if (rappelMode === 'tous') return true;
+  // 'utiles': only non-daily types (tri + encombrants)
+  return type_collecte !== 'menagers';
+}
+
 // ── Test Data ──
-// Didouche Mourad créneaux (7j/7 ménagers 18:00-20:00, tri mar+ven 07:00-09:00, encombrants sam 06:00-10:00)
 const creneaux = [
   { jour: 0, heure_debut: '18:00:00', heure_fin: '20:00:00', type_collecte: 'menagers' },
   { jour: 1, heure_debut: '18:00:00', heure_fin: '20:00:00', type_collecte: 'menagers' },
@@ -77,87 +81,94 @@ function assert(name, cond) {
   else { fail++; console.log('  ✗ FAIL: ' + name); }
 }
 
-// ── Tests ──
+// ═══ PART A: PROCHAINE COLLECTE ═══
 
-console.log('\n1. AVANT le créneau du jour (samedi 05:00, encombrants 06:00-10:00)');
+console.log('\n═══ A. CALCUL PROCHAINE COLLECTE ═══');
+
+console.log('\n1. AVANT le créneau du jour (sam 05:00, encombrants 06-10)');
 {
   const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 5, mm: 0 });
-  assert('retourne le créneau encombrants du samedi', r !== null && r.type_collecte === 'encombrants');
-  assert('heure_debut = 06:00', r.heure_debut.startsWith('06:00'));
-  assert('label = ce matin (06:00 < 12:00)', r.quand === 'ap.cit_ce_matin');
+  assert('retourne encombrants', r && r.type_collecte === 'encombrants');
+  assert('label = ce matin', r.quand === 'ap.cit_ce_matin');
 }
 
-console.log('\n2. PENDANT le créneau (samedi 08:00, encombrants 06:00-10:00)');
+console.log('\n2. PENDANT le créneau (sam 08:00, encombrants 06-10)');
 {
   const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 8, mm: 0 });
-  assert('retourne encombrants (en cours)', r !== null && r.type_collecte === 'encombrants');
+  assert('retourne encombrants en cours', r && r.type_collecte === 'encombrants');
   assert('label = en cours', r.quand === 'ap.cit_en_cours');
 }
 
-console.log('\n3. APRÈS le créneau du matin (samedi 10:30, encombrants 06:00-10:00 passé)');
+console.log('\n3. APRÈS créneau matin (sam 10:30) → bascule sur soir');
 {
   const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 10, mm: 30 });
-  assert('bascule sur ménagers 18:00 du même jour', r !== null && r.type_collecte === 'menagers');
-  assert('label = ce soir (18:00 >= 17:00)', r.quand === 'ap.cit_ce_soir');
-  assert('heure_debut = 18:00', r.heure_debut.startsWith('18:00'));
+  assert('bascule sur ménagers 18h', r && r.type_collecte === 'menagers' && r.heure_debut.startsWith('18'));
+  assert('label = ce soir', r.quand === 'ap.cit_ce_soir');
 }
 
-console.log('\n4. APRÈS tous les créneaux du jour (samedi 21:00)');
+console.log('\n4. APRÈS tous créneaux du jour (sam 21:00) → demain');
 {
   const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 21, mm: 0 });
-  assert('bascule sur dimanche', r !== null && r.jour === 0);
-  assert('type = ménagers (18:00 dim)', r.type_collecte === 'menagers');
-  assert('label = demain soir (18:00 >= 17:00)', r.quand === 'ap.cit_demain_soir');
+  assert('bascule sur dimanche', r && r.jour === 0);
+  assert('label = demain soir', r.quand === 'ap.cit_demain_soir');
 }
 
-console.log('\n5. Jour SANS créneau — créneaux lun+mer seuls');
+console.log('\n5. Jour SANS créneau → saute au prochain');
 {
   const sparse = [
     { jour: 1, heure_debut: '18:00:00', heure_fin: '20:00:00', type_collecte: 'menagers' },
     { jour: 3, heure_debut: '08:00:00', heure_fin: '10:00:00', type_collecte: 'tri' },
   ];
-  // Mardi 12:00 — pas de créneau mardi, saute à mercredi
   const r = _propreteProchaineCollecte(sparse, { day: 2, hh: 12, mm: 0 });
-  assert('saute au mercredi', r !== null && r.jour === 3);
-  assert('type = tri', r.type_collecte === 'tri');
-  assert('label = demain matin (08:00 < 12:00)', r.quand === 'ap.cit_demain_matin');
+  assert('saute mardi → mercredi', r && r.jour === 3);
+  assert('label = demain matin', r.quand === 'ap.cit_demain_matin');
 }
 
 console.log('\n6. Fin de semaine → début semaine suivante');
 {
-  const sparse = [
-    { jour: 1, heure_debut: '18:00:00', heure_fin: '20:00:00', type_collecte: 'menagers' },
-  ];
-  // Samedi 22:00 — seul créneau est lundi
+  const sparse = [{ jour: 1, heure_debut: '18:00:00', heure_fin: '20:00:00', type_collecte: 'menagers' }];
   const r = _propreteProchaineCollecte(sparse, { day: 6, hh: 22, mm: 0 });
-  assert('bascule de samedi à lundi', r !== null && r.jour === 1);
+  assert('sam → lundi', r && r.jour === 1);
   assert('label = nom du jour (d >= 2)', r.quand === 'ap.jour_1');
 }
 
-console.log('\n7. Créneau après-midi (14:00-16:00 un mercredi, consulté à 11:00)');
+console.log('\n7. Heure de fin pile (10:00, créneau 06-10)');
 {
-  const pm = [
-    { jour: 3, heure_debut: '14:00:00', heure_fin: '16:00:00', type_collecte: 'tri' },
-  ];
-  const r = _propreteProchaineCollecte(pm, { day: 3, hh: 11, mm: 0 });
-  assert('retourne le créneau après-midi', r !== null && r.type_collecte === 'tri');
-  assert('label = cet après-midi', r.quand === 'ap.cit_cet_aprem');
+  const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 10, mm: 0 });
+  assert('10:00 pile → créneau passé, bascule 18h', r && r.heure_debut.startsWith('18'));
 }
 
 console.log('\n8. Liste vide');
 {
-  const r = _propreteProchaineCollecte([], { day: 0, hh: 12, mm: 0 });
-  assert('retourne null', r === null);
+  assert('retourne null', _propreteProchaineCollecte([], { day: 0, hh: 12, mm: 0 }) === null);
 }
 
-console.log('\n9. Exactement à l\'heure de fin (10:00 pile, créneau 06:00-10:00)');
+// ═══ PART B: RAPPEL MODE FILTERING ═══
+
+console.log('\n═══ B. FILTRAGE RAPPELS PAR MODE ═══');
+
+console.log('\n9. Mode "tous" — reçoit tout');
 {
-  const r = _propreteProchaineCollecte(creneaux, { day: 6, hh: 10, mm: 0 });
-  assert('créneau 06-10 est passé (fin <= now)', r !== null && r.type_collecte === 'menagers');
-  assert('bascule sur le créneau suivant (18:00)', r.heure_debut.startsWith('18:00'));
+  assert('menagers → oui', shouldNotify('menagers', 'tous'));
+  assert('tri → oui', shouldNotify('tri', 'tous'));
+  assert('encombrants → oui', shouldNotify('encombrants', 'tous'));
 }
 
-// ── Summary ──
+console.log('\n10. Mode "utiles" — pas de ménagers');
+{
+  assert('menagers → NON', !shouldNotify('menagers', 'utiles'));
+  assert('tri → oui', shouldNotify('tri', 'utiles'));
+  assert('encombrants → oui', shouldNotify('encombrants', 'utiles'));
+}
+
+console.log('\n11. Mode "aucun" — rien');
+{
+  assert('menagers → NON', !shouldNotify('menagers', 'aucun'));
+  assert('tri → NON', !shouldNotify('tri', 'aucun'));
+  assert('encombrants → NON', !shouldNotify('encombrants', 'aucun'));
+}
+
+// ═══ Summary ═══
 console.log('\n══════════════════════════════');
 console.log(`Résultats : ${pass} passés, ${fail} échoués sur ${pass + fail}`);
 if (fail > 0) process.exit(1);

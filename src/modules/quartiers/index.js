@@ -84,11 +84,13 @@ router.patch('/mon-quartier', authenticate, asyncH(async (req, res) => {
   res.json({ ok: true });
 }));
 
-// PATCH /rappel — activer/désactiver les rappels propreté
+// PATCH /rappel — réglage des rappels propreté (tous / utiles / aucun)
 router.patch('/rappel', authenticate, asyncH(async (req, res) => {
-  const { actif } = req.body;
-  await query('UPDATE utilisateur SET rappel_proprete=$1 WHERE id=$2', [!!actif, req.user.id]);
-  res.json({ ok: true, rappel: !!actif });
+  const { mode } = req.body;
+  const valid = ['tous', 'utiles', 'aucun'];
+  if (!valid.includes(mode)) throw badRequest('Mode invalide');
+  await query('UPDATE utilisateur SET rappel_proprete=$1 WHERE id=$2', [mode, req.user.id]);
+  res.json({ ok: true, rappel: mode });
 }));
 
 // GET /:id — fiche quartier avec créneaux
