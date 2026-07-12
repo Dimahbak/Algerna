@@ -25,7 +25,7 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
   return withTransaction(async (client) => {
     // 1. Verrouiller et lire le signalement
     const { rows } = await client.query(
-      `SELECT s.id, s.etat, s.citoyen_id, s.reference, s.domaine,
+      `SELECT s.id, s.etat, s.citoyen_id, s.reference, s.domaine, s.description,
               cs.libelle AS categorie, c.nom AS commune_nom
          FROM signalement s
          LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
@@ -113,10 +113,11 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     // 6. Notification citoyen
     if (sig.citoyen_id) {
       const ctx = [sig.reference, sig.categorie, sig.commune_nom].filter(Boolean).join(' · ');
+      const descExtrait = sig.description ? (sig.description.length > 60 ? sig.description.substring(0, 60).replace(/\s+\S*$/, '') + '…' : sig.description) : '';
       const messages = {
-        transmis:         { titre: 'Pris en charge — ' + ctx, message: `Votre signalement #${sig.reference} a été transmis au service compétent.` },
-        en_intervention:  { titre: 'Intervention en cours — ' + ctx, message: `Intervention en cours · ${sig.categorie || ''} · ${sig.commune_nom || ''}` },
-        a_valider:        { titre: 'Intervention terminée — ' + ctx, message: `L'intervention pour #${sig.reference} est terminée, en attente de validation.` },
+        transmis:         { titre: 'Pris en charge — ' + ctx, message: `Votre signalement #${sig.reference} a été transmis au service compétent.${descExtrait ? ' « ' + descExtrait + ' »' : ''}` },
+        en_intervention:  { titre: 'Intervention en cours — ' + ctx, message: `Intervention en cours · ${sig.categorie || ''}${descExtrait ? ' · ' + descExtrait : ''} · ${sig.commune_nom || ''}` },
+        a_valider:        { titre: 'Intervention terminée — ' + ctx, message: `L'intervention pour #${sig.reference} est terminée, en attente de validation.${descExtrait ? ' « ' + descExtrait + ' »' : ''}` },
         resolu:           { titre: 'Résolu — ' + ctx, message: `Votre signalement #${sig.reference} a été résolu. Merci !` },
         rejete:           { titre: 'Non recevable — ' + ctx, message: `#${sig.reference} non retenu. Motif : ${opts.motifRejet || 'non précisé'}.` },
       };
@@ -144,9 +145,10 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
           const ref = sig.reference || '';
           const cat = sig.categorie || '';
           const com = sig.commune_nom || '';
+          const desc = sig.description ? (sig.description.length > 60 ? sig.description.substring(0, 60).replace(/\s+\S*$/, '') + '…' : sig.description) : '';
           const ctx = [ref, cat, com].filter(Boolean).join(' · ');
           const titre = 'Nouveau dossier transmis — ' + ctx;
-          const message = `Le dossier #${ref} (${cat}) a été transmis à votre service. Commune : ${com || 'non précisée'}.`;
+          const message = `Le dossier #${ref} (${cat}) a été transmis à votre service. Commune : ${com || 'non précisée'}.${desc ? ' « ' + desc + ' »' : ''}`;
           for (const u of epicUsers) {
             await client.query(
               `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
