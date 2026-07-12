@@ -335,8 +335,8 @@
       .kanban-col { min-width:100%; }
       .kanban-cards { max-height:30vh; }
       .bo-drawer-panel { width:100%; max-width:100vw; }
-      #exec-main-layout { grid-template-columns:1fr !important; min-height:auto !important; }
-      #exec-map { min-height:300px !important; }
+      #exec-map { min-height:280px !important; }
+      #exec-kpi-row { grid-template-columns:repeat(3,1fr) !important; }
       /* ── RESPONSIVE ADMIN MOBILE ── */
       /* Empêcher tout débordement */
       .view { overflow-x:hidden; max-width:100vw; }
@@ -346,8 +346,7 @@
       #cockpit-kpis { grid-template-columns:repeat(2,1fr) !important; }
       /* Cockpit répartitions 3 colonnes → 1 */
       #cockpit-repartitions { grid-template-columns:1fr !important; }
-      /* Exec KPIs 6 → 3x2 */
-      #exec-kpis { grid-template-columns:repeat(3,1fr) !important; }
+      /* Exec KPIs : display:contents, row handled by #exec-kpi-row */
       /* Carte cockpit */
       #cockpit-map { height:300px !important; }
       /* Tableaux larges : scroll interne */
@@ -1790,6 +1789,8 @@
       #exec-icua-gauge { width:60px !important; height:60px !important; }
       #exec-icua-gauge svg { width:60px !important; height:60px !important; }
       #exec-icua-score { font-size:16px !important; }
+      /* KPI row 5 → 2 cols on small screens */
+      #exec-kpi-row { grid-template-columns:repeat(2,1fr) !important; }
       /* SdC repartitions grid → 1 col */
       #sdc-repartitions-grid { grid-template-columns:1fr !important; }
       #sdc-epic-cards { grid-template-columns:repeat(2,1fr) !important; }
@@ -4323,32 +4324,32 @@
           <div id="exec-situations-list" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
-        <!-- ═══ BLOC 3 — Compteurs + ICUA gauge + Carte ═══ -->
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:16px;min-height:380px;" id="exec-main-layout">
-          <!-- Gauche : 4 compteurs + ICUA gauge -->
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div id="exec-kpis" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
-            <!-- ICUA Gauge -->
-            <div id="exec-icua-card" onclick="sdcToggle('sdc-icua-body');document.getElementById('sdc-icua-section').scrollIntoView({behavior:'smooth',block:'start'});" style="background:white;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
-              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;"><span class="acro" tabindex="0" data-def="Score global (0-100) mesurant la qualité des services publics">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></div>
-              <div id="exec-icua-gauge" style="position:relative;width:110px;height:110px;margin:0 auto;">
-                <svg viewBox="0 0 120 120" width="110" height="110">
-                  <circle cx="60" cy="60" r="52" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-                  <circle id="exec-icua-arc" cx="60" cy="60" r="52" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 0.8s ease;"/>
-                </svg>
-                <div id="exec-icua-score" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:800;color:var(--navy);">—</div>
-              </div>
-              <div id="exec-icua-label" style="font-size:11px;font-weight:600;color:var(--muted);margin-top:6px;"></div>
-            </div>
-          </div>
-          <!-- Droite : Carte -->
-          <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);overflow:hidden;position:relative;min-height:380px;">
-            <div id="exec-map" style="width:100%;height:100%;min-height:380px;"></div>
+        <!-- ═══ BLOC 3 — Carte pleine largeur + KPI + ICUA ═══ -->
+        <div id="exec-main-layout" style="margin-bottom:16px;">
+          <!-- Carte pleine largeur -->
+          <div style="background:white;border:1px solid var(--ops-border);border-radius:var(--radius-md);overflow:hidden;position:relative;height:55vh;min-height:350px;max-height:520px;margin-bottom:14px;">
+            <div id="exec-map" style="width:100%;height:100%;"></div>
             <div style="position:absolute;top:10px;right:10px;z-index:500;background:white;border-radius:8px;box-shadow:var(--shadow-sm);padding:6px 8px;font-size:11px;">
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-urgences" checked onchange="execToggleLayer('urgences')"> <span data-i18n="sup.couche_urgences">Urgences</span></label>
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-horsdelai" checked onchange="execToggleLayer('horsdelai')"> <span data-i18n="sup.couche_horsdelai">Hors délai</span></label>
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-cap" onchange="execToggleLayer('cap')"> CAP</label>
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin:2px 0;"><input type="checkbox" id="exec-layer-tous" onchange="execToggleLayer('tous')"> <span data-i18n="sup.couche_tous">Tous</span></label>
+            </div>
+          </div>
+          <!-- 5 éléments : 4 KPI + ICUA gauge sur une ligne -->
+          <div id="exec-kpi-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+            <div id="exec-kpis" style="display:contents;"></div>
+            <!-- ICUA Gauge -->
+            <div id="exec-icua-card" onclick="sdcToggle('sdc-icua-body');document.getElementById('sdc-icua-section').scrollIntoView({behavior:'smooth',block:'start'});" style="background:white;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;"><span class="acro" tabindex="0" data-def="Score global (0-100) mesurant la qualité des services publics">ICUA<sup style="font-size:9px;color:var(--muted);margin-left:1px;cursor:help;">?</sup></span></div>
+              <div id="exec-icua-gauge" style="position:relative;width:90px;height:90px;margin:0 auto;">
+                <svg viewBox="0 0 120 120" width="90" height="90">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                  <circle id="exec-icua-arc" cx="60" cy="60" r="52" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 327" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 0.8s ease;"/>
+                </svg>
+                <div id="exec-icua-score" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:800;color:var(--navy);">—</div>
+              </div>
+              <div id="exec-icua-label" style="font-size:11px;font-weight:600;color:var(--muted);margin-top:6px;"></div>
             </div>
           </div>
         </div>
@@ -12778,6 +12779,7 @@ async function initBoExecutive() {
   if (execMap) {
     if (isCommune) execMap.setView(defaultCenter, defaultZoom);
     setTimeout(function() { execMap.invalidateSize(); }, 300);
+    setTimeout(function() { execMap.invalidateSize(); }, 800);
   }
 
   await execLoad();
