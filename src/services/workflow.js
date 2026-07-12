@@ -10,7 +10,8 @@ const VALID_TRANSITIONS = {
   pris_en_charge:    ['en_intervention', 'resolu', 'rejete', 'transmis'],
   en_intervention:   ['a_valider', 'resolu', 'rejete', 'transmis'],
   a_valider:         ['resolu', 'rejete', 'en_intervention'],
-  resolu:            [],
+  resolu:            ['clos'],
+  clos:              [],
   rejete:            [],
 };
 
@@ -22,14 +23,19 @@ const VALID_TRANSITIONS = {
  * @param {object} opts - { commentaire, motifRejet, transmisA }
  */
 async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
-  return withTransaction(async (client) => {
-    // 1. Verrouiller et lire le signalement
+  let _sigData = null; // capturé pour l'email de clôture post-transaction
+
+  const result = await withTransaction(async (client) => {
+    // 1. Verrouiller et lire le signalement (avec email/prenom citoyen pour email de clôture)
     const { rows } = await client.query(
       `SELECT s.id, s.etat, s.citoyen_id, s.reference, s.domaine, s.description,
-              s.commune_id, cs.libelle AS categorie, c.nom AS commune_nom
+              s.commune_id, s.resolu_le,
+              cs.libelle AS categorie, c.nom AS commune_nom,
+              u.email AS citoyen_email, u.prenom AS citoyen_prenom
          FROM signalement s
          LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
          LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur u ON u.id = s.citoyen_id
         WHERE s.id = $1 FOR UPDATE OF s`,
       [signalementId]
     );
@@ -47,6 +53,13 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     if (nouveauEtat === 'rejete' && user.fonction === 'entite_responsable') {
       throw new Error('Le classement sans suite est réservé aux superviseurs.');
     }
+    // Clôture : réservée à l'agent traitant et au superviseur
+    if (nouveauEtat === 'clos' && !['agent_traitant', 'superviseur'].includes(user.fonction)) {
+      throw new Error('La clôture définitive est réservée à l\'agent traitant ou au superviseur.');
+    }
+
+    // Capturer sig pour email post-transaction
+    _sigData = sig;
 
     // 3. Mettre à jour le signalement
     const updates = ['etat = $2'];
@@ -55,6 +68,9 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
 
     if (nouveauEtat === 'resolu') {
       updates.push('resolu_le = NOW()');
+    }
+    if (nouveauEtat === 'clos') {
+      updates.push('clos_le = NOW()');
     }
     if (nouveauEtat === 'rejete' && opts.motifRejet) {
       updates.push(`motif_rejet = $${pi}`);
@@ -120,6 +136,7 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
         a_valider:        { titre: 'Intervention terminée — ' + ctx, message: `L'intervention pour #${sig.reference} est terminée, en attente de validation.${descExtrait ? ' « ' + descExtrait + ' »' : ''}` },
         resolu:           { titre: 'Résolu — ' + ctx, message: `Votre signalement #${sig.reference} a été résolu. Merci !` },
         rejete:           { titre: 'Non recevable — ' + ctx, message: `#${sig.reference} non retenu. Motif : ${opts.motifRejet || 'non précisé'}.` },
+        clos:             { titre: 'Dossier clôturé — ' + ctx, message: `Votre signalement #${sig.reference} est officiellement clôturé. Merci pour votre contribution citoyenne !` },
       };
       const notif = messages[nouveauEtat];
       if (notif) {
@@ -196,6 +213,25 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
 
     return { id: signalementId, ancienEtat, nouveauEtat, reference: sig.reference };
   });
+
+  // Email de clôture — hors transaction, non bloquant
+  if (nouveauEtat === 'clos' && _sigData) {
+    const { sendClosingEmail } = require('./emailService');
+    if (_sigData.citoyen_email) {
+      sendClosingEmail(_sigData.citoyen_email, _sigData.citoyen_prenom, {
+        reference:       _sigData.reference,
+        categorie:       _sigData.categorie,
+        commune:         _sigData.commune_nom,
+        dateResolution:  _sigData.resolu_le
+          ? new Date(_sigData.resolu_le).toLocaleDateString('fr-FR')
+          : new Date().toLocaleDateString('fr-FR'),
+      }).catch(e => console.warn('[workflow] sendClosingEmail failed:', e.message));
+    } else {
+      console.log(`[workflow] clos #${_sigData.reference} — citoyen sans email, notification in-app uniquement`);
+    }
+  }
+
+  return result;
 }
 
 /**

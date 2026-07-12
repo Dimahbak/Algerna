@@ -167,7 +167,8 @@
     .ops-status-recu { background:#f1f5f9; color:#475569; }
     .ops-status-transmis { background:var(--ops-info-bg); color:var(--ops-info); }
     .ops-status-en_intervention { background:var(--ops-warning-bg); color:var(--ops-warning); }
-    .ops-status-resolu { background:var(--ops-success-bg); color:var(--ops-success); }
+    .ops-status-resolu { background:#ffedd5; color:#c2410c; }
+    .ops-status-clos { background:var(--ops-success-bg); color:var(--ops-success); }
     .ops-status-rejete { background:var(--ops-danger-bg); color:var(--ops-danger); }
     .ops-status-cree { background:#f1f5f9; color:#475569; }
     .ops-status-accepte { background:var(--ops-info-bg); color:var(--ops-info); }
@@ -1949,7 +1950,8 @@
     .badge-etat-recu { background: var(--gray-100); color: var(--gray-600); }
     .badge-etat-transmis { background: #dbeafe; color: #1d4ed8; }
     .badge-etat-en_intervention { background: var(--orange-light); color: #c2410c; }
-    .badge-etat-resolu { background: var(--success-bg); color: var(--success-dark); }
+    .badge-etat-resolu { background: #ffedd5; color: #c2410c; }
+    .badge-etat-clos { background: var(--success-bg); color: var(--success-dark); }
     .badge-etat-rejete { background: var(--red-light); color: var(--red); }
     .badge-criticite-haute { background: #fce8ec; color: var(--red); }
     .badge-criticite-moyenne { background: var(--orange-light); color: #c2410c; }
@@ -3898,7 +3900,8 @@
             <div class="kanban-col" data-etat="pris_en_charge"><div class="kanban-col-header" style="border-color:#8b5cf6;"><span data-i18n="bo.col_pris_en_charge">Pris en charge</span><span class="kanban-count" id="kc-pris_en_charge">0</span></div><div class="kanban-cards" id="kl-pris_en_charge"></div></div>
             <div class="kanban-col" data-etat="en_intervention"><div class="kanban-col-header" style="border-color:#f97316;"><span data-i18n="bo.kpi_en_suivi">En suivi</span><span class="kanban-count" id="kc-en_intervention">0</span></div><div class="kanban-cards" id="kl-en_intervention"></div></div>
             <div class="kanban-col" data-etat="a_valider"><div class="kanban-col-header" style="border-color:#eab308;"><span data-i18n="bo.col_a_valider">À valider</span><span class="kanban-count" id="kc-a_valider">0</span></div><div class="kanban-cards" id="kl-a_valider"></div></div>
-            <div class="kanban-col" data-etat="resolu"><div class="kanban-col-header" style="border-color:#16a34a;"><span data-i18n="bo.col_clos">Clos</span><span class="kanban-count" id="kc-resolu">0</span></div><div class="kanban-cards" id="kl-resolu"></div></div>
+            <div class="kanban-col" data-etat="resolu"><div class="kanban-col-header" style="border-color:#f97316;"><span>Résolu — à clôturer</span><span class="kanban-count" id="kc-resolu">0</span></div><div class="kanban-cards" id="kl-resolu"></div></div>
+            <div class="kanban-col" data-etat="clos"><div class="kanban-col-header" style="border-color:#16a34a;"><span data-i18n="bo.col_clos">Clos</span><span class="kanban-count" id="kc-clos">0</span></div><div class="kanban-cards" id="kl-clos"></div></div>
             <div class="kanban-col" data-etat="rejete"><div class="kanban-col-header" style="border-color:#EF4444;"><span data-i18n="bo.col_rejete">Rejeté</span><span class="kanban-count" id="kc-rejete">0</span></div><div class="kanban-cards" id="kl-rejete"></div></div>
           </div>
         </div>
@@ -7821,6 +7824,7 @@ function etatBadgeClass(etat) {
     transmis: 'badge-etat-transmis',
     en_intervention: 'badge-etat-en_intervention',
     resolu: 'badge-etat-resolu',
+    clos: 'badge-etat-clos',
     rejete: 'badge-etat-rejete'
   };
   return 'badge ' + (map[etat] || 'badge-gray');
@@ -7833,7 +7837,8 @@ function etatLabel(etat) {
     pris_en_charge: t('bo.col_pris_en_charge'),
     en_intervention: t('bo.col_en_intervention'),
     a_valider: t('bo.col_a_valider'),
-    resolu: t('bo.col_clos'),
+    resolu: 'Résolu',
+    clos: t('bo.col_clos'),
     rejete: t('bo.col_rejete')
   };
   return map[etat] || etat || '—';
@@ -11467,7 +11472,7 @@ async function supOpenDrawer(id) {
     ficheHtml += '</div>';
 
     // ── BLOC 2 — Analyse ──
-    var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:t('bo.col_clos'),rejete:t('bo.col_rejete')};
+    var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:'Résolu',clos:t('bo.col_clos'),rejete:t('bo.col_rejete')};
     var criticiteLabels = isAr
       ? {haute:'استعجال عالي',moyenne:'استعجال متوسط',basse:'استعجال منخفض'}
       : {haute:'Urgence haute',moyenne:'Urgence moyenne',basse:'Urgence basse'};
@@ -11811,7 +11816,7 @@ async function orgPerfOpenDetail(orgId, orgName) {
     if (res.ok) {
       var allDossiers = await res.json();
       var dossiers = (Array.isArray(allDossiers) ? allDossiers : []).filter(function(d) {
-        return !['resolu','rejete'].includes(d.etat);
+        return !['resolu','clos','rejete'].includes(d.etat);
       });
       var ouverts = dossiers.slice(0, 20);
       window._orgPerfDossiersCount = dossiers.length;
@@ -13733,7 +13738,7 @@ function opsSlaLabel(cree_le, targetHours) {
   return t('bo.badge_conforme_label');
 }
 // Status badge HTML
-function opsStatusBadge(etat) { var labels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:t('bo.col_clos'),rejete:t('bo.col_rejete')}; return '<span class="ops-status ops-status-' + (etat||'recu') + '">' + escHtml(labels[etat] || etat || t('bo.col_recu')) + '</span>'; }
+function opsStatusBadge(etat) { var labels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:'Résolu',clos:t('bo.col_clos'),rejete:t('bo.col_rejete')}; return '<span class="ops-status ops-status-' + (etat||'recu') + '">' + escHtml(labels[etat] || etat || t('bo.col_recu')) + '</span>'; }
 function opsPrioBadge(prio) { var labels = {haute:t('bo.prio_haute'),moyenne:t('bo.prio_moyenne'),basse:t('bo.prio_basse')}; return '<span class="ops-prio ops-prio-' + (prio||'normale') + '">' + escHtml(labels[prio] || prio || t('bo.prio_moyenne')) + '</span>'; }
 function opsSlaBadge(cree_le, target) { return '<span class="ops-sla ' + opsSlaClass(cree_le,target) + '">' + opsSlaLabel(cree_le,target) + '</span>'; }
 
@@ -14702,7 +14707,8 @@ function boRenderKanban() {
       if (label && etat === 'pris_en_charge') label.textContent = t('bo.col_pris_en_charge');
       if (label && etat === 'en_intervention') label.textContent = t('bo.kpi_en_suivi');
       if (label && etat === 'a_valider') label.textContent = t('bo.col_a_valider');
-      if (label && etat === 'resolu') label.textContent = t('bo.col_clos');
+      if (label && etat === 'resolu') label.textContent = 'Résolu — à clôturer';
+      if (label && etat === 'clos') label.textContent = t('bo.col_clos');
       if (label && etat === 'rejete') label.textContent = t('bo.col_rejete');
     } else {
       col.style.display = '';
@@ -14777,7 +14783,8 @@ async function boOpenDrawer(id) {
   ficheHtml += '</div>';
 
   // ── BLOC 2 — Analyse ──
-  var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:t('bo.col_clos'),rejete:t('bo.col_rejete')};
+  var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:'Résolu',clos:t('bo.col_clos'),rejete:t('bo.col_rejete')};
+  // Note: etatLabels redéfini ici pour usage local dans le drawer
   var criticiteLabels = currentLang === 'ar'
     ? {haute:'استعجال عالي',moyenne:'استعجال متوسط',basse:'استعجال منخفض'}
     : {haute:'Urgence haute',moyenne:'Urgence moyenne',basse:'Urgence basse'};
@@ -14880,7 +14887,7 @@ async function boOpenDrawer(id) {
   content.innerHTML = ficheHtml;
 
   // Actions conditionnées par rôle
-  var canAct = ['recu','transmis','en_intervention','pris_en_charge','a_valider'].includes(s.etat);
+  var canAct = ['recu','transmis','en_intervention','pris_en_charge','a_valider','resolu'].includes(s.etat);
   if (!canAct) {
     actions.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;width:100;">Ce dossier est ' + escHtml(etatLabels[s.etat]||s.etat) + '.</div>';
   } else if (hasFonction('entite_responsable')) {
@@ -14937,8 +14944,15 @@ async function boOpenDrawer(id) {
           '<button class="btn btn-sm btn-outline" onclick="boEnvoyerMessage()" style="flex:1;font-size:11px;">💬 ' + t('bo.btn_message') + '</button>' +
           '<button class="btn btn-sm btn-outline" onclick="boRelancerService()" style="flex:1;font-size:11px;">🔔 ' + t('bo.btn_relancer') + '</button>' +
         '</div>';
+    } else if (s.etat === 'resolu') {
+      // Résolu et validé superviseur → l'agent traitant clôture définitivement
+      mainBtns =
+        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;margin-bottom:8px;font-size:12px;color:#166534;line-height:1.5;">' +
+          'Ce dossier a été validé par le superviseur. Clôturez-le pour archiver et envoyer une confirmation au citoyen.' +
+        '</div>' +
+        '<button class="btn btn-sm btn-primary" onclick="boCloturer()" style="flex:1;background:#16a34a;border-color:#16a34a;width:100%;">✅ Clôturer le dossier</button>';
     } else {
-      // resolu, rejete, a_valider : CAP uniquement
+      // rejete, a_valider pour agent : CAP uniquement
       mainBtns = capBtn;
     }
     // Boutons superviseur : communiquer, notifier, signaler urgence
@@ -15037,7 +15051,7 @@ async function boAction(newEtat, opts) {
       if (sig) sig.etat = newEtat;
 
       // Message clair selon l'action
-      var etatLabels = {transmis:'Dossier qualifié',en_intervention:'Transmis au service',pris_en_charge:'Pris en charge',resolu:'Résolu',rejete:'Rejeté'};
+      var etatLabels = {transmis:'Dossier qualifié',en_intervention:'Transmis au service',pris_en_charge:'Pris en charge',resolu:'Résolu',clos:'Dossier clôturé',rejete:'Rejeté'};
       var msg = (opts.toastMsg) || etatLabels[newEtat] || ('→ ' + newEtat);
       showToast(msg + ' — #' + (data.reference || ''));
 
@@ -15054,6 +15068,12 @@ async function boAction(newEtat, opts) {
       showToast(err.erreur || 'Erreur', 'error');
     }
   } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function boCloturer() {
+  if (!_boCurrentId) return;
+  if (!confirm('Clôturer définitivement ce dossier ?\nUn email de confirmation sera envoyé au citoyen.')) return;
+  await boAction('clos', { toastMsg: 'Dossier clôturé' });
 }
 
 function boShowRejetModal() { document.getElementById('bo-modal-rejet').classList.remove('hidden'); }

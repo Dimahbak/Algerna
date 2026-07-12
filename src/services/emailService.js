@@ -322,4 +322,71 @@ async function sendRdvModifEmail(email, prenom, data) {
   }
 }
 
-module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, sendRdvConfirmEmail, sendRdvModifEmail, testConnection };
+/**
+ * Email de clôture définitive d'un signalement (envoyé par l'agent traitant)
+ */
+async function sendClosingEmail(email, prenom, data) {
+  const { reference, categorie, commune, dateResolution } = data;
+  try {
+    await transporter.sendMail({
+      from: FROM,
+      to: email,
+      subject: `[ALGERNA] Dossier ${reference} cloturé — Merci !`,
+      headers: baseHeaders(),
+      text: `Bonjour${prenom ? ' ' + prenom : ''},\n\nVotre signalement ${reference} a ete officiellement clotore.\n\nCategorie : ${categorie || '—'}\nCommune : ${commune || '—'}\nDate de resolution : ${dateResolution || '—'}\n\nMerci pour votre contribution a l'amelioration du cadre de vie dans votre commune.\nVotre signalement a permis a nos services d'intervenir et de traiter le probleme signale.\n\nN'hesitez pas a continuer a signaler tout incident sur votre espace ALGERNA.\n\n--\nALGERNA - Plateforme citoyenne de la Wilaya d'Alger\ncontact@wilaya-alger.dz`,
+      html: `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <tr><td style="background:#063B5A;padding:24px;text-align:center;">
+        <p style="margin:0;font-size:22px;font-weight:700;color:white;letter-spacing:1px;">ALGERNA</p>
+        <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.75);">Plateforme citoyenne - Wilaya d'Alger</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#dcfce7;border-radius:50%;margin-bottom:12px;">
+            <span style="font-size:28px;">&#10003;</span>
+          </div>
+          <p style="margin:0;font-size:20px;font-weight:700;color:#16a34a;">Dossier clôturé${prenom ? ', ' + prenom : ''} !</p>
+          <p style="margin:8px 0 0;font-size:14px;color:#475569;line-height:1.6;">Votre signalement a été traité et officiellement clôturé.</p>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:11px;color:#166534;text-transform:uppercase;font-weight:700;margin-bottom:6px;">Référence du dossier</div>
+          <div style="font-size:22px;font-weight:800;color:#16a34a;letter-spacing:1px;">${reference}</div>
+        </div>
+        <table style="width:100%;font-size:14px;line-height:2;color:#334155;margin-bottom:20px;">
+          <tr><td style="color:#64748B;width:130px;">Catégorie</td><td style="font-weight:600;">${categorie || '—'}</td></tr>
+          <tr><td style="color:#64748B;">Commune</td><td style="font-weight:600;">${commune || '—'}</td></tr>
+          <tr><td style="color:#64748B;">Date de résolution</td><td style="font-weight:600;">${dateResolution || '—'}</td></tr>
+          <tr><td style="color:#64748B;">Statut</td><td><span style="display:inline-block;background:#dcfce7;color:#16a34a;padding:2px 10px;border-radius:20px;font-weight:700;font-size:12px;">Clôturé</span></td></tr>
+        </table>
+        <div style="background:#f8fafc;border-radius:10px;padding:16px;font-size:13px;color:#334155;line-height:1.6;margin-bottom:16px;">
+          Merci pour votre contribution à l'amélioration du cadre de vie dans votre commune.<br>
+          Votre signalement a permis à nos services d'intervenir et de traiter le problème signalé.<br><br>
+          N'hésitez pas à continuer à signaler tout incident via votre espace ALGERNA.
+        </div>
+        <div style="text-align:center;">
+          <a href="https://civismart.pylcom.app" style="display:inline-block;background:#063B5A;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;">Accéder à mon espace</a>
+        </div>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">ALGERNA - Plateforme citoyenne de la Wilaya d'Alger | contact@wilaya-alger.dz</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
+    });
+    console.log('[emailService] Closing email sent to', email, 'ref:', reference);
+    return { ok: true };
+  } catch (e) {
+    console.warn('[emailService] sendClosingEmail failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, sendRdvConfirmEmail, sendRdvModifEmail, sendClosingEmail, testConnection };
