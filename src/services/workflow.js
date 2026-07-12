@@ -26,7 +26,7 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     // 1. Verrouiller et lire le signalement
     const { rows } = await client.query(
       `SELECT s.id, s.etat, s.citoyen_id, s.reference, s.domaine, s.description,
-              cs.libelle AS categorie, c.nom AS commune_nom
+              s.commune_id, cs.libelle AS categorie, c.nom AS commune_nom
          FROM signalement s
          LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
          LEFT JOIN commune c ON c.id = s.commune_id
@@ -157,6 +157,33 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
           }
         }
       } catch (e) { /* notification EPIC non bloquante */ }
+    }
+
+    // 7b. Notification superviseur(s) — quand un dossier passe à a_valider
+    if (nouveauEtat === 'a_valider') {
+      try {
+        const ref = sig.reference || '';
+        const cat = sig.categorie || '';
+        const com = sig.commune_nom || '';
+        const desc = sig.description ? (sig.description.length > 60 ? sig.description.substring(0, 60).replace(/\s+\S*$/, '') + '…' : sig.description) : '';
+        const ctx = [ref, cat, com].filter(Boolean).join(' · ');
+        const titre = 'Compte-rendu à valider — ' + ctx;
+        const message = `Le dossier #${ref} (${cat}) est en attente de validation. Commune : ${com || 'non précisée'}.${desc ? ' « ' + desc + ' »' : ''}`;
+        // Superviseurs concernés : même commune OU périmètre wilaya
+        const { rows: sups } = await client.query(
+          `SELECT id FROM utilisateur
+           WHERE fonction = 'superviseur' AND actif = TRUE
+             AND (niveau_perimetre = 'wilaya' OR commune_id = $1)`,
+          [sig.commune_id]
+        );
+        for (const s of sups) {
+          if (s.id === user.id) continue; // ne pas notifier l'auteur du CR
+          await client.query(
+            `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+             VALUES ($1, 'signalement', $2, $3, '/bo-executive')`,
+            [s.id, titre, message]);
+        }
+      } catch (e) { /* notification superviseur non bloquante */ }
     }
 
     // 8. Points citoyen si résolu

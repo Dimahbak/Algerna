@@ -14666,6 +14666,18 @@ function boFilterSignals() {
   boRenderKanban();
 }
 
+async function boLoadKanban() {
+  try {
+    var res = await apiFetch('/api/signaler/board', { headers: authHeaders() });
+    if (res.ok) {
+      var data = await res.json();
+      _boSignals = Array.isArray(data) ? data : [];
+      _boSignals.forEach(function(s) { s._domaine = s.domaine || 'general'; });
+      boFilterSignals();
+    }
+  } catch(e) { console.warn('[boLoadKanban]', e.message); }
+}
+
 function boRenderKanban() {
   var cols = {recu:[],transmis:[],pris_en_charge:[],en_intervention:[],a_valider:[],resolu:[],rejete:[]};
   _boFiltered.forEach(function(s) { var e = s.etat||'recu'; if (cols[e]) cols[e].push(s); else if (e==='cap') cols.en_intervention.push(s); else cols.recu.push(s); });
