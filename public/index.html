@@ -14944,15 +14944,19 @@ async function boOpenDrawer(id) {
           '<button class="btn btn-sm btn-outline" onclick="boEnvoyerMessage()" style="flex:1;font-size:11px;">💬 ' + t('bo.btn_message') + '</button>' +
           '<button class="btn btn-sm btn-outline" onclick="boRelancerService()" style="flex:1;font-size:11px;">🔔 ' + t('bo.btn_relancer') + '</button>' +
         '</div>';
-    } else if (s.etat === 'resolu') {
-      // Résolu et validé superviseur → l'agent traitant clôture définitivement
+    } else if (s.etat === 'a_valider') {
+      // L'agent traitant valide et clôture directement
       mainBtns =
         '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px;margin-bottom:8px;font-size:12px;color:#166534;line-height:1.5;">' +
-          'Ce dossier a été validé par le superviseur. Clôturez-le pour archiver et envoyer une confirmation au citoyen.' +
+          'L\'intervention est terminée. Validez et clôturez pour archiver et envoyer une confirmation au citoyen.' +
         '</div>' +
+        '<button class="btn btn-sm btn-primary" onclick="boCloturer()" style="flex:1;background:#16a34a;border-color:#16a34a;width:100%;">✅ Valider et Clôturer</button>';
+    } else if (s.etat === 'resolu') {
+      // Résolu (ex-superviseur) → l'agent clôture
+      mainBtns =
         '<button class="btn btn-sm btn-primary" onclick="boCloturer()" style="flex:1;background:#16a34a;border-color:#16a34a;width:100%;">✅ Clôturer le dossier</button>';
     } else {
-      // rejete, a_valider pour agent : CAP uniquement
+      // rejete : CAP uniquement
       mainBtns = capBtn;
     }
     // Boutons superviseur : communiquer, notifier, signaler urgence

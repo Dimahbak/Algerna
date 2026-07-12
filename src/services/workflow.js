@@ -9,7 +9,7 @@ const VALID_TRANSITIONS = {
   transmis:          ['pris_en_charge', 'en_intervention', 'resolu', 'rejete', 'recu'],
   pris_en_charge:    ['en_intervention', 'resolu', 'rejete', 'transmis'],
   en_intervention:   ['a_valider', 'resolu', 'rejete', 'transmis'],
-  a_valider:         ['resolu', 'rejete', 'en_intervention'],
+  a_valider:         ['resolu', 'clos', 'rejete', 'en_intervention'],
   resolu:            ['clos'],
   clos:              [],
   rejete:            [],
@@ -71,6 +71,10 @@ async function transitionEtat(signalementId, nouveauEtat, user, opts = {}) {
     }
     if (nouveauEtat === 'clos') {
       updates.push('clos_le = NOW()');
+      // Si on clôture directement depuis a_valider, on horodate aussi resolu_le
+      if (ancienEtat === 'a_valider') {
+        updates.push('resolu_le = NOW()');
+      }
     }
     if (nouveauEtat === 'rejete' && opts.motifRejet) {
       updates.push(`motif_rejet = $${pi}`);
