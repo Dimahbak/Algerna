@@ -78,7 +78,7 @@ router.post('/', authenticate, validate(reserverSchema), asyncH(async (req, res)
 // GET /api/rdv/mes
 router.get('/mes', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(
-    `SELECT r.*, c.debut, s.nom AS service, cm.nom AS commune
+    `SELECT r.*, c.debut, s.nom AS service, s.id AS service_id, cm.nom AS commune, c.commune_id
        FROM rdv r
        JOIN creneau c ON c.id=r.creneau_id
        JOIN service s ON s.id=c.service_id

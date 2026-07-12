@@ -3117,7 +3117,10 @@
           <div class="card" style="padding:20px;">
             <!-- Étape 1 : Guichet -->
             <div id="rdv-wiz-step1">
-              <h3 style="margin:0 0 6px;font-size:17px;color:var(--navy);">Choisissez votre guichet</h3>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <button class="btn btn-sm btn-outline" onclick="rdvWizBackToStart()" style="font-size:11px;">Retour</button>
+                <h3 style="margin:0;font-size:17px;color:var(--navy);">Choisissez votre guichet</h3>
+              </div>
               <p id="rdv-wiz-service-label" style="font-size:13px;color:var(--muted);margin-bottom:14px;"></p>
               <div id="rdv-wiz-guichets" style="display:flex;flex-direction:column;gap:8px;"></div>
             </div>
@@ -6492,9 +6495,9 @@ function showDemarcheDetail() {
       <h5 style="margin:0 0 6px;font-size:13px;">${t('rdv.pieces_titre')}</h5>
       <div id="rdv-checklist">
         ${pieces.map((p, i) => `
-          <label style="display:flex;align-items:start;gap:6px;margin-bottom:4px;font-size:12px;cursor:pointer;">
-            <input type="checkbox" class="rdv-piece-check" data-idx="${i}" style="margin-top:2px;">
-            <span>${escHtml(p)}</span>
+          <label style="display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:6px;background:white;border:1px solid var(--line);border-radius:10px;cursor:pointer;transition:background 0.15s;">
+            <input type="checkbox" class="rdv-piece-check" data-idx="${i}" style="width:18px;height:18px;accent-color:var(--green);flex-shrink:0;">
+            <span style="font-size:13px;color:var(--navy);line-height:1.5;flex:1;">${escHtml(p)}</span>
           </label>`).join('')}
       </div>
       <div id="rdv-checklist-status" style="font-size:11px;margin-top:4px;color:var(--muted);"></div>
@@ -7031,6 +7034,22 @@ async function loadCreneaux() {
   }
 
   document.getElementById('rdv-famille-a').classList.add('hidden');
+
+  // Rediriger vers le wizard guichet pour les services famille B (créneaux dynamiques)
+  _rdvWizServiceId = Number(serviceId);
+  var svc = rdvServices ? rdvServices.find(function(s) { return s.id === _rdvWizServiceId; }) : null;
+  document.getElementById('rdv-steps').classList.add('hidden');
+  document.getElementById('rdv-step-1').classList.add('hidden');
+  document.getElementById('rdv-demarche-detail').classList.add('hidden');
+  document.getElementById('rdv-wizard').classList.remove('hidden');
+  document.getElementById('rdv-wiz-step1').classList.remove('hidden');
+  document.getElementById('rdv-wiz-step2').classList.add('hidden');
+  document.getElementById('rdv-wiz-step3').classList.add('hidden');
+  document.getElementById('rdv-wiz-service-label').textContent = (svc ? svc.nom : '');
+  rdvLoadGuichets(_rdvWizServiceId);
+  return;
+
+  /* ── ancien flux statique (conservé mais inatteignable) ── */
   document.getElementById('rdv-step-2').classList.remove('hidden');
   document.getElementById('rdv-creneaux-loading').classList.remove('hidden');
   document.getElementById('rdv-creneaux-grid').classList.add('hidden');
@@ -7226,7 +7245,7 @@ async function loadMesRDV() {
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <span class="badge ${rdvStatusBadge(r.statut)}">${escHtml(r.statut || 'confirmé')}</span>
           ${r.qr_code && r.statut === 'reserve' ? `<button class="btn btn-sm btn-outline" onclick="showRdvQR('${r.qr_code}')" style="font-size:10px;">QR Code</button>` : ''}
-          ${r.statut === 'reserve' && (r.nb_modifications || 0) < 2 ? `<button class="btn btn-sm btn-outline" onclick="modifierRDV('${r.id}')" style="font-size:10px;">Modifier</button>` : ''}
+          ${r.statut === 'reserve' && (r.nb_modifications || 0) < 2 ? `<button class="btn btn-sm btn-outline" onclick="modifierRDV('${r.id}', ${r.service_id || 0}, ${r.commune_id || 0})" style="font-size:10px;">Modifier</button>` : ''}
           ${r.statut === 'reserve' && (r.nb_modifications || 0) >= 2 ? `<span style="font-size:9px;color:var(--muted);">Max modifications atteint</span>` : ''}
           ${canEval ? `<button class="btn btn-sm btn-outline" onclick="showEvalRDV('${r.id}')" style="font-size:10px;">${t('rdv.evaluer')}</button>` : ''}
           ${hasEval ? `<span style="font-size:10px;color:var(--gold);">★ ${r.note_satisfaction}/5</span>` : ''}
@@ -7293,28 +7312,97 @@ function showConfirmModal(title, message, callback) {
   );
 }
 
-async function modifierRDV(rdvId) {
-  showToast('Chargez "Préparer mon dossier" pour choisir un nouveau créneau.', 'info');
-  // Pour une implémentation complète, on réutiliserait le wizard existant
-  // Pour l'instant, on propose le changement via prompt
-  var newDate = prompt('Nouvelle date souhaitée (format AAAA-MM-JJ) :');
-  if (!newDate || !newDate.trim()) return;
-  var newHeure = prompt('Nouvelle heure (format HH:MM, ex : 09:30) :');
-  if (!newHeure || !newHeure.trim()) return;
-  var debut = newDate.trim() + 'T' + newHeure.trim() + ':00';
+async function modifierRDV(rdvId, serviceId, communeId) {
+  // Charger les guichets pour ce service
   try {
-    var res = await apiFetch('/api/rdv/' + rdvId + '/modifier', {
+    var gRes = await apiFetch('/api/rdv/guichets?serviceId=' + serviceId, { headers: authHeaders() });
+    if (!gRes.ok) { showToast('Erreur chargement guichets.', 'error'); return; }
+    var guichets = await gRes.json();
+    if (!guichets.length) { showToast('Aucun guichet disponible.', 'error'); return; }
+
+    // Si un seul guichet, l'utiliser directement ; sinon prendre celui de la même commune
+    var guichet = guichets.find(function(g) { return g.commune_id === communeId; }) || guichets[0];
+
+    // Charger les créneaux
+    var cRes = await apiFetch('/api/rdv/guichets/' + guichet.id + '/creneaux?serviceId=' + serviceId, { headers: authHeaders() });
+    if (!cRes.ok) { showToast('Erreur chargement créneaux.', 'error'); return; }
+    var data = await cRes.json();
+    var creneaux = data.creneaux || [];
+    if (!creneaux.length) { showToast('Aucun créneau disponible dans les 14 prochains jours.', 'error'); return; }
+
+    // Grouper par jour
+    var jours = {};
+    creneaux.forEach(function(c) { if (!jours[c.date]) jours[c.date] = []; jours[c.date].push(c); });
+    var jourKeys = Object.keys(jours);
+    var jourNoms = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    var moisNoms = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+
+    // Construire le modal
+    var joursHtml = jourKeys.map(function(d) {
+      var dt = new Date(d + 'T00:00:00');
+      var dispos = jours[d].filter(function(c) { return c.disponible; }).length;
+      return '<button onclick="modRdvSelectJour(\'' + d + '\')" id="mod-jour-' + d + '" class="mod-jour-btn" style="min-width:60px;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:white;cursor:pointer;text-align:center;flex-shrink:0;transition:all 0.15s;">' +
+        '<div style="font-size:9px;color:var(--muted);">' + jourNoms[dt.getDay()] + '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:var(--navy);">' + dt.getDate() + '</div>' +
+        '<div style="font-size:9px;color:var(--muted);">' + moisNoms[dt.getMonth()] + '</div>' +
+        '<div style="font-size:8px;color:' + (dispos > 0 ? '#16a34a' : 'var(--red)') + ';font-weight:600;">' + dispos + ' dispo</div>' +
+      '</button>';
+    }).join('');
+
+    var html = '<div style="margin-bottom:12px;">' +
+      '<p style="font-size:13px;color:var(--navy);font-weight:600;margin-bottom:8px;">' + escHtml(guichet.nom) + '</p>' +
+      '<div id="mod-jours" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;">' + joursHtml + '</div>' +
+      '</div>' +
+      '<div id="mod-heures" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;max-height:300px;overflow-y:auto;"></div>';
+
+    // Stocker les données pour les callbacks
+    window._modRdvId = rdvId;
+    window._modGuichetId = guichet.id;
+    window._modServiceId = serviceId;
+    window._modCreneaux = creneaux;
+    window._modJours = jours;
+
+    showModal('Modifier le rendez-vous', html);
+
+    // Sélectionner le premier jour dispo
+    var firstDispo = jourKeys.find(function(d) { return jours[d].some(function(c) { return c.disponible; }); });
+    if (firstDispo) modRdvSelectJour(firstDispo);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function modRdvSelectJour(dateStr) {
+  document.querySelectorAll('.mod-jour-btn').forEach(function(b) { b.style.borderColor = 'var(--line)'; b.style.background = 'white'; });
+  var sel = document.getElementById('mod-jour-' + dateStr);
+  if (sel) { sel.style.borderColor = 'var(--blue)'; sel.style.background = 'var(--blue-light)'; }
+
+  var heures = window._modCreneaux.filter(function(c) { return c.date === dateStr; });
+  var container = document.getElementById('mod-heures');
+  container.innerHTML = heures.map(function(c) {
+    var dispo = c.disponible;
+    return '<button onclick="' + (dispo ? 'modRdvConfirmer(\'' + c.debut + '\')' : '') + '" style="padding:8px;border:1px solid ' + (dispo ? 'var(--line)' : '#fee2e2') + ';border-radius:10px;background:' + (dispo ? 'white' : '#fef2f2') + ';cursor:' + (dispo ? 'pointer' : 'not-allowed') + ';text-align:center;opacity:' + (dispo ? '1' : '0.5') + ';" ' + (dispo ? 'onmouseover="this.style.borderColor=\'var(--blue)\';this.style.background=\'var(--blue-light)\'" onmouseout="this.style.borderColor=\'var(--line)\';this.style.background=\'white\'"' : '') + '>' +
+      '<div style="font-size:14px;font-weight:700;color:' + (dispo ? 'var(--navy)' : 'var(--muted)') + ';">' + c.heure + '</div>' +
+      '<div style="font-size:9px;color:' + (dispo ? '#16a34a' : 'var(--red)') + ';">' + (dispo ? c.restants + ' place(s)' : 'Complet') + '</div>' +
+    '</button>';
+  }).join('');
+}
+
+async function modRdvConfirmer(debut) {
+  try {
+    var res = await apiFetch('/api/rdv/' + window._modRdvId + '/modifier', {
       method: 'PATCH',
       headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guichetId: _rdvWizGuichetId || 1, serviceId: _rdvWizServiceId || 22, debut: debut })
+      body: JSON.stringify({ guichetId: window._modGuichetId, serviceId: window._modServiceId, debut: debut })
     });
+    // Fermer le modal
+    var modal = document.getElementById('generic-modal');
+    if (modal) modal.remove();
     if (res.ok) {
       var data = await res.json();
-      showToast('RDV modifié. Modifications restantes : ' + data.modifications_restantes);
+      showToast('RDV modifié ! Modifications restantes : ' + data.modifications_restantes);
       loadMesRDV();
     } else {
       var err = await res.json();
-      showToast(err.erreur || 'Erreur', 'error');
+      showToast(err.erreur || 'Erreur de modification.', 'error');
     }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -15656,12 +15744,40 @@ function updatePreparerProgress() {
         '</div>' +
         '<span style="font-weight:600;color:' + color + ';">' + done + '/' + total + '</span>' +
       '</div>' +
-      (pct === 100 ? '<div style="color:#16a34a;font-weight:600;margin-top:6px;">Votre dossier est complet !</div>' : '');
+      (pct === 100 ? '<div style="color:#16a34a;font-weight:600;margin-top:6px;">Dossier complet !</div>' : '');
   }
   // Activer visuellement le bouton quand tout est coché
   var btn = document.getElementById('preparer-btn-rdv');
   if (btn) {
     btn.style.opacity = pct === 100 ? '1' : '0.6';
+  }
+  // Quand dossier complet : masquer tab "Préparer", activer "Prendre un RDV"
+  var tabPrep = document.getElementById('tab-preparer');
+  var tabRdv = document.getElementById('tab-rdv');
+  if (tabPrep && tabRdv) {
+    if (pct === 100) {
+      tabPrep.style.display = 'none';
+      tabRdv.className = 'btn btn-primary';
+      tabRdv.style.flex = '1';
+      // Ajouter lien discret "revoir mon dossier" s'il n'existe pas
+      if (!document.getElementById('revoir-dossier-link')) {
+        var link = document.createElement('button');
+        link.id = 'revoir-dossier-link';
+        link.className = 'btn-link';
+        link.textContent = 'Revoir mon dossier';
+        link.style.cssText = 'font-size:11px;color:var(--muted);cursor:pointer;background:none;border:none;text-decoration:underline;margin-left:8px;';
+        link.onclick = function() {
+          tabPrep.style.display = '';
+          link.remove();
+          showDemarchesTab('preparer');
+        };
+        tabRdv.parentNode.appendChild(link);
+      }
+    } else {
+      tabPrep.style.display = '';
+      var rl = document.getElementById('revoir-dossier-link');
+      if (rl) rl.remove();
+    }
   }
 }
 
@@ -15855,6 +15971,19 @@ function rdvWizBack(step) {
     document.getElementById('rdv-wiz-step2').classList.add('hidden');
     document.getElementById('rdv-wiz-step1').classList.remove('hidden');
   }
+}
+
+function rdvWizBackToStart() {
+  document.getElementById('rdv-wizard').classList.add('hidden');
+  // Si vient du tab Preparer → retourner au preparer
+  if (!document.getElementById('demarches-preparer').classList.contains('hidden')) {
+    document.getElementById('demarches-preparer').classList.remove('hidden');
+    return;
+  }
+  // Sinon → retourner au step 1 commune/service
+  document.getElementById('rdv-steps').classList.remove('hidden');
+  document.getElementById('rdv-step-1').classList.remove('hidden');
+  document.getElementById('rdv-demarche-detail').classList.remove('hidden');
 }
 
 // ─── PRÉFÉRENCES PROFIL ──────────────────────────────────────
