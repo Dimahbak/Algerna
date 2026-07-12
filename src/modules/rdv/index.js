@@ -425,40 +425,16 @@ router.post('/guichets/reserver', authenticate, asyncH(async (req, res) => {
          '/civiadmin']);
     } catch(e) { /* notification non bloquante */ }
 
-    // Email de confirmation RDV
+    // Email de confirmation RDV via emailService
     try {
       const { rows: userInfo } = await client.query('SELECT email, prenom FROM utilisateur WHERE id=$1', [req.user.id]);
       if (userInfo[0]?.email) {
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({ host:'127.0.0.1', port:25, secure:false, tls:{rejectUnauthorized:false} });
-        const pieces = (info[0].pieces_requises || []).map(p => '<li>' + p + '</li>').join('');
-        await transporter.sendMail({
-          from: '"ALGERNA" <noreply@civismart.pylcom.app>',
-          to: userInfo[0].email,
-          subject: 'RDV confirmé — ' + info[0].service_nom + ' · ' + dateLabel,
-          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-            <div style="background:#063B5A;color:white;padding:20px 24px;border-radius:12px 12px 0 0;text-align:center;">
-              <h1 style="margin:0;font-size:22px;">Rendez-vous confirmé</h1>
-            </div>
-            <div style="background:white;border:1px solid #e0e7ed;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
-              <div style="text-align:center;margin-bottom:16px;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrCode)}" alt="QR" style="width:140px;height:140px;border-radius:8px;">
-                <div style="font-size:18px;font-weight:800;color:#063B5A;margin-top:8px;">${qrCode}</div>
-              </div>
-              <table style="width:100%;font-size:14px;line-height:2;color:#334155;">
-                <tr><td style="color:#64748B;">Démarche</td><td style="font-weight:600;">${info[0].service_nom}</td></tr>
-                <tr><td style="color:#64748B;">Date</td><td style="font-weight:600;">${dateLabel}</td></tr>
-                <tr><td style="color:#64748B;">Heure</td><td style="font-weight:600;">${heureLabel}</td></tr>
-                <tr><td style="color:#64748B;">Guichet</td><td style="font-weight:600;">${g.nom}</td></tr>
-                <tr><td style="color:#64748B;">Adresse</td><td style="font-weight:600;">${g.adresse || '—'}</td></tr>
-                <tr><td style="color:#64748B;">Commune</td><td style="font-weight:600;">${info[0].commune_nom}</td></tr>
-              </table>
-              ${pieces ? '<div style="margin-top:16px;background:#F5F3FF;border-radius:10px;padding:14px;"><h3 style="margin:0 0 8px;font-size:14px;color:#5B21B6;">Pièces à apporter</h3><ul style="margin:0;padding-left:20px;color:#334155;line-height:1.8;">' + pieces + '</ul></div>' : ''}
-              <p style="margin-top:16px;font-size:12px;color:#64748B;text-align:center;">Présentez le QR code ci-dessus au guichet le jour du rendez-vous.</p>
-              <hr style="border:none;border-top:1px solid #e0e7ed;margin:20px 0;">
-              <p style="color:#94a3b8;font-size:11px;text-align:center;">ALGERNA — Wilaya d'Alger<br>contact@wilaya-alger.dz</p>
-            </div>
-          </div>`
+        const { sendRdvConfirmEmail } = require('../../services/emailService');
+        sendRdvConfirmEmail(userInfo[0].email, userInfo[0].prenom, {
+          reference: qrCode, service: info[0].service_nom, guichet: g.nom,
+          adresse: g.adresse, commune: info[0].commune_nom,
+          date: dateLabel, heure: heureLabel,
+          pieces: info[0].pieces_requises || [],
         });
       }
     } catch(e) { console.warn('[rdv] email confirm failed:', e.message); }
@@ -544,15 +520,34 @@ router.patch('/:id/modifier', authenticate, asyncH(async (req, res) => {
     // Notification
     const heureLabel = new Date(debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const dateLabel = new Date(debut).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    // Charger infos service pour l'email
+    const { rows: svcInfo } = await client.query(
+      `SELECT s.nom AS service_nom, cm.nom AS commune_nom
+         FROM service s, commune cm WHERE s.id = $1 AND cm.id = $2`,
+      [serviceId, g.commune_id]);
     try {
       await client.query(
         `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
          VALUES ($1, 'rdv', $2, $3, $4)`,
         [req.user.id,
-         'RDV modifié',
+         'RDV modifié — ' + (svcInfo[0]?.service_nom || ''),
          'Nouveau créneau : ' + dateLabel + ' à ' + heureLabel + ' · ' + g.nom,
          '/civiadmin']);
     } catch(e) {}
+
+    // Email de modification RDV
+    try {
+      const { rows: userInfo } = await client.query('SELECT email, prenom FROM utilisateur WHERE id=$1', [req.user.id]);
+      if (userInfo[0]?.email) {
+        const { sendRdvModifEmail } = require('../../services/emailService');
+        sendRdvModifEmail(userInfo[0].email, userInfo[0].prenom, {
+          reference: rdv.qr_code, service: svcInfo[0]?.service_nom || '',
+          guichet: g.nom, adresse: g.adresse, commune: svcInfo[0]?.commune_nom || '',
+          date: dateLabel, heure: heureLabel,
+          modificationsRestantes: 2 - (rdv.nb_modifications + 1),
+        });
+      }
+    } catch(e) { console.warn('[rdv] email modif failed:', e.message); }
 
     return { ok: true, modifications_restantes: 2 - (rdv.nb_modifications + 1) };
   });

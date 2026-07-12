@@ -7047,6 +7047,8 @@ async function loadCreneaux() {
   document.getElementById('rdv-wiz-step3').classList.add('hidden');
   document.getElementById('rdv-wiz-service-label').textContent = (svc ? svc.nom : '');
   rdvLoadGuichets(_rdvWizServiceId);
+  // Scroll le wizard dans la vue pour que l'utilisateur voie la transition
+  document.getElementById('rdv-wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   return;
 
   /* ── ancien flux statique (conservé mais inatteignable) ── */
@@ -15805,6 +15807,7 @@ function lancerPriseRDV() {
 
   // Charger les guichets
   rdvLoadGuichets(_rdvWizServiceId);
+  document.getElementById('rdv-wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function rdvLoadGuichets(serviceId) {

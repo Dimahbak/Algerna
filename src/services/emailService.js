@@ -201,4 +201,125 @@ async function sendSignalementEmail(email, prenom, reference, categorie, commune
   } catch(e) { console.warn('[emailService] sendSignalementEmail failed:', e.message); return { ok: false }; }
 }
 
-module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, testConnection };
+/**
+ * Email de confirmation RDV (booking)
+ */
+async function sendRdvConfirmEmail(email, prenom, data) {
+  const { reference, service, guichet, adresse, commune, date, heure, pieces } = data;
+  const piecesHtml = (pieces || []).map(p => '<li>' + p + '</li>').join('');
+  try {
+    await transporter.sendMail({
+      from: FROM, to: email,
+      subject: `[ALGERNA] RDV confirme - ${service} - ${date}`,
+      headers: baseHeaders(),
+      text: `Bonjour${prenom ? ' ' + prenom : ''},\n\nVotre rendez-vous est confirme.\n\nReference : ${reference}\nDemarche : ${service}\nDate : ${date}\nHeure : ${heure}\nGuichet : ${guichet}\nAdresse : ${adresse || 'non precisee'}\nCommune : ${commune}\n\n${pieces && pieces.length ? 'Pieces a apporter :\n' + pieces.map(p => '- ' + p).join('\n') + '\n\n' : ''}Presentez le QR code ci-dessous au guichet le jour du rendez-vous.\nVous pouvez modifier votre RDV 2 fois maximum depuis votre espace.\nPour annuler, connectez-vous sur https://civismart.pylcom.app\n\n--\nALGERNA - Plateforme citoyenne de la Wilaya d'Alger`,
+      html: `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <tr><td style="background:#063B5A;padding:24px;text-align:center;">
+        <p style="margin:0;font-size:22px;font-weight:700;color:white;letter-spacing:1px;">ALGERNA</p>
+        <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.75);">Confirmation de rendez-vous</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#063B5A;">Rendez-vous confirme${prenom ? ', ' + prenom : ''} !</p>
+        <div style="text-align:center;margin-bottom:20px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(reference)}" alt="QR" style="width:150px;height:150px;border-radius:8px;">
+          <div style="font-size:20px;font-weight:800;color:#063B5A;margin-top:8px;letter-spacing:1px;">${reference}</div>
+        </div>
+        <table style="width:100%;font-size:14px;line-height:2;color:#334155;">
+          <tr><td style="color:#64748B;width:120px;">Demarche</td><td style="font-weight:600;">${service}</td></tr>
+          <tr><td style="color:#64748B;">Date</td><td style="font-weight:600;">${date}</td></tr>
+          <tr><td style="color:#64748B;">Heure</td><td style="font-weight:600;">${heure}</td></tr>
+          <tr><td style="color:#64748B;">Guichet</td><td style="font-weight:600;">${guichet}</td></tr>
+          <tr><td style="color:#64748B;">Adresse</td><td style="font-weight:600;">${adresse || 'Non precisee'}</td></tr>
+          <tr><td style="color:#64748B;">Commune</td><td style="font-weight:600;">${commune}</td></tr>
+        </table>
+        ${piecesHtml ? '<div style="margin-top:20px;background:#F5F3FF;border-radius:10px;padding:16px;"><h3 style="margin:0 0 8px;font-size:14px;color:#5B21B6;">Pieces a apporter</h3><ul style="margin:0;padding-left:20px;color:#334155;line-height:1.8;">' + piecesHtml + '</ul></div>' : ''}
+        <div style="margin-top:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;font-size:13px;color:#166534;">
+          <strong>Instructions :</strong><br>
+          Presentez le QR code ci-dessus au guichet le jour du rendez-vous.<br>
+          Vous pouvez modifier votre RDV 2 fois maximum depuis votre espace citoyen.<br>
+          Pour annuler, connectez-vous sur <a href="https://civismart.pylcom.app" style="color:#166534;">civismart.pylcom.app</a>.
+        </div>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">ALGERNA - Plateforme citoyenne de la Wilaya d'Alger | contact@wilaya-alger.dz</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
+    });
+    console.log('[emailService] RDV confirm sent to', email, 'ref:', reference);
+    return { ok: true };
+  } catch (e) {
+    console.warn('[emailService] sendRdvConfirmEmail failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+/**
+ * Email de modification RDV
+ */
+async function sendRdvModifEmail(email, prenom, data) {
+  const { reference, service, guichet, adresse, commune, date, heure, modificationsRestantes } = data;
+  try {
+    await transporter.sendMail({
+      from: FROM, to: email,
+      subject: `[ALGERNA] RDV modifie - ${service} - ${date}`,
+      headers: baseHeaders(),
+      text: `Bonjour${prenom ? ' ' + prenom : ''},\n\nVotre rendez-vous a ete modifie.\n\nReference : ${reference}\nDemarche : ${service}\nNouvelle date : ${date}\nNouvelle heure : ${heure}\nGuichet : ${guichet}\nAdresse : ${adresse || 'non precisee'}\nCommune : ${commune}\n\nModifications restantes : ${modificationsRestantes}\nPresentez le meme QR code au guichet.\n\n--\nALGERNA - Plateforme citoyenne de la Wilaya d'Alger`,
+      html: `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:white;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
+      <tr><td style="background:#7C3AED;padding:24px;text-align:center;">
+        <p style="margin:0;font-size:22px;font-weight:700;color:white;letter-spacing:1px;">ALGERNA</p>
+        <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,0.75);">Modification de rendez-vous</p>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#7C3AED;">Rendez-vous modifie${prenom ? ', ' + prenom : ''}</p>
+        <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:10px;padding:12px;margin-bottom:20px;font-size:13px;color:#92400E;">
+          Votre rendez-vous a ete reporte. Les nouvelles informations sont ci-dessous.
+          ${modificationsRestantes > 0 ? '<br>Il vous reste <strong>' + modificationsRestantes + ' modification(s)</strong> possible(s).' : '<br><strong>Vous ne pouvez plus modifier ce rendez-vous.</strong>'}
+        </div>
+        <div style="text-align:center;margin-bottom:16px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(reference)}" alt="QR" style="width:120px;height:120px;border-radius:8px;">
+          <div style="font-size:16px;font-weight:800;color:#7C3AED;margin-top:6px;">${reference}</div>
+        </div>
+        <table style="width:100%;font-size:14px;line-height:2;color:#334155;">
+          <tr><td style="color:#64748B;width:120px;">Demarche</td><td style="font-weight:600;">${service}</td></tr>
+          <tr><td style="color:#64748B;">Nouvelle date</td><td style="font-weight:600;">${date}</td></tr>
+          <tr><td style="color:#64748B;">Nouvelle heure</td><td style="font-weight:600;">${heure}</td></tr>
+          <tr><td style="color:#64748B;">Guichet</td><td style="font-weight:600;">${guichet}</td></tr>
+          <tr><td style="color:#64748B;">Adresse</td><td style="font-weight:600;">${adresse || 'Non precisee'}</td></tr>
+          <tr><td style="color:#64748B;">Commune</td><td style="font-weight:600;">${commune}</td></tr>
+        </table>
+        <p style="margin-top:16px;font-size:12px;color:#64748B;text-align:center;">Presentez le meme QR code au guichet le jour du rendez-vous.</p>
+      </td></tr>
+      <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;">
+        <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">ALGERNA - Plateforme citoyenne de la Wilaya d'Alger | contact@wilaya-alger.dz</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
+    });
+    console.log('[emailService] RDV modif sent to', email, 'ref:', reference);
+    return { ok: true };
+  } catch (e) {
+    console.warn('[emailService] sendRdvModifEmail failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, sendRdvConfirmEmail, sendRdvModifEmail, testConnection };
