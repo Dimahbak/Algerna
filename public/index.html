@@ -1180,6 +1180,18 @@
     .bottom-nav-item.active { color: var(--teal); font-weight: 600; }
     .bottom-nav-item.active svg { stroke: var(--teal); }
 
+    /* ─── BOUTON SIGNALER CITOYEN (bottom nav) — orange / blanc ─── */
+    .bottom-nav-item[data-view="signaler"] {
+      background: #F97316; color: #fff; border-radius: 12px;
+      margin: -2px 2px 0; padding: 6px 0;
+    }
+    .bottom-nav-item[data-view="signaler"] svg { stroke: #fff !important; }
+    .bottom-nav-item[data-view="signaler"]:active,
+    .bottom-nav-item[data-view="signaler"].active {
+      background: #EA580C; color: #fff;
+    }
+    .bottom-nav-item[data-view="signaler"].active svg { stroke: #fff !important; }
+
     /* ─── CARDS ─── */
     .card {
       background: rgba(255,255,255,0.95);
@@ -1317,7 +1329,7 @@
     }
     .cta-signale {
       display: flex; align-items: center; gap: 18px;
-      background: #fff; border: 2px solid var(--color-orange);
+      background: #F97316; border: none;
       border-radius: var(--radius-md); padding: 16px 20px;
       width: 85%; max-width: 640px;
       min-height: 68px; cursor: pointer;
@@ -1325,15 +1337,16 @@
       transition: background .15s, box-shadow .15s;
       margin-bottom: 16px;
     }
-    .cta-signale:hover { background: #F0F7FC; box-shadow: var(--shadow-md); }
+    .cta-signale:hover { background: #EA580C; box-shadow: var(--shadow-md); }
+    .cta-signale:active { background: #C2410C; }
     .cta-signale:focus-visible { outline: 3px solid var(--color-navy); outline-offset: 3px; }
     .cta-signale-icon {
       width: 44px; height: 44px; min-width: 44px;
       display: flex; align-items: center; justify-content: center;
     }
     .cta-signale-content { flex: 1; min-width: 0; }
-    .cta-signale-content h3 { font-size: 16px; font-weight: 700; color: var(--color-navy); margin: 0 0 2px; }
-    .cta-signale-content p { font-size: 13px; color: var(--gray-600); margin: 0; line-height: 1.4; }
+    .cta-signale-content h3 { font-size: 16px; font-weight: 700; color: #fff; margin: 0 0 2px; }
+    .cta-signale-content p { font-size: 13px; color: rgba(255,255,255,0.9); margin: 0; line-height: 1.4; }
     .cta-signale-arrow {
       width: 32px; min-width: 32px;
       display: flex; align-items: center; justify-content: center;
@@ -2530,14 +2543,14 @@
         <h3 class="cta-signale-heading" data-i18n="home.que_faire">Que souhaitez-vous faire aujourd'hui&nbsp;?</h3>
             <div class="cta-signale" onclick="showView('signaler')" tabindex="0" role="button" aria-label="Je signale un problème" onkeydown="if(event.key==='Enter')showView('signaler')">
               <div class="cta-signale-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#063B5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
               </div>
               <div class="cta-signale-content">
                 <h3 data-i18n="univers.signale">Je signale</h3>
                 <p data-i18n="home.cta_signale_sub">Signalez un problème sur l'espace public.</p>
               </div>
               <div class="cta-signale-arrow">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             </div>
 
