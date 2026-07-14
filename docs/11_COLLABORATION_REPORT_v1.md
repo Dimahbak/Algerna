@@ -162,14 +162,14 @@ Cinq roles sont definis dans la plateforme. Pour l'environnement de developpemen
 | Citoyen test | 0550000001 | admin1234 | Amina Benali — espace citoyen |
 | Agent reception wilaya | 0550000002 | admin@@1234 | Youcef Kaci — board Kanban |
 | Commandement cabinet wilaya | 0550000003 | admin@@1234 | Rachid Mansouri — Salle de Commandement |
-| Superviseur APC | 0550000004 | admin@@1234 | Mourad Hadj — cockpit communal |
-| EPIC proprete | 0550000005 | admin@@1234 | Nassim Taleb — operateur EPIC |
-| EPIC Eclairage Public | 0550000006 | admin@@1234 | Nadia Aissaoui — Direction Eclairage Public |
-| CAP | 0550000007 | admin@@1234 | Karim Benali — agent de proximite |
-| EPIC Parking | 0550000008 | admin@@1234 | Khaled Boumediene — operateur EPIC |
-| EPIC Patrimoine local | 0550000009 | admin@@1234 | Samira Hadji — Patrimoine Local (Regie Fonciere) |
-| EPIC Direction de l'Eau | 0550000010 | admin@@1234 | Farid Mebarki — Direction de l'Eau |
-| Cabinet wilaya CCOE | 0550000011 | admin@@1234 | Yacine Benmoussa — CCOE |
+| CAP | 0550000004 | admin@@1234 | Karim Benali — agent de proximite |
+| Superviseur APC | 0550000005 | admin@@1234 | Mourad Hadj — cockpit communal |
+| Cabinet wilaya CCOE | 0550000006 | admin@@1234 | Yacine Benmoussa — CCOE |
+| EPIC proprete | 0550000007 | admin@@1234 | Nassim Taleb — Direction Proprete Centre |
+| EPIC Eclairage Public | 0550000008 | admin@@1234 | Nadia Aissaoui — Direction Eclairage Public |
+| EPIC Parking | 0550000009 | admin@@1234 | Khaled Boumediene — Gestion des Parkings |
+| EPIC Patrimoine local | 0550000010 | admin@@1234 | Samira Hadji — Patrimoine Local (Regie Fonciere) |
+| EPIC Direction de l'Eau | 0550000011 | admin@@1234 | Farid Mebarki — Direction de l'Eau |
 | EPIC Voirie | 0550000012 | admin@@1234 | Sofiane Cherif — Direction Voirie et Trottoirs |
 
 **Attention** : Ces identifiants sont destines exclusivement a l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
