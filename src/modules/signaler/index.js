@@ -471,7 +471,7 @@ router.get('/board',
       // Mapping organisation_id → epic IDs (les deux tables ne partagent pas les mêmes IDs)
       const ORG_EPIC_MAP = {
         5: [1, 2],      // Direction Propreté → DIR-PRO Centre (1) + Périphérie (2)
-        6: [30],         // Direction Voirie → DIR-CIRC (30)
+        6: [7, 30],      // Direction Voirie → DIR-VOR (7) + DIR-CIRC (30)
         16: [31],        // Gestion Parkings → DIR-PARK (31)
         18: [17],        // Direction Eau → DIR-EAU (17)
         13: [3, 4],      // Direction Environnement → DIR-EVT (3) + DIR-OUED (4)

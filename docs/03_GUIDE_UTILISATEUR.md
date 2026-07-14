@@ -38,6 +38,7 @@ ALGERNA est une application web progressive (PWA) permettant aux citoyens, agent
 | EPIC Patrimoine local | 0550000009 (Samira Hadji) | admin@@1234 |
 | EPIC Direction de l'Eau | 0550000010 (Farid Mebarki) | admin@@1234 |
 | Cabinet wilaya CCOE | 0550000011 (Yacine Benmoussa) | admin@@1234 |
+| EPIC Voirie | 0550000012 (Sofiane Cherif) | admin@@1234 |
 
 > **Note** : Ces identifiants sont valables uniquement pour l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
 

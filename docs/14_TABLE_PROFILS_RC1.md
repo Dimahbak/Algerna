@@ -21,6 +21,7 @@
 | 9 | 0550000009 | Hadji | Samira | `operateur` | EPIC Patrimoine local | EPIC — Patrimoine Local (Regie Fonciere) | PatriLocal — Patrimoine Immobilier | admin@@1234 | Valide |
 | 10 | 0550000010 | Mebarki | Farid | `operateur` | EPIC Direction de l'Eau | EPIC — Direction de l'Eau | Responsable — EPIC Direction de l'Eau | admin@@1234 | Valide |
 | 11 | 0550000011 | Benmoussa | Yacine | `admin_wilaya` | Cabinet wilaya CCOE | Cabinet | CCOE | admin@@1234 | Valide |
+| 12 | 0550000012 | Cherif | Sofiane | `operateur` | EPIC Voirie | EPIC — Direction Voirie | Responsable — Direction Voirie et Trottoirs | admin@@1234 | Valide |
 
 ## Agent de Proximite (CAP)
 

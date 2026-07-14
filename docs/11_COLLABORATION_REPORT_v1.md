@@ -170,6 +170,7 @@ Cinq roles sont definis dans la plateforme. Pour l'environnement de developpemen
 | EPIC Patrimoine local | 0550000009 | admin@@1234 | Samira Hadji — Patrimoine Local (Regie Fonciere) |
 | EPIC Direction de l'Eau | 0550000010 | admin@@1234 | Farid Mebarki — Direction de l'Eau |
 | Cabinet wilaya CCOE | 0550000011 | admin@@1234 | Yacine Benmoussa — CCOE |
+| EPIC Voirie | 0550000012 | admin@@1234 | Sofiane Cherif — Direction Voirie et Trottoirs |
 
 **Attention** : Ces identifiants sont destines exclusivement a l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
 
