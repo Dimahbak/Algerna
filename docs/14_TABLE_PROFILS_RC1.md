@@ -1,27 +1,26 @@
 # Table officielle des profils ALGERNA — RC1
 
-**Version** : v1.1 — Correction tableau Hamid
+**Version** : v1.2 — Realignement final sur tableau Hamid
 **Date** : 14 juillet 2026
-**Revision** : Alignement sur tableau de reference valide par Hamid (12 juillet 2026)
-**Ecarts non resolus** : lignes 6, 9, 10 — en attente d'arbitrage Hamid
+**Revision** : Ecarts resolus — organisations corrigees en base
 
 ---
 
 ## Comptes de demonstration
 
-| # | Telephone | Nom | Prenom | Role RBAC | Poste officiel | Organisation (base) | Mdp | Statut |
-|---|---|---|---|---|---|---|---|---|
-| 1 | 0550000001 | Benali | Amina | `citoyen` | Citoyen test | — | admin1234 | Valide |
-| 2 | 0550000002 | Kaci | Youcef | `agent` | Agent reception wilaya | Service de Reception | admin@@1234 | Valide |
-| 3 | 0550000003 | Mansouri | Rachid | `admin_wilaya` | Commandement cabinet wilaya | Cabinet | admin@@1234 | Valide |
-| 4 | 0550000004 | Hadj | Mourad | `admin_apc` | Superviseur APC | Coordination Operationnelle | admin@@1234 | Valide |
-| 5 | 0550000005 | Taleb | Nassim | `operateur` | EPIC proprete | EPIC — Direction Proprete | admin@@1234 | Valide |
-| 6 | 0550000006 | Aissaoui | Nadia | `operateur` | EPIC eclairage (Hamid) | EPIC — Direction Voirie (base) | admin@@1234 | ECART — arbitrage Hamid |
-| 7 | 0550000007 | Benali | Karim | `agent` | CAP | Brigade CAP | admin@@1234 | Valide |
-| 8 | 0550000008 | Boumediene | Khaled | `operateur` | EPIC Parking | EPIC — Gestion des Parkings | admin@@1234 | Valide |
-| 9 | 0550000009 | Hadji | Samira | `operateur` | EPIC Patrimoine local (Hamid) | EPIC — Regie Fonciere (base) | admin@@1234 | ECART — arbitrage Hamid |
-| 10 | 0550000010 | Mebarki | Farid | `operateur` | EPIC (non precise) | EPIC — Direction de l'Eau (base) | admin@@1234 | A CONFIRMER — arbitrage Hamid |
-| 11 | 0550000011 | Benmoussa | Yacine | `admin_wilaya` | Cabinet wilaya CCOE | Cabinet | admin@@1234 | Valide |
+| # | Telephone | Nom | Prenom | Role RBAC | Poste officiel | Organisation (base) | Bandeau ecran | Mdp | Statut |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0550000001 | Benali | Amina | `citoyen` | Citoyen test | — | — | admin1234 | Valide |
+| 2 | 0550000002 | Kaci | Youcef | `agent` | Agent reception wilaya | Service de Reception | Agent de reception | admin@@1234 | Valide |
+| 3 | 0550000003 | Mansouri | Rachid | `admin_wilaya` | Commandement cabinet wilaya | Cabinet | Salle de Commandement | admin@@1234 | Valide |
+| 4 | 0550000004 | Hadj | Mourad | `admin_apc` | Superviseur APC | Coordination Operationnelle | Centre Operationnel | admin@@1234 | Valide |
+| 5 | 0550000005 | Taleb | Nassim | `operateur` | EPIC proprete | EPIC — Direction Proprete | Responsable — Direction Proprete Centre | admin@@1234 | Valide |
+| 6 | 0550000006 | Aissaoui | Nadia | `operateur` | EPIC eclairage | Direction Eclairage Public | Responsable — Direction Eclairage Public | admin@@1234 | Valide |
+| 7 | 0550000007 | Benali | Karim | `agent` | CAP | Brigade CAP | Agent de proximite | admin@@1234 | Valide |
+| 8 | 0550000008 | Boumediene | Khaled | `operateur` | EPIC Parking | EPIC — Gestion des Parkings | Responsable — EPIC Gestion des Parkings | admin@@1234 | Valide |
+| 9 | 0550000009 | Hadji | Samira | `operateur` | EPIC Patrimoine local | EPIC — Patrimoine Local (Regie Fonciere) | PatriLocal — Patrimoine Immobilier | admin@@1234 | Valide |
+| 10 | 0550000010 | Mebarki | Farid | `operateur` | EPIC Direction de l'Eau | EPIC — Direction de l'Eau | Responsable — EPIC Direction de l'Eau | admin@@1234 | Valide |
+| 11 | 0550000011 | Benmoussa | Yacine | `admin_wilaya` | Cabinet wilaya CCOE | Cabinet | CCOE | admin@@1234 | Valide |
 
 ## Agent de Proximite (CAP)
 

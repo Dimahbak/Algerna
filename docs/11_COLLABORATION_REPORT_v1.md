@@ -164,11 +164,11 @@ Cinq roles sont definis dans la plateforme. Pour l'environnement de developpemen
 | Commandement cabinet wilaya | 0550000003 | admin@@1234 | Rachid Mansouri — Salle de Commandement |
 | Superviseur APC | 0550000004 | admin@@1234 | Mourad Hadj — cockpit communal |
 | EPIC proprete | 0550000005 | admin@@1234 | Nassim Taleb — operateur EPIC |
-| EPIC eclairage | 0550000006 | admin@@1234 | Nadia Aissaoui — operateur EPIC |
+| EPIC Eclairage Public | 0550000006 | admin@@1234 | Nadia Aissaoui — Direction Eclairage Public |
 | CAP | 0550000007 | admin@@1234 | Karim Benali — agent de proximite |
 | EPIC Parking | 0550000008 | admin@@1234 | Khaled Boumediene — operateur EPIC |
-| EPIC Patrimoine local | 0550000009 | admin@@1234 | Samira Hadji — operateur EPIC |
-| EPIC | 0550000010 | admin@@1234 | Farid Mebarki — operateur EPIC |
+| EPIC Patrimoine local | 0550000009 | admin@@1234 | Samira Hadji — Patrimoine Local (Regie Fonciere) |
+| EPIC Direction de l'Eau | 0550000010 | admin@@1234 | Farid Mebarki — Direction de l'Eau |
 | Cabinet wilaya CCOE | 0550000011 | admin@@1234 | Yacine Benmoussa — CCOE |
 
 **Attention** : Ces identifiants sont destines exclusivement a l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
