@@ -27,11 +27,19 @@ ALGERNA est une application web progressive (PWA) permettant aux citoyens, agent
 
 | Profil | Identifiant | Mot de passe |
 |--------|-------------|-------------|
-| Citoyen | 0550000001 | admin1234 |
-| Agent | 0550000002 | admin1234 |
-| Responsable | 0550000003 | admin1234 |
+| Citoyen test | 0550000001 (Amina Benali) | admin1234 |
+| Agent reception wilaya | 0550000002 (Youcef Kaci) | admin@@1234 |
+| Commandement cabinet wilaya | 0550000003 (Rachid Mansouri) | admin@@1234 |
+| Superviseur APC | 0550000004 (Mourad Hadj) | admin@@1234 |
+| EPIC proprete | 0550000005 (Nassim Taleb) | admin@@1234 |
+| EPIC eclairage | 0550000006 (Nadia Aissaoui) | admin@@1234 |
+| CAP | 0550000007 (Karim Benali) | admin@@1234 |
+| EPIC Parking | 0550000008 (Khaled Boumediene) | admin@@1234 |
+| EPIC Patrimoine local | 0550000009 (Samira Hadji) | admin@@1234 |
+| EPIC | 0550000010 (Farid Mebarki) | admin@@1234 |
+| Cabinet wilaya CCOE | 0550000011 (Yacine Benmoussa) | admin@@1234 |
 
-> **Note** : Ces identifiants sont valables uniquement pour l'environnement de demonstration.
+> **Note** : Ces identifiants sont valables uniquement pour l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
 
 ---
 

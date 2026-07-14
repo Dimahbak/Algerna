@@ -157,16 +157,21 @@ BROUILLON --> SOUMIS --> EN_REVISION --> APPROUVE --> PUBLIE --> ARCHIVE
 
 Cinq roles sont definis dans la plateforme. Pour l'environnement de developpement, les identifiants suivants sont preconfigures :
 
-| Role           | Telephone    | Mot de passe | Description                                  |
-|----------------|-------------|--------------|----------------------------------------------|
-| Citoyen        | 0550000001  | admin1234    | Acces a l'espace citoyen                     |
-| Agent          | 0550000002  | admin1234    | Back-office agent (board Kanban)             |
-| Agent CAP      | 0550000003  | admin1234    | Application mobile terrain                   |
-| Responsable    | 0550000004  | admin1234    | Supervision et validation                    |
-| Administrateur | 0550000005  | admin1234    | Administration systeme et configuration      |
-| Super Admin    | 0550000006  | admin1234    | Acces complet a toutes les fonctionnalites   |
+| Role | Telephone | Mot de passe | Description |
+|------|-----------|-------------|-------------|
+| Citoyen test | 0550000001 | admin1234 | Amina Benali — espace citoyen |
+| Agent reception wilaya | 0550000002 | admin@@1234 | Youcef Kaci — board Kanban |
+| Commandement cabinet wilaya | 0550000003 | admin@@1234 | Rachid Mansouri — Salle de Commandement |
+| Superviseur APC | 0550000004 | admin@@1234 | Mourad Hadj — cockpit communal |
+| EPIC proprete | 0550000005 | admin@@1234 | Nassim Taleb — operateur EPIC |
+| EPIC eclairage | 0550000006 | admin@@1234 | Nadia Aissaoui — operateur EPIC |
+| CAP | 0550000007 | admin@@1234 | Karim Benali — agent de proximite |
+| EPIC Parking | 0550000008 | admin@@1234 | Khaled Boumediene — operateur EPIC |
+| EPIC Patrimoine local | 0550000009 | admin@@1234 | Samira Hadji — operateur EPIC |
+| EPIC | 0550000010 | admin@@1234 | Farid Mebarki — operateur EPIC |
+| Cabinet wilaya CCOE | 0550000011 | admin@@1234 | Yacine Benmoussa — CCOE |
 
-**Attention** : Ces identifiants sont destines exclusivement a l'environnement de developpement. Ils doivent etre modifies avant tout deploiement en production.
+**Attention** : Ces identifiants sont destines exclusivement a l'environnement de demonstration. Tableau de reference valide par Hamid le 12 juillet 2026.
 
 ---
 
