@@ -75,7 +75,7 @@ async function transitionStatut(communiqueId, nouveauStatut, user, opts = {}) {
         `INSERT INTO audit_log (user_id, action, ancien_etat, nouveau_etat, commentaire, module, created_at)
          VALUES ($1, $2, $3, $4, $5, 'communique', NOW())`,
         [user.id, `communique_${nouveauStatut}`, ancienStatut, nouveauStatut, opts.commentaire || null]);
-    } catch (e) {}
+    } catch (e) { console.error('[communication] échec journal communiqué:', e.message); }
 
     // Notifications citoyennes à la publication
     if (nouveauStatut === 'publie') {
@@ -90,7 +90,7 @@ async function transitionStatut(communiqueId, nouveauStatut, user, opts = {}) {
         }
         notifSql += ' LIMIT 5000';
         await client.query(notifSql, notifParams);
-      } catch (e) {}
+      } catch (e) { console.error('[communication] échec notification citoyens:', e.message); }
     }
 
     return { id: communiqueId, ancienStatut, nouveauStatut };

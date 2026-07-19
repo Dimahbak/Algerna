@@ -284,7 +284,7 @@ router.get('/chantiers/:id', requireCCOE, asyncH(async (req, res) => {
     try {
       await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
         VALUES ($1, $2, $3, 'systeme')`, [ch.id, req.user.id, 'Consulté par ' + (req.user.prenom || 'service')]);
-    } catch(e) {}
+    } catch(e) { console.error('[ccoe] échec trace commentaire chantier:', e.message); }
   }
 
   // Checklist
@@ -880,15 +880,15 @@ async function transmettreChantier(chantierId, userId, userName) {
       });
       // Trace email status in fil
       try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
-        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Email envoyé au responsable (' + contact.email + ')']); } catch(e2) {}
+        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Email envoyé au responsable (' + contact.email + ')']); } catch(e2) { console.error('[ccoe] échec trace email chantier:', e2.message); }
     } else {
       try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
-        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Pas de contact email — canal in-app seul']); } catch(e2) {}
+        VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Pas de contact email — canal in-app seul']); } catch(e2) { console.error('[ccoe] échec trace contact chantier:', e2.message); }
     }
   } catch(e) {
     console.log('[CCOE] Email non envoyé (non bloquant):', e.message);
     try { await query(`INSERT INTO chantier_commentaire (chantier_id, auteur_id, message, type_message)
-      VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Échec d\'envoi email — canal in-app seul']); } catch(e2) {}
+      VALUES ($1, $2, $3, 'systeme')`, [chantierId, userId, 'Échec d\'envoi email — canal in-app seul']); } catch(e2) { console.error('[ccoe] échec trace envoi chantier:', e2.message); }
   }
 
   return ch;
@@ -958,7 +958,7 @@ router.post('/evenements/:evtId/relancer', requireFonction('cabinet'), asyncH(as
             'INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
             [u.id, 'ccoe', 'Relance CCOE : ' + (ch.axe || ''), ch.titre + ' — ' + ch.statut,
              '/mes-chantiers-ccoe#' + ch.id]);
-        } catch(e) {}
+        } catch(e) { console.error('[ccoe] échec notification relance:', e.message); }
       }
     }
 
@@ -977,7 +977,7 @@ router.post('/evenements/:evtId/relancer', requireFonction('cabinet'), asyncH(as
         });
         console.log('[CCOE] Email relance →', contact.email);
       }
-    } catch(e) {}
+    } catch(e) { console.error('[ccoe] échec email relance:', e.message); }
 
     relanced++;
   }
@@ -1029,7 +1029,7 @@ router.post('/chantiers/:id/accuser', requireCCOE, asyncH(async (req, res) => {
         [u.id, 'ccoe', 'Accusé de réception — ' + (ch.axe || ''),
          (req.user.prenom || 'Service') + ' a accusé réception de ' + ch.titre,
          '/ccoe#' + req.params.id]);
-    } catch(e) {}
+    } catch(e) { console.error('[ccoe] échec notification accusé:', e.message); }
   }
 
   res.json({ ok: true, accuse_le: new Date().toISOString() });

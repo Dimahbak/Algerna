@@ -147,7 +147,7 @@ router.post('/confirm', asyncH(async (req, res) => {
     const { sendConfirmationEmail } = require('../../services/emailService');
     const { rows: u2 } = await query('SELECT email, prenom FROM utilisateur WHERE id = $1', [user.id]);
     if (u2[0]?.email) await sendConfirmationEmail(u2[0].email, u2[0].prenom || '');
-  } catch(e) {}
+  } catch(e) { console.error('[auth] échec email confirmation inscription:', e.message); }
 
   // Maintenant connecter l'utilisateur
   res.json({ token: signToken(user), utilisateur: { id: user.id, telephone: user.telephone, nom: user.nom, prenom: user.prenom, role: user.role, fonction: user.fonction } });
@@ -192,7 +192,13 @@ router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
   const { telephone, motDePasse } = req.body;
   const isEmail = telephone && telephone.includes('@');
   const { rows } = await query(
-    `SELECT u.*, o.nom AS organisation_nom
+    `SELECT u.id, u.telephone, u.nom, u.prenom, u.email, u.role,
+            u.commune_id, u.operateur_id, u.points, u.mot_de_passe,
+            u.fonction, u.niveau_perimetre, u.perimetre_id,
+            u.organisation_id, u.capacites, u.email_confirme,
+            u.niveau_compte, (u.nin IS NOT NULL) AS nin_declare, u.quartier_id,
+            u.houma_lat, u.houma_lng, u.houma_refus_capture, u.adresse,
+            o.nom AS organisation_nom
      FROM utilisateur u LEFT JOIN organisations o ON o.id = u.organisation_id
      WHERE ${isEmail ? 'u.email=$1' : 'u.telephone=$1'} AND u.actif=TRUE`, [telephone]);
   if (!rows.length) throw unauthorized('Identifiants incorrects.');
@@ -207,6 +213,7 @@ router.post('/login', validate(loginSchema), asyncH(async (req, res) => {
   }
 
   delete user.mot_de_passe;
+  delete user.email_confirme;
   res.json({ token: signToken(user), utilisateur: user });
 }));
 
@@ -231,7 +238,11 @@ router.post('/google', asyncH(async (req, res) => {
 
   // Chercher l'utilisateur par google_id ou email
   const { rows } = await query(
-    'SELECT * FROM utilisateur WHERE google_id=$1 OR (email=$2 AND email IS NOT NULL) ORDER BY (google_id=$1) DESC LIMIT 1',
+    `SELECT id, telephone, nom, prenom, email, role, commune_id, operateur_id, points, mot_de_passe, actif, google_id,
+            fonction, niveau_perimetre, perimetre_id, organisation_id, capacites,
+            niveau_compte, (nin IS NOT NULL) AS nin_declare, quartier_id,
+            houma_lat, houma_lng, houma_refus_capture, adresse
+     FROM utilisateur WHERE google_id=$1 OR (email=$2 AND email IS NOT NULL) ORDER BY (google_id=$1) DESC LIMIT 1`,
     [googleId, email]
   );
 
@@ -250,7 +261,7 @@ router.post('/google', asyncH(async (req, res) => {
     const telPlaceholder = `google_${googleId}`;
     const { rows: newRows } = await query(
       `INSERT INTO utilisateur(telephone, email, nom, prenom, mot_de_passe, role, google_id, email_confirme, consentement_cgu)
-       VALUES($1,$2,$3,$4,$5,'citoyen',$6,true,true) RETURNING *`,
+       VALUES($1,$2,$3,$4,$5,'citoyen',$6,true,true) RETURNING id, telephone, nom, prenom, email, role, commune_id, points, fonction, niveau_perimetre, organisation_id, capacites, niveau_compte, quartier_id`,
       [telPlaceholder, email, nom || name || '', prenom || '', hash, googleId]
     );
     user = newRows[0];
@@ -275,11 +286,16 @@ router.get('/me', authenticate, asyncH(async (req, res) => {
             u.commune_id, u.operateur_id, u.points,
             u.fonction, u.niveau_perimetre, u.perimetre_id,
             u.organisation_id, u.capacites,
+            u.niveau_compte, (u.nin IS NOT NULL) AS nin_declare, u.quartier_id,
+            u.houma_lat, u.houma_lng, u.houma_refus_capture,
+            u.adresse,
             o.nom AS organisation_nom,
-            c.nom AS commune_nom, c.nom_ar AS commune_nom_ar
+            c.nom AS commune_nom, c.nom_ar AS commune_nom_ar,
+            q.nom AS quartier_nom, q.nom_ar AS quartier_nom_ar
      FROM utilisateur u
      LEFT JOIN organisations o ON o.id = u.organisation_id
      LEFT JOIN commune c ON c.id = u.commune_id
+     LEFT JOIN quartier q ON q.id = u.quartier_id
      WHERE u.id = $1`,
     [req.user.id]);
   res.json(rows[0]);
@@ -322,7 +338,8 @@ module.exports = router;
 // PATCH /api/auth/preferences — mise à jour préférences citoyen
 router.patch('/preferences', authenticate, asyncH(async (req, res) => {
   const fields = ['langue','notifications_push','notifications_sms','notifications_email',
-                  'consentement_wilaya','consentement_cgu','consentement_geo','quartier','adresse'];
+                  'consentement_wilaya','consentement_cgu','consentement_geo','adresse',
+                  'quartier_id','houma_lat','houma_lng','houma_refus_capture'];
   const sets = []; const vals = []; let i = 1;
   for (const f of fields) { if (req.body[f] !== undefined) { sets.push(`${f}=$${i++}`); vals.push(req.body[f]); } }
   if (!sets.length) return res.json({ ok: true });
@@ -330,7 +347,8 @@ router.patch('/preferences', authenticate, asyncH(async (req, res) => {
   const { rows } = await query(`UPDATE utilisateur SET ${sets.join(',')} WHERE id=$${i} RETURNING
     id,telephone,nom,prenom,email,role,commune_id,points,langue,
     notifications_push,notifications_sms,notifications_email,
-    consentement_wilaya,consentement_cgu,consentement_geo,quartier,adresse,
+    consentement_wilaya,consentement_cgu,consentement_geo,adresse,
+    quartier_id,houma_lat,houma_lng,houma_refus_capture,niveau_compte,nin,
     fonction,niveau_perimetre,perimetre_id,organisation_id,capacites`, vals);
   res.json(rows[0]);
 }));
@@ -350,4 +368,49 @@ router.patch('/password', authenticate, asyncH(async (req, res) => {
   const hash = await bcrypt.hash(nouveauMotDePasse, config.bcryptRounds);
   await query('UPDATE utilisateur SET mot_de_passe=$1 WHERE id=$2', [hash, req.user.id]);
   res.json({ ok: true, message: 'Mot de passe modifié avec succès.' });
+}));
+
+// PATCH /api/auth/nin — déclarer son NIN (18 chiffres, unique, auto level-up)
+router.patch('/nin', authenticate, asyncH(async (req, res) => {
+  const { nin } = req.body;
+  if (!nin) throw badRequest('NIN requis.');
+  if (!/^\d{18}$/.test(nin)) {
+    return res.status(400).json({
+      erreur: 'Le NIN doit contenir exactement 18 chiffres.',
+      erreur_ar: 'رقم التعريف الوطني يجب أن يتكون من 18 رقماً بالضبط.'
+    });
+  }
+  // Unicité
+  const { rows: dup } = await query('SELECT id FROM utilisateur WHERE nin=$1 AND id != $2', [nin, req.user.id]);
+  if (dup.length) {
+    return res.status(409).json({
+      erreur: 'Ce NIN est déjà associé à un autre compte.',
+      erreur_ar: 'رقم التعريف الوطني مرتبط بحساب آخر.'
+    });
+  }
+  // Enregistrer et passer au niveau 2
+  const { rows } = await query(
+    `UPDATE utilisateur SET nin=$1, niveau_compte=2 WHERE id=$2
+     RETURNING id, nin, niveau_compte`, [nin, req.user.id]);
+  res.json(rows[0]);
+}));
+
+// GET /api/auth/quota — statut quota signalements du citoyen connecté
+router.get('/quota', authenticate, asyncH(async (req, res) => {
+  const { rows: u } = await query('SELECT niveau_compte FROM utilisateur WHERE id=$1', [req.user.id]);
+  const niveau = u[0]?.niveau_compte || 1;
+
+  if (niveau >= 2) {
+    // Niveau 2 : 5 par jour
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id=$1 AND cree_le >= CURRENT_DATE",
+      [req.user.id]);
+    res.json({ niveau, limite: 5, periode: 'jour', utilises: rows[0].n, restants: Math.max(0, 5 - rows[0].n) });
+  } else {
+    // Niveau 1 : 5 par mois calendaire
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id=$1 AND cree_le >= date_trunc('month', CURRENT_DATE)",
+      [req.user.id]);
+    res.json({ niveau, limite: 5, periode: 'mois', utilises: rows[0].n, restants: Math.max(0, 5 - rows[0].n) });
+  }
 }));

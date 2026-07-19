@@ -149,7 +149,7 @@ router.post('/generer', authenticate, requirePilotage(), asyncH(async (req, res)
   try {
     const { rows: icua } = await query(`SELECT ROUND(AVG(CASE WHEN s.etat='resolu' AND EXTRACT(EPOCH FROM (s.resolu_le-s.cree_le))/3600 <= ${SLA_H} THEN 100 ELSE 0 END))::int AS score FROM signalement s WHERE s.etat='resolu'`);
     icuaScore = icua[0].score || 0;
-  } catch(e) {}
+  } catch(e) { console.error('[rapports] échec calcul ICUA:', e.message); }
 
   // ── Génération PDF ──
   const doc = new PDFDocument({ size: 'A4', margin: 40, bufferPages: true });
@@ -589,7 +589,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
   try {
     const { rows: ih } = await query(`SELECT score FROM icua_historique WHERE (commune_id = $1 OR ($1 IS NULL AND commune_id IS NULL)) ORDER BY calcule_le DESC LIMIT 1 OFFSET 1`, [effectiveCommuneId || null]);
     if (ih.length) prevIcua = ih[0].score;
-  } catch(e) {}
+  } catch(e) { console.error('[rapports] échec ICUA historique:', e.message); }
 
   // Demandes d'explication count
   let deCount = 0;
@@ -597,7 +597,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     let deSql = `SELECT COUNT(*)::int AS n FROM demande_explication de JOIN signalement s ON s.id=de.signalement_id ${fullWhere}`;
     const { rows: deR } = await query(deSql, params);
     deCount = deR[0].n;
-  } catch(e) {}
+  } catch(e) { console.error('[rapports] échec comptage demandes:', e.message); }
 
   // ── SECTION 3 DATA: Performance directions by month ──
   const { rows: orgPerf } = await query(`
@@ -670,7 +670,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     ${fullWhere.replace(/s\./g, 's.')}
     ORDER BY de.cree_le DESC LIMIT 20`;
   let deList = [];
-  try { const { rows } = await query(deSql2, params); deList = rows; } catch(e) {}
+  try { const { rows } = await query(deSql2, params); deList = rows; } catch(e) { console.error('[rapports] échec liste demandes:', e.message); }
 
   // Classés sans suite
   const { rows: cssRows } = await query(`SELECT COUNT(*)::int AS n FROM signalement s ${fullWhere} AND s.etat='rejete'`, params);
@@ -686,7 +686,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     try {
       const { rows: orgsAr } = await query('SELECT id, nom, nom_ar FROM organisations WHERE actif = TRUE');
       orgsAr.forEach(o => { orgNomArMap[o.nom] = o.nom_ar || o.nom; });
-    } catch(e) {}
+    } catch(e) { console.error('[rapports] échec nom_ar organisation:', e.message); }
   }
   // Load commune nom_ar map
   let communeNomArMap = {};
@@ -694,7 +694,7 @@ router.post('/executif', authenticate, requirePilotage(), asyncH(async (req, res
     try {
       const { rows: cAr } = await query('SELECT nom, nom_ar FROM commune');
       cAr.forEach(c => { communeNomArMap[c.nom] = c.nom_ar || c.nom; });
-    } catch(e) {}
+    } catch(e) { console.error('[rapports] échec nom_ar commune:', e.message); }
   }
 
   // ══════════════════════════════════════════════
@@ -1035,7 +1035,7 @@ ${deRows}
   try {
     await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
       SELECT id, etat, $1, 'rapport_executif', $2 FROM signalement LIMIT 1`, [req.user.id, titre]);
-  } catch(e) {}
+  } catch(e) { console.error('[rapports] échec historique rapport:', e.message); }
   await query(`INSERT INTO rapport_genere (url, filename, type, titre, genere_par) VALUES ($1,$2,$3,$4,$5)`,
     ['/uploads/rapports/' + filename, filename, 'executif', titre, req.user.id]);
 

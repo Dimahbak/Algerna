@@ -8,6 +8,7 @@ const { query } = require('../../db/pool');
 const { authenticate, requireRole, ROLES, hasCapacite, hasPerimetre } = require('../../middleware/auth');
 const { asyncH, badRequest, notFound, unauthorized, forbidden } = require('../../utils/http');
 const config = require('../../config');
+const { creerEpic } = require('../../services/epicService');
 const configEngine = require('../../services/configEngine');
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.patch('/config/:cle', authenticate, ADMIN_GATE, asyncH(async (req, res) =
   await configEngine.set(req.params.cle, valeur, req.user.id);
   // Audit
   try { await query('INSERT INTO audit_log (user_id, action, module, new_value, created_at) VALUES ($1,$2,$3,$4,NOW())',
-    [req.user.id, 'config_modifie', 'admin', req.params.cle + '=' + valeur]); } catch(e) {}
+    [req.user.id, 'config_modifie', 'admin', req.params.cle + '=' + valeur]); } catch(e) { console.error('[admin] échec journal audit config:', e.message); }
   res.json({ ok: true, cle: req.params.cle, valeur });
 }));
 
@@ -71,12 +72,10 @@ router.get('/services', authenticate, SUPERVISOR_GATE, asyncH(async (req, res) =
 }));
 
 router.post('/services', authenticate, ADMIN_GATE, asyncH(async (req, res) => {
-  const { sigle, nom, categorie, description } = req.body;
+  const { sigle, nom, nom_ar, categorie, type, description, parent_id } = req.body;
   if (!sigle || !nom) throw badRequest('sigle et nom requis');
-  const { rows } = await query(
-    'INSERT INTO epic (sigle, nom, categorie, description) VALUES ($1,$2,$3,$4) RETURNING *',
-    [sigle, nom, categorie || null, description || null]);
-  res.status(201).json(rows[0]);
+  const result = await creerEpic({ sigle, nom, nom_ar, categorie, type, description, parent_id });
+  res.status(201).json(result);
 }));
 
 router.patch('/services/:id', authenticate, ADMIN_GATE, asyncH(async (req, res) => {
@@ -200,7 +199,7 @@ router.patch('/utilisateurs/:id', authenticate, ADMIN_GATE, asyncH(async (req, r
 
 // ═══ ORGANISATIONS ═══
 router.get('/organisations', authenticate, SUPERVISOR_GATE, asyncH(async (req, res) => {
-  const { rows } = await query('SELECT * FROM organisations ORDER BY type, nom');
+  const { rows } = await query('SELECT * FROM organisations WHERE actif = TRUE ORDER BY type, nom');
   res.json(rows);
 }));
 
@@ -279,7 +278,7 @@ router.post('/send-campaign', authenticate, ADMIN_GATE, asyncH(async (req, res) 
   try {
     await query('INSERT INTO audit_log (user_id, action, module, new_value, created_at) VALUES ($1,$2,$3,$4,NOW())',
       [req.user.id, 'campagne_email', 'admin', subject + ' → ' + results.sent + ' envoyés']);
-  } catch(e) {}
+  } catch(e) { console.error('[admin] échec journal audit campagne:', e.message); }
 
   res.json(results);
 }));

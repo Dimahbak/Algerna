@@ -301,7 +301,7 @@ async function creerMissionCap(signalementId, user, opts = {}) {
            `Intervention créée · #${sig.reference} · ${sig.categorie || ''} · ${sig.commune_nom || ''}`,
            '/mes-signalements']
         );
-      } catch (e) {}
+      } catch (e) { console.error('[workflow] échec notification citoyen intervention:', e.message); }
     }
 
     // Notification CAP assigné
@@ -314,7 +314,7 @@ async function creerMissionCap(signalementId, user, opts = {}) {
            (opts.type || 'constat') + ' · ' + (sig.reference || '') + ' · ' + (sig.commune_nom || ''),
            '/bo-cap#' + signalementId]
         );
-      } catch (e) {}
+      } catch (e) { console.error('[workflow] échec notification CAP mission:', e.message); }
     }
 
     return rows[0];

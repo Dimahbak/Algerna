@@ -315,21 +315,21 @@ router.patch('/missions/:id/etat', authenticate, upload.single('photo'), asyncH(
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
         [cur[0].cree_par, 'cap', 'Mission acceptée',
          '#' + sigRef, '/bo-agent#' + cur[0].signalement_id]);
-    } catch(e) {}
+    } catch(e) { console.error('[cap] échec notification acceptation:', e.message); }
   }
   if (etat === 'en_cours' && cur[0].cree_par) {
     try {
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
         [cur[0].cree_par, 'cap', 'Agent en déplacement',
          '#' + sigRef, '/bo-agent#' + cur[0].signalement_id]);
-    } catch(e) {}
+    } catch(e) { console.error('[cap] échec notification déplacement:', e.message); }
   }
   if (etat === 'bloque' && cur[0].cree_par) {
     try {
       await query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1, $2, $3, $4, $5)',
         [cur[0].cree_par, 'cap', 'Mission bloquée',
          '#' + sigRef + (motif_blocage ? ' — ' + motif_blocage : ''), '/bo-agent#' + cur[0].signalement_id]);
-    } catch(e) {}
+    } catch(e) { console.error('[cap] échec notification blocage:', e.message); }
   }
   // Si terminée, notifier l'agent créateur + le citoyen
   if (etat === 'termine') {

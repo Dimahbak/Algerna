@@ -71,8 +71,8 @@ async function sendSMS(phone, body) {
  * @param {string} opts.smsBody - corps SMS (texte court)
  */
 function notify({ email, phone, subject, html, smsBody }) {
-  if (email) sendEmail(email, subject, html).catch(() => {});
-  if (phone && smsBody) sendSMS(phone, smsBody).catch(() => {});
+  if (email) sendEmail(email, subject, html).catch(e => console.error('[notifier] échec email:', e.message));
+  if (phone && smsBody) sendSMS(phone, smsBody).catch(e => console.error('[notifier] échec SMS:', e.message));
 }
 
 // ── Templates email ──

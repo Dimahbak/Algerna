@@ -146,31 +146,56 @@ router.get('/quartier', asyncH(async (req, res) => {
     return res.json((await query(
       `SELECT c.*, cm.nom AS commune_nom FROM communique c
        LEFT JOIN commune cm ON cm.id = c.commune_id
-       WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
+       WHERE c.actif = TRUE AND c.statut = 'publie' AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
        ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC
        LIMIT 20`)).rows);
   }
 
   // Original quartier dashboard
-  const { communeId } = req.query;
-  if (!communeId) return res.json({});
+  // Supports: ?communeId= (commune scope), ?houma_lat=&houma_lng= (rayon 2km),
+  //           ?quartier_id= (perimetre if exists, else rayon 2km with houma_lat/lng)
+  const { communeId, houma_lat, houma_lng, quartier_id } = req.query;
+  const hLat = houma_lat ? parseFloat(houma_lat) : null;
+  const hLng = houma_lng ? parseFloat(houma_lng) : null;
+
+  // Determine geographic filter
+  let geoFilter = '';
+  let geoParams = [];
+  let scope = 'commune'; // default
+
+  if (hLat && hLng) {
+    // Rayon 2 km ≈ 0.018° latitude (~2 km), used as bounding box
+    const RAYON_HOUMA = 0.018;
+    geoFilter = `ABS(s.lat - $1) < $2 AND ABS(s.lng - $3) < $2`;
+    geoParams = [hLat, RAYON_HOUMA, hLng];
+    scope = 'houma';
+  } else if (communeId) {
+    geoFilter = `s.commune_id = $1`;
+    geoParams = [communeId];
+    scope = 'commune';
+  } else {
+    return res.json({});
+  }
 
   const [ouverts, resolus, delai, iqep] = await Promise.all([
-    query(`SELECT COUNT(*)::int AS n FROM signalement WHERE commune_id = $1 AND etat NOT IN ('resolu','rejete')`, [communeId]),
+    query(`SELECT COUNT(*)::int AS n FROM signalement s WHERE ${geoFilter} AND s.etat NOT IN ('resolu','rejete')`, geoParams),
     query(`SELECT COUNT(*)::int AS total,
-                  COUNT(*) FILTER (WHERE etat = 'resolu' AND resolu_le >= NOW() - INTERVAL '30 days')::int AS ce_mois
-             FROM signalement WHERE commune_id = $1 AND etat = 'resolu'`, [communeId]),
-    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (resolu_le - cree_le)) / 3600))::int AS heures
-             FROM signalement WHERE commune_id = $1 AND etat = 'resolu' AND resolu_le IS NOT NULL`, [communeId]),
-    query(`SELECT AVG(COALESCE(i.note_manuelle, i.note_auto))::int AS moy
-             FROM iqep i JOIN parc p ON p.id = i.parc_id
-            WHERE p.commune_id = $1 AND p.actif = TRUE`, [communeId]),
+                  COUNT(*) FILTER (WHERE s.etat = 'resolu' AND s.resolu_le >= NOW() - INTERVAL '30 days')::int AS ce_mois
+             FROM signalement s WHERE ${geoFilter} AND s.etat = 'resolu'`, geoParams),
+    query(`SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.resolu_le - s.cree_le)) / 3600))::int AS heures
+             FROM signalement s WHERE ${geoFilter} AND s.etat = 'resolu' AND s.resolu_le IS NOT NULL`, geoParams),
+    scope === 'commune'
+      ? query(`SELECT AVG(COALESCE(i.note_manuelle, i.note_auto))::int AS moy
+               FROM iqep i JOIN parc p ON p.id = i.parc_id
+               WHERE p.commune_id = $1 AND p.actif = TRUE`, [communeId])
+      : Promise.resolve({ rows: [{ moy: null }] }),
   ]);
 
   const totalSig = (ouverts.rows[0]?.n || 0) + (resolus.rows[0]?.total || 0);
   const pctResolus = totalSig > 0 ? Math.round((resolus.rows[0]?.total || 0) / totalSig * 100) : null;
 
   res.json({
+    scope,
     ouverts: ouverts.rows[0]?.n || 0,
     resolus_ce_mois: resolus.rows[0]?.ce_mois || 0,
     pct_resolus: pctResolus,
@@ -197,7 +222,7 @@ router.get('/citoyen', authenticate, asyncH(async (req, res) => {
                    FROM iqep i JOIN parc p ON p.id=i.parc_id WHERE p.commune_id=$1 AND p.actif=TRUE`, [cid])
         : { rows: [{ moy: null }] },
     query(`SELECT titre, message, niveau FROM communique
-            WHERE actif=TRUE AND (date_fin IS NULL OR date_fin > NOW())
+            WHERE actif=TRUE AND statut='publie' AND date_debut <= NOW() AND (date_fin IS NULL OR date_fin > NOW())
             ORDER BY cree_le DESC LIMIT 3`),
     query(`SELECT motif, delta, le FROM points_journal WHERE citoyen_id=$1 ORDER BY le DESC LIMIT 5`, [uid]),
   ]);
@@ -250,7 +275,7 @@ router.get('/communiques', bAsyncH(async (req, res) => {
   const { rows } = await query(
     `SELECT c.*, cm.nom AS commune_nom FROM communique c
      LEFT JOIN commune cm ON cm.id = c.commune_id
-     WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
+     WHERE c.actif = TRUE AND c.statut = 'publie' AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW()
      ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC
      LIMIT 20`);
   res.json(rows);

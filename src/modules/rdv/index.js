@@ -533,7 +533,7 @@ router.patch('/:id/modifier', authenticate, asyncH(async (req, res) => {
          'RDV modifié — ' + (svcInfo[0]?.service_nom || ''),
          'Nouveau créneau : ' + dateLabel + ' à ' + heureLabel + ' · ' + g.nom,
          '/civiadmin']);
-    } catch(e) {}
+    } catch(e) { console.error('[rdv] échec notification modification:', e.message); }
 
     // Email de modification RDV
     try {

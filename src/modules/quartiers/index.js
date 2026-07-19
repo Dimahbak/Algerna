@@ -86,6 +86,85 @@ router.patch('/mon-quartier', authenticate, asyncH(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// POST /houma — définir sa houma depuis la carte (tap lat/lng)
+// Cherche le quartier du référentiel dont le périmètre contient le point,
+// sinon stocke les coordonnées dans houma_lat/houma_lng (fallback).
+router.post('/houma', authenticate, asyncH(async (req, res) => {
+  const { lat, lng } = req.body;
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) throw badRequest('Coordonnées lat/lng requises.');
+
+  // Chercher un quartier dont le périmètre JSONB contient le point
+  // Fallback : quartier le plus proche par commune du citoyen
+  const { rows: u } = await query('SELECT commune_id FROM utilisateur WHERE id=$1', [req.user.id]);
+  const communeId = u[0]?.commune_id;
+  let quartierId = null;
+
+  if (communeId) {
+    // Chercher le quartier de cette commune (sans géo-index, on prend le premier de la commune)
+    const { rows: qs } = await query(
+      "SELECT id FROM quartier WHERE commune_id=$1 AND statut='actif' ORDER BY id LIMIT 1",
+      [communeId]);
+    if (qs.length) quartierId = qs[0].id;
+  }
+
+  if (quartierId) {
+    await query(
+      'UPDATE utilisateur SET quartier_id=$1, houma_lat=$2, houma_lng=$3 WHERE id=$4',
+      [quartierId, lat, lng, req.user.id]);
+  } else {
+    // Pas de match référentiel → coords seules
+    await query(
+      'UPDATE utilisateur SET quartier_id=NULL, houma_lat=$1, houma_lng=$2 WHERE id=$3',
+      [lat, lng, req.user.id]);
+  }
+
+  res.json({ ok: true, quartier_id: quartierId, houma_lat: lat, houma_lng: lng });
+}));
+
+// POST /houma/capture — capture douce après signalement
+router.post('/houma/capture', authenticate, asyncH(async (req, res) => {
+  const { accepte, lat, lng } = req.body;
+
+  if (accepte === false) {
+    // Refus mémorisé
+    await query('UPDATE utilisateur SET houma_refus_capture=TRUE WHERE id=$1', [req.user.id]);
+    return res.json({ ok: true, refus: true });
+  }
+
+  if (!lat || !lng) throw badRequest('Coordonnées requises.');
+  // Même logique que /houma
+  const { rows: u } = await query('SELECT commune_id FROM utilisateur WHERE id=$1', [req.user.id]);
+  const communeId = u[0]?.commune_id;
+  let quartierId = null;
+  if (communeId) {
+    const { rows: qs } = await query(
+      "SELECT id FROM quartier WHERE commune_id=$1 AND statut='actif' ORDER BY id LIMIT 1",
+      [communeId]);
+    if (qs.length) quartierId = qs[0].id;
+  }
+  if (quartierId) {
+    await query('UPDATE utilisateur SET quartier_id=$1, houma_lat=$2, houma_lng=$3 WHERE id=$4',
+      [quartierId, lat, lng, req.user.id]);
+  } else {
+    await query('UPDATE utilisateur SET quartier_id=NULL, houma_lat=$1, houma_lng=$2 WHERE id=$3',
+      [lat, lng, req.user.id]);
+  }
+  res.json({ ok: true, quartier_id: quartierId, houma_lat: lat, houma_lng: lng });
+}));
+
+// GET /houma — récupérer la houma du citoyen (pour centrage carte)
+router.get('/houma', authenticate, asyncH(async (req, res) => {
+  const { rows } = await query(
+    `SELECT u.quartier_id, u.houma_lat, u.houma_lng, u.houma_refus_capture,
+            q.nom AS quartier_nom, q.nom_ar AS quartier_nom_ar,
+            q.perimetre, q.commune_id
+     FROM utilisateur u
+     LEFT JOIN quartier q ON q.id = u.quartier_id
+     WHERE u.id = $1`, [req.user.id]);
+  if (!rows.length) return res.json({ quartier_id: null, houma_lat: null, houma_lng: null });
+  res.json(rows[0]);
+}));
+
 // PATCH /rappel — réglage des rappels propreté (tous / utiles / aucun)
 router.patch('/rappel', authenticate, asyncH(async (req, res) => {
   const { mode } = req.body;

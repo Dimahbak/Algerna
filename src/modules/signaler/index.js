@@ -32,6 +32,43 @@ const config = require('../../config');
 const router = express.Router();
 const upload = multer({ dest: config.upload.dir, limits: { fileSize: config.upload.maxBytes } });
 
+// ── Quota KYC (niveaux de compte) ──
+// Niveau 1 : 5/mois calendaire. Niveau 2+ : 5/jour. Filet 15/jour inchangé après.
+async function verifierQuotaKYC(citoyenId, res) {
+  const { rows: u } = await query('SELECT niveau_compte FROM utilisateur WHERE id=$1', [citoyenId]);
+  const niveau = u[0]?.niveau_compte || 1;
+
+  if (niveau >= 2) {
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id=$1 AND cree_le >= CURRENT_DATE", [citoyenId]);
+    if (rows[0].n >= 5) {
+      return res.status(429).json({
+        erreur: 'Limite quotidienne atteinte (5 signalements par jour). Réessayez demain.',
+        erreur_ar: 'تم بلوغ الحد اليومي (5 بلاغات في اليوم). حاول مجدداً غداً.',
+        code: 'QUOTA_JOUR'
+      });
+    }
+  } else {
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id=$1 AND cree_le >= date_trunc('month', CURRENT_DATE)", [citoyenId]);
+    if (rows[0].n >= 5) {
+      // Premier signalement d'un compte neuf : on vérifie s'il en a déjà au moins 1
+      // Le message incite sans obliger
+      return res.status(429).json({
+        erreur: 'Vous avez atteint la limite de 5 signalements ce mois-ci. Vérifiez votre compte pour débloquer tous les services.',
+        erreur_ar: 'لقد بلغت حد 5 بلاغات هذا الشهر. قم بتوثيق حسابك لفتح جميع الخدمات.',
+        code: 'QUOTA_MOIS',
+        avantages_niveau2: [
+          { fr: '5 signalements par jour au lieu de 5 par mois', ar: '5 بلاغات في اليوم بدل 5 في الشهر' },
+          { fr: 'Suivi prioritaire de vos dossiers', ar: 'متابعة ذات أولوية لملفاتكم' },
+          { fr: 'Accès aux statistiques détaillées', ar: 'الوصول إلى الإحصائيات المفصلة' }
+        ]
+      });
+    }
+  }
+  return null; // OK, pas de blocage
+}
+
 // Vérifie qu'un superviseur communal accède à un dossier de sa commune
 async function checkCommuneAccess(req, signalementId) {
   if (!hasPerimetre(req.user, 'commune') || !req.user.commune_id) return true;
@@ -50,26 +87,9 @@ function requireStaff() {
   };
 }
 
-// ── EPIC IDs (doit correspondre à la table epic) ──
-const EPIC_EAU      = 17;
-const EPIC_VERTS    = 3;
-const EPIC_ECLAIRAGE = 8;
-const EPIC_VOIRIE   = 30;
-const EPIC_PRO_CENTRE   = 1;
+// ── EPIC IDs pour le routage propreté par zone ──
+const EPIC_PRO_CENTRE = 1;
 const EPIC_PRO_PERIPH = 2;
-const EPIC_PARKINGS = 31;
-// CET = 32, utilisé par les catégories directement (epic_id sur categorie_signal)
-
-// Mapping famille → EPIC (sauf propreté qui dépend de la zone commune)
-const FAMILLE_EPIC = {
-  eau:            EPIC_EAU,
-  espaces_verts:  EPIC_VERTS,
-  eclairage:      EPIC_ECLAIRAGE,
-  voirie:         EPIC_VOIRIE,
-  stationnement:  EPIC_PARKINGS,
-  // proprete: dynamique (centre→Dir. Propreté Centre, periph→Dir. Propreté Périph.)
-  // autre: null (tri humain)
-};
 
 const { awardPoints } = require('../../utils/points');
 
@@ -106,40 +126,34 @@ router.get('/epics', asyncH(async (req, res) => {
 }));
 
 // ── Moteur de routage catégorie → EPIC ──
+// Lit categorie_signal.epic_id en base. Seul cas spécial : propreté sans epic_id
+// (routage dynamique par zone commune centre/périphérie).
 async function routerEpic(categorieId, communeId) {
-  // 1. Si la catégorie a un epic_id direct, on l'utilise
   const { rows: catRows } = await query(
     'SELECT epic_id, famille FROM categorie_signal WHERE id = $1', [categorieId]);
   if (!catRows.length) return { epicId: null, triHumain: false };
 
   const cat = catRows[0];
 
-  // Si la catégorie a déjà un epic_id assigné (Direction Espaces Verts, Éclairage, Voirie, CET, Parkings)
+  // 1. La catégorie a un epic_id en base → routage direct
   if (cat.epic_id) return { epicId: cat.epic_id, triHumain: false };
 
-  // 2. Famille "autre" → tri humain
+  // 2. Famille "autre" → tri humain intentionnel
   if (cat.famille === 'autre') return { epicId: null, triHumain: true };
 
-  // 3. Famille propreté sans epic_id → routage par zone commune
+  // 3. Propreté sans epic_id → routage par zone commune (centre/périphérie)
   if (cat.famille === 'proprete') {
     if (!communeId) {
-      // Pas de commune → fallback Direction Propreté + log
-      console.warn(`[ROUTAGE] Commune absente pour catégorie ${categorieId} — fallback Direction Propreté`);
+      console.warn(`[ROUTAGE] Commune absente pour catégorie ${categorieId} — fallback Direction Propreté Centre`);
       return { epicId: EPIC_PRO_CENTRE, triHumain: false };
     }
-    const { rows: comRows } = await query(
-      'SELECT zone FROM commune WHERE id = $1', [communeId]);
+    const { rows: comRows } = await query('SELECT zone FROM commune WHERE id = $1', [communeId]);
     const zone = comRows.length ? comRows[0].zone : 'centre';
-    if (!zone || zone === 'centre') return { epicId: EPIC_PRO_CENTRE, triHumain: false };
-    return { epicId: EPIC_PRO_PERIPH, triHumain: false };
+    return { epicId: (zone === 'peripherie' ? EPIC_PRO_PERIPH : EPIC_PRO_CENTRE), triHumain: false };
   }
 
-  // 4. Famille eau sans epic_id → Direction Eau
-  if (cat.famille === 'eau') return { epicId: EPIC_EAU, triHumain: false };
-
-  // 5. Lookup par famille dans le mapping statique
-  const epicId = FAMILLE_EPIC[cat.famille] || null;
-  return { epicId, triHumain: !epicId };
+  // 4. Catégorie sans epic_id et hors cas spéciaux → échec de routage
+  return { epicId: null, triHumain: false };
 }
 
 // ── POST /signalements — soumission unifiée ──
@@ -183,8 +197,11 @@ router.post('/signalements/rapide',
     const citoyenId = req.user.id;
     const photoPath = req.file ? req.file.path : null;
 
-    // Filet de sécurité anti-abus
+    // Quota KYC (5/mois N1, 5/jour N2) puis filet 15/jour
     if (req.user.fonction === 'citoyen' || req.user.role === 'citoyen') {
+      const quotaBlock = await verifierQuotaKYC(citoyenId, res);
+      if (quotaBlock) return;
+      // Filet de sécurité anti-abus (15/jour, dernier recours)
       const { rows: countRows } = await query(
         "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
         [citoyenId]);
@@ -207,25 +224,36 @@ router.post('/signalements/rapide',
     const { epicId, triHumain } = await routerEpic(categorieId, communeId);
     let operateurId = null;
     if (!epicId && !triHumain && communeId) {
-      try { const svc = require('../proprete/signalementService'); operateurId = await svc.resoudreOperateur(communeId, domaine === 'general' ? 'proprete' : domaine); } catch(e) {}
+      try { const svc = require('../proprete/signalementService'); operateurId = await svc.resoudreOperateur(communeId, domaine === 'general' ? 'proprete' : domaine); } catch(e) { console.error('[signaler] ÉCHEC routage opérateur — signalement potentiellement orphelin, commune=' + communeId + ', domaine=' + domaine + ':', e.message); }
     }
 
     const prefixMap = { proprete:'PRO', eau:'EAU', voirie:'VOR', eclairage:'ECL', espaces_verts:'EVT', assainissement:'ASS' };
     const reference = makeReference(prefixMap[domaine] || 'SIG');
+    const routageEchoue = !epicId && !operateurId;
 
     const result = await withTransaction(async (c) => {
       const { rows } = await c.query(
-        `INSERT INTO signalement (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, sous_categorie_a_affiner)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',true) RETURNING *`,
-        [reference, domaine, categorieId, citoyenId, communeId || null, operateurId, epicId, parseFloat(lat) || 0, parseFloat(lng) || 0, description || null, photoPath]);
+        `INSERT INTO signalement (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, sous_categorie_a_affiner, routage_echoue)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',true,$12) RETURNING *`,
+        [reference, domaine, categorieId, citoyenId, communeId || null, operateurId, epicId, parseFloat(lat) || 0, parseFloat(lng) || 0, description || null, photoPath, routageEchoue]);
       // Historique
       await c.query('INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action) VALUES ($1,$2,$3,$4)',
         [rows[0].id, 'recu', citoyenId, 'signalement_cree']);
       // Points
-      try { const { awardPoints } = require('../../utils/points'); await awardPoints(citoyenId, 'signalement', 'signalement', rows[0].id); } catch(e) {}
+      try { const { awardPoints } = require('../../utils/points'); await awardPoints(citoyenId, 'signalement', 'signalement', rows[0].id); } catch(e) { console.error('[signaler] échec attribution points, citoyen=' + citoyenId + ':', e.message); }
       // Notification
       try { await c.query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
-        [citoyenId, 'signalement', 'Signalement enregistré', 'Votre signalement #' + reference + ' a été transmis.', '/mes-signalements']); } catch(e) {}
+        [citoyenId, 'signalement', 'Signalement enregistré', 'Votre signalement #' + reference + ' a été transmis.', '/mes-signalements']); } catch(e) { console.error('[signaler] échec notification citoyen, ref=' + reference + ':', e.message); }
+      // Notification agents de réception si routage échoué
+      if (routageEchoue) {
+        try {
+          const { rows: agents } = await c.query("SELECT id FROM utilisateur WHERE fonction = 'agent_traitant' AND capacites @> ARRAY['reception'] AND actif = TRUE");
+          for (const a of agents) {
+            await c.query('INSERT INTO notification (utilisateur_id, type, titre, message, lien) VALUES ($1,$2,$3,$4,$5)',
+              [a.id, 'alerte', 'Signalement sans routage', 'Le signalement #' + reference + ' n\'a pas pu être routé automatiquement. Assignez-le manuellement.', '/bo-agent']);
+          }
+        } catch(e) { console.error('[signaler] échec notification agents routage échoué:', e.message); }
+      }
       return rows[0];
     });
 
@@ -252,8 +280,10 @@ router.post('/signalements',
     const citoyenId = req.user.id;
     const photoPath = req.file ? req.file.path : null;
 
-    // Filet de sécurité anti-abus (invisible)
+    // Quota KYC (5/mois N1, 5/jour N2) puis filet 15/jour
     if (req.user.fonction === 'citoyen' || req.user.role === 'citoyen') {
+      const quotaBlock = await verifierQuotaKYC(citoyenId, res);
+      if (quotaBlock) return;
       const { rows: countRows } = await query(
         "SELECT COUNT(*)::int AS n FROM signalement WHERE citoyen_id = $1 AND cree_le >= CURRENT_DATE",
         [citoyenId]);
@@ -458,7 +488,7 @@ router.get('/board',
     if (communeId) { params.push(Number(communeId)); sql += ` AND s.commune_id = $${params.length}`; }
     if (etat) { params.push(etat); sql += ` AND s.etat = $${params.length}`; }
     if (categorie) { params.push(categorie); sql += ` AND cs.famille = $${params.length}`; }
-    if (req.query.organisation_id) { sql += ` AND s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${Number(req.query.organisation_id)})`; }
+    if (req.query.organisation_id) { params.push(Number(req.query.organisation_id)); sql += ` AND s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = $${params.length})`; }
     // Superviseur communal : restreint à sa commune
     var isCommune = hasPerimetre(req.user, 'commune');
     if (isCommune && req.user.commune_id) {
@@ -468,22 +498,51 @@ router.get('/board',
     // Entité responsable : voit les dossiers assignés à son org OU transmis à son org OU routés vers les EPIC liés
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
       const orgId = Number(req.user.organisation_id);
-      // Mapping organisation_id → epic IDs (les deux tables ne partagent pas les mêmes IDs)
-      const ORG_EPIC_MAP = {
-        5: [1, 2],      // Direction Propreté → DIR-PRO Centre (1) + Périphérie (2)
-        6: [7, 30],      // Direction Voirie → DIR-VOR (7) + DIR-CIRC (30)
-        16: [31],        // Gestion Parkings → DIR-PARK (31)
-        18: [17],        // Direction Eau → DIR-EAU (17)
-        13: [3, 4],      // Direction Environnement → DIR-EVT (3) + DIR-OUED (4)
-        23: [8],         // Direction Éclairage → DIR-ECL (8)
-      };
-      const epicIds = ORG_EPIC_MAP[orgId] || [];
-      const epicFilter = epicIds.length ? ` OR s.epic_id IN (${epicIds.join(',')})` : '';
-      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}'${epicFilter})`;
+      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}' OR s.epic_id IN (SELECT epic_id FROM epic_organisation_map WHERE organisation_id = ${orgId}))`;
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
     const { rows } = await query(sql, params);
     res.json(rows);
+  }));
+
+// GET /board/orphelins — signalements à router manuellement
+router.get('/board/orphelins',
+  authenticate, requireStaff(),
+  asyncH(async (req, res) => {
+    const { rows } = await query(
+      `SELECT s.id, s.reference, s.domaine, s.etat, s.description, s.cree_le,
+              cs.libelle AS categorie_nom, cs.libelle_ar AS categorie_nom_ar,
+              c.nom AS commune_nom, c.nom_ar AS commune_nom_ar,
+              u.prenom AS citoyen_prenom, u.nom AS citoyen_nom
+         FROM signalement s
+         LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+         LEFT JOIN commune c ON c.id = s.commune_id
+         LEFT JOIN utilisateur u ON u.id = s.citoyen_id
+        WHERE s.routage_echoue = TRUE
+        ORDER BY s.cree_le DESC`);
+    res.json(rows);
+  }));
+
+// PATCH /board/:id/assigner-epic — assignation manuelle d'un EPIC
+router.patch('/board/:id/assigner-epic',
+  authenticate, requireStaff(),
+  asyncH(async (req, res) => {
+    const { epic_id } = req.body;
+    if (!epic_id) return res.status(400).json({ erreur: 'epic_id requis' });
+    // Vérifier que l'EPIC existe et est actif
+    const { rows: epic } = await query('SELECT id, sigle, nom FROM epic WHERE id = $1 AND actif = TRUE', [epic_id]);
+    if (!epic.length) return res.status(400).json({ erreur: 'EPIC introuvable ou inactif.' });
+    // Mettre à jour le signalement
+    const { rows } = await query(
+      'UPDATE signalement SET epic_id = $1, routage_echoue = FALSE WHERE id = $2 RETURNING id, reference',
+      [epic_id, req.params.id]);
+    if (!rows.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
+    // Historique
+    await query(
+      `INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
+       SELECT id, etat, $1, 'routage_manuel', $2 FROM signalement WHERE id = $3`,
+      [req.user.id, 'Assigné manuellement à ' + epic[0].sigle + ' (' + epic[0].nom + ')', req.params.id]);
+    res.json({ ok: true, reference: rows[0].reference, epic: epic[0].sigle });
   }));
 
 // GET /board/:id — un seul signalement par ID (pour drawer superviseur)

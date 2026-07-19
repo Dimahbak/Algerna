@@ -2388,6 +2388,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
         Ma Houma
       </button>
+      <button class="nav-item" onclick="showView('mobilite')" data-view="mobilite" data-i18n="mobilite.titre">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Se déplacer
+      </button>
       <button class="nav-item" onclick="showView('participe')" data-view="participe" data-univers="participe" data-i18n="univers.participe">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Je participe
@@ -2559,6 +2563,7 @@
               <div style="width:40px;height:3px;background:var(--color-turquoise);border-radius:2px;"></div>
             </div>
         <div class="module-grid">
+          <!-- Ligne 1 : Démarches, Ma Houma, Se déplacer -->
           <div class="module-card" onclick="showView('civiadmin')" style="background:rgba(255,248,240,0.95);">
             <img src="/assets/algerna/design-v1/service-demarches-v1.webp" alt="" class="module-illust" loading="lazy">
             <h3 data-i18n="univers.demarches">Mes démarches</h3>
@@ -2569,28 +2574,15 @@
             <h3 data-i18n="univers.quartier">Ma Houma</h3>
             <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_houma">Découvrez les équipements et services autour de vous.</p>
           </div>
-          <div class="module-card" onclick="showView('communiques')" style="background:rgba(255,250,235,0.95);">
-            <div class="module-icon" style="background:rgba(245,158,11,0.12);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div class="module-card" onclick="showView('mobilite')" style="background:rgba(235,248,255,0.95);">
+            <img src="https://raw.githubusercontent.com/Dimahbak/civismart-algerna/main/se%20deplacer.jpg" alt="" class="module-illust" loading="lazy" style="height:120px;object-position:center 20%;" onerror="this.style.display='none';var fb=document.getElementById('home-mobilite-fallback');if(fb)fb.style.display='';" id="home-mobilite-img">
+            <div class="module-icon" style="background:rgba(245,158,11,0.12);display:none;" id="home-mobilite-fallback">
+              <span style="font-size:28px;">🚇</span>
             </div>
-            <h3 data-i18n="home.communiques_titre">Communiqués</h3>
-            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_communiques">Actualités et annonces officielles.</p>
+            <h3 data-i18n="mobilite.titre">Se déplacer</h3>
+            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_mobilite">Métro, tram, bus, train — accédez aux sites officiels.</p>
           </div>
-          <div class="module-card" onclick="showView('participe')" style="background:rgba(236,253,245,0.95);">
-            <img src="/assets/algerna/design-v1/service-participe-v1.webp" alt="" class="module-illust" loading="lazy">
-            <h3 data-i18n="univers.participe">Je participe</h3>
-            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_participe">Donnez votre avis et participez aux consultations.</p>
-          </div>
-          <div class="module-card" onclick="showView('mes-signalements')" style="background:rgba(245,243,255,0.95);">
-            <img src="/assets/algerna/design-v1/service-suivi-v1.webp" alt="" class="module-illust" loading="lazy">
-            <h3 data-i18n="univers.suivi">Mon suivi</h3>
-            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_suivi">Suivez l'avancement de vos demandes.</p>
-          </div>
-          <div class="module-card" onclick="showView('sentinelle')" style="background:rgba(236,253,245,0.95);">
-            <img src="/assets/algerna/design-v1/service-impact-v1.webp" alt="" class="module-illust" loading="lazy">
-            <h3 data-i18n="home.impact_titre">Mon impact</h3>
-            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_impact">Visualisez votre contribution à la ville.</p>
-          </div>
+          <!-- Ligne 2 : Infos utiles, Saksini, Je participe -->
           <div class="module-card" onclick="showView('infos')" style="background:rgba(235,245,255,0.95);">
             <img src="/assets/algerna/design-v1/service-infos-utiles-v1.webp" alt="" class="module-illust" loading="lazy">
             <h3 data-i18n="univers.infos">Infos utiles</h3>
@@ -2601,6 +2593,30 @@
             <h3 data-i18n="home.saksini_titre">Saksini</h3>
             <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_saksini">Posez une question et trouvez le bon service.</p>
           </div>
+          <div class="module-card" onclick="showView('participe')" style="background:rgba(236,253,245,0.95);">
+            <img src="/assets/algerna/design-v1/service-participe-v1.webp" alt="" class="module-illust" loading="lazy">
+            <h3 data-i18n="univers.participe">Je participe</h3>
+            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_participe">Donnez votre avis et participez aux consultations.</p>
+          </div>
+          <!-- Ligne 3 : Communiqués, Mon suivi -->
+          <div class="module-card" onclick="showView('communiques')" style="background:rgba(255,250,235,0.95);">
+            <div class="module-icon" style="background:rgba(245,158,11,0.12);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3 data-i18n="home.communiques_titre">Communiqués</h3>
+            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_communiques">Actualités et annonces officielles.</p>
+          </div>
+          <div class="module-card" onclick="showView('mes-signalements')" style="background:rgba(245,243,255,0.95);">
+            <img src="/assets/algerna/design-v1/service-suivi-v1.webp" alt="" class="module-illust" loading="lazy">
+            <h3 data-i18n="univers.suivi">Mon suivi</h3>
+            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_suivi">Suivez l'avancement de vos demandes.</p>
+          </div>
+          <!-- Mon impact — masqué de l'accueil (module intact, réactivable en décommentant) -->
+          <!-- <div class="module-card" onclick="showView('sentinelle')" style="background:rgba(236,253,245,0.95);">
+            <img src="/assets/algerna/design-v1/service-impact-v1.webp" alt="" class="module-illust" loading="lazy">
+            <h3 data-i18n="home.impact_titre">Mon impact</h3>
+            <p style="font-size:11px;color:var(--muted);" data-i18n="home.desc_impact">Visualisez votre contribution à la ville.</p>
+          </div> -->
           <!-- ADMIN CARDS (hidden, shown for admin roles) -->
           <div class="module-card hidden" id="home-admin-card" onclick="showView('dashboard')">
             <div class="module-icon" style="background:#fce8ec;">
@@ -3478,6 +3494,50 @@
             <div id="profil-role-content" style="font-size:13px;line-height:1.7;color:var(--gray-700);"></div>
           </div>
         </div>
+        <!-- ═══ NIVEAU DE COMPTE + JAUGE ═══ -->
+        <div id="profil-kyc-block" class="card" style="padding:16px;margin-bottom:16px;display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <h4 style="margin:0;color:var(--navy);" data-i18n="kyc.niveau_compte">Niveau du compte</h4>
+            <span id="profil-niveau-badge" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;"></span>
+          </div>
+          <!-- Jauge de complétude -->
+          <div id="profil-jauge-wrap" style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;">
+              <span data-i18n="kyc.jauge">Profil</span>
+              <span id="profil-jauge-pct">0 %</span>
+            </div>
+            <div style="background:var(--gray-100);border-radius:6px;height:8px;overflow:hidden;">
+              <div id="profil-jauge-bar" style="height:100%;border-radius:6px;background:var(--navy);transition:width 0.5s;width:0%;"></div>
+            </div>
+          </div>
+          <!-- NIN pour niveau 1 -->
+          <div id="profil-nin-block" style="display:none;">
+            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;margin-bottom:10px;">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;" data-i18n="kyc.debloquer_titre">Débloquer tous les services</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px;" data-i18n="kyc.debloquer_desc">Renseignez votre NIN pour accéder au niveau Vérifié.</div>
+              <ul style="font-size:12px;color:var(--navy);margin:0 0 8px 16px;padding:0;">
+                <li data-i18n="kyc.avantage_1">5 signalements par jour au lieu de 5 par mois</li>
+                <li data-i18n="kyc.avantage_2">Suivi prioritaire de vos dossiers</li>
+                <li data-i18n="kyc.avantage_3">Accès aux statistiques détaillées</li>
+              </ul>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="profil-nin-input" maxlength="18" inputmode="numeric" pattern="\d{18}" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px;letter-spacing:1px;" data-i18n-placeholder="kyc.nin_placeholder" placeholder="18 chiffres">
+                <button type="button" class="btn btn-primary btn-sm" onclick="declarerNIN()" data-i18n="kyc.nin_declarer">Déclarer mon NIN</button>
+              </div>
+              <div id="profil-nin-error" style="display:none;font-size:12px;color:var(--red);margin-top:6px;"></div>
+            </div>
+          </div>
+          <!-- NIN déjà renseigné (niveau 2+) -->
+          <div id="profil-nin-done" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#16a34a;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span data-i18n="kyc.nin_declare">NIN déclaré</span>
+              <span style="color:var(--muted);font-size:11px;margin-left:4px;" data-i18n="kyc.nin_info">(déclaré, non vérifié)</span>
+            </div>
+          </div>
+          <!-- Quota actuel -->
+          <div id="profil-quota-info" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
+        </div>
         <div class="card" style="padding:16px;margin-bottom:16px;">
           <h4 style="margin:0 0 12px;color:var(--navy);" data-i18n="profil.modifier_titre">Modifier mes informations</h4>
           <div id="profil-edit-error" class="alert alert-error hidden"></div>
@@ -3489,7 +3549,12 @@
               <div class="form-group" style="margin:0;"><label data-i18n="profil.telephone">Téléphone</label><input type="text" id="profil-tel" readonly style="background:var(--gray-100);"></div>
               <div class="form-group" style="margin:0;"><label data-i18n="profil.email">Email</label><input type="email" id="profil-email"></div>
               <div class="form-group" style="margin:0;"><label data-i18n="profil.adresse">Adresse</label><input type="text" id="profil-adresse"></div>
-              <div class="form-group" style="margin:0;"><label data-i18n="profil.quartier">Quartier</label><input type="text" id="profil-quartier"></div>
+              <div class="form-group" style="margin:0;">
+                <label data-i18n="profil.mon_quartier">Ma houma</label>
+                <select id="profil-quartier-select">
+                  <option value="" data-i18n="profil.aucun_quartier">-- Aucune houma sélectionnée --</option>
+                </select>
+              </div>
             </div>
             <div class="form-group" style="margin-top:10px;"><label data-i18n="profil.commune">Commune</label>
               <select id="profil-commune"><option value="" data-i18n="common.selectionner">-- Sélectionner --</option></select>
@@ -3778,6 +3843,18 @@
             </div>
           </div>
 
+          <!-- Bloc orphelins — Signalements à router manuellement -->
+          <div id="bo-orphelins-section" style="display:none;margin-bottom:14px;">
+            <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:14px 18px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <span style="font-size:16px;">⚠️</span>
+                <span style="font-weight:700;font-size:13px;color:#92400e;" data-i18n="bo.orphelins_titre">Signalements à router manuellement</span>
+                <span id="bo-orphelins-badge" style="background:#EF4444;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;">0</span>
+              </div>
+              <div id="bo-orphelins-list" style="font-size:12px;"></div>
+            </div>
+          </div>
+
           <!-- Bloc 3 — Je peux décider -->
           <div id="bo-agent-permissions" style="display:none;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
             <div style="background:white;border:1px solid var(--ops-border);border-radius:12px;padding:14px 16px;font-size:12px;color:#063B5A;">
@@ -3808,6 +3885,22 @@
           <div class="wb-actions" id="bo-agent-actions">
             <button class="wb-action-primary" onclick="boShowBoard()" data-i18n="bo.ouvrir_board">Ouvrir le Board</button>
             <button class="wb-action-secondary" onclick="boShowNewIntervention()">+ <span data-i18n="bo.creer_dossier">Créer un nouveau dossier</span></button>
+            <button class="wb-action-secondary" onclick="boShowPerduTrouve()" style="border-color:#f59e0b;color:#92400e;">📋 <span data-i18n="pt.registre">Registre Perdu-Trouvé</span> <span id="bo-pt-badge" style="background:#f59e0b;color:white;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;display:none;"></span></button>
+          </div>
+
+          <!-- ═══ REGISTRE PERDU-TROUVÉ (agent) ═══ -->
+          <div id="bo-pt-registre" style="display:none;margin-top:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h4 style="margin:0;color:var(--navy);" data-i18n="pt.registre">Registre Perdu-Trouvé</h4>
+              <button class="btn btn-sm btn-outline" onclick="document.getElementById('bo-pt-registre').style.display='none';" data-i18n="common.fermer">Fermer</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-primary" onclick="loadRegistrePT()">Tous</button>
+              <button class="btn btn-sm btn-outline" onclick="loadRegistrePT('recue')" data-i18n="pt.statut_recue">Reçues</button>
+              <button class="btn btn-sm btn-outline" onclick="loadRegistrePT('traitee')" data-i18n="pt.statut_traitee">Traitées</button>
+              <button class="btn btn-sm btn-outline" onclick="loadRegistrePT('cloturee')" data-i18n="pt.statut_cloturee">Clôturées</button>
+            </div>
+            <div id="bo-pt-list"></div>
           </div>
 
           <!-- Modal nouvelle intervention -->
@@ -5011,6 +5104,18 @@
           <button class="btn btn-sm btn-outline" onclick="showView('equipements')" data-subview="equipements" style="flex:1;min-width:0;">🏛️ Équipements</button>
           <button class="btn btn-sm btn-outline" onclick="showView('proprete')" data-subview="proprete" style="flex:1;min-width:0;" data-i18n="ap.cit_nav">🗑️ Poubelles</button>
         </div>
+        <!-- Scope houma / wilaya -->
+        <div id="houma-scope-bar" style="display:none;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span id="houma-scope-label" style="font-size:13px;font-weight:600;color:var(--navy);"></span>
+            <button id="houma-scope-toggle" class="btn btn-sm btn-outline" onclick="houmaToggleScope()" style="white-space:nowrap;font-size:12px;"></button>
+          </div>
+        </div>
+        <!-- Invitation houma (une fois par session) -->
+        <div id="houma-invite" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+          <span style="font-size:13px;color:#166534;" data-i18n="houma.invite">Définissez votre houma pour voir les indicateurs de votre quartier.</span>
+          <a href="#" onclick="houmaStartDefine();return false;" style="font-size:13px;font-weight:600;margin-left:6px;" data-i18n="houma.invite_lien">Définir</a>
+        </div>
         <!-- Dashboard quartier citoyen -->
         <div id="quartier-dashboard" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
 
@@ -5030,6 +5135,21 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
             <span data-i18n="carte.ma_position">Ma position</span>
           </button>
+        </div>
+        <!-- Bannière Ma Houma -->
+        <div id="houma-banner" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:10px 14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span id="houma-banner-text" style="font-size:13px;font-weight:600;color:var(--navy);"></span>
+            <button class="btn btn-sm btn-outline" id="houma-definir-btn" onclick="houmaStartDefine()" data-i18n="houma.definir" style="white-space:nowrap;">Définir ma houma</button>
+          </div>
+        </div>
+        <!-- Confirmation houma (pendant la sélection) -->
+        <div id="houma-confirm" style="display:none;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;padding:12px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:8px;" data-i18n="houma.definir_desc">Touchez la carte pour choisir votre quartier.</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm btn-primary" onclick="houmaConfirmChoice()" data-i18n="houma.confirmer" style="flex:1;">C'est ma houma</button>
+            <button class="btn btn-sm btn-outline" onclick="houmaCancelDefine()" data-i18n="houma.annuler" style="flex:1;">Annuler</button>
+          </div>
         </div>
         <div id="carte-map"></div>
         <div class="carte-legend">
@@ -5315,9 +5435,74 @@
           <button class="btn btn-sm btn-outline" onclick="loadInfos('reseaux')" data-i18n="infos.reseaux">Réseaux</button>
           <button class="btn btn-sm btn-outline" onclick="loadInfos('transports')" data-i18n="infos.transports">Transports</button>
           <button class="btn btn-sm btn-outline" onclick="loadInfos('institutions')" data-i18n="infos.institutions">Institutions</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInfos('sante')" data-i18n="infos.sante">Pharmacies de garde</button>
+        </div>
+        <!-- Bouton Perdu-Trouvé -->
+        <div id="infos-perdu-trouve-btn" style="margin-bottom:14px;">
+          <button class="btn btn-primary" onclick="showView('perdu-trouve')" style="width:100%;padding:12px;font-size:14px;font-weight:700;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <span style="font-size:18px;">📋</span>
+            <span data-i18n="pt.declarer_btn">Déclarer une perte ou un objet trouvé</span>
+          </button>
         </div>
         <div id="infos-count" style="font-size:12px;color:var(--muted);margin-bottom:6px;"></div>
         <div id="infos-list"></div>
+      </div>
+
+      <!-- ══ PERDU-TROUVÉ ══ -->
+      <div id="view-perdu-trouve" class="view">
+        <button class="btn-back" onclick="showView('infos')" data-i18n="common.retour">← Retour</button>
+        <div class="page-header">
+          <h2 data-i18n="pt.titre">Perdu-Trouvé</h2>
+          <p style="color:var(--muted);font-size:13px;" data-i18n="pt.sous_titre">Déclarez une perte ou un objet trouvé</p>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div id="pt-error" class="alert alert-error hidden"></div>
+          <div id="pt-success" style="display:none;text-align:center;padding:20px;">
+            <div style="font-size:40px;margin-bottom:8px;">✅</div>
+            <h3 style="color:#16a34a;" data-i18n="pt.envoye">Déclaration envoyée !</h3>
+            <p id="pt-ref" style="font-size:14px;color:var(--navy);margin:8px 0;"></p>
+            <p style="font-size:12px;color:var(--muted);" data-i18n="pt.envoye_desc">Vous pouvez suivre votre déclaration dans « Mes signalements ».</p>
+            <button class="btn btn-outline" onclick="showView('infos')" style="margin-top:12px;" data-i18n="common.retour">Retour</button>
+          </div>
+          <form id="pt-form" onsubmit="submitPerduTrouve(event)">
+            <div class="form-group">
+              <label data-i18n="pt.type">Type de déclaration</label>
+              <select id="pt-type" required>
+                <option value="perte" data-i18n="pt.perte">Perte</option>
+                <option value="trouve" data-i18n="pt.trouve">Objet trouvé</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="pt.nature">Nature</label>
+              <select id="pt-nature" required>
+                <option value="document_officiel" data-i18n="pt.document">Document officiel</option>
+                <option value="objet" data-i18n="pt.objet">Objet</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-i18n="pt.description">Description</label>
+              <textarea id="pt-description" rows="3" required style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:13px;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="form-group" style="margin:0;">
+                <label data-i18n="pt.lieu">Lieu approximatif</label>
+                <input type="text" id="pt-lieu">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label data-i18n="pt.date_fait">Date</label>
+                <input type="date" id="pt-date">
+              </div>
+            </div>
+            <div class="form-group">
+              <label data-i18n="pt.photo">Photo (optionnelle)</label>
+              <input type="file" id="pt-photo" accept="image/*">
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;padding:8px;background:var(--gray-50);border-radius:8px;">
+              <span data-i18n="pt.contact_info">Contact pré-rempli depuis votre compte.</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="pt.envoyer">Envoyer la déclaration</button>
+          </form>
+        </div>
       </div>
 
       <!-- ══ COMMUNIQUÉS CITOYENS ══ -->
@@ -5597,6 +5782,64 @@
         </div>
       </div>
     <!-- ══ OPERATEUR VIEW ══ -->
+      <!-- ═══ VUE MOBILITÉ ═══ -->
+      <div id="view-mobilite" class="view">
+        <button class="btn-back" onclick="showView('home')">← <span data-i18n="sidebar.accueil">Accueil</span></button>
+        <div class="page-header">
+          <h2 data-i18n="mobilite.titre">Se déplacer</h2>
+          <p data-i18n="mobilite.sous_titre">Les transports d'Alger</p>
+        </div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:20px;" data-i18n="mobilite.intro">Consultez les modes de transport disponibles dans la Wilaya d'Alger et accédez aux sites officiels des opérateurs pour les horaires et itinéraires.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;">
+          <!-- Métro -->
+          <div class="module-card" style="padding:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">🚇</div>
+            <h3 style="margin:0 0 6px;" data-i18n="mobilite.metro_nom">Métro d'Alger</h3>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;" data-i18n="mobilite.metro_desc">Réseau souterrain de la capitale — 19 stations, 16,8 km.</p>
+            <a href="https://www.metrolinehub.com/fr/algeria/algiers" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="width:100%;text-align:center;" data-i18n="mobilite.btn_site">Consulter le site officiel</a>
+          </div>
+          <!-- Tramway -->
+          <div class="module-card" style="padding:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">🚊</div>
+            <h3 style="margin:0 0 6px;" data-i18n="mobilite.tram_nom">Tramway d'Alger</h3>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;" data-i18n="mobilite.tram_desc">De Ruisseau à Dergana — service d'environ 5h à 23h.</p>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <a href="https://play.google.com/store/apps/details?id=dz.setram.AppEtwassel" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="flex:1;text-align:center;font-size:12px;">Android</a>
+              <a href="https://apps.apple.com/dz/app/etwassel/id6753708937" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="flex:1;text-align:center;font-size:12px;">iOS</a>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin:6px 0 0;text-align:center;" data-i18n="mobilite.btn_etwassel">Télécharger l'appli officielle eTWASSEL</p>
+          </div>
+          <!-- Train -->
+          <div class="module-card" style="padding:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">🚆</div>
+            <h3 style="margin:0 0 6px;" data-i18n="mobilite.train_nom">Train de banlieue (SNTF)</h3>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;" data-i18n="mobilite.train_desc">Dessertes ferroviaires de l'agglomération d'Alger.</p>
+            <a href="https://www.sntf.dz" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="width:100%;text-align:center;" data-i18n="mobilite.btn_site">Consulter le site officiel</a>
+          </div>
+          <!-- Bus -->
+          <div class="module-card" style="padding:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">🚌</div>
+            <h3 style="margin:0 0 6px;" data-i18n="mobilite.bus_nom">Bus (ETUSA)</h3>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;" data-i18n="mobilite.bus_desc">Réseau de bus urbain et suburbain d'Alger.</p>
+            <a href="https://www.etusa.dz/Nos-reseau.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="width:100%;text-align:center;" data-i18n="mobilite.btn_site">Consulter le site officiel</a>
+          </div>
+          <!-- Téléphériques -->
+          <div class="module-card" style="padding:20px;">
+            <div style="font-size:32px;margin-bottom:8px;">🚡</div>
+            <h3 style="margin:0 0 6px;" data-i18n="mobilite.telecab_nom">Téléphériques et télécabines</h3>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;" data-i18n="mobilite.telecab_desc">Liaisons vers les hauteurs d'Alger.</p>
+            <p style="font-size:12px;color:var(--warning);margin:0;" data-i18n="mobilite.telecab_indispo">Site officiel non disponible pour le moment.</p>
+          </div>
+        </div>
+
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:20px;" data-i18n="mobilite.note">Les horaires sont consultables sur les sites officiels de chaque opérateur.</p>
+
+        <div style="text-align:center;">
+          <button class="btn btn-sm btn-outline" onclick="showView('signaler'); setTimeout(function(){ if(typeof sigShowSousCas==='function') sigShowSousCas('transport'); }, 400);" data-i18n="mobilite.btn_signaler">Signaler un problème de transport</button>
+        </div>
+      </div>
+
       <div id="view-operateur" class="view">
         <button class="btn-back" onclick="showView(getDefaultView())">← Retour</button>
         <div class="page-header">
@@ -5956,7 +6199,7 @@ function _setupGoogle() {
 
 function googleSignIn() {
   if (!_googleClientId || !_googleReady) {
-    showToast('Chargement en cours, réessayez dans un instant…', 'info');
+    showToast(t('toast.chargement_en_cours'), 'info');
     // Retry init au cas où
     initGoogleAuth();
     return;
@@ -5972,7 +6215,7 @@ function googleSignIn() {
         nonce: Math.random().toString(36).substring(2),
       });
       const popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params.toString(), 'google_auth', 'width=500,height=600,left=200,top=100');
-      if (!popup) showToast('Autorisez les popups pour vous connecter avec Google', 'error');
+      if (!popup) showToast(t('toast.autoriser_popups'), 'error');
     }
   });
 }
@@ -6298,7 +6541,7 @@ async function initApp() {
   var allNavItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .nav-label, .sidebar .nav-divider');
   // Transverses (profil, notifications, aide, déconnexion) vivent UNIQUEMENT dans le menu avatar
   var menusByFonction = {
-    citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
+    citoyen:              ['home','civiadmin','signaler','infos','communiques','carte','mobilite','participe','mes-signalements','sentinelle'],
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
@@ -6307,7 +6550,7 @@ async function initApp() {
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
-    citoyen: ['home','civiadmin','signaler','infos','communiques','carte','participe','mes-signalements','sentinelle'],
+    citoyen: ['home','civiadmin','signaler','infos','communiques','carte','mobilite','participe','mes-signalements','sentinelle'],
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
     admin_apc: ['bo-executive','rapports','admin-communiques','quartiers','edeval'],
@@ -6626,16 +6869,16 @@ function showView(name) {
   // Vues autorisées par rôle (doit correspondre à menusByRole dans initApp)
   // Vues autorisées par fonction (avec fallback sur rôle)
   var viewsByFonction = {
-    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
-    agent_traitant:       ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    citoyen:              ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','mobilite','participe','mes-signalements','perdu-trouve','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    agent_traitant:       ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
     superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
     cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
-    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','participe','mes-signalements','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
-    agent: ['bo-agent','profil','parametres','a-propos','aide','notifications'],
+    citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','mobilite','participe','mes-signalements','perdu-trouve','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
+    agent: ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
     admin_wilaya: ['bo-executive','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
@@ -6682,6 +6925,7 @@ function showView(name) {
   if (name === 'parkzones') initParkzones();
   if (name === 'equipements') loadEquipements();
   if (name === 'infos') loadInfos();
+  if (name === 'perdu-trouve') { document.getElementById('pt-form').style.display=''; document.getElementById('pt-success').style.display='none'; hideError('pt-error'); }
   if (name === 'communiques') initCommuniquesView();
   if (name === 'participe') loadParticipations();
   if (name === 'notifications') { initNotifFilters(); loadNotifications(); }
@@ -6747,6 +6991,13 @@ async function loadHomePoints() {
   var meteoMob = document.getElementById('home-meteo-mobile');
   if (dateMob && dateEl) dateMob.textContent = dateEl.textContent;
   if (meteoMob && meteoEl) meteoMob.textContent = meteoEl.textContent;
+
+  // Carte mobilité : alt i18n + fallback si image externe échoue
+  var mobImg = document.getElementById('home-mobilite-img');
+  if (mobImg) {
+    mobImg.alt = t('home.mobilite_alt');
+    mobImg.onerror = function() { this.style.display = 'none'; var fb = document.getElementById('home-mobilite-fallback'); if (fb) fb.style.display = ''; };
+  }
 
   try {
     var data;
@@ -6892,39 +7143,6 @@ async function initWatersignal() {
   }
 }
 
-// ─── GEOLOCATION ──────────────────────────────────────────
-function getGeolocation(prefix, btn) {
-  if (!navigator.geolocation) {
-    alert(t('geo.non_supporte'));
-    return;
-  }
-  const iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>';
-  if (btn) { btn.disabled = true; btn.innerHTML = iconSvg + ' ' + t('geo.localisation_en_cours'); }
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      document.getElementById(prefix + '-lat').value = lat;
-      document.getElementById(prefix + '-lng').value = lng;
-      const coordsEl = document.getElementById(prefix + '-coords');
-      coordsEl.textContent = t('geo.position') + ' ' + lat + ', ' + lng;
-      coordsEl.classList.remove('hidden');
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = iconSvg + ' ' + t('geo.position_capturee');
-        btn.style.color = 'var(--success)';
-      }
-    },
-    err => {
-      if (btn) { btn.disabled = false; btn.innerHTML = iconSvg + ' ' + t('geo.reessayer'); btn.style.color = ''; }
-      const msgs = {1: t('geo.permission_refusee'), 2: t('geo.position_indisponible'), 3: t('geo.delai_depasse')};
-      alert(msgs[err.code] || t('geo.impossible') + ' : ' + err.message);
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
-}
-
 // ─── SIGNALEMENT SUBMIT ───────────────────────────────────
 async function handleSignalement(e, domain) {
   e.preventDefault();
@@ -6983,7 +7201,7 @@ async function handleSignalement(e, domain) {
         lng: lng || null
       });
       localStorage.setItem('civismart_mes_signalements', JSON.stringify(mesSignals));
-    } catch(_) {}
+    } catch(_) { console.warn('[signaler] échec sauvegarde locale signalement:', _.message); }
     document.getElementById(`${prefix === 'cs' ? 'civisignal' : 'watersignal'}-form`).reset();
     document.getElementById(`${prefix}-lat`).value = '';
     document.getElementById(`${prefix}-lng`).value = '';
@@ -7003,13 +7221,6 @@ async function handleSignalement(e, domain) {
 async function loadAdminSignals(domain) {
   // Recharge la liste agent après soumission d'un signalement
   await loadAgentSignals(domain);
-}
-
-function statusBadgeClass(statut) {
-  if (!statut || statut === 'nouveau') return 'badge-red';
-  if (statut === 'en_cours' || statut === 'en cours') return 'badge-orange';
-  if (statut === 'résolu' || statut === 'resolu' || statut === 'traité') return 'badge-green';
-  return 'badge-gray';
 }
 
 // ─── CIVIADMIN INIT ───────────────────────────────────────
@@ -7306,35 +7517,23 @@ function showPromptModal(title, placeholder, callback, opts) {
   setTimeout(function() { var el = document.getElementById('gm-input'); if (el) el.focus(); }, 200);
 }
 
-// Modal confirm (remplace confirm natif)
-function showConfirmModal(title, message, callback) {
-  _gmCallback = callback;
-  showModal(title,
-    '<p style="font-size:13px;color:var(--navy);margin-bottom:14px;line-height:1.5;">' + escHtml(message) + '</p>' +
-    '<div style="display:flex;gap:8px;">' +
-      '<button class="btn btn-sm btn-primary" style="flex:1;" onclick="document.getElementById(\'generic-modal\').remove();if(_gmCallback)_gmCallback();">' + t('global.confirmer') + '</button>' +
-      '<button class="btn btn-sm btn-outline" onclick="document.getElementById(\'generic-modal\').remove()">' + t('global.annuler') + '</button>' +
-    '</div>'
-  );
-}
-
 async function modifierRDV(rdvId, serviceId, communeId) {
   // Charger les guichets pour ce service
   try {
     var gRes = await apiFetch('/api/rdv/guichets?serviceId=' + serviceId, { headers: authHeaders() });
-    if (!gRes.ok) { showToast('Erreur chargement guichets.', 'error'); return; }
+    if (!gRes.ok) { showToast(t('rdv.erreur_guichets'), 'error'); return; }
     var guichets = await gRes.json();
-    if (!guichets.length) { showToast('Aucun guichet disponible.', 'error'); return; }
+    if (!guichets.length) { showToast(t('rdv.aucun_guichet'), 'error'); return; }
 
     // Si un seul guichet, l'utiliser directement ; sinon prendre celui de la même commune
     var guichet = guichets.find(function(g) { return g.commune_id === communeId; }) || guichets[0];
 
     // Charger les créneaux
     var cRes = await apiFetch('/api/rdv/guichets/' + guichet.id + '/creneaux?serviceId=' + serviceId, { headers: authHeaders() });
-    if (!cRes.ok) { showToast('Erreur chargement créneaux.', 'error'); return; }
+    if (!cRes.ok) { showToast(t('rdv.erreur_creneaux'), 'error'); return; }
     var data = await cRes.json();
     var creneaux = data.creneaux || [];
-    if (!creneaux.length) { showToast('Aucun créneau disponible dans les 14 prochains jours.', 'error'); return; }
+    if (!creneaux.length) { showToast(t('rdv.aucun_creneau_14j'), 'error'); return; }
 
     // Grouper par jour
     var jours = {};
@@ -7404,11 +7603,11 @@ async function modRdvConfirmer(debut) {
     if (modal) modal.remove();
     if (res.ok) {
       var data = await res.json();
-      showToast('RDV modifié ! Modifications restantes : ' + data.modifications_restantes);
+      showToast(t('rdv.modifie_restantes') + data.modifications_restantes);
       loadMesRDV();
     } else {
       var err = await res.json();
-      showToast(err.erreur || 'Erreur de modification.', 'error');
+      showToast(err.erreur || t('rdv.erreur_modification'), 'error');
     }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -7420,7 +7619,7 @@ async function annulerRDV(rdvId) {
       method: 'PATCH', headers: authHeaders()
     });
     if (res.ok) {
-      showToast('Rendez-vous annulé.');
+      showToast(t('rdv.annule'));
       showView('civiadmin');
     } else {
       var err = await res.json();
@@ -7880,6 +8079,27 @@ async function initMesSignalements() {
         (s.nb_confirmations > 0 ? ' · <span style="color:#7c3aed;font-weight:600;">+' + s.nb_confirmations + ' ' + (isAr?'تأكيد':'confirmation'+(s.nb_confirmations>1?'s':'')) + '</span>' : '') +
         '</div></div>';
     }).join('');
+    // Ajouter les déclarations Perdu-Trouvé
+    try {
+      var ptDecls = await safeFetchJSON('/api/perdu-trouve/mes-declarations', {headers: authHeaders()}, true);
+      if (ptDecls && ptDecls.length) {
+        var statutPTColors = {recue:'#f59e0b',traitee:'#2563eb',cloturee:'#16a34a'};
+        var statutPTLabels = {recue:t('pt.statut_recue'),traitee:t('pt.statut_traitee'),cloturee:t('pt.statut_cloturee')};
+        var typeLabels = {perte:t('pt.perte'),trouve:t('pt.trouve')};
+        container.innerHTML += '<div style="margin-top:20px;padding-top:14px;border-top:2px solid var(--line);">' +
+          '<h4 style="color:var(--navy);margin:0 0 10px;font-size:14px;">📋 ' + t('pt.mes_declarations') + '</h4></div>';
+        container.innerHTML += ptDecls.map(function(d) {
+          var color = statutPTColors[d.statut] || '#666';
+          return '<div class="mes-sig-card" style="border-left:3px solid ' + color + ';">' +
+            '<div class="mes-sig-header"><div>' +
+              '<span class="mes-sig-domaine">📋</span>' +
+              '<span class="mes-sig-cat">' + (typeLabels[d.type]||d.type) + '</span>' +
+            '</div><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + color + '20;color:' + color + ';font-weight:600;">' + (statutPTLabels[d.statut]||d.statut) + '</span></div>' +
+            '<div class="mes-sig-desc">' + escHtml(d.description.substring(0,100)) + '</div>' +
+            '<div class="mes-sig-date">' + t('pt.reference') + ' ' + escHtml(d.reference) + ' — ' + fmtDateTime(d.cree_le) + '</div></div>';
+        }).join('');
+      }
+    } catch(e) { /* pas de PT, pas grave */ }
   } catch(e) {
     container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--red);">' + t('global.erreur_chargement') + '</div>';
   }
@@ -8322,7 +8542,7 @@ async function capShowInterventionForm() {
         const agents = await res.json();
         sel.innerHTML = agents.map(a => `<option value="${a.id}">${escHtml((a.prenom||'')+' '+(a.nom||''))}</option>`).join('');
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[cap] échec chargement agents:', e.message); }
   }
   // Toggle alerte motif
   document.getElementById('cap-int-alerte').addEventListener('change', function() {
@@ -8847,8 +9067,8 @@ function cpShowTab(tab) {
 }
 
 async function initCivipark() {
-  try { var r = await safeFetchJSON('/api/civipark/config/tarif'); _cpTarif = r.tarif || 5000; } catch(e) {}
-  try { _cpZones = await safeFetchJSON('/api/civipark/zones'); } catch(e) {}
+  try { var r = await safeFetchJSON('/api/civipark/config/tarif'); _cpTarif = r.tarif || 5000; } catch(e) { console.warn('[civipark] échec chargement tarif:', e.message); }
+  try { _cpZones = await safeFetchJSON('/api/civipark/zones'); } catch(e) { console.warn('[civipark] échec chargement zones:', e.message); }
   cpShowTab('parkings');
 }
 
@@ -8961,9 +9181,9 @@ async function cpSaveParking(e, editId) {
   try {
     var url = editId ? '/api/civipark/zones/' + editId : '/api/civipark/zones';
     var res = await apiFetch(url, { method: editId ? 'PATCH' : 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (res.ok) { showToast('Parking enregistré.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadParkings(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.parking_enregistre')); document.getElementById('cp-detail').classList.add('hidden'); cpLoadParkings(); }
+    else { var d = await res.json(); showToast(d.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpToggleParking(id, newStatut) {
@@ -8975,9 +9195,9 @@ async function cpToggleParking(id, newStatut) {
   try {
     var res = await apiFetch('/api/civipark/zones/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ statut: newStatut }) });
     var d = await res.json();
-    if (res.ok) { showToast(isAr ? 'تم التحديث' : 'Statut mis à jour.'); cpParkingDetail(id); cpLoadParkings(); }
-    else showToast(d.erreur || 'Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.statut_maj')); cpParkingDetail(id); cpLoadParkings(); }
+    else showToast(d.erreur || t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 // ── CARTES RÉSIDENT ──
@@ -9066,19 +9286,19 @@ async function cpChangeCarteStatut(id, statut) {
   try {
     var res = await apiFetch('/api/civipark/cartes/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ statut: statut }) });
-    if (res.ok) { showToast('Statut mis à jour.'); cpCarteDetail(id); cpLoadCartes(); } else showToast('Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.statut_maj')); cpCarteDetail(id); cpLoadCartes(); } else showToast(t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpEncaisserCarte(carteId) {
-  if (!_cpZones.length) { showToast('Aucun parking configuré', 'error'); return; }
+  if (!_cpZones.length) { showToast(t('cp.aucun_parking'), 'error'); return; }
   var zoneId = _cpZones[0].id; // Default first parking
   try {
     var res = await apiFetch('/api/civipark/encaissements', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ parking_zone_id: zoneId, montant: _cpTarif, type_paiement: 'carte_resident', mode_paiement: 'especes', carte_resident_id: carteId }) });
-    if (res.ok) { var d = await res.json(); showToast('Carte activée. Reçu : ' + d.justificatif_numero); cpCarteDetail(carteId); cpLoadCartes(); }
-    else { var d2 = await res.json(); showToast(d2.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { var d = await res.json(); showToast(t('cp.carte_activee') + ' — ' + d.justificatif_numero); cpCarteDetail(carteId); cpLoadCartes(); }
+    else { var d2 = await res.json(); showToast(d2.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpSuspendCarte(id) {
@@ -9087,8 +9307,8 @@ async function cpSuspendCarte(id) {
   try {
     var res = await apiFetch('/api/civipark/cartes/' + id, { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ statut: 'suspendue', motif_suspension: motif }) });
-    if (res.ok) { showToast('Carte suspendue.'); cpCarteDetail(id); cpLoadCartes(); } else showToast('Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.carte_suspendue')); cpCarteDetail(id); cpLoadCartes(); } else showToast(t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 function cpCarteForm() {
@@ -9109,15 +9329,15 @@ async function cpCreateCarte(e) {
   var tel = document.getElementById('cp-cr-tel').value;
   // Find citoyen by tel
   var citoyenId = null;
-  if (tel) { try { var r = await safeFetchJSON('/api/auth/users?telephone=' + encodeURIComponent(tel), { headers: authHeaders() }); if (r && r.length) citoyenId = r[0].id; } catch(e2) {} }
-  if (!citoyenId) { showToast('Citoyen non trouvé avec ce numéro', 'error'); return; }
+  if (tel) { try { var r = await safeFetchJSON('/api/auth/users?telephone=' + encodeURIComponent(tel), { headers: authHeaders() }); if (r && r.length) citoyenId = r[0].id; } catch(e2) { console.warn('[civipark] échec recherche citoyen par tel:', e2.message); } }
+  if (!citoyenId) { showToast(t('cp.citoyen_non_trouve'), 'error'); return; }
   try {
     var res = await apiFetch('/api/civipark/cartes', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ commune_id: Number(document.getElementById('cp-cr-commune').value), plaque: document.getElementById('cp-cr-plaque').value,
         adresse: document.getElementById('cp-cr-adresse').value, citoyen_id: citoyenId }) });
-    if (res.ok) { showToast('Carte créée.'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadCartes(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.carte_creee')); document.getElementById('cp-detail').classList.add('hidden'); cpLoadCartes(); }
+    else { var d = await res.json(); showToast(d.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpEditTarif() {
@@ -9126,8 +9346,8 @@ async function cpEditTarif() {
   try {
     var res = await apiFetch('/api/civipark/config/tarif', { method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ tarif: Number(nv) }) });
-    if (res.ok) { _cpTarif = Number(nv); showToast('Tarif mis à jour : ' + nv + ' DA'); cpLoadCartes(); } else showToast('Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { _cpTarif = Number(nv); showToast(t('cp.tarif_maj') + ' : ' + nv + ' DA'); cpLoadCartes(); } else showToast(t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 // ── REGISTRE DES ENCAISSEMENTS ──
@@ -9191,9 +9411,9 @@ async function cpCreateEnc(e) {
       body: JSON.stringify({ parking_zone_id: Number(document.getElementById('cp-enc-zone').value), montant: Number(document.getElementById('cp-enc-montant').value),
         type_paiement: document.getElementById('cp-enc-type').value, mode_paiement: document.getElementById('cp-enc-mode').value,
         plaque: document.getElementById('cp-enc-plaque').value || null, duree_minutes: Number(document.getElementById('cp-enc-duree').value) || null }) });
-    if (res.ok) { var d = await res.json(); showToast('Reçu : ' + d.justificatif_numero); document.getElementById('cp-detail').classList.add('hidden'); cpLoadEncaissements(); }
-    else showToast('Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { var d = await res.json(); showToast(t('cp.recu_numero') + ' — ' + d.justificatif_numero); document.getElementById('cp-detail').classList.add('hidden'); cpLoadEncaissements(); }
+    else showToast(t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpAnnulerEnc(id) {
@@ -9202,9 +9422,9 @@ async function cpAnnulerEnc(id) {
   try {
     var res = await apiFetch('/api/civipark/encaissements/' + id + '/annuler', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ motif: motif }) });
-    if (res.ok) { showToast('Annulation enregistrée.'); cpLoadEncaissements(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.annulation_enregistree')); cpLoadEncaissements(); }
+    else { var d = await res.json(); showToast(d.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpGenPdfEnc() {
@@ -9212,8 +9432,8 @@ async function cpGenPdfEnc() {
     var res = await apiFetch('/api/rapports/encaissements', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ periode: '30j', lang: currentLang }) });
     var d = await res.json();
-    if (d.ok && d.url) { showToast('PDF généré.'); window.open(d.url, '_blank'); } else showToast(d.erreur || 'Erreur', 'error');
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (d.ok && d.url) { showToast(t('cp.pdf_genere')); window.open(d.url, '_blank'); } else showToast(d.erreur || t('global.erreur'), 'error');
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 // ── CLÔTURES ──
@@ -9266,17 +9486,17 @@ async function cpCreateCloture(e) {
     var res = await apiFetch('/api/civipark/clotures', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ parking_zone_id: Number(document.getElementById('cp-cl-zone').value), date_cloture: document.getElementById('cp-cl-date').value,
         total_declare: Number(document.getElementById('cp-cl-declare').value), commentaire: document.getElementById('cp-cl-comment').value || null }) });
-    if (res.ok) { var d = await res.json(); showToast('Clôture créée. Écart : ' + d.ecart + ' DA'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadClotures(); }
-    else { var d2 = await res.json(); showToast(d2.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { var d = await res.json(); showToast(t('cp.cloture_creee') + ' — ' + d.ecart + ' DA'); document.getElementById('cp-detail').classList.add('hidden'); cpLoadClotures(); }
+    else { var d2 = await res.json(); showToast(d2.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 async function cpValiderCloture(id) {
   try {
     var res = await apiFetch('/api/civipark/clotures/' + id + '/valider', { method: 'PATCH', headers: authHeaders() });
-    if (res.ok) { showToast('Clôture validée.'); cpLoadClotures(); }
-    else { var d = await res.json(); showToast(d.erreur || 'Erreur', 'error'); }
-  } catch(e) { showToast('Erreur réseau', 'error'); }
+    if (res.ok) { showToast(t('cp.cloture_validee')); cpLoadClotures(); }
+    else { var d = await res.json(); showToast(d.erreur || t('global.erreur'), 'error'); }
+  } catch(e) { showToast(t('cp.erreur_reseau'), 'error'); }
 }
 
 // ─── PARKZONES — CiviPark citoyen (lecture seule) ────────────
@@ -9417,7 +9637,7 @@ async function loadNotifBadge() {
       if (d.unread > 0) { badge.textContent = d.unread; badge.style.display = ''; }
       else { badge.style.display = 'none'; }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[notif] échec chargement badge:', e.message); }
 }
 
 function notifClick(id, lien, el) {
@@ -9465,7 +9685,7 @@ async function markNotifRead(id, el) {
     await apiFetch('/api/notifications/' + id + '/lu', { method: 'PATCH', headers: authHeaders() });
     if (el) { el.style.borderLeftColor = 'var(--gray-200)'; el.style.opacity = '0.7'; }
     loadNotifBadge();
-  } catch(e) {}
+  } catch(e) { console.warn('[notif] échec marquage lu:', e.message); }
 }
 
 async function markAllRead() {
@@ -9473,7 +9693,7 @@ async function markAllRead() {
     await apiFetch('/api/notifications/lire-tout', { method: 'PATCH', headers: authHeaders() });
     loadNotifications();
     loadNotifBadge();
-  } catch(e) {}
+  } catch(e) { console.warn('[notif] échec marquage tout lu:', e.message); }
 }
 
 async function deleteNotif(id) {
@@ -9481,7 +9701,7 @@ async function deleteNotif(id) {
     await apiFetch('/api/notifications/' + id, { method: 'DELETE', headers: authHeaders() });
     loadNotifications();
     loadNotifBadge();
-  } catch(e) {}
+  } catch(e) { console.warn('[notif] échec suppression notification:', e.message); }
 }
 
 async function deleteAllNotifs() {
@@ -9490,8 +9710,8 @@ async function deleteAllNotifs() {
     await apiFetch('/api/notifications', { method: 'DELETE', headers: authHeaders() });
     loadNotifications();
     loadNotifBadge();
-    showToast('Notifications effacées.');
-  } catch(e) {}
+    showToast(t('toast.notifications_effacees'));
+  } catch(e) { console.warn('[notif] échec suppression toutes notifications:', e.message); }
 }
 
 // ─── PAGES LÉGALES ──────────────────────────────────────────
@@ -9690,7 +9910,7 @@ async function initProfil() {
       '<div><span style="color:var(--muted);">' + _pL.tel + '</span><div style="font-weight:600;">' + escHtml(u.telephone || '—') + '</div></div>' +
       '<div><span style="color:var(--muted);">' + _pL.email + '</span><div style="font-weight:600;">' + escHtml(u.email || '—') + '</div></div>' +
       '<div><span style="color:var(--muted);">' + _pL.commune + '</span><div style="font-weight:600;">' + escHtml(communeNom || '—') + '</div></div>' +
-      '<div><span style="color:var(--muted);">' + _pL.quartier + '</span><div style="font-weight:600;">' + escHtml(u.quartier || '—') + '</div></div>' +
+      '<div><span style="color:var(--muted);">' + _pL.quartier + '</span><div style="font-weight:600;">' + escHtml(u.quartier_nom ? (currentLang === 'ar' && u.quartier_nom_ar ? u.quartier_nom_ar : u.quartier_nom) : (u.quartier || '—')) + '</div></div>' +
       '<div><span style="color:var(--muted);">' + _pL.adresse + '</span><div style="font-weight:600;">' + escHtml(u.adresse || '—') + '</div></div>' +
       '<div><span style="color:var(--muted);">' + _pL.poste + '</span><div style="font-weight:600;">' + escHtml(displayRole) + '</div></div>' +
       '</div>';
@@ -9700,7 +9920,6 @@ async function initProfil() {
     document.getElementById('profil-tel').value = u.telephone || '';
     document.getElementById('profil-email').value = u.email || '';
     document.getElementById('profil-adresse').value = u.adresse || '';
-    document.getElementById('profil-quartier').value = u.quartier || '';
     // Commune select
     var commSel = document.getElementById('profil-commune');
     commSel.innerHTML = '<option value="">' + (currentLang==='ar'?'-- اختيار --':'-- Sélectionner --') + '</option>';
@@ -9710,6 +9929,46 @@ async function initProfil() {
       commSel.appendChild(opt);
     });
     if (u.commune_id) commSel.value = u.commune_id;
+    // Quartier select (filtered by commune)
+    var qSel = document.getElementById('profil-quartier-select');
+    await profilLoadQuartiers(u.commune_id, u.quartier_id);
+    commSel.onchange = function() { profilLoadQuartiers(commSel.value, null); };
+    // KYC block (citoyens seulement)
+    var kycBlock = document.getElementById('profil-kyc-block');
+    if (kycBlock && (u.fonction === 'citoyen' || u.role === 'citoyen' || !u.fonction)) {
+      kycBlock.style.display = '';
+      var niveau = u.niveau_compte || 1;
+      var niveauLabels = {1: t('kyc.niveau_1'), 2: t('kyc.niveau_2'), 3: t('kyc.niveau_3'), 4: t('kyc.niveau_4')};
+      var badge = document.getElementById('profil-niveau-badge');
+      badge.textContent = niveauLabels[niveau];
+      badge.style.background = niveau >= 2 ? '#dcfce7' : '#f3f4f6';
+      badge.style.color = niveau >= 2 ? '#16a34a' : 'var(--muted)';
+      // Jauge de complétude
+      var filled = 0; var total = 5;
+      if (u.nom) filled++;
+      if (u.email) filled++;
+      if (u.commune_id) filled++;
+      if (u.quartier_id || u.houma_lat) filled++;
+      if (u.nin || u.nin_declare) filled++;
+      var pct = Math.round(filled / total * 100);
+      document.getElementById('profil-jauge-pct').textContent = pct + ' %';
+      document.getElementById('profil-jauge-bar').style.width = pct + '%';
+      // NIN block
+      if (!u.nin && !u.nin_declare) {
+        document.getElementById('profil-nin-block').style.display = '';
+        document.getElementById('profil-nin-done').style.display = 'none';
+      } else {
+        document.getElementById('profil-nin-block').style.display = 'none';
+        document.getElementById('profil-nin-done').style.display = '';
+      }
+      // Quota info
+      try {
+        var q = await safeFetchJSON('/api/auth/quota', {}, true);
+        var qInfo = document.getElementById('profil-quota-info');
+        var periodeLabel = q.periode === 'jour' ? t('quota.par_jour') : t('quota.par_mois');
+        qInfo.textContent = q.restants + ' ' + t('quota.restants') + ' (' + q.limite + ' ' + periodeLabel + ')';
+      } catch(e) { console.warn('[profil] échec chargement quota:', e.message); }
+    } else if (kycBlock) { kycBlock.style.display = 'none'; }
     // Prefs
     var prefMap = {'profil-pref-push':'notifications_push','profil-pref-sms':'notifications_sms','profil-pref-email':'notifications_email'};
     for (var pid in prefMap) {
@@ -9766,9 +10025,11 @@ async function saveProfileInfo(e) {
   e.preventDefault();
   hideError('profil-edit-error');
   try {
+    var qSel = document.getElementById('profil-quartier-select');
+    var qVal = qSel ? qSel.value : '';
     var body = {
       adresse: document.getElementById('profil-adresse').value.trim() || undefined,
-      quartier: document.getElementById('profil-quartier').value.trim() || undefined,
+      quartier_id: qVal ? parseInt(qVal) : null,
     };
     await apiFetch('/api/auth/preferences', {
       method: 'PATCH',
@@ -9778,6 +10039,56 @@ async function saveProfileInfo(e) {
     showSuccess('profil-edit-success', currentLang==='ar'?'تم تحديث الملف الشخصي.':'Profil mis à jour.');
     setTimeout(function() { initProfil(); }, 500);
   } catch(e) { showError('profil-edit-error', e.message); }
+}
+
+// Charger les quartiers pour le profil (filtrés par commune)
+async function profilLoadQuartiers(communeId, selectedId) {
+  var sel = document.getElementById('profil-quartier-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">' + t('profil.aucun_quartier') + '</option>';
+  if (!communeId) return;
+  try {
+    var qs = await safeFetchJSON('/api/quartiers/public/communes/' + communeId, {}, true);
+    qs.forEach(function(q) {
+      var opt = document.createElement('option');
+      opt.value = q.id;
+      opt.textContent = currentLang === 'ar' && q.nom_ar ? q.nom_ar : q.nom;
+      sel.appendChild(opt);
+    });
+    if (selectedId) sel.value = selectedId;
+  } catch(e) { console.warn('[profil] échec chargement quartiers:', e.message); }
+}
+
+// Déclarer son NIN
+async function declarerNIN() {
+  var input = document.getElementById('profil-nin-input');
+  var errDiv = document.getElementById('profil-nin-error');
+  var nin = (input.value || '').trim();
+  errDiv.style.display = 'none';
+  if (!/^\d{18}$/.test(nin)) {
+    errDiv.textContent = t('kyc.nin_format_erreur');
+    errDiv.style.display = '';
+    return;
+  }
+  try {
+    var res = await apiFetch('/api/auth/nin', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nin: nin })
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      errDiv.textContent = currentLang === 'ar' ? (data.erreur_ar || data.erreur) : data.erreur;
+      errDiv.style.display = '';
+      return;
+    }
+    showToast(t('kyc.nin_succes'));
+    if (currentUser) { currentUser.nin = nin; currentUser.niveau_compte = 2; }
+    initProfil();
+  } catch(e) {
+    errDiv.textContent = e.message;
+    errDiv.style.display = '';
+  }
 }
 
 async function changePassword(e) {
@@ -9808,7 +10119,7 @@ async function initParametres() {
     var u = await safeFetchJSON('/api/auth/me', {}, true);
     var map = {'param-push':'notifications_push','param-sms':'notifications_sms','param-email':'notifications_email','param-geo':'consentement_geo','param-wilaya':'consentement_wilaya'};
     for (var id in map) { var el = document.getElementById(id); if (el) el.checked = !!u[map[id]]; }
-  } catch(e) {}
+  } catch(e) { console.warn('[profil] échec chargement paramètres:', e.message); }
 }
 async function changePasswordParam(e) {
   e.preventDefault();
@@ -10041,7 +10352,7 @@ function mccTransition(id, statut) {
   apiFetch('/api/ccoe/chantiers/' + id + '/statut', {
     method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ statut: statut })
-  }).then(function() { showToast('Statut → ' + statut, 'success'); mccShowDetail(id); })
+  }).then(function() { showToast(t('ccoe.statut_maj') + ' → ' + statut, 'success'); mccShowDetail(id); })
     .catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
@@ -10404,7 +10715,7 @@ function apInitNotesTabs() {
   safeFetchJSON('/api/notes-proprete/count', { headers: authHeaders() }).then(function(d) {
     var b = document.getElementById('ap-notes-badge');
     if (b && d.unread > 0) { b.textContent = d.unread; b.style.display = ''; }
-  }).catch(function() {});
+  }).catch(function(e) { console.warn('[admin] échec chargement badge notes propreté:', e.message); });
 }
 
 function apExtraTab(tab) {
@@ -10552,13 +10863,13 @@ function ccoeInitDrawMap(evt) {
       try {
         var itin = typeof evt.itineraire_geojson === 'string' ? JSON.parse(evt.itineraire_geojson) : evt.itineraire_geojson;
         L.geoJSON(itin, { style: { color: '#DC2626', weight: 4 } }).eachLayer(function(l) { _ccoeDrawnItems.addLayer(l); });
-      } catch(e) {}
+      } catch(e) { console.warn('[ccoe] échec parse itinéraire GeoJSON:', e.message); }
     }
     if (evt.zones_geojson) {
       try {
         var zones = typeof evt.zones_geojson === 'string' ? JSON.parse(evt.zones_geojson) : evt.zones_geojson;
         L.geoJSON(zones, { style: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } }).eachLayer(function(l) { _ccoeDrawnItems.addLayer(l); });
-      } catch(e) {}
+      } catch(e) { console.warn('[ccoe] échec parse zones GeoJSON:', e.message); }
     }
     if (_ccoeDrawnItems.getLayers().length) {
       _ccoeDrawMap.fitBounds(_ccoeDrawnItems.getBounds(), { padding: [20, 20] });
@@ -10596,7 +10907,7 @@ function ccoeInitDrawMap(evt) {
 function ccoeDrawStart(type) {
   if (!_ccoeDrawMap || !_ccoeDrawnItems) return;
   if (typeof L.Draw === 'undefined') {
-    showToast('Outil de tracé non disponible', 'error');
+    showToast(t('ccoe.trace_indisponible'), 'error');
     return;
   }
   if (_ccoeDrawHandler) { _ccoeDrawHandler.disable(); _ccoeDrawHandler = null; }
@@ -10651,10 +10962,10 @@ function ccoeSaveEvt(e, id) {
   };
   if (typeVal === 'autre') {
     var label = document.getElementById('ccoe-evt-type-label').value;
-    if (!label) { showToast('Intitulé du type requis pour « Autre »', 'error'); return; }
+    if (!label) { showToast(t('ccoe.intitule_requis'), 'error'); return; }
     body.type_label = label;
     var checked = Array.from(document.querySelectorAll('input[name="ccoe-axe"]:checked')).map(function(c) { return c.value; });
-    if (!checked.length) { showToast('Au moins un axe requis', 'error'); return; }
+    if (!checked.length) { showToast(t('ccoe.axe_requis'), 'error'); return; }
     body._axes = checked;
   }
   var method = id ? 'PUT' : 'POST';
@@ -10774,23 +11085,8 @@ function ccoeSaveOpord(e, evtId) {
       intention_commandement: document.getElementById('ccoe-opord-intention').value || null,
       organisation: document.getElementById('ccoe-opord-org').value || null
     })
-  }).then(function() { showToast('OPORD créé', 'success'); ccoeShowEvtDetail(evtId); })
+  }).then(function() { showToast(t('ccoe.opord_cree'), 'success'); ccoeShowEvtDetail(evtId); })
     .catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
-}
-
-function ccoeGenererChantiers(opordId) {
-  safeFetchJSON('/api/ccoe/gabarits', null, true).then(function(gabarits) {
-    if (!gabarits.length) return showToast('Aucun gabarit disponible', 'error');
-    var g = gabarits[0];
-    if (!confirm('Générer les chantiers depuis le gabarit "' + g.nom + '" (' + g.nb_axes + ' axes) ?')) return;
-    safeFetchJSON('/api/ccoe/opord/' + opordId + '/generer', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ gabarit_id: g.id })
-    }, true).then(function(chantiers) {
-      showToast(chantiers.length + ' chantiers générés', 'success');
-      ccoeTab('chantiers');
-    }).catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
-  });
 }
 
 // ── Parcours guidé : génération complète en un geste ──
@@ -10800,7 +11096,7 @@ function ccoeGenererComplet(evtId) {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ intention: intention || null })
   }, true).then(function(data) {
-    showToast((data.chantiers?.length || 0) + ' chantiers générés — OPORD créé', 'success');
+    showToast((data.chantiers?.length || 0) + ' ' + t('ccoe.chantiers_generes'), 'success');
     ccoeShowEvtDetail(evtId);
   }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
@@ -10808,7 +11104,7 @@ function ccoeGenererComplet(evtId) {
 // ── Transmission aux services ──
 function ccoeTransmettre(evtId) {
   safeFetchJSON('/api/ccoe/evenements/' + evtId + '/recap-transmission', null, true).then(function(chantiers) {
-    if (!chantiers.length) { showToast('Aucun chantier', 'info'); return; }
+    if (!chantiers.length) { showToast(t('ccoe.aucun_chantier'), 'info'); return; }
     var nonTransmis = chantiers.filter(function(c) { return !c.transmis_le; });
     var dejaTransmis = chantiers.filter(function(c) { return !!c.transmis_le; });
 
@@ -10880,7 +11176,7 @@ function ccoeTransmitSelection(evtId) {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ chantier_ids: ids })
   }, true).then(function(data) {
-    showToast(data.transmis + ' chantier(s) transmis', 'success');
+    showToast(data.transmis + ' ' + t('ccoe.chantiers_transmis'), 'success');
     ccoeShowEvtDetail(evtId);
   }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
@@ -10903,7 +11199,7 @@ function ccoeDoRelancer(evtId) {
   safeFetchJSON('/api/ccoe/evenements/' + evtId + '/relancer', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
   }, true).then(function(data) {
-    showToast(data.relances + ' relance(s) envoyée(s)', 'success');
+    showToast(data.relances + ' ' + t('ccoe.relances_envoyees'), 'success');
   }).catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
@@ -10911,7 +11207,7 @@ function ccoeTransmettreChantier(chantierId, evtId) {
   safeFetchJSON('/api/ccoe/chantiers/' + chantierId + '/transmettre', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
   }, true).then(function() {
-    showToast('Chantier transmis', 'success');
+    showToast(t('ccoe.chantier_transmis'), 'success');
     if (evtId) ccoeShowEvtDetail(evtId);
     else ccoeShowChantierDetail(chantierId);
   }).catch(function(err) { showToast(err.message || err, 'error'); });
@@ -11038,7 +11334,7 @@ function ccoeTransitionChantier(id, statut) {
   apiFetch('/api/ccoe/chantiers/' + id + '/statut', {
     method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ statut: statut })
-  }).then(function() { showToast('Statut → ' + statut, 'success'); ccoeShowChantierDetail(id); })
+  }).then(function() { showToast(t('ccoe.statut_maj') + ' → ' + statut, 'success'); ccoeShowChantierDetail(id); })
     .catch(function(err) { showToast('Erreur: ' + (err.message || err), 'error'); });
 }
 
@@ -11080,10 +11376,10 @@ function ccoeLoadCarte(container) {
     // Event itineraires + zones
     evenements.forEach(function(evt) {
       if (evt.itineraire_geojson) {
-        try { L.geoJSON(evt.itineraire_geojson, { style: { color: '#DC2626', weight: 4, opacity: 0.8 } }).addTo(_ccoeMap).bindPopup('Itinéraire — ' + escHtml(evt.titre)); } catch(e) {}
+        try { L.geoJSON(evt.itineraire_geojson, { style: { color: '#DC2626', weight: 4, opacity: 0.8 } }).addTo(_ccoeMap).bindPopup('Itinéraire — ' + escHtml(evt.titre)); } catch(e) { console.warn('[ccoe] échec affichage itinéraire carte:', e.message); }
       }
       if (evt.zones_geojson) {
-        try { L.geoJSON(evt.zones_geojson, { style: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } }).addTo(_ccoeMap).bindPopup('Zone — ' + escHtml(evt.titre)); } catch(e) {}
+        try { L.geoJSON(evt.zones_geojson, { style: { color: '#3B82F6', weight: 2, fillOpacity: 0.15 } }).addTo(_ccoeMap).bindPopup('Zone — ' + escHtml(evt.titre)); } catch(e) { console.warn('[ccoe] échec affichage zone carte:', e.message); }
       }
     });
     var allPts = points.filter(function(p) { return p.lat && p.lng; });
@@ -11214,14 +11510,14 @@ function ccoeAnnuaireSave(e, id) {
   var method = id ? 'PUT' : 'POST';
   var url = id ? '/api/ccoe/annuaire/' + id : '/api/ccoe/annuaire';
   apiFetch(url, { method: method, body: JSON.stringify(body), headers: {'Content-Type':'application/json'} })
-    .then(function() { showToast(id ? 'Contact modifié' : 'Contact ajouté', 'success'); ccoeTab('annuaire'); })
+    .then(function() { showToast(id ? t('ccoe.contact_modifie') : t('ccoe.contact_ajoute'), 'success'); ccoeTab('annuaire'); })
     .catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
 function ccoeAnnuaireDel(id) {
   if (!confirm('Supprimer ce contact ?')) return;
   apiFetch('/api/ccoe/annuaire/' + id, { method: 'DELETE' })
-    .then(function() { showToast('Contact supprimé', 'success'); ccoeTab('annuaire'); })
+    .then(function() { showToast(t('ccoe.contact_supprime'), 'success'); ccoeTab('annuaire'); })
     .catch(function(err) { showToast(err.message || err, 'error'); });
 }
 
@@ -11255,12 +11551,12 @@ function ccoeShowContact(chantierId) {
 function ccoeSendMessage(chantierId) {
   var type_message = document.getElementById('ccoe-msg-type').value;
   var message = document.getElementById('ccoe-msg-body').value;
-  if (!message) { showToast('Message requis', 'error'); return; }
+  if (!message) { showToast(t('ccoe.message_requis'), 'error'); return; }
   apiFetch('/api/ccoe/chantiers/' + chantierId + '/message', {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ type_message: type_message, message: message })
   }).then(function() {
-    showToast('Message envoyé', 'success');
+    showToast(t('ccoe.message_envoye'), 'success');
     var modal = document.querySelector('div[style*="fixed"][style*="z-index:9999"]');
     if (modal) modal.remove();
     // Refresh detail if visible
@@ -11399,10 +11695,10 @@ function cockpitDrill(type, id, label) {
   // Toggle : si même filtre, on le retire
   if (_cockpitFilter.type === type && _cockpitFilter.id === id && _cockpitFilter.label === label) {
     _cockpitFilter = { type: null, id: null, label: null };
-    showToast(currentLang === 'ar' ? 'تمت إزالة الفلتر' : 'Filtre retiré', 'info');
+    showToast(t('sup.filtre_retire'), 'info');
   } else {
     _cockpitFilter = { type: type, id: id, label: label };
-    showToast(currentLang === 'ar' ? 'فلتر : ' + label : 'Filtre : ' + label, 'info');
+    showToast(t('sup.filtre_applique') + ' : ' + label, 'info');
   }
   // Recharger le cockpit avec le filtre
   cockpitLoad();
@@ -11415,19 +11711,6 @@ function cockpitGetFilterParams() {
   if (f.type === 'organisation') return '&organisation_id=' + f.id;
   if (f.type === 'domaine') return '&domaine=' + encodeURIComponent(f.label);
   return '';
-}
-
-function cockpitHighlightActive() {
-  var f = _cockpitFilter;
-  ['cockpit-communes','cockpit-organisations','cockpit-domaines'].forEach(function(containerId) {
-    var el = document.getElementById(containerId);
-    if (!el) return;
-    el.querySelectorAll('[data-filter-type]').forEach(function(item) {
-      var isActive = f.type === item.dataset.filterType && String(f.id) === String(item.dataset.filterId) && f.label === item.dataset.filterLabel;
-      item.style.background = isActive ? 'var(--blue-light)' : 'transparent';
-      item.style.borderLeft = isActive ? '3px solid var(--blue)' : 'none';
-    });
-  });
 }
 
 // ═══ DRAWER SUPERVISEUR ═══
@@ -11452,7 +11735,7 @@ async function supOpenDrawer(id) {
     var s = await res.json();
     // Si l'API retourne un tableau, prendre le premier
     if (Array.isArray(s)) s = s.find(function(x) { return x.id === id; }) || s[0];
-    if (!s) { showToast(currentLang === 'ar' ? 'الملف غير موجود' : 'Dossier introuvable', 'error'); supCloseDrawer(); return; }
+    if (!s) { showToast(t('sup.dossier_introuvable'), 'error'); supCloseDrawer(); return; }
 
     titleEl.textContent = s.reference || (currentLang === 'ar' ? 'ملف الإشارة' : 'Fiche signalement');
     var isAr = currentLang === 'ar';
@@ -11571,7 +11854,7 @@ async function supOpenDrawer(id) {
           tlEl.innerHTML = '<div style="color:var(--muted);font-size:11px;">' + (isAr ? 'لا يوجد سجل' : 'Aucun historique') + '</div>';
         }
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[supervision] échec chargement historique drawer:', e.message); }
 
     // Load CAP reports
     try {
@@ -11599,7 +11882,7 @@ async function supOpenDrawer(id) {
             }).join('');
         }
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[supervision] échec chargement rapports CAP drawer:', e.message); }
 
   } catch(e) {
     content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">' + escHtml(e.message) + '</div>';
@@ -11618,7 +11901,7 @@ function supValiderCR() {
         body: JSON.stringify({ commentaire: (commentaire||'').trim() })
       });
       if (res.ok) {
-        showToast(currentLang === 'ar' ? 'تمت المصادقة — الملف محلول' : 'Compte-rendu validé — dossier résolu.');
+        showToast(t('sup.cr_valide_resolu'));
         supCloseDrawer();
         cockpitLoad();
       } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
@@ -11629,14 +11912,14 @@ function supValiderCR() {
 function supDemanderReprise() {
   if (!_supCurrentId) return;
   showPromptModal(t('sup.demander_reprise'), '', async function(motif) {
-    if (!motif || !motif.trim()) { showToast(currentLang === 'ar' ? 'السبب مطلوب' : 'Le motif est obligatoire.', 'error'); return; }
+    if (!motif || !motif.trim()) { showToast(t('sup.motif_obligatoire'), 'error'); return; }
     try {
       var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/reprise', {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ motif: motif.trim() })
       });
       if (res.ok) {
-        showToast(currentLang === 'ar' ? 'طلب إعادة — الملف أعيد للمصلحة' : 'Reprise demandée — dossier retourné au service.');
+        showToast(t('sup.reprise_demandee'));
         supCloseDrawer();
         cockpitLoad();
       } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
@@ -11664,12 +11947,6 @@ function supCommentaire(type, title, successMsg) {
   }, { textarea: true });
 }
 
-function supCommuniquer() {
-  supCommentaire('communique',
-    currentLang === 'ar' ? 'إعداد بلاغ' : 'Communiquer sur ce dossier',
-    currentLang === 'ar' ? 'تم إرسال البلاغ' : 'Communication envoyée.');
-}
-
 function supNotifier() {
   supCommentaire('notification',
     currentLang === 'ar' ? 'إرسال إشعار' : 'Notifier les parties prenantes',
@@ -11688,14 +11965,14 @@ function supClasserSansSuite() {
   var title = isAr ? 'حفظ بدون متابعة — السبب مطلوب' : 'Classer sans suite — motif obligatoire';
   var placeholder = isAr ? 'غير مؤسس، مكرر، خارج الاختصاص...' : 'Non fondé, doublon, hors compétence...';
   showPromptModal(title, placeholder, async function(motif) {
-    if (!motif || !motif.trim()) { showToast(isAr ? 'السبب مطلوب' : 'Le motif est obligatoire.', 'error'); return; }
+    if (!motif || !motif.trim()) { showToast(t('sup.motif_obligatoire'), 'error'); return; }
     try {
       var res = await apiFetch('/api/signaler/board/' + _supCurrentId + '/etat', {
         method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ etat: 'rejete', motifRejet: motif.trim(), commentaire: motif.trim() })
       });
       if (res.ok) {
-        showToast(isAr ? 'تم حفظ الملف بدون متابعة' : 'Dossier classé sans suite.');
+        showToast(t('sup.classe_sans_suite'));
         supCloseDrawer();
         cockpitLoad();
       } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
@@ -11713,7 +11990,7 @@ function supUrgenceWali() {
         body: JSON.stringify({ commentaire: msg.trim(), type: 'urgence_wali' })
       });
       if (res.ok) {
-        showToast(currentLang === 'ar' ? 'تم إشعار الوالي' : 'Urgence signalée au Wali.');
+        showToast(t('sup.urgence_wali'));
         supOpenDrawer(_supCurrentId);
       } else {
         var err = await res.json();
@@ -11767,14 +12044,14 @@ function supDemanderExplication(sigId) {
 async function supEnvoyerExplication(sigId) {
   var msg = document.getElementById('expl-message');
   var delai = document.getElementById('expl-delai');
-  if (!msg || !msg.value.trim()) { showToast(currentLang === 'ar' ? 'الرسالة مطلوبة' : 'Le message est requis.', 'error'); return; }
+  if (!msg || !msg.value.trim()) { showToast(t('sup.message_requis'), 'error'); return; }
   try {
     var res = await apiFetch('/api/supervision/demandes-explication', {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ signalement_id: sigId, message: msg.value.trim(), delai_heures: Number(delai.value) })
     });
     if (res.ok) {
-      showToast(currentLang === 'ar' ? 'تم إرسال طلب التوضيح' : 'Demande d\'explication envoyée.');
+      showToast(t('sup.explication_envoyee'));
       document.getElementById('expl-modal').classList.add('hidden');
       if (_supCurrentId === sigId) supOpenDrawer(sigId); // refresh drawer
     } else {
@@ -12105,7 +12382,7 @@ async function capPerfLoad() {
     if (!res.ok) return;
     var data = await res.json();
     capPerfRender(data.agents);
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement performance CAP:', e.message); }
 }
 
 function capPerfRender(agents) {
@@ -12176,7 +12453,7 @@ async function alertesLoad() {
     if (section) section.style.display = _alertesData.length ? '' : 'none';
     if (countEl) countEl.textContent = _alertesData.length + ' alerte(s)';
     alertesRender();
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement alertes stratégiques:', e.message); }
 }
 
 function alertesRender() {
@@ -12279,7 +12556,7 @@ function initRapports() {
         opt.textContent = (currentLang==='ar' && o.nom_ar) ? o.nom_ar : o.nom;
         orgSel.appendChild(opt);
       });
-    }).catch(function(){});
+    }).catch(function(e){ console.warn('[rapports] échec chargement organisations:', e.message); });
   }
 
   // Toggle custom dates
@@ -12350,7 +12627,7 @@ async function genererRapport(opts) {
         var link = document.getElementById('rap-download-link');
         if (link) { link.href = data.url; link.textContent = isAr ? 'تحميل' : 'Télécharger'; }
       }
-      showToast(isAr ? 'التقرير جاهز للتحميل' : 'Rapport prêt au téléchargement.');
+      showToast(t('rapport.pret_telechargement'));
     } else {
       showToast(data.erreur || 'Erreur', 'error');
       if (statusEl) statusEl.textContent = '';
@@ -12387,14 +12664,14 @@ async function genererRapportExecutif() {
         if (link) { link.href = data.url; link.textContent = isAr ? 'تحميل' : 'Télécharger'; }
       }
       loadMesRapports();
-      showToast(isAr ? 'التقرير التنفيذي جاهز' : 'Rapport exécutif prêt.');
+      showToast(t('rapport.executif_pret'));
     } else { showToast(data.erreur || data.message || 'Erreur', 'error'); if (statusEl) statusEl.textContent = ''; }
   } catch(e) { showToast(e.message, 'error'); if (statusEl) statusEl.textContent = ''; }
 }
 
 async function genererRapportDossier(sigId) {
   var isAr = currentLang === 'ar';
-  showToast(isAr ? 'جاري إنشاء تقرير الملف...' : 'Génération du rapport dossier...', 'info');
+  showToast(t('rapport.generation_dossier'), 'info');
   try {
     var res = await apiFetch('/api/rapports/dossier/' + sigId, {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
@@ -12403,17 +12680,9 @@ async function genererRapportDossier(sigId) {
     var data = await res.json();
     if (data.ok && data.url) {
       window.open(data.url, '_blank');
-      showToast(isAr ? 'تقرير الملف جاهز' : 'Rapport dossier prêt.');
+      showToast(t('rapport.dossier_pret'));
     } else { showToast(data.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
-}
-
-async function genererRapportOrg(orgId) {
-  showView('rapports');
-  setTimeout(function() {
-    var sel = document.getElementById('rap-organisation');
-    if (sel) sel.value = orgId;
-  }, 500);
 }
 
 // ═══ ANNUAIRE ═══
@@ -12572,7 +12841,7 @@ function annuaireShowModal(editId) {
   safeFetchJSON('/api/admin/organisations', {}, true).then(function(orgs) {
     var orgSel = document.getElementById('ann-org');
     (Array.isArray(orgs) ? orgs : []).forEach(function(o) { var opt = document.createElement('option'); opt.value = o.id; opt.textContent = o.nom; orgSel.appendChild(opt); });
-  }).catch(function(){});
+  }).catch(function(e){ console.warn('[supervision] échec chargement organisations annuaire:', e.message); });
 
   // If editing, pre-fill
   if (editId) {
@@ -12587,7 +12856,7 @@ function annuaireShowModal(editId) {
         document.getElementById('ann-email').value = u.email || '';
         setTimeout(function() { document.getElementById('ann-org').value = u.organisation_id || ''; }, 500);
       }
-    }).catch(function(){});
+    }).catch(function(e){ console.warn('[supervision] échec chargement fiche annuaire:', e.message); });
   }
 }
 
@@ -12602,7 +12871,7 @@ async function annuaireSave(editId) {
     email: document.getElementById('ann-email').value.trim(),
     organisation_id: document.getElementById('ann-org').value || null,
   };
-  if (!body.prenom || !body.nom) { showToast(isAr ? 'الاسم واللقب مطلوبان' : 'Prénom et nom requis.', 'error'); return; }
+  if (!body.prenom || !body.nom) { showToast(t('admin.prenom_nom_requis'), 'error'); return; }
 
   try {
     var res;
@@ -12626,7 +12895,7 @@ async function annuaireSave(editId) {
         showToast((isAr ? 'كلمة المرور المؤقتة : ' : 'Mot de passe provisoire : ') + data.mot_de_passe_provisoire, 'info');
         alert((isAr ? 'كلمة المرور المؤقتة : ' : 'Mot de passe provisoire : ') + data.mot_de_passe_provisoire);
       } else {
-        showToast(isAr ? 'تم الحفظ' : 'Enregistré.');
+        showToast(t('admin.enregistre'));
       }
       annuaireLoad();
     } else {
@@ -12649,7 +12918,7 @@ async function annuaireAction(uid, action) {
     });
     var data = await res.json();
     if (data.ok) {
-      showToast(isAr ? 'تم' : 'Fait.');
+      showToast(t('admin.fait'));
       annuaireLoad();
     } else {
       showToast(data.erreur || 'Erreur', 'error');
@@ -12861,13 +13130,14 @@ async function execLoad() {
 
   // ── KPIs ──
   var ouv = 0, resolus = 0, eng = 0, acrit = 0;
+  var _sdcLoadError = false;
   try {
     var kpis = await safeFetchJSON('/api/supervision/kpis' + qs, {}, true);
     ouv = kpis.ouverts || 0;
     resolus = kpis.resolus_aujourdhui || 0;
     eng = kpis.engagement_pct || 0;
     acrit = kpis.alertes_critiques || 0;
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement KPIs:', e.message); _sdcLoadError = true; }
 
   // 4 compteurs
   var kpiEl = document.getElementById('exec-kpis');
@@ -12884,9 +13154,14 @@ async function execLoad() {
       kpiCard(acrit, isAr ? 'تنبيهات' : 'Alertes', acrit > 0 ? '#EF4444' : '#16a34a');
   }
 
+  // Indicateur d'erreur SdC
+  if (_sdcLoadError && kpiEl) {
+    kpiEl.innerHTML = '<div style="grid-column:1/-1;padding:16px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;text-align:center;font-size:13px;color:#991b1b;">' + t('global.erreur_chargement_donnees') + '</div>';
+  }
+
   // ICUA gauge
   var icuaScore = 0;
-  try { var icuaData = await safeFetchJSON('/api/dashboard/icua', {}, true); icuaScore = Math.round(icuaData.icua || 0); } catch(e) {}
+  try { var icuaData = await safeFetchJSON('/api/dashboard/icua', {}, true); icuaScore = Math.round(icuaData.icua || 0); } catch(e) { console.warn('[sdc] échec chargement ICUA:', e.message); _sdcLoadError = true; }
   var icuaColor = icuaScore >= 75 ? '#16a34a' : icuaScore >= 50 ? '#f97316' : '#EF4444';
   var icuaLabel = icuaScore >= 75 ? (isAr ? 'مدينة مدنية' : 'Ville civique') : icuaScore >= 50 ? (isAr ? 'تحت المراقبة' : 'À surveiller') : (isAr ? 'أولوية' : 'Prioritaire');
   var arcEl = document.getElementById('exec-icua-arc');
@@ -12916,7 +13191,7 @@ async function execLoad() {
           id: a.signalement_id || a.id, bg: '#F5F3FF', border: '#8b5cf6' });
       });
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement alertes:', e.message); }
 
   // Services défaillants — avec filtre commune
   var servicesData = [];
@@ -12935,7 +13210,7 @@ async function execLoad() {
       }).join('');
       sEl.innerHTML = sHtml || '<div style="padding:12px;font-size:12px;color:var(--muted);">' + (isAr ? 'جميع المصالح منتظمة' : 'Tous les services sont conformes.') + '</div>';
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement services:', e.message); }
 
   // Demandes d'explication expirées — avec filtre commune
   try {
@@ -12947,7 +13222,7 @@ async function execLoad() {
           id: d.signalement_id, bg: '#fef3c7', border: '#eab308' });
       });
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement demandes explication:', e.message); }
 
   cards = cards.filter(function(c) { return c.id; }).slice(0,5); // Anti-orphan: no card without valid dossier ID
 
@@ -13038,7 +13313,7 @@ async function execLoad() {
         return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(label) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + d.total + '</span></div>';
       }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement répartitions:', e.message); }
 
   // ── SECTION 2 : Communes table ──
   try {
@@ -13050,14 +13325,14 @@ async function execLoad() {
         var slaClass = (c.engagement_pct||0) >= 80 ? 'ops-sla-ok' : (c.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
         return '<tr><td style="font-weight:600;">' + escHtml(c.commune||'') + '</td><td>' + (c.ouverts||0) + '</td><td>' + (c.delai_moyen||'—') + 'h</td><td><span class="ops-sla ' + slaClass + '">' + (c.engagement_pct||0) + '%</span></td></tr>';
       }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);">—</td></tr>';
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement communes:', e.message); }
 
   // ── SECTION 3 : Performance des organisations ──
   try {
     var orgPerfRes = await safeFetchJSON('/api/supervision/organisations-performance?periode=30j' + qsAmp, {}, true);
     window._sdcOrgPerfData = orgPerfRes.organisations || [];
     sdcOrgPerfRender();
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement performance organisations:', e.message); }
 
   // ── SECTION 4 : Performance CAP ──
   try {
@@ -13086,7 +13361,7 @@ async function execLoad() {
         capCards.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">' + (isAr ? 'لا يوجد نشاط CAP' : 'Aucun agent CAP actif.') + '</div>';
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement performance CAP:', e.message); }
 
   // ── SECTION 4B : Les 3 EPIC en un coup d'œil ──
   try {
@@ -13115,8 +13390,8 @@ async function execLoad() {
       var voirieKpis = sigEpicKpis('Voirie');
       // Parkings
       var pkStats = await safeFetchJSON('/api/civipark/encaissements/stats', {}, true).catch(function(){ return {}; });
-      var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).filter(function(c){return c.statut==='active';}).length; } catch(e){}
-      var pkClotures = 0; try { var cls = await safeFetchJSON('/api/civipark/clotures', {headers: authHeaders()}, true); var lastCl = (cls||[]).find(function(c){return c.ecart!=0;}); pkClotures = lastCl ? lastCl.ecart : 0; } catch(e){}
+      var pkCartes = 0; try { var crs = await safeFetchJSON('/api/civipark/cartes', {headers: authHeaders()}, true); pkCartes = (crs||[]).filter(function(c){return c.statut==='active';}).length; } catch(e){ console.warn('[sdc] échec chargement cartes CiviPark:', e.message); }
+      var pkClotures = 0; try { var cls = await safeFetchJSON('/api/civipark/clotures', {headers: authHeaders()}, true); var lastCl = (cls||[]).find(function(c){return c.ecart!=0;}); pkClotures = lastCl ? lastCl.ecart : 0; } catch(e){ console.warn('[sdc] échec chargement clôtures CiviPark:', e.message); }
       var pkKpis = [
         ekpi(pkStats.total_encaissements || 0, isAr ? 'تحصيلات' : 'Encaissements', '#2563eb'),
         ekpi(pkCartes, isAr ? 'بطاقات' : 'Cartes actives', '#16a34a'),
@@ -13174,7 +13449,7 @@ async function execLoad() {
         options: { scales: { r: { min: 0, max: 100, ticks: { stepSize: 25 } } }, plugins: { legend: { display: false } } }
       });
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement radar ICUA:', e.message); }
   // Synthèse signalements
   try {
     var synthese = await safeFetchJSON('/api/dashboard/synthese', {}, true);
@@ -13195,7 +13470,7 @@ async function execLoad() {
       }
       synEl.innerHTML = synHtml || '<div style="color:var(--muted);font-size:11px;">' + (isAr ? 'لا توجد بيانات' : 'Aucune donnée') + '</div>';
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement synthèse:', e.message); }
 
   // ── SECTION 6 : Activité récente (journal lisible) ──
   try {
@@ -13228,7 +13503,7 @@ async function execLoad() {
           '<div style="font-size:10px;color:var(--muted);white-space:nowrap;margin-left:8px;">' + time + '</div></div>';
       }).join('') : '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">' + (isAr ? 'لا يوجد نشاط حديث' : 'Aucune activité récente.') + '</div>';
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement activité récente:', e.message); }
 
   // ── Carte ──
   try {
@@ -13252,7 +13527,7 @@ async function execLoad() {
         execMap.setView([36.7538, 3.0588], 11);
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[sdc] échec chargement carte:', e.message); }
 }
 
 async function adminTab(tab) {
@@ -13322,8 +13597,8 @@ async function adminTab(tab) {
         safeFetchJSON("/api/admin/organisations", {}, true).then(function(orgs) {
           var sel = document.getElementById("adm-u-org");
           if (sel && orgs) orgs.forEach(function(o) { var opt = document.createElement("option"); opt.value = o.id; opt.textContent = (currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom) + ' (' + o.type + ')'; sel.appendChild(opt); });
-        }).catch(function(){});
-      } catch(e) {}
+        }).catch(function(e){ console.warn('[admin] échec chargement organisations select:', e.message); });
+      } catch(e) { console.warn('[admin] échec init chargement organisations:', e.message); }
     } else if (tab === 'communes') {
       el.innerHTML = '<div style="overflow-x:auto;"><table class="ops-table"><thead><tr><th>Nom</th><th>Nom AR</th><th>Circonscription</th><th>Actif</th><th>Actions</th></tr></thead><tbody>' +
         data.map(function(c) {
@@ -13410,7 +13685,7 @@ async function adminUpdateConfig(cle, valeur) {
       method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ valeur: valeur })
     });
-    showToast('Configuration mise à jour.');
+    showToast(t('admin.config_maj'));
   } catch(e) { showToast(e.message, 'error'); }
 }
 
@@ -13423,7 +13698,7 @@ async function adminCreateUser() {
   var niveau = document.getElementById('adm-u-niveau').value;
   var orgId = document.getElementById('adm-u-org').value;
   var caps = document.getElementById('adm-u-caps').value.trim();
-  if (!tel || !mdp) { showToast('Téléphone et mot de passe obligatoires.', 'error'); return; }
+  if (!tel || !mdp) { showToast(t('admin.tel_mdp_requis'), 'error'); return; }
   try {
     var body = {
       telephone: tel, mot_de_passe: mdp, prenom: prenom || null, nom: nom || null,
@@ -13435,7 +13710,7 @@ async function adminCreateUser() {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (res.ok) { showToast('Compte créé.'); adminTab('utilisateurs'); }
+    if (res.ok) { showToast(t('admin.compte_cree')); adminTab('utilisateurs'); }
     else { var err = await res.json(); showToast(err.erreur || err.message || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -13449,13 +13724,13 @@ async function adminEditPrompt(tab, id, fields, values) {
     if (newVal === null) return; // annulé
     if (newVal !== values[i]) body[fields[i]] = newVal;
   }
-  if (!Object.keys(body).length) { showToast('Aucune modification.'); return; }
+  if (!Object.keys(body).length) { showToast(t('admin.aucune_modif')); return; }
   try {
     var res = await apiFetch('/api/admin/' + tab + '/' + id, {
       method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (res.ok) { showToast('Modifié.'); adminTab(tab === 'categories' ? 'categories' : tab); }
+    if (res.ok) { showToast(t('admin.modifie')); adminTab(tab === 'categories' ? 'categories' : tab); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -13484,7 +13759,7 @@ async function adminAddService() {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ sigle: sigle, nom: nom, categorie: categorie || null })
     });
-    if (res.ok) { showToast('Service créé.'); adminTab('services'); }
+    if (res.ok) { showToast(t('admin.service_cree')); adminTab('services'); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -13501,7 +13776,7 @@ async function adminEditEngagement(id, delai, vigilance, depassement) {
       method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ delai_cible_h: Number(newDelai), seuil_vigilance_pct: Number(newVig), seuil_depassement_pct: Number(newDep) })
     });
-    if (res.ok) { showToast('Engagement modifié.'); adminTab('engagements'); }
+    if (res.ok) { showToast(t('admin.engagement_modifie')); adminTab('engagements'); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -13516,7 +13791,7 @@ async function adminAddCatCap() {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ categorie: categorie, nom: nom })
     });
-    if (res.ok) { showToast('Type CAP ajouté.'); adminTab('catalogue-cap'); }
+    if (res.ok) { showToast(t('admin.type_cap_ajoute')); adminTab('catalogue-cap'); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -13614,7 +13889,7 @@ async function initSupervision() {
         var sigs = await boardRes.json();
         _boSupMap = initWorkbenchMap('bo-sup-map', Array.isArray(sigs) ? sigs : []);
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[supervision] échec chargement carte superviseur:', e.message); }
   }
 }
 
@@ -13663,7 +13938,7 @@ async function supLoad() {
       }).join('');
     }
     document.getElementById('sup-alertes').innerHTML = aHtml || '<div class="ops-empty" style="padding:16px;"><p>✅ Aucune alerte en cours</p></div>';
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement alertes:', e.message); }
 
   // Activité temps réel
   try {
@@ -13678,7 +13953,7 @@ async function supLoad() {
         '</div></div>';
       }).join('') + '</div>'
       : '<div class="ops-empty" style="padding:16px;"><p>Aucune activité récente</p></div>';
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement activité:', e.message); }
 
   // Décisions
   try {
@@ -13688,7 +13963,7 @@ async function supLoad() {
     if (kpis2.missions_cap > 0) dHtml += '<div style="padding:6px 0;font-size:13px;">🟣 <strong>' + kpis2.missions_cap + '</strong> interventions CAP en cours</div>';
     if (kpis2.ouverts > 10) dHtml += '<div onclick="showView(\'cockpit\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🟠 <strong>' + kpis2.ouverts + '</strong> signalements ouverts</div>';
     document.getElementById('sup-decisions').innerHTML = dHtml || '<div style="padding:12px;font-size:13px;color:var(--muted);">Aucune décision urgente</div>';
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement décisions:', e.message); }
 
   // Services
   try {
@@ -13703,7 +13978,7 @@ async function supLoad() {
           '<td>' + (s.en_retard || 0) + '</td></tr>';
       }).join('')
       : '<tr><td colspan="5" style="text-align:center;color:var(--muted);">Aucune donnée</td></tr>';
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement services:', e.message); }
 
   // Communes
   try {
@@ -13718,7 +13993,7 @@ async function supLoad() {
           '<td><span class="ops-sla ' + slaClass + '">' + c.engagement_pct + '%</span></td></tr>';
       }).join('')
       : '<tr><td colspan="5" style="text-align:center;color:var(--muted);">Aucune donnée</td></tr>';
-  } catch(e) {}
+  } catch(e) { console.warn('[supervision] échec chargement communes:', e.message); }
 }
 
 // ─── ODS HELPERS ────────────────────────────────────────────
@@ -13798,7 +14073,7 @@ async function initBoCap() {
     if (mission) {
       setTimeout(function() { capOpenDrawer(mission.id); }, 300);
     } else {
-      showToast('Mission introuvable.', 'error');
+      showToast(t('terrain.mission_introuvable'), 'error');
     }
   }
 }
@@ -14024,7 +14299,7 @@ async function capOpenDrawer(id) {
           }).join('') + '</div>';
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[cap] échec chargement historique drawer:', e.message); }
 }
 
 function capCloseDrawer() { document.getElementById('cap-drawer').classList.add('hidden'); _capCurrentId = null; }
@@ -14066,13 +14341,13 @@ function capTerminer() {
 
 async function capConfirmRapport() {
   var visuel = document.getElementById('cap-rapport-visuel').value.trim();
-  if (!visuel) { showToast(currentLang==='ar'?'المعاينة البصرية إلزامية.':'Le constat visuel est obligatoire.', 'error'); return; }
+  if (!visuel) { showToast(t('terrain.constat_obligatoire'), 'error'); return; }
   var temoignages = document.getElementById('cap-rapport-temoignages').value.trim();
   var decision = document.getElementById('cap-rapport-decision').value;
   var motifDecision = '';
   if (decision === 'rejeter') {
     motifDecision = (document.getElementById('cap-rapport-motif') || {}).value || '';
-    if (!motifDecision.trim()) { showToast(currentLang==='ar'?'سبب الرفض إلزامي.':'Le motif de rejet est obligatoire.', 'error'); return; }
+    if (!motifDecision.trim()) { showToast(t('terrain.motif_rejet_requis'), 'error'); return; }
   }
   var commentaire = document.getElementById('cap-rapport-comment').value.trim();
 
@@ -14220,7 +14495,7 @@ function capGeoFail(msg) {
 
 async function capSubmitConstat() {
   var visuel = document.getElementById('cap-constat-visuel').value.trim();
-  if (!visuel) { showToast(currentLang==='ar'?'المعاينة إلزامية.':'Le constat est obligatoire.', 'error'); return; }
+  if (!visuel) { showToast(t('terrain.constat_requis'), 'error'); return; }
   var fd = new FormData();
   fd.append('description', visuel);
   fd.append('famille', document.getElementById('cap-constat-categorie').value);
@@ -14358,7 +14633,7 @@ function boNewIntGeolocate() {
 
 async function boSubmitNewIntervention() {
   var desc = document.getElementById('bo-new-int-desc').value.trim();
-  if (!desc) { showToast('Description obligatoire.', 'error'); return; }
+  if (!desc) { showToast(t('terrain.desc_obligatoire'), 'error'); return; }
   // Enrichir la description avec adresse et repère
   var adresse = document.getElementById('bo-new-int-adresse').value.trim();
   var repere = document.getElementById('bo-new-int-repere').value.trim();
@@ -14393,6 +14668,129 @@ async function boSubmitNewIntervention() {
   } catch(e) { showToast(e.message, 'error'); }
 }
 
+// ── Perdu-Trouvé registre (agent) ──
+function boShowPerduTrouve() {
+  var reg = document.getElementById('bo-pt-registre');
+  if (!reg) return;
+  reg.style.display = '';
+  loadRegistrePT();
+}
+async function loadRegistrePT(statut) {
+  var el = document.getElementById('bo-pt-list');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('global.chargement') + '</div>';
+  try {
+    var url = '/api/perdu-trouve/registre' + (statut ? '?statut=' + statut : '');
+    var data = await safeFetchJSON(url, {}, true);
+    if (!data.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">' + t('global.aucun_resultat') + '</div>'; return; }
+    var statutColors = {recue:'#f59e0b',traitee:'#2563eb',cloturee:'#16a34a'};
+    var statutLabels = {recue:t('pt.statut_recue'),traitee:t('pt.statut_traitee'),cloturee:t('pt.statut_cloturee')};
+    var typeLabels = {perte:t('pt.perte'),trouve:t('pt.trouve')};
+    var natureLabels = {document_officiel:t('pt.document'),objet:t('pt.objet')};
+    el.innerHTML = data.map(function(d) {
+      var color = statutColors[d.statut] || '#666';
+      return '<div class="card" style="margin-bottom:8px;padding:12px 14px;border-left:3px solid ' + color + ';">' +
+        '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:160px;">' +
+          '<div style="font-weight:700;font-size:13px;color:var(--navy);">' + escHtml(d.reference) + ' — ' + (typeLabels[d.type]||d.type) + ' / ' + (natureLabels[d.nature]||d.nature) + '</div>' +
+          '<div style="font-size:12px;color:var(--gray-600);margin:3px 0;">' + escHtml(d.description.substring(0,120)) + '</div>' +
+          (d.lieu ? '<div style="font-size:11px;color:var(--muted);">📍 ' + escHtml(d.lieu) + '</div>' : '') +
+          '<div style="font-size:11px;color:var(--muted);">' + escHtml((d.declarant_prenom||'') + ' ' + (d.declarant_nom_u||d.declarant_nom||'')) + ' — ' + escHtml(d.declarant_tel||'') + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);">' + fmtDateTime(d.cree_le) + '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">' +
+          '<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:' + color + '20;color:' + color + ';font-weight:600;">' + (statutLabels[d.statut]||d.statut) + '</span>' +
+          (d.statut === 'recue' ? '<button class="btn btn-sm btn-outline" onclick="ptTraiter(' + d.id + ')" style="font-size:11px;">' + t('pt.traiter') + '</button>' : '') +
+          (d.statut === 'traitee' ? '<button class="btn btn-sm btn-outline" onclick="ptCloturer(' + d.id + ')" style="font-size:11px;">' + t('pt.cloturer') + '</button>' : '') +
+        '</div></div></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--red);padding:12px;">' + escHtml(e.message) + '</div>'; }
+}
+async function ptTraiter(id) {
+  try {
+    await apiFetch('/api/perdu-trouve/' + id, { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({statut:'traitee'}) });
+    showToast(t('pt.statut_traitee'));
+    loadRegistrePT();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+async function ptCloturer(id) {
+  try {
+    await apiFetch('/api/perdu-trouve/' + id, { method:'PATCH', headers:{...authHeaders(),'Content-Type':'application/json'}, body:JSON.stringify({statut:'cloturee'}) });
+    showToast(t('pt.statut_cloturee'));
+    loadRegistrePT();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+async function boLoadOrphelins() {
+  var section = document.getElementById('bo-orphelins-section');
+  if (!section) return;
+  try {
+    var orphelins = await safeFetchJSON('/api/signaler/board/orphelins', {}, true);
+    if (!orphelins.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    var badge = document.getElementById('bo-orphelins-badge');
+    if (badge) badge.textContent = orphelins.length;
+    var list = document.getElementById('bo-orphelins-list');
+    if (!list) return;
+    // Load EPICs for the dropdown
+    var epics = [];
+    try { epics = await safeFetchJSON('/api/signaler/epics', {}, true); } catch(e) { console.warn('[bo] échec chargement EPICs:', e.message); }
+    var isAr = currentLang === 'ar';
+    list.innerHTML = orphelins.map(function(s) {
+      var catLabel = isAr && s.categorie_nom_ar ? s.categorie_nom_ar : s.categorie_nom || s.domaine;
+      var communeLabel = isAr && s.commune_nom_ar ? s.commune_nom_ar : s.commune_nom || '—';
+      var date = new Date(s.cree_le).toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', {day:'numeric',month:'short'});
+      var epicOptions = epics.filter(function(e){return e.actif;}).map(function(e) {
+        return '<option value="' + e.id + '">' + escHtml(e.sigle) + ' — ' + escHtml(e.nom) + '</option>';
+      }).join('');
+      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #fde68a;" id="orphelin-row-' + s.id + '">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<span style="font-weight:700;color:#92400e;">#' + escHtml(s.reference) + '</span>' +
+          '<span style="color:#78716c;margin-left:6px;">' + escHtml(catLabel) + '</span>' +
+          '<span style="color:#a8a29e;margin-left:6px;">' + communeLabel + ' · ' + date + '</span>' +
+        '</div>' +
+        '<select id="epic-sel-' + s.id + '" style="font-size:11px;padding:4px 6px;border-radius:6px;border:1px solid #d6d3d1;max-width:200px;">' +
+          '<option value="">' + (isAr ? '— اختيار EPIC —' : '— Choisir EPIC —') + '</option>' + epicOptions +
+        '</select>' +
+        '<button onclick="boAssignerEpic(\'' + s.id + '\')" class="btn btn-sm btn-primary" style="font-size:11px;padding:4px 10px;white-space:nowrap;">' + (isAr ? 'تعيين' : 'Assigner') + '</button>' +
+      '</div>';
+    }).join('');
+  } catch(e) { console.warn('[bo] échec chargement orphelins:', e.message); section.style.display = 'none'; }
+}
+
+async function boAssignerEpic(sigId) {
+  var sel = document.getElementById('epic-sel-' + sigId);
+  if (!sel || !sel.value) { showToast(currentLang === 'ar' ? 'اختاروا EPIC أولا' : 'Choisissez un EPIC d\'abord.', 'error'); return; }
+  try {
+    var res = await apiFetch('/api/signaler/board/' + sigId + '/assigner-epic', {
+      method: 'PATCH',
+      headers: Object.assign({}, authHeaders(), {'Content-Type': 'application/json'}),
+      body: JSON.stringify({ epic_id: parseInt(sel.value) })
+    });
+    if (!res.ok) { var err = await res.json(); throw new Error(err.erreur || 'Erreur'); }
+    var data = await res.json();
+    showToast((currentLang === 'ar' ? 'تم التعيين إلى ' : 'Assigné à ') + data.epic, 'success');
+    var row = document.getElementById('orphelin-row-' + sigId);
+    if (row) row.remove();
+    // Update badge
+    var badge = document.getElementById('bo-orphelins-badge');
+    var remaining = document.querySelectorAll('[id^="orphelin-row-"]').length;
+    if (badge) badge.textContent = remaining;
+    if (remaining === 0) {
+      var section = document.getElementById('bo-orphelins-section');
+      if (section) section.style.display = 'none';
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function boLoadPTBadge() {
+  try {
+    var d = await safeFetchJSON('/api/perdu-trouve/registre/count', {}, true);
+    var badge = document.getElementById('bo-pt-badge');
+    if (badge && d.recues > 0) { badge.textContent = d.recues; badge.style.display = ''; }
+    else if (badge) { badge.style.display = 'none'; }
+  } catch(e) { console.warn('[bo] échec chargement badge perdu-trouvé:', e.message); }
+}
+
 function boShowBoard() {
   _boAgentMode = 'board';
   var wbEl = document.getElementById('bo-wb-section');
@@ -14421,7 +14819,7 @@ async function initBoAgent() {
       var ops = await safeFetchJSON('/api/referentiel/operateurs', {}, true);
       var op = ops.find(function(o) { return o.id === u.operateur_id; });
       if (op) serviceName = op.nom || '';
-    } catch(e) {}
+    } catch(e) { console.warn('[bo] échec résolution nom service:', e.message); }
   }
   var roleTitle = u.role === 'admin_wilaya' ? 'Pilotage stratégique'
     : u.role === 'admin_apc' ? 'Centre Opérationnel'
@@ -14551,6 +14949,12 @@ async function initBoAgent() {
     if (kpiUrgents) kpiUrgents.textContent = _boSignals.filter(function(s){return s.criticite==='haute'&&s.etat!=='resolu'&&s.etat!=='rejete';}).length;
   }
 
+  // Orphelins à router manuellement
+  boLoadOrphelins();
+
+  // Badge Perdu-Trouvé
+  boLoadPTBadge();
+
   // Board KPIs (duplicate IDs avoided with -b suffix)
   var kpiRecuB = document.getElementById('bo-kpi-recu-b');
   var kpiRetardB = document.getElementById('bo-kpi-retard-b');
@@ -14583,7 +14987,7 @@ async function initBoAgent() {
       if (_boSignals && _boSignals.find(function(s) { return s.id === pendingId; })) {
         boOpenDrawer(pendingId);
       } else {
-        showToast('Ce dossier n\'est plus disponible.', 'error');
+        showToast(t('bo.dossier_indisponible'), 'error');
       }
     }, 300);
   }
@@ -14762,7 +15166,7 @@ function boTimeAgo(d) {
 async function boOpenDrawer(id) {
   _boCurrentId = id;
   var s = _boSignals.find(function(x){return x.id===id;});
-  if (!s) { showToast('Dossier introuvable.', 'error'); return; }
+  if (!s) { showToast(t('bo.dossier_introuvable'), 'error'); return; }
   var content = document.getElementById('bo-drawer-content');
   var actions = document.getElementById('bo-drawer-actions');
   document.getElementById('bo-drawer-title').textContent = s.reference || 'Fiche signalement';
@@ -14992,7 +15396,7 @@ async function boOpenDrawer(id) {
           }).join('');
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[bo] échec chargement historique drawer:', e.message); }
 
   // Load CAP reports
   try {
@@ -15020,7 +15424,7 @@ async function boOpenDrawer(id) {
           }).join('');
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[bo] échec chargement rapports CAP drawer:', e.message); }
 
   // Load routing suggestion
   try {
@@ -15033,7 +15437,7 @@ async function boOpenDrawer(id) {
           '<div style="font-size:12px;padding:8px 12px;background:var(--teal-light);border-radius:10px;color:var(--teal);font-weight:600;">→ ' + escHtml(locOrg(route.service)) + '</div>';
       }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[bo] échec chargement suggestion routage:', e.message); }
 }
 
 function boCloseDrawer() { document.getElementById('bo-drawer').classList.add('hidden'); _boCurrentId = null; }
@@ -15092,8 +15496,8 @@ async function boShowTransmettreModal() {
 
   // Charger les organisations
   var orgs = [];
-  try { orgs = await safeFetchJSON('/api/admin/organisations', {}, true); } catch(e) {}
-  if (!orgs.length) try { orgs = await safeFetchJSON('/api/referentiel/operateurs', {}, true); } catch(e) {}
+  try { orgs = await safeFetchJSON('/api/admin/organisations', {}, true); } catch(e) { console.warn('[bo] échec chargement organisations:', e.message); showToast(t('global.erreur_chargement_donnees'), 'error'); }
+  if (!orgs.length) try { orgs = await safeFetchJSON('/api/referentiel/operateurs', {}, true); } catch(e) { console.warn('[bo] échec chargement opérateurs fallback:', e.message); showToast(t('global.erreur_chargement_donnees'), 'error'); }
 
   var optionsHtml = orgs.map(function(o) {
     var selected = (o.domaines && o.domaines.includes(domaine)) ? ' selected' : '';
@@ -15148,7 +15552,7 @@ function boEnvoyerMessage() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: msg.trim(), type: 'message' })
       });
-      if (res.ok) { showToast('Message envoyé au service.'); boOpenDrawer(_boCurrentId); }
+      if (res.ok) { showToast(t('bo.message_envoye_service')); boOpenDrawer(_boCurrentId); }
       else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true });
@@ -15163,7 +15567,7 @@ function boRelancerService() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: msg.trim(), type: 'relance' })
       });
-      if (res.ok) { showToast('Relance envoyée.'); boOpenDrawer(_boCurrentId); }
+      if (res.ok) { showToast(t('bo.relance_envoyee')); boOpenDrawer(_boCurrentId); }
       else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true });
@@ -15178,7 +15582,7 @@ function boCommuniquerDossier() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: msg.trim(), type: 'communique' })
       });
-      if (res.ok) { showToast('Communiqué enregistré.'); boOpenDrawer(_boCurrentId); }
+      if (res.ok) { showToast(t('bo.communique_enregistre')); boOpenDrawer(_boCurrentId); }
       else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true });
@@ -15198,7 +15602,7 @@ function boNotifierDossier() {
 async function boConfirmNotifier() {
   var dest = document.getElementById('gm-dest').value.trim();
   var msg = document.getElementById('gm-msg').value.trim();
-  if (!dest || !msg) { showToast('Remplissez les deux champs.', 'error'); return; }
+  if (!dest || !msg) { showToast(t('bo.remplir_champs'), 'error'); return; }
   document.getElementById('generic-modal').remove();
   try {
     var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/commentaire', {
@@ -15213,13 +15617,13 @@ async function boConfirmNotifier() {
 function boSignalerUrgenceWali() {
   if (!_boCurrentId) return;
   showPromptModal(t('bo.btn_urgence_wali'), '', async function(motif) {
-    if (!motif || !motif.trim()) { showToast('Le motif est obligatoire.', 'error'); return; }
+    if (!motif || !motif.trim()) { showToast(t('bo.motif_obligatoire'), 'error'); return; }
     try {
       var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/commentaire', {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: '🚨 URGENCE WALI — ' + motif.trim(), type: 'urgence_wali' })
       });
-      if (res.ok) { showToast('Urgence signalée au Wali.'); boOpenDrawer(_boCurrentId); }
+      if (res.ok) { showToast(t('bo.urgence_wali')); boOpenDrawer(_boCurrentId); }
       else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true, desc: 'Cette action créera une alerte prioritaire visible par le cabinet.' });
@@ -15229,16 +15633,16 @@ function boReorienter() {
   showPromptModal(t('bo.btn_reorienter'), '', function(motif) {
     if (motif && motif.trim()) {
     boAction('transmis', { commentaire: 'Réorienté par le service : ' + motif.trim() });
-    showToast('Dossier réorienté vers la Wilaya.');
+    showToast(t('bo.reoriente_wilaya'));
     }
   });
 }
 
 function boRefuserDossier() {
   showPromptModal(t('bo.btn_refuser'), '', function(motif) {
-    if (!motif || !motif.trim()) { showToast('Le motif du refus est obligatoire.', 'error'); return; }
+    if (!motif || !motif.trim()) { showToast(t('bo.motif_refus_requis'), 'error'); return; }
     boAction('transmis', { commentaire: 'Refusé par le service — ' + motif.trim(), motifRejet: motif.trim() });
-    showToast('Dossier refusé et retourné à l\'agent.');
+    showToast(t('bo.dossier_refuse'));
   }, { textarea: true, desc: 'Hors périmètre, incompétence matérielle, informations insuffisantes...' });
 }
 
@@ -15246,14 +15650,14 @@ async function boEstimerDelai() {
   var dateStr = prompt('Date prévisionnelle de résolution (format AAAA-MM-JJ) :');
   if (!dateStr || !dateStr.trim()) return;
   var parsed = new Date(dateStr.trim());
-  if (isNaN(parsed.getTime())) { showToast('Date invalide. Format attendu : AAAA-MM-JJ', 'error'); return; }
-  if (parsed < new Date()) { showToast('La date doit être dans le futur.', 'error'); return; }
+  if (isNaN(parsed.getTime())) { showToast(t('bo.date_invalide'), 'error'); return; }
+  if (parsed < new Date()) { showToast(t('bo.date_futur'), 'error'); return; }
   try {
     var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/planification', {
       method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ delaiPrevu: parsed.toISOString() })
     });
-    if (res.ok) { showToast('Délai enregistré.'); boOpenDrawer(_boCurrentId); }
+    if (res.ok) { showToast(t('bo.delai_enregistre')); boOpenDrawer(_boCurrentId); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -15268,13 +15672,13 @@ async function boSavePlanification() {
   if (resp) body.responsableIntervention = resp.value.trim() || null;
   if (dateEl && dateEl.value) body.delaiPrevu = new Date(dateEl.value).toISOString();
   else if (dateEl) body.delaiPrevu = null;
-  if (!Object.keys(body).length) { showToast('Aucune modification.', 'error'); return; }
+  if (!Object.keys(body).length) { showToast(t('bo.aucune_modif'), 'error'); return; }
   try {
     var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/planification', {
       method: 'PATCH', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (res.ok) { showToast('Planification enregistrée.'); boOpenDrawer(_boCurrentId); }
+    if (res.ok) { showToast(t('bo.planif_enregistree')); boOpenDrawer(_boCurrentId); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -15289,7 +15693,7 @@ function boValiderCompteRendu() {
       body: JSON.stringify({ commentaire: commentaire.trim() })
     });
     if (res.ok) {
-      showToast('Compte-rendu validé — dossier résolu.');
+      showToast(t('bo.cr_valide_resolu'));
       boLoadKanban();
       boCloseDrawer();
     } else {
@@ -15303,14 +15707,14 @@ function boValiderCompteRendu() {
 function boDemanderReprise() {
   if (!_boCurrentId) return;
   showPromptModal(t('sup.demander_reprise'), '', async function(motif) {
-    if (!motif || !motif.trim()) { showToast('Le motif est obligatoire.', 'error'); return; }
+    if (!motif || !motif.trim()) { showToast(t('bo.motif_obligatoire'), 'error'); return; }
   try {
     var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/reprise', {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ motif: motif.trim() })
     });
     if (res.ok) {
-      showToast('Reprise demandée — dossier retourné au service.');
+      showToast(t('bo.reprise_demandee'));
       boLoadKanban();
       boCloseDrawer();
     } else {
@@ -15396,7 +15800,7 @@ async function boConfirmFinIntervention() {
     });
     if (res.ok) {
       document.getElementById('bo-modal-fin').classList.add('hidden');
-      showToast('Compte-rendu envoyé — dossier en attente de validation.');
+      showToast(t('bo.cr_envoye'));
       boLoadKanban();
     } else {
       var err = await res.json();
@@ -15422,7 +15826,7 @@ async function boShowCapModal() {
         opt.textContent = (a.prenom || '') + ' ' + (a.nom || '') + ' — ' + (a.commune_nom || '') + (a.telephone ? ' — ' + a.telephone : '');
         sel.appendChild(opt);
       });
-    } catch(e) {}
+    } catch(e) { console.warn('[bo] échec chargement agents CAP:', e.message); }
   }
 }
 async function boConfirmCap() {
@@ -15590,17 +15994,8 @@ async function saveCommunique(e) {
     hideCommuniqueForm();
     loadAdminCommuniques();
     loadCommuniques();
-    showToast(editId ? 'Communiqué modifié.' : 'Communiqué créé.');
+    showToast(editId ? t('communique.modifie') : t('communique.cree'));
   } catch(e) { showError('comm-form-error', e.message); }
-}
-
-async function toggleCommunique(id, actif) {
-  try {
-    await apiFetch('/api/infos/communiques/' + id, { method:'PATCH', headers:{ ...authHeaders(), 'Content-Type':'application/json' }, body:JSON.stringify({ actif: actif }) });
-    loadAdminCommuniques();
-    loadCommuniques();
-    showToast(actif ? 'Communiqué publié.' : 'Communiqué dépublié.');
-  } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
 }
 
 async function deleteCommunique(id) {
@@ -15609,7 +16004,7 @@ async function deleteCommunique(id) {
     await apiFetch('/api/infos/communiques/' + id, { method:'DELETE', headers:authHeaders() });
     loadAdminCommuniques();
     loadCommuniques();
-    showToast('Communiqué supprimé.');
+    showToast(t('communique.supprime'));
   } catch(e) { showToast('Erreur: ' + e.message, 'error'); }
 }
 
@@ -15649,7 +16044,7 @@ async function commResoumettre(id) {
       body: JSON.stringify({ statut: 'brouillon' })
     });
     if (res.ok) {
-      showToast('Communiqué remis en brouillon. Modifiez-le puis resoumettez.');
+      showToast(t('communique.brouillon'));
       loadAdminCommuniques();
     } else { var err = await res.json(); showToast(err.erreur || err.message || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
@@ -15657,7 +16052,7 @@ async function commResoumettre(id) {
 // Wilaya → Rejeter avec motif obligatoire
 function commRejeter(id) {
   var motif = prompt('Motif de rejet (obligatoire) :');
-  if (!motif || !motif.trim()) { showToast('Le motif de rejet est obligatoire.', 'error'); return; }
+  if (!motif || !motif.trim()) { showToast(t('communique.motif_rejet_requis'), 'error'); return; }
   commWorkflow(id, 'rejete', motif.trim());
 }
 
@@ -15829,7 +16224,7 @@ var _rdvWizSelectedDate = null;
 
 function lancerPriseRDV() {
   var sel = document.getElementById('preparer-service');
-  if (!sel || !sel.value) { showToast('Choisissez d\'abord une démarche.', 'error'); return; }
+  if (!sel || !sel.value) { showToast(t('demarche.choisir_demarche'), 'error'); return; }
   _rdvWizServiceId = Number(sel.value);
   var svc = rdvServices ? rdvServices.find(function(s) { return s.id === _rdvWizServiceId; }) : null;
   if (!svc) return;
@@ -16003,7 +16398,7 @@ async function rdvConfirmerCreneau(debut) {
     confHtml += '</div>';
 
     document.getElementById('rdv-wiz-confirmation').innerHTML = confHtml;
-    showToast('Rendez-vous confirmé ! Email de confirmation envoyé.');
+    showToast(t('demarche.rdv_confirme'));
   } catch(e) { showToast(e.message, 'error'); }
 }
 
@@ -16042,7 +16437,7 @@ async function loadPreferences() {
       const el = document.getElementById(id);
       if (el) el.checked = !!val;
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[profil] échec chargement préférences:', e.message); }
 }
 
 async function savePref(field, value) {
@@ -16147,7 +16542,7 @@ async function initCommuniquesView() {
 
 // ─── INFOS UTILES ────────────────────────────────────────────
 var _infosAllData = [];
-const CONTACTS_INLINE=[{"id":39,"nom":"Wilaya d'Alger","categorie":"institutions","telephone":"021 43 28 28","adresse":"Palais du Gouvernement","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.058,"description":"Siège de la Wilaya — administration territoriale","site_web":"www.wilaya-alger.dz"},{"id":40,"nom":"Call center Wilaya","categorie":"institutions","telephone":"1548","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Centre d'appel — réclamations, orientations"},{"id":41,"nom":"APC Alger-Centre","categorie":"institutions","telephone":"021 73 30 30","adresse":"Rue Larbi Ben M'hidi","horaires":"Dim-Jeu 8h-16h","lat":36.772,"lng":3.059,"description":"Mairie — état civil, urbanisme, social"},{"id":42,"nom":"Tribunal de Sidi M'Hamed","categorie":"institutions","telephone":"021 67 14 14","adresse":"Rue Abane Ramdane","horaires":"Dim-Jeu 8h-15h","lat":36.755,"lng":3.06,"description":"Tribunal judiciaire — affaires civiles et pénales"},{"id":43,"nom":"Direction de l'urbanisme","categorie":"institutions","telephone":"021 43 37 37","adresse":"Palais du Gouvernement","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.058,"description":"Permis de construire, certificats d'urbanisme"},{"id":44,"nom":"CNAS — Sécurité sociale","categorie":"institutions","telephone":"3010","adresse":"Plusieurs agences","horaires":"Dim-Jeu 8h-16h","description":"Assurance maladie, maternité, AT","site_web":"www.cnas.dz"},{"id":45,"nom":"CASNOS — Non-salariés","categorie":"institutions","telephone":"3020","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Sécurité sociale des indépendants","site_web":"www.casnos.com.dz"},{"id":46,"nom":"ANEM — Emploi","categorie":"institutions","telephone":"021 73 46 46","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Offres d'emploi, inscriptions, aides","site_web":"www.anem.dz"},{"id":47,"nom":"Direction du commerce","categorie":"institutions","telephone":"021 43 28 28","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Protection du consommateur, contrôle des prix"},{"id":48,"nom":"Direction de l'environnement","categorie":"institutions","telephone":"021 43 28 28","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Protection environnement, espaces verts"},{"id":22,"nom":"Direction Eau et Assainissement","categorie":"reseaux","telephone":"1594","adresse":"Kouba, Alger","horaires":"24h/24 (urgences)","lat":36.734,"lng":3.08,"description":"Eau potable et assainissement — fuites, coupures","site_web":"contact@wilaya-alger.dz"},{"id":23,"nom":"SONELGAZ — Électricité / Gaz","categorie":"reseaux","telephone":"3303","adresse":"2 Bd Krim Belkacem, Alger","horaires":"Urgences 24h/24","lat":36.77,"lng":3.055,"description":"Électricité et gaz — dépannage, facturation","site_web":"www.sonelgaz.dz"},{"id":24,"nom":"Algérie Télécom","categorie":"reseaux","telephone":"100","adresse":"Mohammadia, Alger","horaires":"Dim-Jeu 8h-16h","description":"Téléphonie fixe, internet ADSL/fibre","site_web":"www.algerietelecom.dz"},{"id":25,"nom":"Mobilis","categorie":"reseaux","telephone":"888","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — assistance abonnés","site_web":"www.mobilis.dz"},{"id":26,"nom":"Djezzy","categorie":"reseaux","telephone":"777","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — service client","site_web":"www.djezzy.dz"},{"id":27,"nom":"Ooredoo","categorie":"reseaux","telephone":"555","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — assistance","site_web":"www.ooredoo.dz"},{"id":28,"nom":"Algérie Poste","categorie":"reseaux","telephone":"1530","adresse":"1 Bd Mohamed Khemisti","horaires":"Dim-Jeu 8h-16h","lat":36.773,"lng":3.056,"description":"Services postaux, CCP, mandats","site_web":"www.poste.dz"},{"id":29,"nom":"Direction Propreté","categorie":"reseaux","telephone":"021 23 10 10","adresse":"Alger Centre","horaires":"Dim-Jeu 8h-16h","description":"Collecte déchets et nettoiement"},{"id":30,"nom":"Naftal — Carburants","categorie":"reseaux","telephone":"1540","adresse":"Alger","horaires":"Stations 24h/24","description":"Distribution carburants et GPL","site_web":"www.naftal.dz"},{"id":31,"nom":"ETUSA — Bus Alger","categorie":"transports","telephone":"021 23 50 00","adresse":"Ruisseau, Hussein Dey","horaires":"6h-22h","lat":36.741,"lng":3.098,"description":"Réseau de bus urbains — 80+ lignes","site_web":"www.etusa.dz"},{"id":32,"nom":"Métro d'Alger (EMA)","categorie":"transports","telephone":"021 83 07 07","adresse":"Place des Martyrs","horaires":"5h30-23h","lat":36.786,"lng":3.06,"description":"Ligne 1 : Haï El Badr — Place des Martyrs","site_web":"www.metroalger-dz.com"},{"id":33,"nom":"Tramway (SETRAM)","categorie":"transports","telephone":"021 83 07 07","adresse":"Bordj El Kiffan — Les Fusillés","horaires":"5h30-23h30","lat":36.74,"lng":3.18,"description":"23 km, 38 stations","site_web":"www.setram-dz.com"},{"id":34,"nom":"Téléphérique (ETAC)","categorie":"transports","telephone":"021 66 12 12","adresse":"Plusieurs lignes","horaires":"6h-20h","lat":36.79,"lng":3.055,"description":"Transport par câble — Notre-Dame d'Afrique, etc."},{"id":35,"nom":"Aéroport Houari Boumédiène","categorie":"transports","telephone":"021 50 91 91","adresse":"Dar El Beïda","horaires":"24h/24","lat":36.691,"lng":3.215,"description":"Vols nationaux et internationaux","site_web":"www.aeroportalger.dz"},{"id":36,"nom":"Gare ferroviaire Agha","categorie":"transports","telephone":"021 63 15 15","adresse":"Place de la Gare","horaires":"5h-23h","lat":36.747,"lng":3.068,"description":"Trains banlieue et grandes lignes — SNTF","site_web":"www.sntf.dz"},{"id":37,"nom":"Port d'Alger (EPAL)","categorie":"transports","telephone":"021 42 35 35","adresse":"Port d'Alger","horaires":"24h/24","lat":36.789,"lng":3.062,"description":"Transport maritime voyageurs"},{"id":38,"nom":"Taxi radio Alger","categorie":"transports","telephone":"021 21 21 21","adresse":"Alger","horaires":"24h/24","description":"Réservation taxi à la demande"},{"id":14,"nom":"Police secours","categorie":"urgences","telephone":"17","adresse":"Alger","horaires":"24h/24","description":"Numéro d'urgence police nationale"},{"id":15,"nom":"Gendarmerie nationale","categorie":"urgences","telephone":"1055","adresse":"Alger","horaires":"24h/24","description":"Numéro d'urgence gendarmerie"},{"id":16,"nom":"Protection civile (Pompiers)","categorie":"urgences","telephone":"14","adresse":"Alger","horaires":"24h/24","description":"Pompiers et secours — incendie, accidents, catastrophes"},{"id":17,"nom":"SAMU / Ambulance","categorie":"urgences","telephone":"115","adresse":"CHU Mustapha, Alger","horaires":"24h/24","lat":36.758,"lng":3.065,"description":"Service d'aide médicale urgente"},{"id":18,"nom":"Croissant-Rouge algérien","categorie":"urgences","telephone":"021 63 48 48","adresse":"15 Bd Mohamed V, Alger","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.057,"description":"Assistance humanitaire et premiers secours"},{"id":19,"nom":"Centre anti-poison","categorie":"urgences","telephone":"021 97 98 98","adresse":"CHU Bab El Oued","horaires":"24h/24","lat":36.795,"lng":3.05,"description":"Urgences intoxications et empoisonnements"},{"id":20,"nom":"Enfance en danger","categorie":"urgences","telephone":"1111","adresse":"Alger","horaires":"24h/24","description":"Signalement maltraitance enfants"},{"id":21,"nom":"SOS Femmes en détresse","categorie":"urgences","telephone":"3303","adresse":"Alger","horaires":"24h/24","description":"Aide aux femmes victimes de violence"}];
+const CONTACTS_INLINE=[{"id":39,"nom":"Wilaya d'Alger","categorie":"institutions","telephone":"021 43 28 28","adresse":"Palais du Gouvernement","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.058,"description":"Siège de la Wilaya — administration territoriale","site_web":"www.wilaya-alger.dz"},{"id":40,"nom":"Call center Wilaya","categorie":"institutions","telephone":"1548","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Centre d'appel — réclamations, orientations"},{"id":41,"nom":"APC Alger-Centre","categorie":"institutions","telephone":"021 73 30 30","adresse":"Rue Larbi Ben M'hidi","horaires":"Dim-Jeu 8h-16h","lat":36.772,"lng":3.059,"description":"Mairie — état civil, urbanisme, social"},{"id":42,"nom":"Tribunal de Sidi M'Hamed","categorie":"institutions","telephone":"021 67 14 14","adresse":"Rue Abane Ramdane","horaires":"Dim-Jeu 8h-15h","lat":36.755,"lng":3.06,"description":"Tribunal judiciaire — affaires civiles et pénales"},{"id":43,"nom":"Direction de l'urbanisme","categorie":"institutions","telephone":"021 43 37 37","adresse":"Palais du Gouvernement","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.058,"description":"Permis de construire, certificats d'urbanisme"},{"id":44,"nom":"CNAS — Sécurité sociale","categorie":"institutions","telephone":"3010","adresse":"Plusieurs agences","horaires":"Dim-Jeu 8h-16h","description":"Assurance maladie, maternité, AT","site_web":"www.cnas.dz"},{"id":45,"nom":"CASNOS — Non-salariés","categorie":"institutions","telephone":"3020","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Sécurité sociale des indépendants","site_web":"www.casnos.com.dz"},{"id":46,"nom":"ANEM — Emploi","categorie":"institutions","telephone":"021 73 46 46","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Offres d'emploi, inscriptions, aides","site_web":"www.anem.dz"},{"id":47,"nom":"Direction du commerce","categorie":"institutions","telephone":"021 43 28 28","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Protection du consommateur, contrôle des prix"},{"id":48,"nom":"Direction de l'environnement","categorie":"institutions","telephone":"021 43 28 28","adresse":"Alger","horaires":"Dim-Jeu 8h-16h","description":"Protection environnement, espaces verts"},{"id":22,"nom":"Direction Eau et Assainissement","categorie":"reseaux","telephone":"1594","adresse":"Kouba, Alger","horaires":"24h/24 (urgences)","lat":36.734,"lng":3.08,"description":"Eau potable et assainissement — fuites, coupures","site_web":"contact@wilaya-alger.dz"},{"id":23,"nom":"SONELGAZ — Électricité / Gaz","categorie":"reseaux","telephone":"3303","adresse":"2 Bd Krim Belkacem, Alger","horaires":"Urgences 24h/24","lat":36.77,"lng":3.055,"description":"Électricité et gaz — dépannage, facturation","site_web":"www.sonelgaz.dz"},{"id":24,"nom":"Algérie Télécom","categorie":"reseaux","telephone":"100","adresse":"Mohammadia, Alger","horaires":"Dim-Jeu 8h-16h","description":"Téléphonie fixe, internet ADSL/fibre","site_web":"www.algerietelecom.dz"},{"id":25,"nom":"Mobilis","categorie":"reseaux","telephone":"888","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — assistance abonnés","site_web":"www.mobilis.dz"},{"id":26,"nom":"Djezzy","categorie":"reseaux","telephone":"777","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — service client","site_web":"www.djezzy.dz"},{"id":27,"nom":"Ooredoo","categorie":"reseaux","telephone":"555","adresse":"Alger","horaires":"Dim-Jeu 8h-17h","description":"Opérateur mobile — assistance","site_web":"www.ooredoo.dz"},{"id":28,"nom":"Algérie Poste","categorie":"reseaux","telephone":"1530","adresse":"1 Bd Mohamed Khemisti","horaires":"Dim-Jeu 8h-16h","lat":36.773,"lng":3.056,"description":"Services postaux, CCP, mandats","site_web":"www.poste.dz"},{"id":29,"nom":"Direction Propreté","categorie":"reseaux","telephone":"021 23 10 10","adresse":"Alger Centre","horaires":"Dim-Jeu 8h-16h","description":"Collecte déchets et nettoiement"},{"id":30,"nom":"Naftal — Carburants","categorie":"reseaux","telephone":"1540","adresse":"Alger","horaires":"Stations 24h/24","description":"Distribution carburants et GPL","site_web":"www.naftal.dz"},{"id":31,"nom":"ETUSA — Bus Alger","categorie":"transports","telephone":"021 23 50 00","adresse":"Ruisseau, Hussein Dey","horaires":"6h-22h","lat":36.741,"lng":3.098,"description":"Réseau de bus urbains — 80+ lignes","site_web":"www.etusa.dz"},{"id":32,"nom":"Métro d'Alger (EMA)","categorie":"transports","telephone":"021 83 07 07","adresse":"Place des Martyrs","horaires":"5h30-23h","lat":36.786,"lng":3.06,"description":"Ligne 1 : Haï El Badr — Place des Martyrs","site_web":"www.metroalger-dz.com"},{"id":33,"nom":"Tramway (SETRAM)","categorie":"transports","telephone":"021 83 07 07","adresse":"Bordj El Kiffan — Les Fusillés","horaires":"5h30-23h30","lat":36.74,"lng":3.18,"description":"23 km, 38 stations","site_web":"www.setram-dz.com"},{"id":34,"nom":"Téléphérique (ETAC)","categorie":"transports","telephone":"021 66 12 12","adresse":"Plusieurs lignes","horaires":"6h-20h","lat":36.79,"lng":3.055,"description":"Transport par câble — Notre-Dame d'Afrique, etc."},{"id":35,"nom":"Aéroport Houari Boumédiène","categorie":"transports","telephone":"021 50 91 91","adresse":"Dar El Beïda","horaires":"24h/24","lat":36.691,"lng":3.215,"description":"Vols nationaux et internationaux","site_web":"www.aeroportalger.dz"},{"id":36,"nom":"Gare ferroviaire Agha","categorie":"transports","telephone":"021 63 15 15","adresse":"Place de la Gare","horaires":"5h-23h","lat":36.747,"lng":3.068,"description":"Trains banlieue et grandes lignes — SNTF","site_web":"www.sntf.dz"},{"id":37,"nom":"Port d'Alger (EPAL)","categorie":"transports","telephone":"021 42 35 35","adresse":"Port d'Alger","horaires":"24h/24","lat":36.789,"lng":3.062,"description":"Transport maritime voyageurs"},{"id":38,"nom":"Taxi radio Alger","categorie":"transports","telephone":"021 21 21 21","adresse":"Alger","horaires":"24h/24","description":"Réservation taxi à la demande"},{"id":14,"nom":"Police secours","categorie":"urgences","telephone":"17","adresse":"Alger","horaires":"24h/24","description":"Numéro d'urgence police nationale"},{"id":15,"nom":"Gendarmerie nationale","categorie":"urgences","telephone":"1055","adresse":"Alger","horaires":"24h/24","description":"Numéro d'urgence gendarmerie"},{"id":16,"nom":"Protection civile (Pompiers)","categorie":"urgences","telephone":"14","adresse":"Alger","horaires":"24h/24","description":"Pompiers et secours — incendie, accidents, catastrophes"},{"id":17,"nom":"SAMU / Ambulance","categorie":"urgences","telephone":"115","adresse":"CHU Mustapha, Alger","horaires":"24h/24","lat":36.758,"lng":3.065,"description":"Service d'aide médicale urgente"},{"id":18,"nom":"Croissant-Rouge algérien","categorie":"urgences","telephone":"021 63 48 48","adresse":"15 Bd Mohamed V, Alger","horaires":"Dim-Jeu 8h-16h","lat":36.77,"lng":3.057,"description":"Assistance humanitaire et premiers secours"},{"id":19,"nom":"Centre anti-poison","categorie":"urgences","telephone":"021 97 98 98","adresse":"CHU Bab El Oued","horaires":"24h/24","lat":36.795,"lng":3.05,"description":"Urgences intoxications et empoisonnements"},{"id":20,"nom":"Enfance en danger","categorie":"urgences","telephone":"1111","adresse":"Alger","horaires":"24h/24","description":"Signalement maltraitance enfants"},{"id":21,"nom":"SOS Femmes en détresse","categorie":"urgences","telephone":"3303","adresse":"Alger","horaires":"24h/24","description":"Aide aux femmes victimes de violence"},{"id":49,"nom":"Pharmacies de garde — Sante-DZ","categorie":"sante","description":"Liste des pharmacies de garde par commune, jour et nuit — service tiers Sante-DZ","site_web":"sante-dz.com/infosutiles/8UMTpPA2xP5XY0n4XSDWW5gZ4nKgvDUG"}];
 function filterInfos() {
   var q = (document.getElementById('infos-search').value || '').trim().toLowerCase();
   if (!q) { renderInfos(_infosAllData); return; }
@@ -16161,8 +16556,8 @@ function renderInfos(contacts) {
   var countEl = document.getElementById('infos-count');
   if (!contacts || !contacts.length) { el.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--muted);"><div style="font-size:32px;margin-bottom:8px;">🔎</div><p style="font-size:14px;">' + t('global.aucun_resultat') + '</p></div>'; if(countEl) countEl.textContent=''; return; }
   if (countEl) countEl.textContent = contacts.length + ' contact' + (contacts.length > 1 ? 's' : '');
-  var catIcons = { urgences:'🚨', reseaux:'🔧', transports:'🚌', institutions:'🏛️' };
-  var catColors = { urgences:'#ef4444', reseaux:'#2563eb', transports:'#f59e0b', institutions:'#0B3C5D' };
+  var catIcons = { urgences:'🚨', reseaux:'🔧', transports:'🚌', institutions:'🏛️', sante:'💊' };
+  var catColors = { urgences:'#ef4444', reseaux:'#2563eb', transports:'#f59e0b', institutions:'#0B3C5D', sante:'#16a34a' };
   el.innerHTML = contacts.map(function(c) {
     var icon = catIcons[c.categorie] || 'ℹ️';
     var color = catColors[c.categorie] || '#666';
@@ -16173,10 +16568,11 @@ function renderInfos(contacts) {
           (c.description ? '<div style="font-size:12px;color:var(--gray-600);margin:3px 0;">' + escHtml(c.description) + '</div>' : '') +
           (c.horaires ? '<div style="font-size:11px;color:var(--muted);">🕐 ' + escHtml(c.horaires) + '</div>' : '') +
           (c.adresse ? '<div style="font-size:11px;color:var(--muted);">📍 ' + escHtml(c.adresse) + '</div>' : '') +
-          (c.site_web ? '<div style="font-size:11px;"><a href="https://' + escHtml(c.site_web) + '" target="_blank" style="color:var(--blue);text-decoration:none;">🌐 ' + escHtml(c.site_web) + '</a></div>' : '') +
+          (c.site_web ? '<div style="font-size:11px;"><a href="https://' + escHtml(c.site_web) + '" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none;">🌐 ' + escHtml(c.site_web.split('/')[0]) + '</a>' + (c.categorie === 'sante' ? ' <span style="font-size:10px;background:#f0fdf4;color:#16a34a;padding:1px 6px;border-radius:4px;">' + t('infos.service_tiers') + '</span>' : '') + '</div>' : '') +
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">' +
           (c.telephone ? '<a href="tel:' + c.telephone + '" class="btn btn-sm btn-primary" style="font-size:12px;padding:4px 10px;">📞 ' + escHtml(c.telephone) + '</a>' : '') +
+          (c.site_web && !c.telephone ? '<a href="https://' + escHtml(c.site_web) + '" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="font-size:12px;padding:4px 10px;">🌐 ' + t('infos.ouvrir_site') + '</a>' : '') +
           (c.lat && c.lng ? '<a href="https://www.google.com/maps/dir/?api=1&destination=' + c.lat + ',' + c.lng + '" target="_blank" class="btn btn-sm btn-outline" style="font-size:12px;padding:4px 10px;">🧭 Localiser</a>' : '') +
           (c.email ? '<a href="mailto:' + c.email + '" class="btn btn-sm btn-outline" style="font-size:12px;padding:4px 10px;">✉️ Email</a>' : '') +
         '</div>' +
@@ -16203,6 +16599,35 @@ async function loadInfos(categorie) {
   var searchEl = document.getElementById('infos-search');
   if (searchEl) searchEl.value = '';
   renderInfos(_infosAllData);
+}
+
+// ─── PERDU-TROUVÉ ────────────────────────────────────────────
+async function submitPerduTrouve(e) {
+  e.preventDefault();
+  hideError('pt-error');
+  var fd = new FormData();
+  fd.append('type', document.getElementById('pt-type').value);
+  fd.append('nature', document.getElementById('pt-nature').value);
+  fd.append('description', document.getElementById('pt-description').value.trim());
+  var lieu = document.getElementById('pt-lieu').value.trim();
+  if (lieu) fd.append('lieu', lieu);
+  var dateFait = document.getElementById('pt-date').value;
+  if (dateFait) fd.append('date_fait', dateFait);
+  var photo = document.getElementById('pt-photo').files[0];
+  if (photo) fd.append('photo', photo);
+  try {
+    var res = await apiFetch('/api/perdu-trouve', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() }, body: fd
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      showError('pt-error', currentLang === 'ar' ? (data.erreur_ar || data.erreur) : data.erreur);
+      return;
+    }
+    document.getElementById('pt-form').style.display = 'none';
+    document.getElementById('pt-success').style.display = '';
+    document.getElementById('pt-ref').textContent = t('pt.reference') + ' ' + data.reference;
+  } catch(err) { showError('pt-error', err.message); }
 }
 
 // ─── ÉQUIPEMENTS PUBLICS ─────────────────────────────────────
@@ -16241,7 +16666,7 @@ async function loadEquipements(type) {
     var data = null;
     try { data = await safeFetchJSON('/api/referentiel/epics/_EQ', {}, true); }
     catch(e) {
-      try { data = await safeFetchJSON('/api/equipements', {}, true); } catch(e2) {}
+      try { data = await safeFetchJSON('/api/equipements', {}, true); } catch(e2) { console.warn('[equip] échec chargement équipements fallback:', e2.message); }
     }
     if (!data || !Array.isArray(data)) throw new Error('API indisponible — vérifiez la connexion');
 
@@ -16424,9 +16849,17 @@ function sigRapideInit() {
   sigRapideClearPhoto();
   // Highlight aucune tuile
   document.querySelectorAll('.sig-r-tile').forEach(function(t) { t.style.borderColor = 'var(--line)'; t.style.background = 'white'; });
-  // GPS auto en arrière-plan
-  document.getElementById('sig-r-gps-status').textContent = '📍 Localisation en cours...';
-  document.getElementById('sig-r-gps-status').style.color = 'var(--muted)';
+  // Pré-remplir depuis la houma si définie
+  if (currentUser && (currentUser.houma_lat && currentUser.houma_lng)) {
+    _sigRapideLat = currentUser.houma_lat;
+    _sigRapideLng = currentUser.houma_lng;
+    document.getElementById('sig-r-gps-status').textContent = '📍 ' + t('houma.ma_houma') + ' (' + currentUser.houma_lat.toFixed(4) + ', ' + currentUser.houma_lng.toFixed(4) + ')';
+    document.getElementById('sig-r-gps-status').style.color = '#2563eb';
+  } else {
+    document.getElementById('sig-r-gps-status').textContent = '📍 Localisation en cours...';
+    document.getElementById('sig-r-gps-status').style.color = 'var(--muted)';
+  }
+  // GPS auto en arrière-plan (override le pré-remplissage houma par la position réelle)
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(pos) {
       _sigRapideLat = pos.coords.latitude;
@@ -16434,8 +16867,11 @@ function sigRapideInit() {
       document.getElementById('sig-r-gps-status').textContent = '📍 Position capturée (' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4) + ')';
       document.getElementById('sig-r-gps-status').style.color = '#16a34a';
     }, function() {
-      document.getElementById('sig-r-gps-status').textContent = '📍 Position non disponible — le signalement sera envoyé sans localisation';
-      document.getElementById('sig-r-gps-status').style.color = '#f97316';
+      // Si pas de GPS et pas de houma, afficher le message d'erreur
+      if (!_sigRapideLat) {
+        document.getElementById('sig-r-gps-status').textContent = '📍 Position non disponible — le signalement sera envoyé sans localisation';
+        document.getElementById('sig-r-gps-status').style.color = '#f97316';
+      }
     }, { timeout: 10000, enableHighAccuracy: true });
   }
 }
@@ -16496,7 +16932,7 @@ async function sigRapideSelectFamille(famille) {
           document.getElementById('sig-r-doublon').style.display = '';
         }
       }
-    } catch(e) {}
+    } catch(e) { console.warn('[signaler] échec vérification doublons:', e.message); }
   }
 }
 
@@ -16508,7 +16944,7 @@ async function sigRapideSuivreDossier() {
       method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ commentaire: 'Un citoyen suit également ce dossier.', type: 'message' })
     });
-  } catch(e) {}
+  } catch(e) { console.warn('[signaler] échec suivi dossier:', e.message); }
   showToast('Vous suivez le dossier ' + _sigRapideDoublon.reference);
   showView('home');
 }
@@ -16538,16 +16974,72 @@ async function sigRapideEnvoyer() {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() }, body: fd
     });
     var data = await res.json();
-    if (!res.ok) { showToast(data.erreur || 'Erreur', 'error'); btn.disabled = false; btn.textContent = 'Envoyer le signalement'; return; }
+    if (!res.ok) {
+      // Quota KYC : message enrichi
+      if (data.code === 'QUOTA_MOIS') {
+        var msg = currentLang === 'ar' ? (data.erreur_ar || data.erreur) : data.erreur;
+        showToast(msg, 'error', 6000);
+      } else if (data.code === 'QUOTA_JOUR') {
+        var msg = currentLang === 'ar' ? (data.erreur_ar || data.erreur) : data.erreur;
+        showToast(msg, 'error', 4000);
+      } else {
+        showToast(currentLang === 'ar' ? (data.erreur_ar || data.erreur) : (data.erreur || 'Erreur'), 'error');
+      }
+      btn.disabled = false; btn.textContent = t('signaler.envoyer') || 'Envoyer le signalement'; return;
+    }
     // Confirmation
     document.getElementById('sig-r-step1').style.display = 'none';
     document.getElementById('sig-r-confirm').style.display = '';
     document.getElementById('sig-r-confirm-ref').textContent = 'Référence : ' + (data.signalement?.reference || '—') + '\nNous vous tiendrons informé de l\'avancement.';
+    // Capture douce : proposer de définir la houma si pas encore fait et pas refusé
+    if (_sigRapideLat && _sigRapideLng && currentUser && !currentUser.quartier_id && !currentUser.houma_lat && !currentUser.houma_refus_capture) {
+      _showCaptureDouce(_sigRapideLat, _sigRapideLng);
+    }
   } catch(e) {
     showToast(e.message, 'error');
     btn.disabled = false;
     btn.textContent = 'Envoyer le signalement';
   }
+}
+
+// ── Capture douce — proposer d'enregistrer la houma après signalement ──
+function _showCaptureDouce(lat, lng) {
+  var confirmDiv = document.getElementById('sig-r-confirm');
+  if (!confirmDiv) return;
+  var captureHtml = '<div id="sig-capture-douce" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-top:16px;">' +
+    '<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;" data-i18n="houma.capture_titre">' + t('houma.capture_titre') + '</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<button class="btn btn-sm btn-primary" onclick="captureDouceAccept(' + lat + ',' + lng + ')" style="flex:1;" data-i18n="houma.capture_oui">' + t('houma.capture_oui') + '</button>' +
+    '<button class="btn btn-sm btn-outline" onclick="captureDouceRefuse()" style="flex:1;" data-i18n="houma.capture_non">' + t('houma.capture_non') + '</button>' +
+    '</div></div>';
+  confirmDiv.insertAdjacentHTML('beforeend', captureHtml);
+}
+
+async function captureDouceAccept(lat, lng) {
+  try {
+    await apiFetch('/api/quartiers/houma/capture', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accepte: true, lat: lat, lng: lng })
+    });
+    if (currentUser) { currentUser.houma_lat = lat; currentUser.houma_lng = lng; }
+    showToast(t('houma.modifiee'));
+  } catch(e) { console.warn('[houma] échec capture douce acceptée:', e.message); }
+  var el = document.getElementById('sig-capture-douce');
+  if (el) el.remove();
+}
+
+async function captureDouceRefuse() {
+  try {
+    await apiFetch('/api/quartiers/houma/capture', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accepte: false })
+    });
+    if (currentUser) currentUser.houma_refus_capture = true;
+  } catch(e) { console.warn('[houma] échec capture douce refusée:', e.message); }
+  var el = document.getElementById('sig-capture-douce');
+  if (el) el.remove();
 }
 
 // Helper : nom localisé (FR ou AR selon la langue)
@@ -16922,7 +17414,7 @@ async function handleUnifiedSignalement(e) {
         lat: lat || null, lng: lng || null
       });
       localStorage.setItem('civismart_mes_signalements', JSON.stringify(mesSignals));
-    } catch(_) {}
+    } catch(_) { console.warn('[signaler] échec sauvegarde locale signalement:', _.message); }
 
     // Afficher l'écran de confirmation (remplace le formulaire)
     sigShowStep('confirmation');
@@ -16997,27 +17489,191 @@ let carteAllSignals = [];
 let carteInitialized = false;
 let carteActiveFilter = 'tous';
 
+var _houmaDefineMode = false;
+var _houmaPickedLat = null;
+var _houmaPickedLng = null;
+var _houmaPickMarker = null;
+
 async function initCarte() {
   if (!carteInitialized) {
     carteMap = L.map('carte-map').setView([36.7538, 3.0588], 11);
     createTileLayer(carteMap);
     carteInitialized = true;
+    // Click handler pour définir houma
+    carteMap.on('click', function(e) {
+      if (!_houmaDefineMode) return;
+      _houmaPickedLat = e.latlng.lat;
+      _houmaPickedLng = e.latlng.lng;
+      if (_houmaPickMarker) carteMap.removeLayer(_houmaPickMarker);
+      _houmaPickMarker = L.marker([_houmaPickedLat, _houmaPickedLng]).addTo(carteMap);
+    });
   }
 
   setTimeout(() => { if (carteMap) carteMap.invalidateSize(); }, 200);
+
+  // Centrage prioritaire : quartier_id → houma_lat/lng → vue wilaya
+  if (currentUser && (currentUser.fonction === 'citoyen' || currentUser.role === 'citoyen' || !currentUser.fonction)) {
+    try {
+      var houma = await safeFetchJSON('/api/quartiers/houma', {}, true);
+      _houmaData = houma;
+      if (houma && houma.quartier_id && houma.perimetre) {
+        // Centre sur le périmètre du quartier
+        try {
+          var bounds = L.geoJSON(houma.perimetre).getBounds();
+          carteMap.fitBounds(bounds);
+        } catch(e) {
+          if (houma.houma_lat && houma.houma_lng) carteMap.setView([houma.houma_lat, houma.houma_lng], 14);
+        }
+        _houmaScope = 'houma';
+        _updateHoumaBanner(houma);
+      } else if (houma && houma.houma_lat && houma.houma_lng) {
+        carteMap.setView([houma.houma_lat, houma.houma_lng], 14);
+        _houmaScope = 'houma';
+        _updateHoumaBanner(houma);
+      } else {
+        _houmaScope = 'wilaya';
+        _updateHoumaBanner(null);
+      }
+    } catch(e) { _houmaData = null; _houmaScope = 'wilaya'; _updateHoumaBanner(null); }
+    _houmaUpdateScopeBar();
+  }
+
   await loadCarteSignals();
   await loadCarteBiens();
   loadQuartierDashboard();
 }
 
+function _updateHoumaBanner(houma) {
+  var banner = document.getElementById('houma-banner');
+  var btn = document.getElementById('houma-definir-btn');
+  var txt = document.getElementById('houma-banner-text');
+  if (!banner) return;
+  if (!currentUser || (currentUser.fonction && currentUser.fonction !== 'citoyen')) { banner.style.display = 'none'; return; }
+  banner.style.display = '';
+  if (houma && (houma.quartier_id || houma.houma_lat)) {
+    var nom = houma.quartier_nom ? (currentLang === 'ar' && houma.quartier_nom_ar ? houma.quartier_nom_ar : houma.quartier_nom) : '';
+    txt.textContent = t('houma.ma_houma') + (nom ? ' : ' + nom : '');
+    btn.textContent = currentLang === 'ar' ? 'تغيير' : 'Modifier';
+  } else {
+    txt.textContent = '';
+    btn.textContent = t('houma.definir');
+  }
+}
+
+function houmaStartDefine() {
+  _houmaDefineMode = true;
+  _houmaPickedLat = null;
+  _houmaPickedLng = null;
+  document.getElementById('houma-banner').style.display = 'none';
+  document.getElementById('houma-confirm').style.display = '';
+}
+
+function houmaCancelDefine() {
+  _houmaDefineMode = false;
+  if (_houmaPickMarker && carteMap) carteMap.removeLayer(_houmaPickMarker);
+  _houmaPickMarker = null;
+  document.getElementById('houma-confirm').style.display = 'none';
+  document.getElementById('houma-banner').style.display = '';
+}
+
+async function houmaConfirmChoice() {
+  if (!_houmaPickedLat || !_houmaPickedLng) {
+    showToast(t('houma.definir_desc'), 'error');
+    return;
+  }
+  _houmaDefineMode = false;
+  try {
+    var res = await apiFetch('/api/quartiers/houma', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: _houmaPickedLat, lng: _houmaPickedLng })
+    });
+    var data = await res.json();
+    if (!res.ok) { showToast(data.erreur || 'Erreur', 'error'); return; }
+    showToast(t('houma.modifiee'));
+    if (currentUser) {
+      currentUser.quartier_id = data.quartier_id;
+      currentUser.houma_lat = data.houma_lat;
+      currentUser.houma_lng = data.houma_lng;
+    }
+    if (_houmaPickMarker && carteMap) carteMap.removeLayer(_houmaPickMarker);
+    _houmaPickMarker = null;
+    document.getElementById('houma-confirm').style.display = 'none';
+    // Refresh banner
+    var houma = await safeFetchJSON('/api/quartiers/houma', {}, true);
+    _updateHoumaBanner(houma);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ── Houma scope state ──
+var _houmaScope = 'wilaya'; // 'houma' | 'wilaya'
+var _houmaData = null; // cached houma response
+
+function _houmaHasLocation() {
+  return _houmaData && (_houmaData.houma_lat && _houmaData.houma_lng);
+}
+
+function _houmaScopeLabel() {
+  if (_houmaScope === 'houma' && _houmaData) {
+    if (_houmaData.quartier_nom) {
+      var nom = (currentLang === 'ar' && _houmaData.quartier_nom_ar) ? _houmaData.quartier_nom_ar : _houmaData.quartier_nom;
+      return t('houma.scope_quartier').replace('{nom}', nom);
+    }
+    return t('houma.scope_rayon');
+  }
+  return t('houma.scope_wilaya');
+}
+
+function _houmaUpdateScopeBar() {
+  var bar = document.getElementById('houma-scope-bar');
+  var label = document.getElementById('houma-scope-label');
+  var toggle = document.getElementById('houma-scope-toggle');
+  var invite = document.getElementById('houma-invite');
+  if (!bar) return;
+
+  var isCitoyen = currentUser && (!currentUser.fonction || currentUser.fonction === 'citoyen');
+  if (!isCitoyen) { bar.style.display = 'none'; if (invite) invite.style.display = 'none'; return; }
+
+  if (_houmaHasLocation()) {
+    bar.style.display = '';
+    label.textContent = _houmaScopeLabel();
+    toggle.textContent = _houmaScope === 'houma' ? t('houma.voir_wilaya') : t('houma.voir_houma');
+    if (invite) invite.style.display = 'none';
+  } else {
+    bar.style.display = '';
+    label.textContent = _houmaScopeLabel();
+    toggle.style.display = 'none';
+    // Show invitation once per session
+    if (invite && !sessionStorage.getItem('houma_invite_shown')) {
+      invite.style.display = '';
+      sessionStorage.setItem('houma_invite_shown', '1');
+    }
+  }
+}
+
+function houmaToggleScope() {
+  _houmaScope = _houmaScope === 'houma' ? 'wilaya' : 'houma';
+  _houmaUpdateScopeBar();
+  loadQuartierDashboard();
+  renderCarteMarkers(carteActiveFilter);
+}
+
 async function loadQuartierDashboard() {
   const el = document.getElementById('quartier-dashboard');
   if (!el) return;
-  // Utiliser la commune du citoyen s'il en a une
   const communeId = currentUser?.commune_id;
   if (!communeId) { el.innerHTML = ''; return; }
+
+  // Build query params based on scope
+  var qs = '';
+  if (_houmaScope === 'houma' && _houmaHasLocation()) {
+    qs = 'houma_lat=' + _houmaData.houma_lat + '&houma_lng=' + _houmaData.houma_lng;
+  } else {
+    qs = 'communeId=' + communeId;
+  }
+
   try {
-    const d = await safeFetchJSON('/api/dashboard/quartier?communeId=' + communeId);
+    const d = await safeFetchJSON('/api/dashboard/quartier?' + qs);
     const items = [];
     if (d.ouverts !== undefined) items.push({ label: t('quartier.ouverts'), value: d.ouverts, color: '#ef4444' });
     if (d.resolus_ce_mois !== undefined) items.push({ label: t('quartier.resolus_mois'), value: d.resolus_ce_mois, color: '#16a34a' });
@@ -17045,7 +17701,7 @@ async function loadCarteBiens() {
       m.bindPopup(`<div style="font-family:Inter,sans-serif;font-size:13px;"><strong>${b.reference}</strong><br>${b.adresse}<br><span style="color:${color};font-weight:600;">${b.statut}</span>${b.contrat_actif ? '<br>Occ: '+b.contrat_actif.occupant_nom : ''}</div>`);
       carteMarkers.push(m);
     });
-  } catch(e) {}
+  } catch(e) { console.warn('[carte] échec chargement biens patrimoine carte:', e.message); }
 }
 
 async function loadCarteSignals() {
@@ -17142,6 +17798,15 @@ function renderCarteMarkers(filter) {
   carteMarkers = [];
 
   let filtered = carteAllSignals.filter(s => s.lat && s.lng);
+
+  // Houma scope: filter by 2km radius around houma point
+  if (_houmaScope === 'houma' && _houmaHasLocation()) {
+    var hLat = _houmaData.houma_lat, hLng = _houmaData.houma_lng;
+    var RAYON = 0.018; // ~2 km
+    filtered = filtered.filter(function(s) {
+      return Math.abs(parseFloat(s.lat) - hLat) < RAYON && Math.abs(parseFloat(s.lng) - hLng) < RAYON;
+    });
+  }
 
   var famFilters = ['proprete','eau','voirie','eclairage','espaces_verts','stationnement','securite','nuisances','mobilier_urbain','animaux','accessibilite','environnement','transport','batiments'];
   if (famFilters.includes(filter)) {
@@ -17335,7 +18000,7 @@ function populateAgentFilters() {
           return r.json();
         })
         .then(u => { if (u) { currentUser = u; localStorage.setItem(USER_KEY, JSON.stringify(u)); } })
-        .catch(() => {});
+        .catch(e => console.warn('[auth] échec vérification token:', e.message));
       initApp();
     } catch (e) {
       handleLogout();
@@ -17349,7 +18014,7 @@ function populateAgentFilters() {
         communes = data;
         populateCommuneSelects();
       })
-      .catch(() => {});
+      .catch(e => console.warn('[auth] échec chargement communes inscription:', e.message));
   }
 })();
 
@@ -17389,7 +18054,7 @@ async function initRdvAdminPanel() {
           sel.appendChild(o);
         });
       });
-    } catch(e) {}
+    } catch(e) { console.warn('[rdv] échec chargement services:', e.message); }
   }
 
   // Date par défaut = demain 09:00
@@ -17684,7 +18349,7 @@ async function submitBien(e) {
       body: JSON.stringify(body)
     });
     let data = {};
-    try { data = await res.json(); } catch(_) {}
+    try { data = await res.json(); } catch(_) { console.warn('[patri] échec parse réponse JSON bien:', _.message); }
     if (!res.ok) { alert(t('global.erreur_avec_details', null, { details: data.erreur || t('global.statut_code', null, { code: res.status }) })); return; }
     closePatriForm();
     showToast(data.reference + ' ' + t('toast.bien_cree'));
@@ -17803,7 +18468,7 @@ async function submitPaiement(e) {
       body: JSON.stringify(body)
     });
     let data = {};
-    try { data = await res.json(); } catch(_) {}
+    try { data = await res.json(); } catch(_) { console.warn('[patri] échec parse réponse JSON paiement:', _.message); }
     if (!res.ok) { showToast(data.erreur || t('global.erreur'),'error'); return; }
     closePaiementModal();
     showToast(Number(body.montant).toLocaleString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ') + ' ' + t('toast.paiement_enregistre'));
@@ -17862,7 +18527,7 @@ async function changerEtatOperateur(domaine, id, etat) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// SAKSINI v2 — 41 Q&R, 529 keywords, matching strict
+// SAKSINI v2 — 48 Q&R, 640+ keywords, matching strict + filtrage génériques
 // ═══════════════════════════════════════════════════════════
 const SAKSINI_FAQ = [
   {k:['signaler','signalement','probleme','declarer','alerter','reporter','denoncer','prevenir'],fr:"Cliquez sur « Je signale » dans le menu. Choisissez la famille (eau, déchets, voirie…), placez le point sur la carte, ajoutez une photo et envoyez.",ar:"اضغط على « أبلّغ » في القائمة. اختر العائلة (مياه، نفايات، طرق…)، ضع النقطة على الخريطة، أضف صورة وأرسل."},
@@ -17906,29 +18571,52 @@ const SAKSINI_FAQ = [
   {k:['wali','wilaya','gouverneur','prefet','autorite','administration','institution','responsable'],fr:"ALGERNA est une plateforme de la Wilaya d'Alger. Pour contacter les services de la Wilaya, utilisez « Mes démarches » ou écrivez à support@algerna.dz.",ar:"ALGERNA هي منصة ولاية الجزائر. للتواصل مع مصالح الولاية، استخدم « إجراءاتي » أو اكتب إلى support@algerna.dz."},
   {k:['apc','mairie','commune','maire','elu','president','assemblee','populaire','communale'],fr:"L'APC (Assemblée Populaire Communale) gère votre commune. Prenez un RDV via « Mes démarches » pour vos démarches en mairie.",ar:"المجلس الشعبي البلدي يدير بلديتك. احجز موعدا عبر « إجراءاتي » لإجراءاتك في البلدية."},
   {k:['saksini','chatbot','robot','assistant','aide automatique','bot','question'],fr:"Je suis Saksini, l'assistant ALGERNA. Posez-moi vos questions sur les signalements, les démarches, les points ou l'application.",ar:"أنا سقسيني، مساعد ALGERNA. اطرح عليّ أسئلتك حول البلاغات، الإجراءات، النقاط أو التطبيق."},
+  // ── Groupe 1 : Transports / horaires ──
+  {k:['metro','tramway','tram','bus','etusa','train','sntf','telepherique','telecabine','transport','horaire transport','مواقيت','ميترو','ترامواي','حافلة','قطار','تلفريك','نقل','مواعيد النقل','كيفاش نروح','واش كاين ترانسبور'],fr:"Consultez « Se déplacer » pour les horaires et liens officiels : Métro, Tramway (appli eTWASSEL), Train SNTF, Bus ETUSA et téléphériques.",ar:"راجعوا « التنقل » للمواقيت والروابط الرسمية: المترو، الترامواي (تطبيق eTWASSEL)، قطار SNTF، حافلات ETUSA والتلفريك."},
+  // ── Groupe 2 : Problème de transport ──
+  {k:['abribus','station sale','escalator','escalier mecanique','arret','gare routiere','quai','محطة','محطة وسخة','سلم كهربائي','عطل سلم','موقف','موقف محطم'],fr:"Problème de transport (abribus cassé, station sale, escalator en panne) ? « Je signale » → Transport. Transmis à l'opérateur concerné.",ar:"مشكلة نقل (محطة مكسورة، محطة وسخة، سلم كهربائي معطل)؟ « أبلّغ » → النقل. يُحال إلى المتعامل المعني."},
+  // ── Groupe 3 : Pharmacie de garde ──
+  {k:['pharmacie','pharmacien','garde','medicament','ordonnance','nuit','ouverte','24h','صيدلية','صيدلية مناوبة','دواء','فارماسيان','صيدلية الليل','وين نلقى فارماسي'],fr:"Consultez les pharmacies de garde dans « Infos utiles » → Pharmacies de garde. Le service Sante-DZ affiche les pharmacies ouvertes 24h/24.",ar:"راجعوا صيدليات المناوبة في « معلومات مفيدة » → صيدليات المناوبة. خدمة Sante-DZ تعرض الصيدليات المفتوحة 24/7."},
+  // ── Groupe 4 : Perte / objet trouvé ──
+  {k:['perdu','perdue','perte','trouve','trouvee','objet trouve','papiers','portefeuille','telephone perdu','document perdu','ضيعت','ضاع','لقيت','وراقي','بورتفوي','تلفوني ضاع','راني ضيعت وراقي','محفظة','وثيقة ضائعة'],fr:"Déclarez votre perte ou objet trouvé dans « Perdu-Trouvé ». Vous recevrez une référence de suivi (PER-*/TRV-*) consultable dans « Mon suivi ».",ar:"صرّحوا بالضياع أو الشيء الموجود في « مفقود-موجود ». ستحصلون على مرجع متابعة (PER-*/TRV-*) في « متابعتي »."},
+  // ── Groupe 5 : Compte / NIN / quota ──
+  {k:['nin','quota','limite','limite atteinte','plus signaler','debloquer','verifier compte','niveau compte','رقم التعريف','حصة','حد','ما نقدرش نبلغ','كيفاش نفتح','تحقق','مستوى الحساب'],fr:"Votre compte peut être Simple ou Vérifié (d'autres niveaux arriveront). Simple : 5 signalements/mois. Déclarez votre NIN (18 chiffres) dans « Mon profil » pour débloquer le niveau Vérifié : 5 signalements/jour. Le NIN est réservé aux résidents disposant d'un numéro d'identification nationale.",ar:"حسابكم يمكن أن يكون بسيط أو مُوثَّق (مستويات أخرى قادمة). بسيط: 5 بلاغات/شهر. صرّحوا برقم التعريف الوطني (18 رقم) في « ملفي » لفتح المستوى المُوثَّق: 5 بلاغات/يوم. رقم التعريف مخصص للمقيمين الحاملين لرقم تعريف وطني."},
+  // ── Groupe 6 : Ma Houma (définir/changer) ──
+  {k:['definir houma','changer quartier','modifier houma','localisation','position','حدد حومتي','بدل الحي','غير حومتي','وين نسكن','موقعي'],fr:"Pour définir ou changer votre houma, ouvrez « Ma Houma » sur la carte et appuyez sur votre emplacement. Votre position sera enregistrée et vos signalements pré-remplis.",ar:"لتحديد أو تغيير حومتكم، افتحوا « حومتي » على الخريطة واضغطوا على موقعكم. سيُحفظ موقعكم وتُملأ بلاغاتكم مسبقا."},
+  // ── Groupe 7 : Urgences / contacts ──
+  {k:['gendarmerie','police','pompier','pompiers','protection civile','samu','ambulance','croissant rouge','centre anti-poison','secours','urgence medicale','درك','شرطة','حماية مدنية','إسعاف','إطفاء','الهلال الأحمر','مركز مضاد للتسمم','نجدة','طوارئ'],fr:"Numéros d'urgence : Police 17, Gendarmerie 1055, Protection civile / Pompiers 14, SAMU 115, Croissant-Rouge 021 63 48 48, Centre anti-poison 021 97 98 98. Consultez « Infos utiles » → Urgences pour la liste complète.",ar:"أرقام الطوارئ: الشرطة 17، الدرك 1055، الحماية المدنية / الإطفاء 14، الإسعاف 115، الهلال الأحمر 021 63 48 48، مركز مضاد للتسمم 021 97 98 98. راجعوا « معلومات مفيدة » → طوارئ للقائمة الكاملة."},
 ];
 
 /**
  * Recherche FAQ Saksini v2 — matching strict par keywords.
  * Ignore les mots < 3 chars. Exige un score minimum de 3.
+ * Les mots génériques (nuit, ouverte, garde…) ne comptent QUE
+ * si un mot du domaine a déjà matché dans la même intention.
  * Retourne null si aucun match → le fallback poli s'affiche.
  */
+const SAKSINI_GENERIC = new Set(['nuit','ouverte','ouvert','garde','24h','limite','position','sombre','الليل','مفتوحة','مفتوح']);
 function saksiniSearch(q) {
   const words = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .split(/\s+/).filter(w => w.length >= 3); // ignorer les mots courts (le, un, de, je...)
   if (!words.length) return null;
   let best = null, bestScore = 0;
   for (const faq of SAKSINI_FAQ) {
-    let score = 0;
+    let domainScore = 0, genericScore = 0;
     for (const w of words) {
       for (const k of faq.k) {
-        // Match exact ou contenu (keyword dans mot ou mot dans keyword)
-        if (w === k) score += 4;           // exact match
-        else if (k.length >= 4 && w.includes(k)) score += 2;  // mot contient keyword (ex: "signalement" contient "signal")
-        else if (w.length >= 4 && k.includes(w)) score += 2;  // keyword contient mot
-        else if (w.length >= 4 && k.length >= 4 && k.startsWith(w.substring(0,4))) score += 1; // préfixe commun
+        let pts = 0;
+        if (w === k) pts = 4;
+        else if (k.length >= 4 && w.includes(k)) pts = 2;
+        else if (w.length >= 4 && k.includes(w)) pts = 2;
+        else if (w.length >= 4 && k.length >= 4 && k.startsWith(w.substring(0,4))) pts = 1;
+        if (pts > 0) {
+          if (SAKSINI_GENERIC.has(k) || SAKSINI_GENERIC.has(w)) genericScore += pts;
+          else domainScore += pts;
+        }
       }
     }
+    // Mots génériques ne comptent que si au moins un mot du domaine a matché
+    const score = domainScore + (domainScore > 0 ? genericScore : 0);
     if (score > bestScore) { bestScore = score; best = faq; }
   }
   return best && bestScore >= 3 ? best : null; // seuil minimum 3 pour éviter les faux matches

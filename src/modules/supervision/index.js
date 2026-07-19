@@ -9,6 +9,15 @@ const { asyncH, unauthorized, forbidden } = require('../../utils/http');
 const sla = require('../../services/sla');
 const router = express.Router();
 
+// Validation stricte des dates pour éviter l'injection SQL
+function validDate(s) {
+  if (!s || typeof s !== 'string') return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  const d = new Date(s + 'T00:00:00Z');
+  if (isNaN(d.getTime())) return null;
+  return s; // retourne la chaîne validée
+}
+
 // Phase 4C — sans fallback
 function requireSuperviseur() {
   return (req, res, next) => {
@@ -187,7 +196,9 @@ router.get('/cockpit', authenticate, requirePilotage(), asyncH(async (req, res) 
       const from = req.query.from;
       const to = req.query.to;
       if (!from || !to) return res.status(400).json({ erreur: 'Paramètres from et to requis pour la période personnalisée.' });
-      intervalSQL = `s.cree_le >= '${from}'::date AND s.cree_le < ('${to}'::date + INTERVAL '1 day')`;
+      const vFrom = validDate(from), vTo = validDate(to);
+      if (!vFrom || !vTo) return res.status(400).json({ erreur: 'Format de date invalide (YYYY-MM-DD requis).' });
+      intervalSQL = `s.cree_le >= '${vFrom}'::date AND s.cree_le < ('${vTo}'::date + INTERVAL '1 day')`;
       break;
     default:       intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
   }
@@ -303,7 +314,9 @@ router.get('/carte', authenticate, requirePilotage(), asyncH(async (req, res) =>
     case 'annee':  intervalSQL = "s.cree_le >= DATE_TRUNC('year', NOW())"; break;
     case 'custom':
       if (req.query.from && req.query.to) {
-        intervalSQL = `s.cree_le >= '${req.query.from}'::date AND s.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+        const vFrom = validDate(req.query.from), vTo = validDate(req.query.to);
+        if (!vFrom || !vTo) return res.status(400).json({ erreur: 'Format de date invalide (YYYY-MM-DD requis).' });
+        intervalSQL = `s.cree_le >= '${vFrom}'::date AND s.cree_le < ('${vTo}'::date + INTERVAL '1 day')`;
       } else { intervalSQL = "1=1"; }
       break;
     default: intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
@@ -434,7 +447,9 @@ router.get('/organisations-performance', authenticate, requirePilotage(), asyncH
     case 'annee':  intervalSQL = "s.cree_le >= DATE_TRUNC('year', NOW())"; break;
     case 'custom':
       if (req.query.from && req.query.to) {
-        intervalSQL = `s.cree_le >= '${req.query.from}'::date AND s.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+        const vFrom = validDate(req.query.from), vTo = validDate(req.query.to);
+        if (!vFrom || !vTo) return res.status(400).json({ erreur: 'Format de date invalide (YYYY-MM-DD requis).' });
+        intervalSQL = `s.cree_le >= '${vFrom}'::date AND s.cree_le < ('${vTo}'::date + INTERVAL '1 day')`;
       } else { intervalSQL = "1=1"; }
       break;
     default: intervalSQL = "s.cree_le >= NOW() - INTERVAL '30 days'";
@@ -592,7 +607,9 @@ router.get('/cap-performance', authenticate, requirePilotage(), asyncH(async (re
     case 'annee':  intervalSQL = "m.cree_le >= DATE_TRUNC('year', NOW())"; break;
     case 'custom':
       if (req.query.from && req.query.to) {
-        intervalSQL = `m.cree_le >= '${req.query.from}'::date AND m.cree_le < ('${req.query.to}'::date + INTERVAL '1 day')`;
+        const vFrom = validDate(req.query.from), vTo = validDate(req.query.to);
+        if (!vFrom || !vTo) return res.status(400).json({ erreur: 'Format de date invalide (YYYY-MM-DD requis).' });
+        intervalSQL = `m.cree_le >= '${vFrom}'::date AND m.cree_le < ('${vTo}'::date + INTERVAL '1 day')`;
       } else { intervalSQL = "1=1"; }
       break;
     default: intervalSQL = "m.cree_le >= NOW() - INTERVAL '30 days'";
@@ -992,6 +1009,14 @@ router.post('/annuaire', authenticate, requirePilotage(), asyncH(async (req, res
     await query(`INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
       SELECT id, etat, $1, 'annuaire_creation', $2 FROM signalement LIMIT 1`,
       [req.user.id, 'Compte créé : ' + prenom + ' ' + nom + ' (' + (fonction||'') + ')']);
+    // Envoyer le mot de passe par email si l'agent a un email
+    if (email) {
+      try {
+        const { sendMail } = require('../../services/emailService');
+        await sendMail(email, 'Votre compte Algerna',
+          `Bonjour ${prenom},\n\nVotre compte a été créé. Mot de passe provisoire : ${pwd}\nConnectez-vous et changez-le dès que possible.\n\nAlgerna — Wilaya d'Alger`);
+      } catch(e) { console.warn('[supervision] email mdp provisoire failed:', e.message); }
+    }
     res.status(201).json({ ok: true, utilisateur: rows[0], mot_de_passe_provisoire: pwd });
   } else {
     // Contact simple (dans la table utilisateur mais sans mot de passe exploitable)

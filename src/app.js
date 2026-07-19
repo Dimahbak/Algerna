@@ -77,7 +77,7 @@ app.patch('/api/auth/preferences', (req, res, next) => {
       'equipements': async () => { let s = `SELECT e.*, c.nom AS commune_nom FROM equipement_public e LEFT JOIN commune c ON c.id = e.commune_id WHERE e.statut != 'hors_service'`; const a = []; if (p.type) { a.push(p.type); s += ` AND e.type = $${a.length}`; } if (p.q) { a.push('%'+p.q+'%'); s += ` AND (e.nom ILIKE $${a.length} OR e.type ILIKE $${a.length})`; } s += ' ORDER BY e.type, e.nom LIMIT 500'; return (await gwQ(s, a)).rows; },
       'equip_types': async () => (await gwQ('SELECT DISTINCT type FROM equipement_public ORDER BY type')).rows.map(r => r.type),
       'contacts': async () => { let s = 'SELECT * FROM contact_utile WHERE actif = TRUE'; const a = []; if (p.categorie) { a.push(p.categorie); s += ` AND categorie = $${a.length}`; } return (await gwQ(s + ' ORDER BY ordre, nom', a)).rows; },
-      'communiques': async () => (await gwQ(`SELECT c.*, cm.nom AS commune_nom FROM communique c LEFT JOIN commune cm ON cm.id = c.commune_id WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW() ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC LIMIT 20`)).rows,
+      'communiques': async () => (await gwQ(`SELECT c.*, cm.nom AS commune_nom FROM communique c LEFT JOIN commune cm ON cm.id = c.commune_id WHERE c.actif = TRUE AND c.statut = 'publie' AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW() ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC LIMIT 20`)).rows,
     };
     const fn = handlers[proxy];
     if (!fn) return res.status(400).json({ erreur: 'Unknown: ' + proxy });
@@ -110,7 +110,7 @@ app.post('/api/gw', express.json(), async (req, res) => {
         if (p.categorie) { a.push(p.categorie); sql += ` AND categorie = $${a.length}`; }
         return (await gwQuery(sql + ' ORDER BY ordre, nom', a)).rows;
       },
-      'infos/communiques': async () => (await gwQuery(`SELECT c.*, cm.nom AS commune_nom FROM communique c LEFT JOIN commune cm ON cm.id = c.commune_id WHERE c.actif = TRUE AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW() ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC LIMIT 20`)).rows,
+      'infos/communiques': async () => (await gwQuery(`SELECT c.*, cm.nom AS commune_nom FROM communique c LEFT JOIN commune cm ON cm.id = c.commune_id WHERE c.actif = TRUE AND c.statut = 'publie' AND (c.date_fin IS NULL OR c.date_fin > NOW()) AND c.date_debut <= NOW() ORDER BY CASE c.niveau WHEN 'urgent' THEN 0 WHEN 'important' THEN 1 ELSE 2 END, c.cree_le DESC LIMIT 20`)).rows,
     };
     const fn = h[proxy];
     if (!fn) return res.status(400).json({ erreur: 'Module inconnu' });
@@ -121,9 +121,22 @@ app.post('/gw', app._router.stack[app._router.stack.length - 1].handle); // mirr
 
 // POST gateway — OLS caches GET but not POST
 // Frontend sends POST /api/health with body { _proxy: 'equipements', type: 'parking' }
+// Whitelist stricte pour empêcher le détournement vers des endpoints sensibles
+const HEALTH_PROXY_WHITELIST = new Set([
+  'dashboard/quartier', 'dashboard/equipements', 'dashboard/equipements/types',
+  'dashboard/contacts', 'dashboard/communiques',
+  'equipements', 'equipements/types',
+  'infos/contacts', 'infos/communiques', 'infos/categories',
+  'referentiel/communes', 'referentiel/familles',
+  'signaler/familles', 'signaler/epics', 'signaler/public/stats',
+  'civipark/zones', 'civipark/config/tarif',
+  'points/classement', 'points/classement-quartiers',
+  'rdv/services', 'rdv/creneaux',
+]);
 app.post('/api/health', express.json(), (req, res, next) => {
   const proxy = req.body && req.body._proxy;
   if (!proxy) return res.json({ ok: true });
+  if (!HEALTH_PROXY_WHITELIST.has(proxy)) return res.status(403).json({ erreur: 'Cible non autorisée' });
   const params = { ...req.body };
   delete params._proxy;
   const qs = new URLSearchParams(params).toString();
@@ -162,6 +175,7 @@ const moduleMap = {
   ccoe:          require('./modules/ccoe'),
   quartiers:     require('./modules/quartiers'),
   'notes-proprete': require('./modules/notes-proprete'),
+  'perdu-trouve':   require('./modules/perdu-trouve'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)
