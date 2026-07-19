@@ -1,0 +1,509 @@
+commune_fr;commune_ar;quartier_fr;quartier_ar;statut
+Alger-Centre;الجزائر الوسطى;Centre-ville;وسط المدينة;verifie
+Alger-Centre;الجزائر الوسطى;Grande Poste;البريد المركزي;verifie
+Alger-Centre;الجزائر الوسطى;Place Maurice Audin;ساحة موريس أودان;verifie
+Alger-Centre;الجزائر الوسطى;Rue Didouche Mourad;شارع ديدوش مراد;verifie
+Alger-Centre;الجزائر الوسطى;Rue Larbi Ben M'Hidi;شارع العربي بن مهيدي;verifie
+Alger-Centre;الجزائر الوسطى;Port-Saïd;بور سعيد;verifie
+Alger-Centre;الجزائر الوسطى;Place Emir Abdelkader;ساحة الأمير عبد القادر;verifie
+Alger-Centre;الجزائر الوسطى;Place des Martyrs;ساحة الشهداء;verifie
+Alger-Centre;الجزائر الوسطى;Telemly;التلملي;verifie
+Alger-Centre;الجزائر الوسطى;Sacré-Cœur;السكري كور;verifie
+Alger-Centre;الجزائر الوسطى;Tafourah;تافورة;verifie
+Alger-Centre;الجزائر الوسطى;Boulevard Zighoud Youcef;شارع زيغود يوسف;verifie
+Alger-Centre;الجزائر الوسطى;Front de Mer;الواجهة البحرية;a_valider
+Alger-Centre;الجزائر الوسطى;Rue Hassiba Ben Bouali;شارع حسيبة بن بوعلي;verifie
+Alger-Centre;الجزائر الوسطى;Clauzel;كلوزيل;verifie
+Alger-Centre;الجزائر الوسطى;Victor Hugo;فيكتور هيغو;verifie
+Alger-Centre;الجزائر الوسطى;Boulevard Che Guevara;شارع شي غيفارا;verifie
+Alger-Centre;الجزائر الوسطى;Plateau Saulière – Faculté;هضبة سوليار – الكلية;verifie
+Sidi M'Hamed;سيدي امحمد;Sidi M'Hamed Centre;سيدي امحمد – الوسط;verifie
+Sidi M'Hamed;سيدي امحمد;Agha;الأغا;verifie
+Sidi M'Hamed;سيدي امحمد;Le Hamma;الحامة;verifie
+Sidi M'Hamed;سيدي امحمد;Jardin d'Essai;حديقة التجارب;verifie
+Sidi M'Hamed;سيدي امحمد;Cité AADL Hamma;حي عدل الحامة;a_valider
+Sidi M'Hamed;سيدي امحمد;1er Mai;أول ماي;verifie
+Sidi M'Hamed;سيدي امحمد;Place du 1er Mai;ساحة أول ماي;verifie
+Sidi M'Hamed;سيدي امحمد;Oued Kniss;وادي كنيس;verifie
+El Madania;المدنية;El Madania Centre;المدنية – الوسط;verifie
+El Madania;المدنية;Diar El Mahçoul;ديار المحصول;verifie
+El Madania;المدنية;Diar Es Saâda;ديار السعادة;verifie
+El Madania;المدنية;Clos Salembier;كلو سالمبيي;verifie
+El Madania;المدنية;Cité Malki;حي مالكي;a_valider
+El Madania;المدنية;Cité des Frères Abdeslam;حي الإخوة عبد السلام;a_valider
+El Madania;المدنية;Place Addis-Abeba;ساحة أديس أبابا;verifie
+El Madania;المدنية;Bois des Arcades;غابة الأروقة;verifie
+El Madania;المدنية;Cité du 11 Décembre;حي 11 ديسمبر;a_valider
+Belouizdad;بلوزداد;Belouizdad Centre;بلوزداد – الوسط;verifie
+Belouizdad;بلوزداد;Belcourt;بلكور;verifie
+Belouizdad;بلوزداد;Le Ruisseau;الرويسو;verifie
+Belouizdad;بلوزداد;Les Fusillés;لي فيزيلي;verifie
+Belouizdad;بلوزداد;Les Annassers;العناصر;verifie
+Belouizdad;بلوزداد;Cité Amirouche;حي عميروش;a_valider
+El Mouradia;المرادية;El Mouradia Centre;المرادية – الوسط;verifie
+El Mouradia;المرادية;Golf;القولف;verifie
+El Mouradia;المرادية;Parc de la Liberté;حديقة الحرية;verifie
+El Mouradia;المرادية;Plateau;البلاطو;a_valider
+El Mouradia;المرادية;Villa des Oliviers;فيلا الزياتين;a_valider
+El Mouradia;المرادية;Rue Franklin Roosevelt;شارع فرانكلين روزفلت;verifie
+El Mouradia;المرادية;Boulevard Krim Belkacem;شارع كريم بلقاسم;verifie
+Bab El Oued;باب الوادي;Bab El Oued Centre;باب الوادي – الوسط;verifie
+Bab El Oued;باب الوادي;Les Trois Horloges;الساعات الثلاث;verifie
+Bab El Oued;باب الوادي;Nelson;نيلسون;verifie
+Bab El Oued;باب الوادي;Triolet;تريوليه;verifie
+Bab El Oued;باب الوادي;Basseta;الباصطة;verifie
+Bab El Oued;باب الوادي;Climat de France;كليما دو فرانس;verifie
+Bab El Oued;باب الوادي;Cité des Mûriers;حي التوت;a_valider
+Bab El Oued;باب الوادي;Cité Ben Boulaïd;حي بن بولعيد;a_valider
+Bab El Oued;باب الوادي;La Marine;لامارين;verifie
+Bologhine;بولوغين;Bologhine Centre;بولوغين – الوسط;verifie
+Bologhine;بولوغين;Saint-Eugène;سانت أوجين;verifie
+Bologhine;بولوغين;Rampe Louni Arezki;منحدر لوني أرزقي;verifie
+Bologhine;بولوغين;Notre-Dame d'Afrique;السيدة الإفريقية;verifie
+Bologhine;بولوغين;Port de Pêche;ميناء الصيد;a_valider
+Bologhine;بولوغين;Front de Mer;الواجهة البحرية;a_valider
+Bologhine;بولوغين;Les Dunes;الكثبان;a_valider
+Casbah;القصبة;Casbah Centre;القصبة – الوسط;verifie
+Casbah;القصبة;Haute Casbah;القصبة العليا;verifie
+Casbah;القصبة;Basse Casbah;القصبة السفلى;verifie
+Casbah;القصبة;Souk El Djemaa;سوق الجمعة;verifie
+Casbah;القصبة;Palais des Raïs;قصر الرياس;verifie
+Casbah;القصبة;Ketchaoua;كتشاوة;verifie
+Casbah;القصبة;Sidi Ramdane;سيدي رمضان;verifie
+Casbah;القصبة;Djamaâ El Kebir;الجامع الكبير;verifie
+Casbah;القصبة;Bab Djedid;باب جديد;verifie
+Casbah;القصبة;Bab El Bhar;باب البحر;verifie
+Casbah;القصبة;Bab Azzoun;باب عزون;verifie
+Oued Koriche;وادي قريش;Oued Koriche Centre;وادي قريش – الوسط;verifie
+Oued Koriche;وادي قريش;Beau Fraisier;بو فريزيي;verifie
+Oued Koriche;وادي قريش;Beau Séjour;بو سيجور;verifie
+Oued Koriche;وادي قريش;Fontaine Fraîche;العين الباردة;verifie
+Oued Koriche;وادي قريش;Les Sources;العيون;a_valider
+Oued Koriche;وادي قريش;Cité Ben Badis;حي بن باديس;a_valider
+Oued Koriche;وادي قريش;Cité Sonelgaz;حي سونلغاز;a_valider
+Oued Koriche;وادي قريش;La Montagne;الجبل;a_valider
+Oued Koriche;وادي قريش;Cité des 200 Logements;حي 200 مسكن;a_valider
+Raïs Hamidou;رايس حميدو;Raïs Hamidou Centre;رايس حميدو – الوسط;verifie
+Raïs Hamidou;رايس حميدو;Miramar;ميرامار;verifie
+Raïs Hamidou;رايس حميدو;La Pointe;لابوانت;verifie
+Raïs Hamidou;رايس حميدو;Front de Mer;الواجهة البحرية;a_valider
+Raïs Hamidou;رايس حميدو;Port de pêche;ميناء الصيد;a_valider
+Raïs Hamidou;رايس حميدو;Quartier des Villas;حي الفيلات;a_valider
+Raïs Hamidou;رايس حميدو;Plage Raïs Hamidou;شاطئ رايس حميدو;verifie
+Raïs Hamidou;رايس حميدو;La Corniche;الكورنيش;verifie
+Bir Mourad Raïs;بئر مراد رايس;Bir Mourad Raïs Centre;بئر مراد رايس – الوسط;verifie
+Bir Mourad Raïs;بئر مراد رايس;Saïd Hamdine;سعيد حمدين;verifie
+Bir Mourad Raïs;بئر مراد رايس;Les Sources;العيون;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Cité AADL;حي عدل;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Cité des 448 Logements;حي 448 مسكن;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Coopérative El Bina;تعاونية البناء;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Les Vergers;البساتين;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Les Pins;الصنوبر;a_valider
+Bir Mourad Raïs;بئر مراد رايس;Les Crêtes;القمم;a_valider
+Hydra;حيدرة;Hydra Centre;حيدرة – الوسط;verifie
+Hydra;حيدرة;Sidi Yahia;سيدي يحيى;verifie
+Hydra;حيدرة;Paradou;بارادو;verifie
+Hydra;حيدرة;Djenane El Malik;جنان المالك;verifie
+Hydra;حيدرة;La Résidence;الإقامة;verifie
+Hydra;حيدرة;Cité des Pins;حي الصنوبر;a_valider
+Hydra;حيدرة;Chemin Mackley;طريق ماكلي;verifie
+Hydra;حيدرة;Chemin Poirson;طريق بوارصون;verifie
+Hydra;حيدرة;Parc des Pins;حديقة الصنوبر;verifie
+Kouba;القبة;Kouba Centre;القبة – الوسط;verifie
+Kouba;القبة;Vieux Kouba;القبة القديمة;verifie
+Kouba;القبة;Ben Omar;بن عمر;verifie
+Kouba;القبة;Garidi;قاريدي;verifie
+Kouba;القبة;Jolie Vue;جولي فو;verifie
+Kouba;القبة;El Annasser;العناصر;verifie
+Kouba;القبة;Cité du 8 Mai 1945;حي 8 ماي 1945;a_valider
+Kouba;القبة;Cité Sonelgaz;حي سونلغاز;a_valider
+Kouba;القبة;Cité Benboulaïd;حي بن بولعيد;a_valider
+Kouba;القبة;Coopérative El Bahia;تعاونية الباهية;a_valider
+Kouba;القبة;Les Sources;العيون;a_valider
+Kouba;القبة;Cité AADL Garidi;حي عدل قاريدي;a_valider
+Kouba;القبة;La Croix;لاكروا;a_valider
+Kouba;القبة;Quatre Chemins;أربع طرق;verifie
+Kouba;القبة;Cité Filali;حي فيلالي;verifie
+Kouba;القبة;Kouba village;قوبة القرية;verifie
+Birkhadem;بئر خادم;Birkhadem Centre;بئر خادم – الوسط;verifie
+Birkhadem;بئر خادم;Sidi M'Barek;سيدي مبارك;verifie
+Birkhadem;بئر خادم;Djenane Sfari;جنان سفاري;verifie
+Birkhadem;بئر خادم;Cité AADL;حي عدل;a_valider
+Birkhadem;بئر خادم;Haï El Badr;حي البدر;a_valider
+Birkhadem;بئر خادم;Cité des 500 Logements;حي 500 مسكن;a_valider
+Birkhadem;بئر خادم;El Qods;القدس;a_valider
+Birkhadem;بئر خادم;Saïd Hamdine Sud;سعيد حمدين الجنوبية;a_valider
+Birkhadem;بئر خادم;Sidi Messaoud;سيدي مسعود;a_valider
+Djasr Kasentina;جسر قسنطينة;Djasr Kasentina Centre;جسر قسنطينة – الوسط;verifie
+Djasr Kasentina;جسر قسنطينة;Aïn Naâdja;عين النعجة;verifie
+Djasr Kasentina;جسر قسنطينة;Cité des 700 Logements;حي 700 مسكن;a_valider
+Djasr Kasentina;جسر قسنطينة;Cité AADL;حي عدل;a_valider
+Djasr Kasentina;جسر قسنطينة;Les Sources;العيون;a_valider
+Djasr Kasentina;جسر قسنطينة;Haï El Badr;حي البدر;a_valider
+Djasr Kasentina;جسر قسنطينة;Les Vergers;البساتين;a_valider
+Djasr Kasentina;جسر قسنطينة;Coopérative El Wiam;تعاونية الوئام;a_valider
+Djasr Kasentina;جسر قسنطينة;Les Arcades;الأروقة;a_valider
+Saoula;السحاولة;Saoula Centre;السحاولة – الوسط;verifie
+Saoula;السحاولة;Haï El Badr;حي البدر;a_valider
+Saoula;السحاولة;Cité AADL;حي عدل;a_valider
+Saoula;السحاولة;Les Vergers;البساتين;a_valider
+Saoula;السحاولة;Coopérative El Wiam;تعاونية الوئام;a_valider
+Saoula;السحاولة;Les Sources;العيون;a_valider
+Saoula;السحاولة;Zone agricole;المنطقة الفلاحية;a_valider
+Saoula;السحاولة;Quartier des Villas;حي الفيلات;a_valider
+Saoula;السحاولة;Les Jardins;الحدائق;a_valider
+Birtouta;بئر توتة;Birtouta Centre;بئر توتة – الوسط;verifie
+Birtouta;بئر توتة;Haï El Feth;حي الفتح;a_valider
+Birtouta;بئر توتة;Cité AADL;حي عدل;a_valider
+Birtouta;بئر توتة;Les Vergers;البساتين;a_valider
+Birtouta;بئر توتة;Zone Industrielle;المنطقة الصناعية;a_valider
+Birtouta;بئر توتة;Les Sources;العيون;a_valider
+Birtouta;بئر توتة;Coopérative El Wiam;تعاونية الوئام;a_valider
+Birtouta;بئر توتة;Quartier de la Gare;حي المحطة;a_valider
+Ouled Chebel;أولاد شبل;Ouled Chebel Centre;أولاد شبل – الوسط;verifie
+Ouled Chebel;أولاد شبل;Sidi Slimane;سيدي سليمان;a_valider
+Ouled Chebel;أولاد شبل;Douar Ouled Chebel;دوار أولاد شبل;a_valider
+Ouled Chebel;أولاد شبل;Haï El Feth;حي الفتح;a_valider
+Ouled Chebel;أولاد شبل;Zone agricole;المنطقة الفلاحية;a_valider
+Ouled Chebel;أولاد شبل;Cité AADL;حي عدل;a_valider
+Ouled Chebel;أولاد شبل;Les Vergers;البساتين;a_valider
+Ouled Chebel;أولاد شبل;Les Fermes;المزارع;a_valider
+Tessala El Merdja;تسالة المرجة;Tessala El Merdja Centre;تسالة المرجة – الوسط;verifie
+Tessala El Merdja;تسالة المرجة;El Merdja;المرجة;a_valider
+Tessala El Merdja;تسالة المرجة;Haï El Feth;حي الفتح;a_valider
+Tessala El Merdja;تسالة المرجة;Zone agricole;المنطقة الفلاحية;a_valider
+Tessala El Merdja;تسالة المرجة;Les Vergers;البساتين;a_valider
+Tessala El Merdja;تسالة المرجة;Cité AADL;حي عدل;a_valider
+Tessala El Merdja;تسالة المرجة;Les Fermes;المزارع;a_valider
+Tessala El Merdja;تسالة المرجة;Douar Tessala;دوار تسالة;a_valider
+Dar El Beïda;الدار البيضاء;Dar El Beïda Centre;الدار البيضاء – الوسط;verifie
+Dar El Beïda;الدار البيضاء;Haï El Djorf;حي الجرف;a_valider
+Dar El Beïda;الدار البيضاء;Cité des 620 Logements;حي 620 مسكن;a_valider
+Dar El Beïda;الدار البيضاء;Cité des 200 Logements;حي 200 مسكن;a_valider
+Dar El Beïda;الدار البيضاء;Cité des 900 Logements;حي 900 مسكن;a_valider
+Dar El Beïda;الدار البيضاء;Cité Sonelgaz;حي سونلغاز;a_valider
+Dar El Beïda;الدار البيضاء;Cité des Frères Saadane;حي الإخوة سعدان;a_valider
+Dar El Beïda;الدار البيضاء;Quartier de la Gare;حي المحطة;a_valider
+Dar El Beïda;الدار البيضاء;Zone Aéroportuaire;المنطقة المطارية;verifie
+Dar El Beïda;الدار البيضاء;Zone Industrielle;المنطقة الصناعية;a_valider
+Bordj El Kiffan;برج الكيفان;Bordj El Kiffan Centre;برج الكيفان – الوسط;verifie
+Bordj El Kiffan;برج الكيفان;Fort de l'Eau;فور دو لو;verifie
+Bordj El Kiffan;برج الكيفان;Lido;ليدو;verifie
+Bordj El Kiffan;برج الكيفان;La Pêcherie;لابيشري;verifie
+Bordj El Kiffan;برج الكيفان;Cité des Dunes;حي الكثبان;a_valider
+Bordj El Kiffan;برج الكيفان;Cité des Palmiers;حي النخيل;a_valider
+Bordj El Kiffan;برج الكيفان;Tamaris;تاماريس;verifie
+Bordj El Kiffan;برج الكيفان;Plage Lido;شاطئ ليدو;verifie
+Bordj El Kiffan;برج الكيفان;Coopérative El Manar;تعاونية المنار;a_valider
+Bab Ezzouar;باب الزوار;Bab Ezzouar Centre;باب الزوار – الوسط;verifie
+Bab Ezzouar;باب الزوار;Cité 5 Juillet;حي 5 جويلية;verifie
+Bab Ezzouar;باب الزوار;Cité 8 Mai 1945;حي 8 ماي 1945;verifie
+Bab Ezzouar;باب الزوار;Cité Universitaire;الحي الجامعي;a_valider
+Bab Ezzouar;باب الزوار;USTHB;جامعة هواري بومدين;verifie
+Bab Ezzouar;باب الزوار;Quartier d'Affaires;حي الأعمال;verifie
+Bab Ezzouar;باب الزوار;Cité EPLF;حي الترقية العقارية;a_valider
+Bab Ezzouar;باب الزوار;Cité 416 Logements;حي 416 مسكن;a_valider
+Bab Ezzouar;باب الزوار;Cité des Bananiers;حي الموز;a_valider
+Bab Ezzouar;باب الزوار;Haï El Djamia;حي الجامعة;a_valider
+Bab Ezzouar;باب الزوار;Zone d'Activités;منطقة النشاطات;a_valider
+Bab Ezzouar;باب الزوار;Centre Commercial Bab Ezzouar;المركز التجاري باب الزوار;verifie
+Bordj El Bahri;برج البحري;Bordj El Bahri Centre;برج البحري – الوسط;verifie
+Bordj El Bahri;برج البحري;Alger Plage;شاطئ الجزائر;verifie
+Bordj El Bahri;برج البحري;Surcouf;سوركوف;verifie
+Bordj El Bahri;برج البحري;La Verte Rive;الضفة الخضراء;verifie
+Bordj El Bahri;برج البحري;Cité des Sables;حي الرمال;a_valider
+Bordj El Bahri;برج البحري;Les Pins Maritimes Est;الصنوبر البحري الشرقي;a_valider
+Bordj El Bahri;برج البحري;Quartier des Villas;حي الفيلات;a_valider
+Bordj El Bahri;برج البحري;Front de Mer;الواجهة البحرية;a_valider
+Aïn Taya;عين طاية;Aïn Taya Centre;عين طاية – الوسط;verifie
+Aïn Taya;عين طاية;Haï El Bahri;الحي البحري;a_valider
+Aïn Taya;عين طاية;Caroubier Est;الخروبة الشرقية;a_valider
+Aïn Taya;عين طاية;Plage de Surcouf;شاطئ سوركوف;verifie
+Aïn Taya;عين طاية;La Verte Rive;الضفة الخضراء;verifie
+Aïn Taya;عين طاية;Cité des Villas;حي الفيلات;a_valider
+Aïn Taya;عين طاية;El Kadous;القادوس;a_valider
+Aïn Taya;عين طاية;Quartier de la Gare;حي المحطة;a_valider
+El Marsa;المرسى;El Marsa Centre;المرسى – الوسط;verifie
+El Marsa;المرسى;Jean Bart;جان بار;verifie
+El Marsa;المرسى;Petit Port;الميناء الصغير;verifie
+El Marsa;المرسى;Port de pêche;ميناء الصيد;a_valider
+El Marsa;المرسى;Front de mer;الواجهة البحرية;a_valider
+El Marsa;المرسى;Les Villas;الفيلات;a_valider
+El Marsa;المرسى;Plage El Marsa;شاطئ المرسى;verifie
+El Marsa;المرسى;Cité AADL;حي عدل;a_valider
+Héraoua;هراوة;Héraoua Centre;هراوة – الوسط;verifie
+Héraoua;هراوة;Douar Héraoua;دوار هراوة;a_valider
+Héraoua;هراوة;Haï El Feth;حي الفتح;a_valider
+Héraoua;هراوة;Zone agricole;المنطقة الفلاحية;a_valider
+Héraoua;هراوة;Les Vergers;البساتين;a_valider
+Héraoua;هراوة;Cité AADL;حي عدل;a_valider
+Héraoua;هراوة;Littoral Est;الساحل الشرقي;a_valider
+Héraoua;هراوة;Les Fermes;المزارع;a_valider
+Rouiba;الرويبة;Rouiba Centre;الرويبة – الوسط;verifie
+Rouiba;الرويبة;Cité SNVI;حي SNVI;a_valider
+Rouiba;الرويبة;Cité Sonacome;حي سوناكوم;a_valider
+Rouiba;الرويبة;Cité 1er Novembre;حي أول نوفمبر;a_valider
+Rouiba;الرويبة;Cité EPLF;حي الترقية العقارية;a_valider
+Rouiba;الرويبة;Zone Industrielle de Rouiba;المنطقة الصناعية الرويبة;verifie
+Rouiba;الرويبة;Les Vergers;البساتين;a_valider
+Rouiba;الرويبة;El Hamiz;الحميز;verifie
+Rouiba;الرويبة;Haï El Feth;حي الفتح;a_valider
+Rouiba;الرويبة;Coopérative Ennasr;تعاونية النصر;a_valider
+Réghaïa;رغاية;Réghaïa Centre;رغاية – الوسط;verifie
+Réghaïa;رغاية;Haï El Feth;حي الفتح;a_valider
+Réghaïa;رغاية;Cité EPLF;حي الترقية العقارية;a_valider
+Réghaïa;رغاية;Cité AADL;حي عدل;a_valider
+Réghaïa;رغاية;Cité 1200 Logements;حي 1200 مسكن;a_valider
+Réghaïa;رغاية;Lac de Réghaïa;بحيرة رغاية;verifie
+Réghaïa;رغاية;Zone Industrielle;المنطقة الصناعية;a_valider
+Réghaïa;رغاية;Les Vergers;البساتين;a_valider
+Réghaïa;رغاية;Quartier Agricole;الحي الفلاحي;a_valider
+Hussein Dey;حسين داي;Hussein Dey Centre;حسين داي – الوسط;verifie
+Hussein Dey;حسين داي;Amirouche;عميروش;verifie
+Hussein Dey;حسين داي;La Glacière;لاقلاسيار;verifie
+Hussein Dey;حسين داي;Caroubier;الخروبة;verifie
+Hussein Dey;حسين داي;Cité Amirouche;حي عميروش;a_valider
+Hussein Dey;حسين داي;La Montagne;الجبل;a_valider
+Hussein Dey;حسين داي;Quartier du Stade;حي الملعب;verifie
+Hussein Dey;حسين داي;Ruisseau;الرويسو;a_valider
+Hussein Dey;حسين داي;Cité des Eucalyptus;حي الكاليتوس;a_valider
+El Magharia;المغارية;El Magharia Centre;المغارية – الوسط;verifie
+El Magharia;المغارية;Leveilley;لوفيلي;verifie
+El Magharia;المغارية;Haï El Badr;حي البدر;a_valider
+El Magharia;المغارية;Cité Sonelgaz;حي سونلغاز;a_valider
+Mohammadia;المحمدية;Mohammadia Centre;المحمدية – الوسط;verifie
+Mohammadia;المحمدية;Lavigerie;لافيجري;verifie
+Mohammadia;المحمدية;Les Pins Maritimes;الصنوبر البحري;verifie
+Mohammadia;المحمدية;SAFEX;قصر المعارض SAFEX;verifie
+Mohammadia;المحمدية;Cité des Bananiers;حي الموز;a_valider
+Mohammadia;المحمدية;Caroubier Est;الخروبة الشرقية;a_valider
+Mohammadia;المحمدية;Zone Industrielle;المنطقة الصناعية;a_valider
+Mohammadia;المحمدية;Front de Mer;الواجهة البحرية;a_valider
+Bachdjerrah;باش جراح;Bachdjerrah Centre;باش جراح – الوسط;verifie
+Bachdjerrah;باش جراح;Les Orangers;حي البرتقال;verifie
+Bachdjerrah;باش جراح;Cité des 200 Logements;حي 200 مسكن;a_valider
+Bachdjerrah;باش جراح;Cité AADL;حي عدل;a_valider
+Bachdjerrah;باش جراح;Cité Sonelgaz;حي سونلغاز;a_valider
+Bachdjerrah;باش جراح;Haï El Badr;حي البدر;a_valider
+Bachdjerrah;باش جراح;La Concorde;لاكونكورد;a_valider
+Bachdjerrah;باش جراح;Coopérative Ennasr;تعاونية النصر;a_valider
+Bouzaréah;بوزريعة;Bouzaréah Centre;بوزريعة – الوسط;verifie
+Bouzaréah;بوزريعة;Beau-Fraisier;بو فريزيي;verifie
+Bouzaréah;بوزريعة;Frais Vallon;فري فالون;verifie
+Bouzaréah;بوزريعة;Université de Bouzaréah;جامعة بوزريعة;verifie
+Bouzaréah;بوزريعة;Cité Universitaire;الحي الجامعي;a_valider
+Bouzaréah;بوزريعة;Les Crêtes;القمم;a_valider
+Bouzaréah;بوزريعة;Haï El Badr;حي البدر;a_valider
+Bouzaréah;بوزريعة;Les Oliviers;الزياتين;a_valider
+Beni Messous;بني مسوس;Beni Messous Centre;بني مسوس – الوسط;verifie
+Beni Messous;بني مسوس;CHU Beni Messous;المستشفى الجامعي بني مسوس;verifie
+Beni Messous;بني مسوس;Cité AADL;حي عدل;a_valider
+Beni Messous;بني مسوس;Cité EPLF;حي الترقية العقارية;a_valider
+Beni Messous;بني مسوس;Les Vergers;البساتين;a_valider
+Beni Messous;بني مسوس;El Kerma;الكرمة;a_valider
+Beni Messous;بني مسوس;Coopérative El Wiam;تعاونية الوئام;a_valider
+Beni Messous;بني مسوس;Haï El Feth;حي الفتح;a_valider
+Beni Messous;بني مسوس;Quartier Universitaire;الحي الجامعي;a_valider
+Dely Ibrahim;دالي إبراهيم;Dely Ibrahim Centre;دالي إبراهيم – الوسط;verifie
+Dely Ibrahim;دالي إبراهيم;Cité AADL;حي عدل;a_valider
+Dely Ibrahim;دالي إبراهيم;Cité Diplomatique;الحي الدبلوماسي;a_valider
+Dely Ibrahim;دالي إبراهيم;Cité des Magistrats;حي القضاة;a_valider
+Dely Ibrahim;دالي إبراهيم;Les Sources;العيون;a_valider
+Dely Ibrahim;دالي إبراهيم;Quartier des Villas;حي الفيلات;a_valider
+Dely Ibrahim;دالي إبراهيم;École Supérieure d'Hôtellerie;المدرسة العليا للفندقة;verifie
+Dely Ibrahim;دالي إبراهيم;Pôle Universitaire;القطب الجامعي;a_valider
+Dely Ibrahim;دالي إبراهيم;Cité des Bananiers;حي الموز;a_valider
+Dely Ibrahim;دالي إبراهيم;Lotissement communal;التجزئة البلدية;verifie
+Dely Ibrahim;دالي إبراهيم;Plateau Dely Ibrahim;هضبة دالي إبراهيم;verifie
+El Biar;الأبيار;El Biar Centre;الأبيار – الوسط;verifie
+El Biar;الأبيار;Poirson;بوارصون;verifie
+El Biar;الأبيار;La Redoute;لاروضوت;verifie
+El Biar;الأبيار;Beau Séjour;بو سيجور;verifie
+El Biar;الأبيار;El Kettar;القطار;verifie
+El Biar;الأبيار;Les Glycines;لي قليسين;verifie
+El Biar;الأبيار;Val d'Hydra;فال ديدرا;a_valider
+El Biar;الأبيار;Clos des Pins;كلو دي بان;a_valider
+El Biar;الأبيار;Cité des Enseignants;حي الأساتذة;a_valider
+Ben Aknoun;بن عكنون;Ben Aknoun Centre;بن عكنون – الوسط;verifie
+Ben Aknoun;بن عكنون;Cité Malki;حي مالكي;a_valider
+Ben Aknoun;بن عكنون;Université de Ben Aknoun;جامعة بن عكنون;verifie
+Ben Aknoun;بن عكنون;Forêt de Ben Aknoun;غابة بن عكنون;verifie
+Ben Aknoun;بن عكنون;Les Résidences;الإقامات;a_valider
+Ben Aknoun;بن عكنون;Coopérative El Wiam;تعاونية الوئام;a_valider
+Ben Aknoun;بن عكنون;Cité Diplomatique;الحي الدبلوماسي;a_valider
+Ben Aknoun;بن عكنون;Les Pins;الصنوبر;a_valider
+Ben Aknoun;بن عكنون;Haï des Fonctionnaires;حي الموظفين;a_valider
+Cheraga;الشراقة;Cheraga Centre;الشراقة – الوسط;verifie
+Cheraga;الشراقة;Cité AADL;حي عدل;a_valider
+Cheraga;الشراقة;Cité EPLF;حي الترقية العقارية;a_valider
+Cheraga;الشراقة;Les Vergers;البساتين;a_valider
+Cheraga;الشراقة;Djenane El Kheir;جنان الخير;a_valider
+Cheraga;الشراقة;Haï El Badr;حي البدر;a_valider
+Cheraga;الشراقة;Cité des 200 Logements;حي 200 مسكن;a_valider
+Cheraga;الشراقة;Coopérative El Wiam;تعاونية الوئام;a_valider
+Cheraga;الشراقة;Les Sources;العيون;a_valider
+Cheraga;الشراقة;Les Résidences;الإقامات;a_valider
+Cheraga;الشراقة;Quartier des Villas;حي الفيلات;a_valider
+Ouled Fayet;أولاد فايت;Ouled Fayet Centre;أولاد فايت – الوسط;verifie
+Ouled Fayet;أولاد فايت;Cité AADL;حي عدل;a_valider
+Ouled Fayet;أولاد فايت;Cité EPLF;حي الترقية العقارية;a_valider
+Ouled Fayet;أولاد فايت;Coopérative El Bahia;تعاونية الباهية;a_valider
+Ouled Fayet;أولاد فايت;Haï El Feth;حي الفتح;a_valider
+Ouled Fayet;أولاد فايت;Quartier des Villas;حي الفيلات;a_valider
+Ouled Fayet;أولاد فايت;Les Jardins;الحدائق;a_valider
+Ouled Fayet;أولاد فايت;Les Vergers;البساتين;a_valider
+Ouled Fayet;أولاد فايت;Djenane El Kheir;جنان الخير;a_valider
+Ouled Fayet;أولاد فايت;Les Terrasses;الشرفات;a_valider
+Draria;درارية;Draria Centre;درارية – الوسط;verifie
+Draria;درارية;Sebbala;السبالة;a_valider
+Draria;درارية;Cité AADL;حي عدل;a_valider
+Draria;درارية;Cité EPLF;حي الترقية العقارية;a_valider
+Draria;درارية;Cité des 400 Logements;حي 400 مسكن;a_valider
+Draria;درارية;Les Vergers;البساتين;a_valider
+Draria;درارية;Haï El Badr;حي البدر;a_valider
+Draria;درارية;Les Sources;العيون;a_valider
+Draria;درارية;Coopérative El Wiam;تعاونية الوئام;a_valider
+El Achour;العاشور;El Achour Centre;العاشور – الوسط;verifie
+El Achour;العاشور;Les Arcades;الأروقة;a_valider
+El Achour;العاشور;Sebbala;السبالة;a_valider
+El Achour;العاشور;Cité AADL;حي عدل;a_valider
+El Achour;العاشور;Cité EPLF;حي الترقية العقارية;a_valider
+El Achour;العاشور;Coopérative El Bahia;تعاونية الباهية;a_valider
+El Achour;العاشور;Haï El Feth;حي الفتح;a_valider
+El Achour;العاشور;Les Villas;الفيلات;a_valider
+El Achour;العاشور;Les Vergers;البساتين;a_valider
+El Achour;العاشور;Djenane El Kheir;جنان الخير;a_valider
+Souidania;سويدانية;Souidania Centre;سويدانية – الوسط;verifie
+Souidania;سويدانية;Haï El Feth;حي الفتح;a_valider
+Souidania;سويدانية;Les Vergers;البساتين;a_valider
+Souidania;سويدانية;Les Jardins;الحدائق;a_valider
+Souidania;سويدانية;Cité AADL;حي عدل;a_valider
+Souidania;سويدانية;Coopérative El Wiam;تعاونية الوئام;a_valider
+Souidania;سويدانية;Quartier des Villas;حي الفيلات;a_valider
+Souidania;سويدانية;Les Terrasses;الشرفات;a_valider
+Mahelma;محالمة;Mahelma Centre;محالمة – الوسط;verifie
+Mahelma;محالمة;Douar Mahelma;دوار محالمة;a_valider
+Mahelma;محالمة;Haï El Feth;حي الفتح;a_valider
+Mahelma;محالمة;Les Vergers;البساتين;a_valider
+Mahelma;محالمة;Cité AADL;حي عدل;a_valider
+Mahelma;محالمة;Zone Agricole;المنطقة الفلاحية;a_valider
+Mahelma;محالمة;Quartier des Villas;حي الفيلات;a_valider
+Mahelma;محالمة;Les Sources;العيون;a_valider
+Mahelma;محالمة;Sidi Abdellah;سيدي عبد الله;verifie
+Rahmania;الرحمانية;Rahmania Centre;الرحمانية – الوسط;verifie
+Rahmania;الرحمانية;Cité AADL;حي عدل;a_valider
+Rahmania;الرحمانية;Les Vergers;البساتين;a_valider
+Rahmania;الرحمانية;Coopérative El Bahia;تعاونية الباهية;a_valider
+Rahmania;الرحمانية;Haï El Feth;حي الفتح;a_valider
+Rahmania;الرحمانية;Les Jardins;الحدائق;a_valider
+Rahmania;الرحمانية;Les Terrasses;الشرفات;a_valider
+Rahmania;الرحمانية;Zone Agricole;المنطقة الفلاحية;a_valider
+Hammamet;الحمامات;Hammamet Centre;الحمامات – الوسط;verifie
+Hammamet;الحمامات;Résidences de Hammamet;إقامات الحمامات;a_valider
+Hammamet;الحمامات;Les Jardins;الحدائق;a_valider
+Hammamet;الحمامات;Quartier des Villas;حي الفيلات;a_valider
+Hammamet;الحمامات;Cité AADL;حي عدل;a_valider
+Hammamet;الحمامات;Les Vergers;البساتين;a_valider
+Hammamet;الحمامات;Baïnem;باينام;verifie
+Zéralda;زرالدة;Zéralda Centre;زرالدة – الوسط;verifie
+Zéralda;زرالدة;Sidi Abdellah;سيدي عبد الله;verifie
+Zéralda;زرالدة;Les Dunes;الكثبان;a_valider
+Zéralda;زرالدة;Les Sables;الرمال;a_valider
+Zéralda;زرالدة;Quartier des Villas;حي الفيلات;a_valider
+Zéralda;زرالدة;Cité AADL;حي عدل;a_valider
+Zéralda;زرالدة;Haï El Feth;حي الفتح;a_valider
+Zéralda;زرالدة;Station Balnéaire;المحطة الشاطئية;verifie
+Zéralda;زرالدة;Front de Mer;الواجهة البحرية;a_valider
+Zéralda;زرالدة;Domaine Universitaire;الحرم الجامعي;verifie
+Staouéli;سطاوالي;Staouéli Centre;سطاوالي – الوسط;verifie
+Staouéli;سطاوالي;Palm Beach;بالم بيتش;verifie
+Staouéli;سطاوالي;Sidi Fredj;سيدي فرج;verifie
+Staouéli;سطاوالي;Moretti;موريتي;verifie
+Staouéli;سطاوالي;Club des Pins;نادي الصنوبر;verifie
+Staouéli;سطاوالي;Les Dunes;الكثبان;a_valider
+Staouéli;سطاوالي;Front de Mer;الواجهة البحرية;a_valider
+Staouéli;سطاوالي;Quartier Touristique;الحي السياحي;verifie
+Staouéli;سطاوالي;Cité AADL;حي عدل;a_valider
+Staouéli;سطاوالي;Les Villas;الفيلات;a_valider
+Aïn Benian;عين البنيان;Aïn Benian Centre;عين البنيان – الوسط;verifie
+Aïn Benian;عين البنيان;La Madrague;المدراق;verifie
+Aïn Benian;عين البنيان;El Djamila;الجميلة;verifie
+Aïn Benian;عين البنيان;Plage Ouest;الشاطئ الغربي;verifie
+Aïn Benian;عين البنيان;Front de Mer;الواجهة البحرية;a_valider
+Aïn Benian;عين البنيان;Les Villas;الفيلات;a_valider
+Aïn Benian;عين البنيان;Cité AADL;حي عدل;a_valider
+Aïn Benian;عين البنيان;Les Dunes;الكثبان;a_valider
+Douéra;الدويرة;Douéra Centre;الدويرة – الوسط;verifie
+Douéra;الدويرة;Cité AADL;حي عدل;a_valider
+Douéra;الدويرة;Cité EPLF;حي الترقية العقارية;a_valider
+Douéra;الدويرة;Haï El Feth;حي الفتح;a_valider
+Douéra;الدويرة;Les Vergers;البساتين;a_valider
+Douéra;الدويرة;Les Sources;العيون;a_valider
+Douéra;الدويرة;Coopérative El Bahia;تعاونية الباهية;a_valider
+Douéra;الدويرة;Zone Industrielle;المنطقة الصناعية;a_valider
+Douéra;الدويرة;Les Jardins;الحدائق;a_valider
+Baba Hassen;بابا حسن;Baba Hassen Centre;بابا حسن – الوسط;verifie
+Baba Hassen;بابا حسن;Les Vergers;البساتين;a_valider
+Baba Hassen;بابا حسن;Cité AADL;حي عدل;a_valider
+Baba Hassen;بابا حسن;Coopérative El Wiam;تعاونية الوئام;a_valider
+Baba Hassen;بابا حسن;Haï El Badr;حي البدر;a_valider
+Baba Hassen;بابا حسن;Zone Artisanale;المنطقة الحرفية;a_valider
+Baba Hassen;بابا حسن;Les Villas;الفيلات;a_valider
+Baba Hassen;بابا حسن;Sebbala Ouest;السبالة الغربية;a_valider
+Khraïcia;خرايسية;Khraïcia Centre;خرايسية – الوسط;verifie
+Khraïcia;خرايسية;Cité AADL;حي عدل;a_valider
+Khraïcia;خرايسية;Les Vergers;البساتين;a_valider
+Khraïcia;خرايسية;Les Jardins;الحدائق;a_valider
+Khraïcia;خرايسية;Coopérative El Bahia;تعاونية الباهية;a_valider
+Khraïcia;خرايسية;Zone Agricole;المنطقة الفلاحية;a_valider
+Khraïcia;خرايسية;Quartier des Villas;حي الفيلات;a_valider
+Khraïcia;خرايسية;Les Sources;العيون;a_valider
+Baraki;براقي;Baraki Centre;براقي – الوسط;verifie
+Baraki;براقي;Sidi Rabah;سيدي رابح;a_valider
+Baraki;براقي;Haï El Feth;حي الفتح;a_valider
+Baraki;براقي;Cité AADL;حي عدل;a_valider
+Baraki;براقي;Cité EPLF;حي الترقية العقارية;a_valider
+Baraki;براقي;Les Vergers;البساتين;a_valider
+Baraki;براقي;Zone Industrielle;المنطقة الصناعية;a_valider
+Baraki;براقي;Quartier de la Gare;حي المحطة;a_valider
+Baraki;براقي;Cité Sonelgaz;حي سونلغاز;a_valider
+Les Eucalyptus;الكاليتوس;Les Eucalyptus Centre;الكاليتوس – الوسط;verifie
+Les Eucalyptus;الكاليتوس;El Kerma;الكرمة;a_valider
+Les Eucalyptus;الكاليتوس;Cité AADL;حي عدل;a_valider
+Les Eucalyptus;الكاليتوس;Les Vergers;البساتين;a_valider
+Les Eucalyptus;الكاليتوس;Haï El Feth;حي الفتح;a_valider
+Les Eucalyptus;الكاليتوس;Zone Artisanale;المنطقة الحرفية;a_valider
+Les Eucalyptus;الكاليتوس;Les Sources;العيون;a_valider
+Sidi Moussa;سيدي موسى;Sidi Moussa Centre;سيدي موسى – الوسط;verifie
+Sidi Moussa;سيدي موسى;Haï El Feth;حي الفتح;a_valider
+Sidi Moussa;سيدي موسى;Cité AADL;حي عدل;a_valider
+Sidi Moussa;سيدي موسى;Les Vergers;البساتين;a_valider
+Sidi Moussa;سيدي موسى;Coopérative El Bahia;تعاونية الباهية;a_valider
+Sidi Moussa;سيدي موسى;Zone Agricole;المنطقة الفلاحية;a_valider
+Sidi Moussa;سيدي موسى;Les Jardins;الحدائق;a_valider
+Sidi Moussa;سيدي موسى;Quartier des Villas;حي الفيلات;a_valider
+El Harrach;الحراش;El Harrach Centre;الحراش – الوسط;verifie
+El Harrach;الحراش;Belfort;بلفور;verifie
+El Harrach;الحراش;Cinq Maisons;سانك ميزون;verifie
+El Harrach;الحراش;La Faïence;لافايانس;verifie
+El Harrach;الحراش;Gare d'El Harrach;محطة الحراش;verifie
+El Harrach;الحراش;Cité PLM;حي PLM;a_valider
+El Harrach;الحراش;Beaulieu;بوليو;verifie
+El Harrach;الحراش;Quartier du Marché;حي السوق;verifie
+El Harrach;الحراش;Quartier Universitaire;الحي الجامعي;a_valider
+Bourouba;بوروبة;Bourouba Centre;بوروبة – الوسط;verifie
+Bourouba;بوروبة;Les Bananiers;حي الموز;a_valider
+Bourouba;بوروبة;Cité des 1200 Logements;حي 1200 مسكن;a_valider
+Bourouba;بوروبة;Cité EPLF;حي الترقية العقارية;a_valider
+Bourouba;بوروبة;Haï El Badr;حي البدر;a_valider
+Bourouba;بوروبة;La Montagne;الجبل;a_valider
+Bourouba;بوروبة;Quartier des Villas;حي الفيلات;a_valider
+Bourouba;بوروبة;Les Vergers;البساتين;a_valider
+Oued Smar;وادي السمار;Oued Smar Centre;وادي السمار – الوسط;verifie
+Oued Smar;وادي السمار;Zone Industrielle;المنطقة الصناعية;a_valider
+Oued Smar;وادي السمار;Cité EPLF;حي الترقية العقارية;a_valider
+Oued Smar;وادي السمار;Cité AADL;حي عدل;a_valider
+Oued Smar;وادي السمار;Haï El Feth;حي الفتح;a_valider
+Oued Smar;وادي السمار;Les Vergers;البساتين;a_valider
+Oued Smar;وادي السمار;Quartier de la Gare;حي المحطة;a_valider
+Oued Smar;وادي السمار;Les Ateliers;الورشات;a_valider
