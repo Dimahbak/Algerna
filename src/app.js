@@ -177,6 +177,7 @@ const moduleMap = {
   quartiers:     require('./modules/quartiers'),
   'notes-proprete': require('./modules/notes-proprete'),
   'perdu-trouve':   require('./modules/perdu-trouve'),
+  'command-center': require('./modules/command-center'),
 };
 for (const [name, handler] of Object.entries(moduleMap)) {
   app.use(`/api/${name}`, handler);  // Normal path (localhost)
