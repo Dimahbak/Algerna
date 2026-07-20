@@ -2185,3 +2185,47 @@
 .sak-input-row button:hover{transform:scale(1.05);}
 [dir="rtl"] .sak-msg-bot{border-radius:16px 16px 4px 16px;}
 [dir="rtl"] .sak-msg-user{border-radius:16px 16px 16px 4px;}
+
+/* ═══ COMMAND-CENTER — Salle de Commandement v2 ═══ */
+:root{--navy-950:#062f46;--cc-surface:#f4f7f9;--cc-card:#ffffff;--cc-border:#dce6eb;--cc-critique:#e53935;--cc-eleve:#f57c00;--cc-vigilance:#f5b400;--cc-maitrise:#159447;--cc-decision:#7b4ce2;}
+#view-command-center{max-width:1920px;margin:0 auto;padding:0 20px 32px;background:var(--cc-surface);}
+.cc-header{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 0 16px;flex-wrap:wrap;gap:12px;}
+.cc-header-left{flex:1;min-width:200px;}
+.cc-title{font-size:22px;font-weight:800;color:var(--navy-950);margin:0;}
+.cc-subtitle{font-size:13px;color:var(--muted);margin-top:2px;}
+.cc-header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.cc-badge-live{background:var(--cc-maitrise);color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;animation:cc-pulse 2s infinite;}
+@keyframes cc-pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.cc-meta{font-size:11px;color:var(--muted);}
+.cc-filters{display:flex;gap:6px;align-items:center;}
+.cc-filters select{padding:6px 12px;border:1px solid var(--cc-border);border-radius:8px;font-size:12px;background:white;color:var(--navy-950);}
+.cc-btn-crisis{padding:6px 14px;border:1px solid var(--cc-border);border-radius:8px;font-size:12px;background:white;color:var(--muted);cursor:not-allowed;opacity:0.6;}
+.cc-synthesis{font-size:14px;color:var(--navy-950);font-weight:500;padding:8px 0 20px;border-bottom:1px solid var(--cc-border);margin-bottom:20px;}
+.cc-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px;}
+.cc-kpi-card{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:18px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);transition:box-shadow .2s;}
+.cc-kpi-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.cc-kpi-icon{font-size:22px;margin-bottom:6px;}
+.cc-kpi-value{font-size:30px;font-weight:800;line-height:1;}
+.cc-kpi-label{font-size:12px;color:var(--muted);margin-top:6px;min-height:2.4em;}
+.cc-section{margin-bottom:24px;}
+.cc-section-title{font-size:16px;font-weight:700;color:var(--navy-950);margin:0 0 12px;}
+.cc-priorities{display:flex;flex-direction:column;gap:8px;}
+.cc-priority-row{display:flex;align-items:center;background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:14px 16px;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.cc-priority-row::before{content:'';width:4px;align-self:stretch;border-radius:4px;flex-shrink:0;}
+.cc-severity-critique::before{background:var(--cc-critique);}
+.cc-severity-eleve::before{background:var(--cc-eleve);}
+.cc-severity-maitrise::before{background:var(--cc-maitrise);}
+.cc-priority-body{flex:1;min-width:0;}
+.cc-priority-title{font-size:14px;font-weight:600;color:var(--navy-950);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cc-priority-meta{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:4px;flex-wrap:wrap;}
+.cc-sla-badge{font-weight:700;padding:1px 8px;border-radius:6px;font-size:11px;}
+.cc-sla-critique{background:#fce4ec;color:var(--cc-critique);}
+.cc-sla-eleve{background:#fff3e0;color:var(--cc-eleve);}
+.cc-sla-maitrise{background:#e8f5e9;color:var(--cc-maitrise);}
+.cc-priority-actions{display:flex;gap:6px;flex-shrink:0;}
+.cc-btn-open,.cc-btn-more{width:32px;height:32px;border:1px solid var(--cc-border);border-radius:8px;background:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.cc-btn-open:hover{background:var(--cc-surface);}
+.cc-btn-more{opacity:0.5;cursor:not-allowed;}
+.cc-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;}
+[dir="rtl"] .cc-priority-row::before{order:1;}
+[dir="rtl"] .cc-priority-meta{direction:rtl;}

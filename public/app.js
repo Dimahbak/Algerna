@@ -911,15 +911,15 @@ function showView(name) {
     agent_traitant:       ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
-    cabinet:              ['ccoe','profil','parametres','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','command-center','cockpit','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
+    cabinet:              ['ccoe','command-center','cockpit','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','mobilite','participe','mes-signalements','perdu-trouve','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
-    admin_wilaya: ['bo-executive','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','command-center','cockpit','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
@@ -986,6 +986,7 @@ function showView(name) {
   if (name === 'rapports') initRapports();
   if (name === 'annuaire') annuaireInit();
   if (name === 'cockpit') cockpitLoad();
+  if (name === 'command-center') ccLoad();
   if (name === 'bo-admin') initBoAdmin();
   if (name === 'ccoe') initCCOE();
   if (name === 'mes-chantiers-ccoe') initMesChantiersCCOE();
@@ -12857,5 +12858,98 @@ function saksiniToggle() {
   const visible = !w.classList.contains('hidden');
   w.classList.toggle('hidden');
   if (!visible) saksiniInit();
+}
+
+// ═══ COMMAND-CENTER — Salle de Commandement v2 ═══
+async function ccLoad() {
+  var loading = document.getElementById('cc-loading');
+  var error = document.getElementById('cc-error');
+  var content = document.getElementById('cc-content');
+  if (loading) loading.style.display = '';
+  if (error) error.classList.add('hidden');
+  if (content) content.classList.add('hidden');
+
+  var period = document.getElementById('cc-period');
+  var periodVal = period ? period.value : '30d';
+
+  try {
+    var data = await safeFetchJSON('/api/command-center/overview?period=' + periodVal, {}, true);
+    if (loading) loading.style.display = 'none';
+    if (content) content.classList.remove('hidden');
+
+    // Updated timestamp
+    var updEl = document.getElementById('cc-updated');
+    if (updEl) updEl.textContent = t('cc.maj') + ' ' + new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {hour:'2-digit',minute:'2-digit'});
+
+    // Synthesis phrase
+    var syn = document.getElementById('cc-synthesis');
+    if (syn && data.summary) {
+      var s = data.summary;
+      syn.textContent = currentLang === 'ar'
+        ? s.criticalCases + ' ' + t('cc.syn_critiques') + ' · ' + s.breachedSla + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + s.operationalScore + '/100'
+        : s.criticalCases + ' ' + t('cc.syn_critiques') + ' · ' + s.breachedSla + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + s.operationalScore + '/100';
+    }
+
+    // KPI cards
+    ccRenderKpis(data.summary);
+
+    // Priorities
+    ccRenderPriorities(data.priorities || []);
+
+    applyTranslations();
+  } catch(e) {
+    if (loading) loading.style.display = 'none';
+    if (error) error.classList.remove('hidden');
+    console.error('[cc] load failed:', e.message);
+  }
+}
+
+function ccRenderKpis(s) {
+  if (!s) return;
+  var grid = document.getElementById('cc-kpis');
+  if (!grid) return;
+  var kpis = [
+    { key:'critiques', value:s.criticalCases, icon:'🔴', color:'var(--cc-critique)' },
+    { key:'communes', value:s.communesUnderWatch, icon:'📍', color:'var(--cc-eleve)' },
+    { key:'sla', value:s.breachedSla, icon:'⏱', color:'var(--cc-vigilance)' },
+    { key:'decisions', value:s.pendingDecisions, icon:'📋', color:'var(--cc-decision)' },
+    { key:'score', value:s.operationalScore + '/100', icon:'📊', color: s.operationalScore >= 80 ? 'var(--cc-maitrise)' : s.operationalScore >= 60 ? 'var(--cc-vigilance)' : 'var(--cc-critique)' },
+    { key:'orgs', value:s.mobilizedOrganisations, icon:'🏛', color:'var(--navy-950)' },
+  ];
+  grid.innerHTML = kpis.map(function(k) {
+    return '<div class="cc-kpi-card" style="cursor:pointer;">' +
+      '<div class="cc-kpi-icon" style="color:' + k.color + ';">' + k.icon + '</div>' +
+      '<div class="cc-kpi-value" style="color:' + k.color + ';">' + k.value + '</div>' +
+      '<div class="cc-kpi-label">' + t('cc.kpi_' + k.key) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function ccRenderPriorities(priorities) {
+  var el = document.getElementById('cc-priorities');
+  if (!el) return;
+  if (!priorities.length) {
+    el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_priorite') + '</div>';
+    return;
+  }
+  el.innerHTML = priorities.map(function(p) {
+    var severity = p.criticite === 'danger_immediat' ? 'critique' : (p.slaDepassementMinutes > 0 ? 'eleve' : 'maitrise');
+    var slaText = p.slaDepassementMinutes > 0 ? '+' + Math.round(p.slaDepassementMinutes / 60) + 'h' : t('cc.dans_delai');
+    return '<div class="cc-priority-row cc-severity-' + severity + '">' +
+      '<div class="cc-priority-body">' +
+        '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + '</div>' +
+        '<div class="cc-priority-meta">' +
+          '<span>' + escHtml(p.commune || '—') + '</span>' +
+          '<span>' + escHtml(p.directionPilote || '—') + '</span>' +
+          '<span>' + escHtml(p.executant || '—') + '</span>' +
+          '<span class="cc-sla-badge cc-sla-' + severity + '">' + slaText + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="cc-priority-actions">' +
+        '<button class="cc-btn-open" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')" title="' + t('cc.ouvrir') + '">↗</button>' +
+        '<button class="cc-btn-more" disabled title="' + t('cc.actions_a_venir') + '">⋯</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 

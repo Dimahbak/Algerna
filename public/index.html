@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=379">
+  <link rel="stylesheet" href="/app.css?v=380">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -2516,8 +2516,46 @@
       </div>
 
       <!-- ══ COCKPIT EXÉCUTIF (Vague 5A) ══ -->
+      <!-- ═══ NOUVELLE SALLE DE COMMANDEMENT (Palier 1) ═══ -->
+      <div id="view-command-center" class="view">
+        <div id="cc-loading" style="text-align:center;padding:48px;color:var(--muted);"><div class="spinner"></div><span data-i18n="cc.chargement">Chargement…</span></div>
+        <div id="cc-error" class="hidden" style="text-align:center;padding:48px;color:var(--red);"><span data-i18n="cc.erreur">Erreur de chargement</span> <button onclick="ccLoad()" data-i18n="cc.reessayer" style="margin-left:8px;">Réessayer</button></div>
+        <div id="cc-content" class="hidden">
+          <!-- En-tête exécutif -->
+          <header class="cc-header">
+            <div class="cc-header-left">
+              <h1 class="cc-title" data-i18n="cc.titre">Salle de commandement</h1>
+              <div class="cc-subtitle" data-i18n="cc.sous_titre">Wilaya d'Alger</div>
+            </div>
+            <div class="cc-header-right">
+              <span class="cc-badge-live" data-i18n="cc.temps_reel">Temps réel</span>
+              <span id="cc-updated" class="cc-meta"></span>
+              <div class="cc-filters">
+                <select id="cc-period" onchange="ccLoad()">
+                  <option value="today" data-i18n="cc.aujourd_hui">Aujourd'hui</option>
+                  <option value="7d" data-i18n="cc.sept_jours">7 jours</option>
+                  <option value="30d" selected data-i18n="cc.trente_jours">30 jours</option>
+                </select>
+                <button class="cc-btn-crisis" disabled title="" data-i18n-title="cc.mode_crise_info" data-i18n="cc.mode_crise">Mode crise</button>
+              </div>
+            </div>
+          </header>
+          <!-- Phrase de synthèse -->
+          <div id="cc-synthesis" class="cc-synthesis"></div>
+          <!-- 6 cartes KPI -->
+          <div id="cc-kpis" class="cc-kpi-grid"></div>
+          <!-- Priorités à traiter -->
+          <div class="cc-section">
+            <h2 class="cc-section-title" data-i18n="cc.priorites_titre">Priorités à traiter</h2>
+            <div id="cc-priorities" class="cc-priorities"></div>
+          </div>
+          <!-- Lien ancien cockpit -->
+          <div style="text-align:right;margin-top:12px;"><a href="#" onclick="showView('cockpit');return false;" style="font-size:11px;color:var(--muted);" data-i18n="cc.ancien_cockpit">Version précédente →</a></div>
+        </div>
+      </div>
+
       <div id="view-cockpit" class="view">
-        <button class="btn-back" onclick="showView('bo-executive')" style="color:var(--muted);">← Retour</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><button class="btn-back" onclick="showView('bo-executive')" style="color:var(--muted);">← Retour</button><a href="#" onclick="showView('command-center');return false;" style="font-size:11px;color:var(--teal);" data-i18n="cc.nouvelle_version">Nouvelle version →</a></div>
         <div class="wb-header" style="background:linear-gradient(135deg,#041F38,#063B5A,#0B6078);">
           <div class="wb-header-inner">
             <div style="flex:1;">
@@ -3798,7 +3836,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=379"></script>
+<script src="/app.js?v=380"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->
