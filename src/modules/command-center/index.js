@@ -36,20 +36,32 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     const severityWhere = severity === 'critical' ? "AND (s.gravite = 'danger_immediat' OR cs.criticite = 'haute')" : '';
 
     // ── SUMMARY ──
-    // DÉFINITION UNIQUE "CRITIQUE" (partagée summary, priorities, score) :
-    //   gravite = 'danger_immediat' ET dossier actif (non résolu/clos/rejeté)
-    // operationalScore components:
-    //   30% SLA respect + 25% taux traitement + 20% taux réponse
-    //   + 15% inverse critiques (pénalité 20pts/danger_immediat) + 10% inverse décisions en attente
-    const { rows: [stats] } = await query(`
+    // DÉFINITION UNIQUE "CRITIQUE" : gravite = 'danger_immediat' ET actif
+    //
+    // STOCK vs FLUX (décision Hamid) :
+    //   STOCK (tous les actifs, sans fenêtre) : criticalCases, breachedSla,
+    //     communesUnderWatch, slaRespect, inverseCritiques, mobilizedOrganisations
+    //   FLUX (fenêtre période) : tauxTraitement, tauxReponse
+
+    // STOCK — anomalies : tous les dossiers actifs sans filtre période
+    const { rows: [stock] } = await query(`
       SELECT
-        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.gravite = 'danger_immediat') AS critical_cases,
-        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND cs.criticite = 'haute') AS high_priority_cases,
-        COUNT(DISTINCT s.commune_id) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS communes_under_watch,
-        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.cree_le < NOW() - INTERVAL '48 hours') AS breached_sla,
+        COUNT(*) FILTER (WHERE s.gravite = 'danger_immediat') AS critical_cases,
+        COUNT(*) FILTER (WHERE cs.criticite = 'haute') AS high_priority_cases,
+        COUNT(DISTINCT s.commune_id) AS communes_under_watch,
+        COUNT(*) FILTER (WHERE s.cree_le < NOW() - INTERVAL '48 hours') AS breached_sla,
+        COUNT(*) AS active
+      FROM signalement s
+      JOIN categorie_signal cs ON cs.id = s.categorie_id
+      WHERE s.etat NOT IN ('resolu','clos','rejete') ${severityWhere}
+    `);
+
+    // FLUX — taux d'activité : fenêtre période
+    const { rows: [flux] } = await query(`
+      SELECT
         COUNT(*) AS total,
         COUNT(*) FILTER (WHERE s.etat IN ('resolu','clos')) AS resolved,
-        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS active
+        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete','recu')) AS responded
       FROM signalement s
       JOIN categorie_signal cs ON cs.id = s.categorie_id
       WHERE 1=1 ${periodWhere} ${severityWhere}
@@ -57,7 +69,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
 
     const { rows: [decisionCount] } = await query("SELECT COUNT(*) AS n FROM demo_decisions WHERE statut = 'en_attente'");
 
-    // Mobilized organisations
+    // Mobilized organisations (STOCK)
     const { rows: mobilized } = await query(`
       SELECT DISTINCT o.id, o.nom, o.type_organisation FROM organisations o
       WHERE o.id IN (
@@ -67,25 +79,24 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       )
     `);
 
-    // Score calculation — formules documentées :
-    // slaRespect : % dossiers actifs dans les délais (actifs - SLA dépassés) / actifs
-    // tauxTraitement : % dossiers résolus/clos sur le total de la période
-    // tauxReponse : % dossiers ayant reçu une action (non-recu) parmi les actifs
-    // inverseCritiques : pénalité 10pts par dossier critique, plancher 0
-    // inverseDecisions : pénalité 15pts par décision en attente, plancher 0
-    const active = parseInt(stats.active) || 0;
-    const total = parseInt(stats.total) || 1;
-    const resolved = parseInt(stats.resolved) || 0;
-    const breached = parseInt(stats.breached_sla) || 0;
-    const critical = parseInt(stats.critical_cases) || 0;
+    // Score — composantes documentées :
+    //   slaRespect (STOCK) : (actifs - SLA dépassés) / actifs × 100
+    //   tauxTraitement (FLUX) : résolus / total_période × 100
+    //   tauxReponse (FLUX) : actifs ayant reçu action / actifs_période × 100
+    //   inverseCritiques (STOCK) : 100 - critiques × 20, plancher 0
+    //   inverseDecisions (STOCK) : 100 - décisions_en_attente × 15, plancher 0
+    const active = parseInt(stock.active) || 0;
+    const breached = parseInt(stock.breached_sla) || 0;
+    const critical = parseInt(stock.critical_cases) || 0;
+    const fluxTotal = parseInt(flux.total) || 1;
+    const fluxResolved = parseInt(flux.resolved) || 0;
+    const fluxResponded = parseInt(flux.responded) || 0;
+    const fluxActive = fluxTotal - fluxResolved - (parseInt(flux.total) - parseInt(flux.resolved) - parseInt(flux.responded));
     const pendingDec = parseInt(decisionCount.n) || 0;
 
     const slaRespect = active > 0 ? Math.max(0, (active - breached) / active * 100) : 100;
-    const tauxTraitement = total > 0 ? (resolved / total * 100) : 0;
-    const { rows: [responded] } = await query(`SELECT COUNT(*) AS n FROM signalement s WHERE s.etat NOT IN ('resolu','clos','rejete','recu') ${periodWhere}`);
-    const respondedCount = parseInt(responded.n) || 0;
-    const tauxReponse = active > 0 ? (respondedCount / active * 100) : 100;
-    // inverseCritiques : pénalité 20pts par dossier danger_immediat actif
+    const tauxTraitement = fluxTotal > 0 ? (fluxResolved / fluxTotal * 100) : 0;
+    const tauxReponse = (fluxTotal - fluxResolved) > 0 ? (fluxResponded / (fluxTotal - fluxResolved) * 100) : 100;
     const inverseCritiques = Math.max(0, 100 - (critical * 20));
     const inverseDecisions = Math.max(0, 100 - (pendingDec * 15));
 
@@ -95,11 +106,11 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     );
 
     const summary = {
-      criticalCases: parseInt(stats.critical_cases),
-      highPriorityCases: parseInt(stats.high_priority_cases),
-      communesUnderWatch: parseInt(stats.communes_under_watch),
-      breachedSla: parseInt(stats.breached_sla),
-      pendingDecisions: parseInt(decisionCount.n),
+      criticalCases: critical,
+      highPriorityCases: parseInt(stock.high_priority_cases),
+      communesUnderWatch: parseInt(stock.communes_under_watch),
+      breachedSla: breached,
+      pendingDecisions: pendingDec,
       operationalScore,
       mobilizedOrganisations: mobilized.length,
       scoreDetails: {
