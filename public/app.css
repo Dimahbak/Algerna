@@ -157,13 +157,14 @@
     .ops-prio-urgente, .ops-prio-critique { background:var(--ops-danger-bg); color:var(--ops-danger); }
 
     /* ── SLA Indicator ── */
-    .ops-sla { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700; }
+    .ops-sla { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700; position:relative; cursor:help; }
     .ops-sla-ok { background:var(--ops-success-bg); color:var(--ops-success); }
     .ops-sla-ok::before { content:'🟢'; font-size:8px; }
     .ops-sla-warn { background:var(--ops-warning-bg); color:var(--ops-warning); }
     .ops-sla-warn::before { content:'🟠'; font-size:8px; }
     .ops-sla-breach { background:var(--ops-danger-bg); color:var(--ops-danger); }
     .ops-sla-breach::before { content:'🔴'; font-size:8px; }
+    /* SLA tooltip — JS-positioned fixed tooltip (escapes overflow:auto containers) */
 
     /* ── Timeline ── */
     .ops-timeline { display:flex; flex-direction:column; gap:0; }

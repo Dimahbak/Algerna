@@ -7244,7 +7244,8 @@ async function execLoad() {
     if (sEl) {
       var sHtml = servicesData.filter(function(s){return (s.engagement_pct||100) < 80;}).map(function(s) {
         var slaClass = (s.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
-        return '<div style="padding:6px 0;border-bottom:1px solid var(--ops-border);display:flex;justify-content:space-between;align-items:center;"><div><span style="font-weight:600;font-size:12px;">' + escHtml(s.service||'') + '</span><span style="font-size:11px;color:var(--muted);margin-left:6px;">' + (s.signalements||0) + ' sig.</span></div><span class="ops-sla ' + slaClass + '">' + (s.engagement_pct||0) + '%</span></div>';
+        var _slaDef = (currentLang==='ar'&&ACRONYMES_AR.SLA)?ACRONYMES_AR.SLA:ACRONYMES_FR.SLA;
+        return '<div style="padding:6px 0;border-bottom:1px solid var(--ops-border);display:flex;justify-content:space-between;align-items:center;"><div><span style="font-weight:600;font-size:12px;">' + escHtml(s.service||'') + '</span><span style="font-size:11px;color:var(--muted);margin-left:6px;">' + (s.signalements||0) + ' sig.</span></div><span class="ops-sla ' + slaClass + '" title="' + escHtml(_slaDef) + '">' + (s.engagement_pct||0) + '%</span></div>';
       }).join('');
       sEl.innerHTML = sHtml || '<div style="padding:12px;font-size:12px;color:var(--muted);">' + (isAr ? 'جميع المصالح منتظمة' : 'Tous les services sont conformes.') + '</div>';
     }
@@ -7361,7 +7362,8 @@ async function execLoad() {
     if (cbEl) cbEl.innerHTML = comData.length ?
       comData.map(function(c) {
         var slaClass = (c.engagement_pct||0) >= 80 ? 'ops-sla-ok' : (c.engagement_pct||0) >= 50 ? 'ops-sla-warn' : 'ops-sla-breach';
-        return '<tr><td style="font-weight:600;">' + escHtml(c.commune||'') + '</td><td>' + (c.ouverts||0) + '</td><td>' + (c.delai_moyen||'—') + 'h</td><td><span class="ops-sla ' + slaClass + '">' + (c.engagement_pct||0) + '%</span></td></tr>';
+        var _slaDef2 = (currentLang==='ar'&&ACRONYMES_AR.SLA)?ACRONYMES_AR.SLA:ACRONYMES_FR.SLA;
+        return '<tr><td style="font-weight:600;">' + escHtml(c.commune||'') + '</td><td>' + (c.ouverts||0) + '</td><td>' + (c.delai_moyen||'—') + 'h</td><td><span class="ops-sla ' + slaClass + '" title="' + escHtml(_slaDef2) + '">' + (c.engagement_pct||0) + '%</span></td></tr>';
       }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);">—</td></tr>';
   } catch(e) { console.warn('[sdc] échec chargement communes:', e.message); }
 
@@ -8055,7 +8057,7 @@ function opsSlaLabel(cree_le, targetHours) {
 // Status badge HTML
 function opsStatusBadge(etat) { var labels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:'Résolu',clos:t('bo.col_clos'),rejete:t('bo.col_rejete')}; return '<span class="ops-status ops-status-' + (etat||'recu') + '">' + escHtml(labels[etat] || etat || t('bo.col_recu')) + '</span>'; }
 function opsPrioBadge(prio) { var labels = {haute:t('bo.prio_haute'),moyenne:t('bo.prio_moyenne'),basse:t('bo.prio_basse')}; return '<span class="ops-prio ops-prio-' + (prio||'normale') + '">' + escHtml(labels[prio] || prio || t('bo.prio_moyenne')) + '</span>'; }
-function opsSlaBadge(cree_le, target) { return '<span class="ops-sla ' + opsSlaClass(cree_le,target) + '">' + opsSlaLabel(cree_le,target) + '</span>'; }
+function opsSlaBadge(cree_le, target) { var slaDef = (currentLang === 'ar' && ACRONYMES_AR.SLA) ? ACRONYMES_AR.SLA : ACRONYMES_FR.SLA; return '<span class="ops-sla ' + opsSlaClass(cree_le,target) + '" title="' + escHtml(slaDef) + '">' + opsSlaLabel(cree_le,target) + '</span>'; }
 
 // Timeline HTML
 function opsTimelineHtml(entries) {
