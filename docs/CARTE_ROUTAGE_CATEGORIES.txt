@@ -1,0 +1,92 @@
+CARTE DE ROUTAGE DES CATEGORIES DE SIGNALEMENT
+Generee le 2026-07-20 depuis la base de donnees
+
+cat_id | libelle FR                               | famille          | epic_id | nom EPIC                                       | responsable
+-------|-----------------------------------------|------------------|---------|------------------------------------------------|------------------------------------
+    69 | Trottoir non accessible PMR             | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    70 | Absence de rampe / main courante        | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    71 | Place PMR occupée / non conforme        | accessibilite    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
+    72 | Autre accessibilité                     | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    65 | Animal errant (chien, chat)             | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    66 | Animal mort sur la voie publique        | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    67 | Nid d'insectes dangereux                | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    68 | Autre animal                            | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    37 | Regard/avaloir bouché                   | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    38 | Odeurs nauséabondes                     | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    39 | Refoulement eaux usées                  | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    40 | Autre assainissement                    | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    36 | Autre problème                          | autre            |   —     | (tri humain)                                   | TRI HUMAIN (Youcef Kaci 0550000002)
+    41 | Bâtiment dégradé                        | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
+    42 | Accessibilité non conforme              | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
+    43 | Équipement défectueux                   | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
+    44 | Autre bâtiment public                   | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
+     8 | Fuite d'eau visible                     | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+     9 | Coupure d'eau ou pression faible        | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    10 | Eau non potable ou colorée              | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    11 | Fuite sur compteur                      | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    12 | Pression insuffisante                   | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    13 | Inondation ou refoulement               | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+    14 | Autre eau                               | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
+     6 | Éclairage défaillant                    | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    23 | Lampadaire éteint                       | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    24 | Lampadaire clignotant ou défectueux     | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    25 | Câble électrique apparent               | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    26 | Autre éclairage                         | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    57 | Déversement illicite                    | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
+    58 | Cours d'eau / oued pollué               | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
+    59 | Terrain vague insalubre                 | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
+    60 | Autre environnement                     | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
+    15 | Arbre dangereux ou espace vert dégradé  | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    18 | Arrosage défectueux ou fuite            | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    19 | Mobilier urbain dégradé                 | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    20 | Aire de jeux endommagée                 | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    21 | Plantation ou fleurissement à entretenir | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    22 | Autre espaces verts                     | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    49 | Banc / abri bus dégradé                 | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    50 | Poubelle publique manquante ou cassée   | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    51 | Panneau / affichage endommagé           | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    52 | Autre mobilier urbain                   | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
+    45 | Bruit excessif                          | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    46 | Pollution de l'air / fumées             | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    47 | Nuisibles                               | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+    48 | Autre nuisance                          | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
+     1 | Dépôt sauvage                           | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
+     2 | Benne pleine ou débordante              | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
+     3 | Encombrants sur la voie publique        | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
+     4 | Tags ou graffitis                       | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
+     7 | Autre propreté                          | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
+    17 | Décharge sauvage                        | proprete         | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
+    61 | Trou / excavation non protégé           | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    62 | Mur / structure menaçant de s'effondrer | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    63 | Câble / fil électrique au sol           | securite         | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
+    64 | Autre danger                            | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    16 | Stationnement gênant ou anarchique      | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
+    33 | Place PMR non respectée                 | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
+    34 | Zone à réguler                          | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
+    35 | Autre stationnement                     | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
+    53 | Arrêt de bus sans abri / dégradé        | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    54 | Signalisation routière manquante        | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    55 | Passage piéton effacé / dangereux       | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    56 | Autre transport                         | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+     5 | Chaussée dégradée                       | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    28 | Trottoir dégradé ou inaccessible        | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    29 | Signalisation manquante ou endommagée   | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    30 | Feu tricolore en panne                  | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+    31 | Autre voirie                            | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
+
+Total categories : 70
+Colonnes "AUCUN" : 0
+
+RECAPITULATIF PAR RESPONSABLE
+---------------------------------------------|-----
+responsable                                  | nb categories
+---------------------------------------------|-----
+Sofiane Cherif                                | 19
+Farid Mebarki                                 | 11
+Leïla Haddad                                  | 10
+Nassim Taleb                                  | 8
+Nadia Aissaoui                                | 6
+Khaled Boumediene                             | 5
+Redouane Ferhat                               | 5
+Nassim Taleb (dynamique)                      | 5
+TRI HUMAIN (Youcef Kaci                       | 1
