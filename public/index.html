@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=378">
+  <link rel="stylesheet" href="/app.css?v=379">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -601,11 +601,11 @@
 
             <!-- Doublon détecté -->
             <div id="sig-r-doublon" style="display:none;background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:14px;margin-bottom:12px;">
-              <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:8px;">Un problème similaire a été signalé près d'ici</div>
+              <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:8px;" data-i18n="sig.doublon_titre">Un problème similaire a été signalé à moins de 200 m</div>
               <div id="sig-r-doublon-detail" style="font-size:12px;color:#78350f;margin-bottom:10px;"></div>
               <div style="display:flex;gap:8px;">
-                <button type="button" class="btn btn-sm btn-primary" onclick="sigRapideSuivreDossier()" style="flex:1;font-size:12px;">Suivre ce dossier</button>
-                <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('sig-r-doublon').style.display='none';_sigRapideDoublon=null;" style="flex:1;font-size:12px;">C'est un autre problème</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="sigRapideSuivreDossier()" style="flex:1;font-size:12px;" data-i18n="sig.doublon_suivre">Suivre ce dossier</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('sig-r-doublon').style.display='none';_sigRapideDoublon=null;" style="flex:1;font-size:12px;" data-i18n="sig.doublon_autre">C'est un autre problème</button>
               </div>
             </div>
 
@@ -3798,7 +3798,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=378"></script>
+<script src="/app.js?v=379"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->
