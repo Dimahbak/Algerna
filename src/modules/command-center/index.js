@@ -41,7 +41,8 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     //   + 15% inverse critiques + 10% inverse décisions en attente
     const { rows: [stats] } = await query(`
       SELECT
-        COUNT(*) FILTER (WHERE s.gravite = 'danger_immediat' OR cs.criticite = 'haute') AS critical_cases,
+        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.gravite = 'danger_immediat') AS critical_cases,
+        COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND cs.criticite = 'haute') AS high_priority_cases,
         COUNT(DISTINCT s.commune_id) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS communes_under_watch,
         COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.cree_le < NOW() - INTERVAL '48 hours') AS breached_sla,
         COUNT(*) AS total,
@@ -64,12 +65,27 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       )
     `);
 
-    // Score calculation
-    const slaRespect = stats.active > 0 ? Math.max(0, 100 - (stats.breached_sla / stats.active * 100)) : 100;
-    const tauxTraitement = stats.total > 0 ? (stats.resolved / stats.total * 100) : 0;
-    const tauxReponse = stats.active > 0 ? Math.min(100, ((stats.total - stats.breached_sla) / stats.total) * 100) : 100;
-    const inverseCritiques = Math.max(0, 100 - (parseInt(stats.critical_cases) * 10));
-    const inverseDecisions = Math.max(0, 100 - (parseInt(decisionCount.n) * 15));
+    // Score calculation — formules documentées :
+    // slaRespect : % dossiers actifs dans les délais (actifs - SLA dépassés) / actifs
+    // tauxTraitement : % dossiers résolus/clos sur le total de la période
+    // tauxReponse : % dossiers ayant reçu une action (non-recu) parmi les actifs
+    // inverseCritiques : pénalité 10pts par dossier critique, plancher 0
+    // inverseDecisions : pénalité 15pts par décision en attente, plancher 0
+    const active = parseInt(stats.active) || 0;
+    const total = parseInt(stats.total) || 1;
+    const resolved = parseInt(stats.resolved) || 0;
+    const breached = parseInt(stats.breached_sla) || 0;
+    const critical = parseInt(stats.critical_cases) || 0;
+    const pendingDec = parseInt(decisionCount.n) || 0;
+
+    const slaRespect = active > 0 ? Math.max(0, (active - breached) / active * 100) : 100;
+    const tauxTraitement = total > 0 ? (resolved / total * 100) : 0;
+    const { rows: [responded] } = await query(`SELECT COUNT(*) AS n FROM signalement s WHERE s.etat NOT IN ('resolu','clos','rejete','recu') ${periodWhere}`);
+    const respondedCount = parseInt(responded.n) || 0;
+    const tauxReponse = active > 0 ? (respondedCount / active * 100) : 100;
+    // inverseCritiques : pénalité 20pts par dossier danger_immediat actif
+    const inverseCritiques = Math.max(0, 100 - (critical * 20));
+    const inverseDecisions = Math.max(0, 100 - (pendingDec * 15));
 
     const operationalScore = Math.round(
       slaRespect * 0.30 + tauxTraitement * 0.25 + tauxReponse * 0.20 +
@@ -78,6 +94,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
 
     const summary = {
       criticalCases: parseInt(stats.critical_cases),
+      highPriorityCases: parseInt(stats.high_priority_cases),
       communesUnderWatch: parseInt(stats.communes_under_watch),
       breachedSla: parseInt(stats.breached_sla),
       pendingDecisions: parseInt(decisionCount.n),
