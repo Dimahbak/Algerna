@@ -371,7 +371,7 @@ VALUES (
   '0550000011', 'Yacine', 'Benmoussa', 'yacine@demo.dz',
   'admin_wilaya', 'cabinet', 'wilaya', 3,
   ARRAY['pilotage','validation','ccoe'],
-  -- mot de passe: admin1234 (même hash que les autres comptes démo)
+  -- mot de passe: copié depuis Amina (comptes agents mis à admin@@1234)
   (SELECT mot_de_passe FROM utilisateur WHERE telephone = '0550000001' LIMIT 1),
   TRUE
 );
