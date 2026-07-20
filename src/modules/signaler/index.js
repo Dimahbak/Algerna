@@ -319,6 +319,11 @@ router.post('/signalements',
     try {
       const { rows: cr } = await query('SELECT direction_pilote_id, organisation_executante_id FROM categorie_routage WHERE categorie_id = $1', [categorieId]);
       if (cr.length) { directionPiloteId = cr[0].direction_pilote_id; organisationExecutanteId = cr[0].organisation_executante_id; }
+      // Pour les catégories dynamiques, l'exécutant est résolu via l'epicId calculé
+      if (!organisationExecutanteId && epicId) {
+        const { rows: eom } = await query('SELECT organisation_id FROM epic_organisation_map WHERE epic_id = $1 LIMIT 1', [epicId]);
+        if (eom.length) organisationExecutanteId = eom[0].organisation_id;
+      }
       if (communeId) { const { rows: cm } = await query('SELECT daira_id FROM commune WHERE id = $1', [communeId]); if (cm.length) dairaId = cm[0].daira_id; }
     } catch(e) { console.warn('[routage-inst] fallback:', e.message); }
 
