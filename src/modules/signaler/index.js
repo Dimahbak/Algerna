@@ -314,15 +314,24 @@ router.post('/signalements',
     const prefixMap = { proprete: 'PRO', eau: 'EAU', general: 'SIG' };
     const reference = makeReference(prefixMap[domaine] || 'SIG');
 
+    // Routage institutionnel (couche données, ne remplace pas epic_id)
+    let directionPiloteId = null, organisationExecutanteId = null, dairaId = null;
+    try {
+      const { rows: cr } = await query('SELECT direction_pilote_id, organisation_executante_id FROM categorie_routage WHERE categorie_id = $1', [categorieId]);
+      if (cr.length) { directionPiloteId = cr[0].direction_pilote_id; organisationExecutanteId = cr[0].organisation_executante_id; }
+      if (communeId) { const { rows: cm } = await query('SELECT daira_id FROM commune WHERE id = $1', [communeId]); if (cm.length) dairaId = cm[0].daira_id; }
+    } catch(e) { console.warn('[routage-inst] fallback:', e.message); }
+
     const result = await withTransaction(async (c) => {
       const { rows } = await c.query(
         `INSERT INTO signalement
-           (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, gravite)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',$12)
+           (reference, domaine, categorie_id, citoyen_id, commune_id, operateur_id, epic_id, lat, lng, description, photo_path, etat, gravite,
+            direction_pilote_id, organisation_executante_id, daira_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'recu',$12,$13,$14,$15)
          RETURNING *`,
         [reference, domaine, categorieId, citoyenId, communeId || null,
          operateurId, epicId, lat || 0, lng || 0, description || null, photoPath,
-         gravite || 'degradation']);
+         gravite || 'degradation', directionPiloteId, organisationExecutanteId, dairaId]);
       const sig = rows[0];
 
       await c.query(

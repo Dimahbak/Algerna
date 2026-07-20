@@ -1,0 +1,85 @@
+ROUTAGE INSTITUTIONNEL — 70 CATEGORIES
+Genere le 2026-07-20 depuis la base de donnees
+
+cat_id | libelle                                  | pilote                                           | executant                                          | mode
+-------|------------------------------------------|--------------------------------------------------|----------------------------------------------------|-----------
+    69 | Trottoir non accessible PMR              | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    70 | Absence de rampe / main courante         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    71 | Place PMR occupée / non conforme         | Direction de la Voirie                           | Direction du Stationnement                         | fixe
+    72 | Autre accessibilité                      | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    65 | Animal errant (chien, chat)              | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    66 | Animal mort sur la voie publique         | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    67 | Nid d'insectes dangereux                 | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    68 | Autre animal                             | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    37 | Regard/avaloir bouché                    | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    38 | Odeurs nauséabondes                      | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    39 | Refoulement eaux usées                   | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    40 | Autre assainissement                     | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    36 | Autre problème                           | TRI HUMAIN                                       | (dynamique/humain)                                 | tri_humain
+    41 | Bâtiment dégradé                         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    42 | Accessibilité non conforme               | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    43 | Équipement défectueux                    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    44 | Autre bâtiment public                    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+     8 | Fuite d'eau visible                      | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+     9 | Coupure d'eau ou pression faible         | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    10 | Eau non potable ou colorée               | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    11 | Fuite sur compteur                       | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    12 | Pression insuffisante                    | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    13 | Inondation ou refoulement                | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+    14 | Autre eau                                | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
+     6 | Éclairage défaillant                     | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    23 | Lampadaire éteint                        | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    24 | Lampadaire clignotant ou défectueux      | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    25 | Câble électrique apparent                | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    26 | Autre éclairage                          | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    57 | Déversement illicite                     | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
+    58 | Cours d'eau / oued pollué                | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
+    59 | Terrain vague insalubre                  | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
+    60 | Autre environnement                      | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
+    15 | Arbre dangereux ou espace vert dégradé   | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    18 | Arrosage défectueux ou fuite             | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    19 | Mobilier urbain dégradé                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    20 | Aire de jeux endommagée                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    21 | Plantation ou fleurissement à entretenir | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    22 | Autre espaces verts                      | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    49 | Banc / abri bus dégradé                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    50 | Poubelle publique manquante ou cassée    | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    51 | Panneau / affichage endommagé            | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    52 | Autre mobilier urbain                    | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
+    45 | Bruit excessif                           | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    46 | Pollution de l'air / fumées              | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    47 | Nuisibles                                | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+    48 | Autre nuisance                           | Direction de la Propreté                         | Direction de la Propreté                           | fixe
+     1 | Dépôt sauvage                            | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
+     2 | Benne pleine ou débordante               | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
+     3 | Encombrants sur la voie publique         | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
+     4 | Tags ou graffitis                        | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
+     7 | Autre propreté                           | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
+    17 | Décharge sauvage                         | Direction de la Propreté                         | Établissement de gestion des centres d'enfouissement technique | fixe
+    61 | Trou / excavation non protégé            | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    62 | Mur / structure menaçant de s'effondrer  | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    63 | Câble / fil électrique au sol            | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
+    64 | Autre danger                             | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    16 | Stationnement gênant ou anarchique       | Direction du Stationnement                       | Direction du Stationnement                         | fixe
+    33 | Place PMR non respectée                  | Direction du Stationnement                       | Direction du Stationnement                         | fixe
+    34 | Zone à réguler                           | Direction du Stationnement                       | Direction du Stationnement                         | fixe
+    35 | Autre stationnement                      | Direction du Stationnement                       | Direction du Stationnement                         | fixe
+    53 | Arrêt de bus sans abri / dégradé         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    54 | Signalisation routière manquante         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    55 | Passage piéton effacé / dangereux        | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    56 | Autre transport                          | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+     5 | Chaussée dégradée                        | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    28 | Trottoir dégradé ou inaccessible         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    29 | Signalisation manquante ou endommagée    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    30 | Feu tricolore en panne                   | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+    31 | Autre voirie                             | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+
+RECAPITULATIF PAR DIRECTION PILOTE
+---
+Direction de la Voirie: 20 categories
+Direction de la Propreté: 14 categories
+Direction de l'Environnement: 14 categories
+Direction de l'Eau et de l'Assainissement: 11 categories
+Direction de l'Éclairage public: 6 categories
+Direction du Stationnement: 4 categories
+(tri humain): 1 categories
