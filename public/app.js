@@ -526,6 +526,8 @@ function handleLogout() {
   // Hide bandeau
   var bandeau = document.getElementById('bandeau-communiques');
   if (bandeau) bandeau.classList.add('hidden');
+  // Clear active views to prevent flash of previous profile on next login
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
 }
 
 // ─── INIT APP ─────────────────────────────────────────────
@@ -552,7 +554,7 @@ async function initApp() {
   document.getElementById('auth-page').style.display = 'none';
   var authLang = document.querySelector('.auth-lang');
   if (authLang) authLang.style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+  // #app visibility deferred until showView() — prevents flash of previous profile
 
   // Refresh user data from server to avoid stale cache
   try {
@@ -676,6 +678,7 @@ async function initApp() {
   var startView = getDefaultView();
 
   showView(startView);
+  document.getElementById('app').style.display = 'flex';
   if (role === 'citoyen') loadHomePoints();
   applyTranslations();
   loadCommuniques();
