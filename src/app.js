@@ -90,7 +90,8 @@ app.patch('/api/auth/preferences', (req, res, next) => {
 // Modules added after OLS startup get 404. This gateway provides access.
 // POST /api/gw { _proxy: 'equipements', type: 'parking' }
 const gwQuery = require('./db/pool').query;
-app.post('/api/gw', express.json(), async (req, res) => {
+const { authenticate: gwAuth } = require('./middleware/auth');
+app.post('/api/gw', express.json(), gwAuth, async (req, res) => {
   try {
     const proxy = req.body?._proxy;
     if (!proxy) return res.status(400).json({ erreur: '_proxy requis' });
@@ -117,7 +118,7 @@ app.post('/api/gw', express.json(), async (req, res) => {
     res.json(await fn());
   } catch(e) { res.status(500).json({ erreur: e.message }); }
 });
-app.post('/gw', app._router.stack[app._router.stack.length - 1].handle); // mirror without /api
+app.post('/gw', gwAuth, app._router.stack[app._router.stack.length - 1].handle); // mirror without /api
 
 // POST gateway — OLS caches GET but not POST
 // Frontend sends POST /api/health with body { _proxy: 'equipements', type: 'parking' }
