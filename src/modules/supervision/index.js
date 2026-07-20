@@ -1010,14 +1010,15 @@ router.post('/annuaire', authenticate, requirePilotage(), asyncH(async (req, res
       SELECT id, etat, $1, 'annuaire_creation', $2 FROM signalement LIMIT 1`,
       [req.user.id, 'Compte créé : ' + prenom + ' ' + nom + ' (' + (fonction||'') + ')']);
     // Envoyer le mot de passe par email si l'agent a un email
+    let email_envoye = false;
     if (email) {
       try {
-        const { sendMail } = require('../../services/emailService');
-        await sendMail(email, 'Votre compte Algerna',
-          `Bonjour ${prenom},\n\nVotre compte a été créé. Mot de passe provisoire : ${pwd}\nConnectez-vous et changez-le dès que possible.\n\nAlgerna — Wilaya d'Alger`);
+        const { sendAgentCredentials } = require('../../services/emailService');
+        const result = await sendAgentCredentials(email, prenom, pwd);
+        email_envoye = result.ok;
       } catch(e) { console.warn('[supervision] email mdp provisoire failed:', e.message); }
     }
-    res.status(201).json({ ok: true, utilisateur: rows[0], mot_de_passe_provisoire: pwd });
+    res.status(201).json({ ok: true, utilisateur: rows[0], email_envoye });
   } else {
     // Contact simple (dans la table utilisateur mais sans mot de passe exploitable)
     const bcrypt = require('bcryptjs');

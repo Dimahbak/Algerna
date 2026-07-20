@@ -389,4 +389,21 @@ async function sendClosingEmail(email, prenom, data) {
   }
 }
 
-module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, sendRdvConfirmEmail, sendRdvModifEmail, sendClosingEmail, testConnection };
+async function sendAgentCredentials(email, prenom, motDePasse) {
+  try {
+    await transporter.sendMail({
+      from: FROM, to: email,
+      subject: 'ALGERNA — Votre compte agent',
+      headers: baseHeaders(),
+      text: `Bonjour ${prenom},\n\nVotre compte agent ALGERNA a été créé.\n\nMot de passe provisoire : ${motDePasse}\n\nConnectez-vous et changez-le dès que possible.\n\n--\nALGERNA — Wilaya d'Alger`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;"><div style="background:#063B5A;color:white;padding:20px 24px;border-radius:12px 12px 0 0;text-align:center;"><h1 style="margin:0;font-size:22px;">ALGERNA</h1></div><div style="background:white;border:1px solid #e0e7ed;border-top:none;padding:24px;border-radius:0 0 12px 12px;"><h2 style="color:#063B5A;">Bonjour ${prenom}</h2><p>Votre compte agent a été créé.</p><p style="background:#f0f4ff;border:2px solid #3b5bdb;border-radius:10px;padding:16px;text-align:center;font-size:18px;font-weight:700;letter-spacing:2px;color:#3b5bdb;">${motDePasse}</p><p style="color:#64748B;font-size:13px;">Connectez-vous et changez ce mot de passe dès que possible.</p></div></div>`,
+    });
+    console.log('[emailService] Agent credentials sent to', email);
+    return { ok: true };
+  } catch (e) {
+    console.warn('[emailService] sendAgentCredentials failed:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+module.exports = { sendWelcomeEmail, sendConfirmationEmail, sendCampaignEmail, sendResetEmail, sendSignalementEmail, sendRdvConfirmEmail, sendRdvModifEmail, sendClosingEmail, sendAgentCredentials, testConnection };
