@@ -1213,6 +1213,7 @@ const I18N = {
 
     // ─── EDEVAL SMART GREEN ───
     "edeval.titre": "IQEP — Espaces Publics",
+    "edeval.titre_court": "Espaces Publics",
     "edeval.sous_titre": "Qualité des espaces publics — Wilaya d'Alger",
     "edeval.sidebar": "IQEP Parcs",
     "edeval.chatbot": "L'IQEP (Indice Qualité des Espaces Publics) note chaque parc de 0 à 100 selon les signalements ouverts et résolus. Cet indicateur est utilisé par les responsables pour piloter la qualité des espaces verts.",
@@ -2870,6 +2871,7 @@ const I18N = {
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",
+    "edeval.titre_court": "الفضاءات العمومية",
     "edeval.sous_titre": "جودة الفضاءات العمومية — ولاية الجزائر",
     "edeval.sidebar": "IQEP الحدائق",
     "edeval.chatbot": "IQEP (مؤشر جودة الفضاءات العمومية) يقيّم كل حديقة من 0 إلى 100 بناءً على البلاغات المفتوحة والمحلولة. يستخدمه المسؤولون لمتابعة جودة المساحات الخضراء.",

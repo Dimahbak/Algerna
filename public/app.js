@@ -2341,7 +2341,7 @@ async function initEdeval() {
                 <div style="font-size:10px;color:${color};font-weight:600;">${iqepLabel(note)}</div>
               </div>
               <div style="width:48px;height:48px;border-radius:50%;border:3px solid ${color};display:flex;align-items:center;justify-content:center;">
-                <span style="font-size:11px;font-weight:700;color:${color};">${t('edeval.iqep')}</span>
+                <span style="font-size:11px;font-weight:700;color:${color};">${acro('IQEP')}</span>
               </div>
             </div>
           </div>
