@@ -8863,7 +8863,7 @@ async function initBoAgent() {
   }
   var roleTitle = u.role === 'admin_wilaya' ? 'Pilotage stratégique'
     : u.role === 'admin_apc' ? 'Centre Opérationnel'
-    : (u.fonction === 'entite_responsable' || u.role === 'operateur') ? 'Responsable — ' + (serviceName || u.organisation_nom || u.operateur_nom || 'Service')
+    : (u.fonction === 'entite_responsable' || u.role === 'operateur') ? 'Responsable — ' + (u.organisation_nom || serviceName || u.operateur_nom || 'Service')
     : t('bo.role_agent');
   if (nameEl) nameEl.textContent = roleTitle + ' — ' + (u.prenom || u.nom || '');
   // Peupler le bloc identité structuré
