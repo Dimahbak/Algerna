@@ -36,9 +36,11 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     const severityWhere = severity === 'critical' ? "AND (s.gravite = 'danger_immediat' OR cs.criticite = 'haute')" : '';
 
     // ── SUMMARY ──
+    // DÉFINITION UNIQUE "CRITIQUE" (partagée summary, priorities, score) :
+    //   gravite = 'danger_immediat' ET dossier actif (non résolu/clos/rejeté)
     // operationalScore components:
     //   30% SLA respect + 25% taux traitement + 20% taux réponse
-    //   + 15% inverse critiques + 10% inverse décisions en attente
+    //   + 15% inverse critiques (pénalité 20pts/danger_immediat) + 10% inverse décisions en attente
     const { rows: [stats] } = await query(`
       SELECT
         COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.gravite = 'danger_immediat') AS critical_cases,
@@ -159,18 +161,25 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       ORDER BY ouverts DESC
     `);
 
-    // ── EPICS ── (priorityEpics vide en attente décision Hamid, tous dans otherEpics)
-    const { rows: epics } = await query(`
-      SELECT e.id, e.nom, e.sigle, e.actif,
-             o.id AS org_id, o.nom AS org_nom, o.prioritaire
-      FROM epic e
-      LEFT JOIN epic_organisation_map eom ON eom.epic_id = e.id
-      LEFT JOIN organisations o ON o.id = eom.organisation_id
-      WHERE e.actif = TRUE
-      ORDER BY e.nom
+    // ── EPICS ── organisations type_organisation='epic'
+    // priorityEpics = prioritaire=true, otherEpics = le reste
+    // Directions n'apparaissent QUE dans le bloc directions
+    const { rows: epicOrgs } = await query(`
+      SELECT o.id, o.nom, o.nom_ar, o.prioritaire, o.ordre_affichage,
+             t.nom AS tutelle,
+             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.etat NOT IN ('resolu','clos','rejete')) AS ouverts,
+             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id) AS total_dossiers
+      FROM organisations o
+      LEFT JOIN organisations t ON t.id = o.direction_tutelle_id
+      WHERE o.type_organisation = 'epic'
+      ORDER BY o.prioritaire DESC, o.ordre_affichage, o.nom
     `);
-    const priorityEpics = [];
-    const otherEpics = epics.map(e => ({ id: e.id, nom: e.nom, sigle: e.sigle, org: e.org_nom }));
+    const priorityEpics = epicOrgs.filter(e => e.prioritaire).map(e => ({
+      id: e.id, nom: e.nom, tutelle: e.tutelle, ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers)
+    }));
+    const otherEpics = epicOrgs.filter(e => !e.prioritaire).map(e => ({
+      id: e.id, nom: e.nom, tutelle: e.tutelle, ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers)
+    }));
 
     // ── EXTERNAL PARTNERS ──
     const { rows: partners } = await query("SELECT id, nom, nom_ar, type_organisation, secteur FROM organisations WHERE type_organisation IN ('operateur_externe','partenaire_institutionnel') ORDER BY nom");
