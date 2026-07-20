@@ -119,7 +119,6 @@ router.get('/epics', asyncH(async (req, res) => {
   const { rows } = await query(
     `SELECT id, sigle, nom, categorie, description
        FROM epic WHERE actif = TRUE
-        AND sigle IN ('DIR-PRO','DIR-PRO-P','DIR-EVT','DIR-ECL','DIR-CIRC','DIR-PARK','DIR-CET','DIR-EAU')
       ORDER BY sigle`
   );
   res.json(rows);
