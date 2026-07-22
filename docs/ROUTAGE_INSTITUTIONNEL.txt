@@ -1,85 +1,144 @@
-ROUTAGE INSTITUTIONNEL — 70 CATEGORIES
-Genere le 2026-07-20 depuis la base de donnees
+=== ROUTAGE INSTITUTIONNEL — Wilaya d'Alger ===
+Généré le 2026-07-22
 
-cat_id | libelle                                  | pilote                                           | executant                                          | mode
--------|------------------------------------------|--------------------------------------------------|----------------------------------------------------|-----------
-    69 | Trottoir non accessible PMR              | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    70 | Absence de rampe / main courante         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    71 | Place PMR occupée / non conforme         | Direction de la Voirie                           | Direction du Stationnement                         | fixe
-    72 | Autre accessibilité                      | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    65 | Animal errant (chien, chat)              | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    66 | Animal mort sur la voie publique         | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    67 | Nid d'insectes dangereux                 | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    68 | Autre animal                             | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    37 | Regard/avaloir bouché                    | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    38 | Odeurs nauséabondes                      | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    39 | Refoulement eaux usées                   | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    40 | Autre assainissement                     | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    36 | Autre problème                           | TRI HUMAIN                                       | (dynamique/humain)                                 | tri_humain
-    41 | Bâtiment dégradé                         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    42 | Accessibilité non conforme               | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    43 | Équipement défectueux                    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    44 | Autre bâtiment public                    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-     8 | Fuite d'eau visible                      | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-     9 | Coupure d'eau ou pression faible         | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    10 | Eau non potable ou colorée               | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    11 | Fuite sur compteur                       | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    12 | Pression insuffisante                    | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    13 | Inondation ou refoulement                | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-    14 | Autre eau                                | Direction de l'Eau et de l'Assainissement        | Direction de l'Eau et de l'Assainissement          | fixe
-     6 | Éclairage défaillant                     | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    23 | Lampadaire éteint                        | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    24 | Lampadaire clignotant ou défectueux      | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    25 | Câble électrique apparent                | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    26 | Autre éclairage                          | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    57 | Déversement illicite                     | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
-    58 | Cours d'eau / oued pollué                | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
-    59 | Terrain vague insalubre                  | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
-    60 | Autre environnement                      | Direction de l'Environnement                     | Établissement de gestion des centres d'enfouissement technique | fixe
-    15 | Arbre dangereux ou espace vert dégradé   | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    18 | Arrosage défectueux ou fuite             | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    19 | Mobilier urbain dégradé                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    20 | Aire de jeux endommagée                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    21 | Plantation ou fleurissement à entretenir | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    22 | Autre espaces verts                      | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    49 | Banc / abri bus dégradé                  | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    50 | Poubelle publique manquante ou cassée    | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    51 | Panneau / affichage endommagé            | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    52 | Autre mobilier urbain                    | Direction de l'Environnement                     | Direction de l'Environnement                       | fixe
-    45 | Bruit excessif                           | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    46 | Pollution de l'air / fumées              | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    47 | Nuisibles                                | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-    48 | Autre nuisance                           | Direction de la Propreté                         | Direction de la Propreté                           | fixe
-     1 | Dépôt sauvage                            | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
-     2 | Benne pleine ou débordante               | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
-     3 | Encombrants sur la voie publique         | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
-     4 | Tags ou graffitis                        | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
-     7 | Autre propreté                           | Direction de la Propreté                         | (dynamique/humain)                                 | dynamique
-    17 | Décharge sauvage                         | Direction de la Propreté                         | Établissement de gestion des centres d'enfouissement technique | fixe
-    61 | Trou / excavation non protégé            | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    62 | Mur / structure menaçant de s'effondrer  | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    63 | Câble / fil électrique au sol            | Direction de l'Éclairage public                  | Direction de l'Éclairage public                    | fixe
-    64 | Autre danger                             | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    16 | Stationnement gênant ou anarchique       | Direction du Stationnement                       | Direction du Stationnement                         | fixe
-    33 | Place PMR non respectée                  | Direction du Stationnement                       | Direction du Stationnement                         | fixe
-    34 | Zone à réguler                           | Direction du Stationnement                       | Direction du Stationnement                         | fixe
-    35 | Autre stationnement                      | Direction du Stationnement                       | Direction du Stationnement                         | fixe
-    53 | Arrêt de bus sans abri / dégradé         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    54 | Signalisation routière manquante         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    55 | Passage piéton effacé / dangereux        | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    56 | Autre transport                          | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-     5 | Chaussée dégradée                        | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    28 | Trottoir dégradé ou inaccessible         | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    29 | Signalisation manquante ou endommagée    | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    30 | Feu tricolore en panne                   | Direction de la Voirie                           | Direction de la Voirie                             | fixe
-    31 | Autre voirie                             | Direction de la Voirie                           | Direction de la Voirie                             | fixe
+── Direction de la Culture et des Arts (id=117) ──
+  Catégories pilotées : 0
+  EPIC de tutelle :
+    — : Établissement public art et culture
 
-RECAPITULATIF PAR DIRECTION PILOTE
----
-Direction de la Voirie: 20 categories
-Direction de la Propreté: 14 categories
-Direction de l'Environnement: 14 categories
-Direction de l'Eau et de l'Assainissement: 11 categories
-Direction de l'Éclairage public: 6 categories
-Direction du Stationnement: 4 categories
-(tri humain): 1 categories
+── Direction de l'Administration Locale (id=120) ──
+  Catégories pilotées : 0
+  EPIC de tutelle :
+    — : Établissement de gestion des pompes funèbres et des cimetières
+
+── Direction de la Jeunesse, des Sports et des Loisirs (id=118) ──
+  Catégories pilotées : 0
+  EPIC de tutelle :
+    OPLA : Office des parcs des sports et des loisirs d'Alger
+
+── Direction de la Propreté (id=5) ──
+  Catégories pilotées : 14
+    1: Dépôt sauvage
+    2: Benne pleine ou débordante
+    3: Encombrants sur la voie publique
+    4: Tags ou graffitis
+    7: Autre propreté
+    17: Décharge sauvage
+    45: Bruit excessif
+    46: Pollution de l'air / fumées
+    47: Nuisibles
+    48: Autre nuisance
+    65: Animal errant (chien, chat)
+    66: Animal mort sur la voie publique
+    67: Nid d'insectes dangereux
+    68: Autre animal
+  EPIC de tutelle :
+    NETCOM : NETCOM — Entreprise de Nettoiement et Collecte des Ordures Ménagères d'Alger
+    EXTRANET : EXTRANET — Entreprise de Nettoiement de la Banlieue d'Alger
+
+── Direction de la Santé et de la Protection Civile (id=24) ──
+  Catégories pilotées : 0
+
+── Direction de l'Eau et de l'Assainissement (id=18) ──
+  Catégories pilotées : 11
+    8: Fuite d'eau visible
+    9: Coupure d'eau ou pression faible
+    10: Eau non potable ou colorée
+    11: Fuite sur compteur
+    12: Pression insuffisante
+    13: Inondation ou refoulement
+    14: Autre eau
+    37: Regard/avaloir bouché
+    38: Odeurs nauséabondes
+    39: Refoulement eaux usées
+    40: Autre assainissement
+
+── Direction de l'Éclairage public (id=23) ──
+  Catégories pilotées : 6
+    6: Éclairage défaillant
+    23: Lampadaire éteint
+    24: Lampadaire clignotant ou défectueux
+    25: Câble électrique apparent
+    26: Autre éclairage
+    63: Câble / fil électrique au sol
+  EPIC de tutelle :
+    ERMA : ERMA — Établissement public de Réalisation et de Maintenance de l'Éclairage public
+
+── Direction de l'Environnement (id=13) ──
+  Catégories pilotées : 14
+    15: Arbre dangereux ou espace vert dégradé
+    18: Arrosage défectueux ou fuite
+    19: Mobilier urbain dégradé
+    20: Aire de jeux endommagée
+    21: Plantation ou fleurissement à entretenir
+    22: Autre espaces verts
+    49: Banc / abri bus dégradé
+    50: Poubelle publique manquante ou cassée
+    51: Panneau / affichage endommagé
+    52: Autre mobilier urbain
+    57: Déversement illicite
+    58: Cours d'eau / oued pollué
+    59: Terrain vague insalubre
+    60: Autre environnement
+  EPIC de tutelle :
+    EDEVAL : EDEVAL — Entreprise de Développement des Espaces Verts d'Alger
+    CET : Établissement de gestion des centres d'enfouissement technique
+    EMCU : EMCU — Établissement Mobilier et Confort Urbain
+    — : Jardin d'Essai du Hamma
+    — : Parc zoologique et des loisirs La Concorde Civile
+
+── Direction de l'Urbanisme (id=14) ──
+  Catégories pilotées : 0
+  EPIC de tutelle :
+    AETI : Agence des études techniques et d'ingénierie
+    AGRU : Agence de gestion et de régulation foncières urbaines
+
+── Direction des Transports de la Wilaya d'Alger (id=136) ──
+  Catégories pilotées : 11
+    16: Stationnement gênant ou anarchique
+    29: Signalisation manquante ou endommagée
+    30: Feu tricolore en panne
+    33: Place PMR non respectée
+    34: Zone à réguler
+    35: Autre stationnement
+    53: Arrêt de bus sans abri / dégradé
+    54: Signalisation routière manquante
+    55: Passage piéton effacé / dangereux
+    56: Autre transport
+    71: Place PMR occupée / non conforme
+  EPIC de tutelle :
+    EGCTU : EGCTU — Établissement de Gestion de la Circulation et du Transport Urbain
+
+── Direction des Travaux publics de la Wilaya d'Alger (id=6) ──
+  Catégories pilotées : 13
+    5: Chaussée dégradée
+    28: Trottoir dégradé ou inaccessible
+    31: Autre voirie
+    41: Bâtiment dégradé
+    42: Accessibilité non conforme
+    43: Équipement défectueux
+    44: Autre bâtiment public
+    61: Trou / excavation non protégé
+    62: Mur / structure menaçant de s'effondrer
+    64: Autre danger
+    69: Trottoir non accessible PMR
+    70: Absence de rampe / main courante
+    72: Autre accessibilité
+  EPIC de tutelle :
+    ASROUT : ASROUT — Établissement de maintenance des réseaux routiers et d'assainissement de la Wilaya d'Alger
+
+── Direction du Commerce (id=119) ──
+  Catégories pilotées : 0
+  EPIC de tutelle :
+    — : Établissement de gestion des abattoirs, poissonneries et marché de gros des fruits et légumes
+
+── Direction du Patrimoine (id=17) ──
+  Catégories pilotées : 0
+
+── Services internes ──
+  Coordination Opérationnelle (id=4) → parent : Wilaya d'Alger
+  Cabinet (id=3) → parent : Wilaya d'Alger
+  Service de Réception (id=2) → parent : Wilaya d'Alger
+  Brigade CAP (id=19) → parent : Wilaya d'Alger
+  Cellule Communication — Cabinet (id=25) → parent : Cabinet
+  Direction du Stationnement (id=16) → parent : Direction des Transports de la Wilaya d'Alger
