@@ -2303,5 +2303,14 @@
 .cc-partner-contact{font-size:12px;margin-bottom:6px;}
 .cc-partner-contact a{color:var(--teal);text-decoration:none;}
 .cc-partner-contact a:hover{text-decoration:underline;}
+.cc-fiche-section{font-size:12px;font-weight:700;color:var(--navy-950);margin:14px 16px 6px;padding-top:10px;border-top:1px solid var(--cc-border);}
+.cc-fiche-section:first-of-type{border-top:none;margin-top:8px;}
+.cc-fiche-fields{padding:0 16px;}
+.cc-field{margin-bottom:8px;}
+.cc-field label{display:block;font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px;}
+.cc-field-input{width:100%;padding:6px 8px;border:1px solid var(--cc-border);border-radius:6px;font-size:12px;font-family:inherit;}
+.cc-field-input:focus{outline:none;border-color:var(--teal);}
+.cc-fiche-static{font-size:12px;margin-bottom:4px;padding:0 16px;}
+.cc-fiche-static a{color:var(--teal);text-decoration:none;}
 [dir="rtl"] .cc-panel{right:auto;left:0;transform:translateX(-100%);}
 [dir="rtl"] .cc-panel.cc-panel-open{transform:translateX(0);}

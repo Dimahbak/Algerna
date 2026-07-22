@@ -318,23 +318,80 @@ router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req
         WHERE c.actif = TRUE
         GROUP BY c.id, c.nom, c.nom_ar ORDER BY incidents DESC, c.nom
       `));
-    } else if (type === 'partner') {
+    } else if (type === 'partner' || type === 'epic-info') {
       const { rows: [org] } = await query(`
-        SELECT id, nom, nom_ar, type_organisation, secteur, description, description_ar,
-               telephone, telephone_urgence, site_web
-        FROM organisations WHERE id = $1
+        SELECT o.id, o.nom, o.nom_ar, o.type_organisation, o.secteur, o.description, o.description_ar,
+               o.telephone, o.telephone_urgence, o.site_web, o.sigle_officiel,
+               o.contact_nom, o.contact_fonction, o.contact_telephone, o.contact_email,
+               o.direction_concernee_id, o.remarques,
+               t.nom AS tutelle, dc.nom AS direction_concernee_nom
+        FROM organisations o
+        LEFT JOIN organisations t ON t.id = o.direction_tutelle_id
+        LEFT JOIN organisations dc ON dc.id = o.direction_concernee_id
+        WHERE o.id = $1
       `, [Number(id)]);
       const { rows: dossiers } = await query(`
-        SELECT s.reference, s.description AS titre, s.etat, c.nom AS commune
+        SELECT s.reference, s.description AS titre, s.etat, c.nom AS commune,
+               EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaMin"
         FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
         WHERE s.organisation_executante_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
         ORDER BY s.cree_le DESC LIMIT 20
       `, [Number(id)]);
       return res.json({ organisation: org || null, dossiers });
+    } else if (type === 'daira-incidents') {
+      ({ rows } = await query(`
+        SELECT s.reference, s.description AS titre, s.etat, s.gravite, c.nom AS commune,
+               EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaMin"
+        FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.daira_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
+        ORDER BY s.cree_le DESC
+      `, [Number(id)]));
+    } else if (type === 'commune-incidents') {
+      ({ rows } = await query(`
+        SELECT s.reference, s.description AS titre, s.etat, s.gravite, c.nom AS commune,
+               cs.libelle AS categorie,
+               EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaMin"
+        FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+        LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+        WHERE s.commune_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
+        ORDER BY s.cree_le DESC
+      `, [Number(id)]));
     }
     res.json({ rows });
   } catch (e) {
     console.error('[command-center/detail]', e.message);
+    res.status(500).json({ erreur: e.message });
+  }
+});
+
+// ── PATCH /contact/:id — édition contacts opérationnels (Salle de Commandement only) ──
+router.patch('/contact/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { contact_nom, contact_fonction, contact_telephone, contact_email, direction_concernee_id, remarques } = req.body;
+    await query(`
+      UPDATE organisations SET
+        contact_nom = COALESCE($1, contact_nom),
+        contact_fonction = COALESCE($2, contact_fonction),
+        contact_telephone = COALESCE($3, contact_telephone),
+        contact_email = COALESCE($4, contact_email),
+        direction_concernee_id = $5,
+        remarques = COALESCE($6, remarques)
+      WHERE id = $7
+    `, [contact_nom || null, contact_fonction || null, contact_telephone || null, contact_email || null, direction_concernee_id ? Number(direction_concernee_id) : null, remarques || null, id]);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[command-center/contact]', e.message);
+    res.status(500).json({ erreur: e.message });
+  }
+});
+
+// ── GET /directions-list — liste des directions pour le sélecteur ──
+router.get('/directions-list', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query("SELECT id, nom FROM organisations WHERE type_organisation = 'direction_wilaya' AND actif = TRUE ORDER BY nom");
+    res.json(rows);
+  } catch (e) {
     res.status(500).json({ erreur: e.message });
   }
 });

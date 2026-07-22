@@ -1,10 +1,10 @@
-const CACHE_NAME = "civismart-v384";
+const CACHE_NAME = "civismart-v385";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
   "/i18n.js",
-  "/app.css?v=384",
-  "/app.js?v=384"
+  "/app.css?v=385",
+  "/app.js?v=385"
 ];
 
 self.addEventListener("install", e => {

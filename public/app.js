@@ -13032,7 +13032,7 @@ function ccRenderRiskZones(zones) {
   el.innerHTML = zones.map(function(z) {
     var niveau = z.critiques > 0 ? t('cc.niveau_eleve') : t('cc.niveau_moyen');
     var nClass = z.critiques > 0 ? 'cc-tag-eleve' : 'cc-tag-moyen';
-    return '<div class="cc-risk-row" onclick="ccMapZoom(' + z.lat + ',' + z.lng + ')" style="cursor:pointer;">' +
+    return '<div class="cc-risk-row cc-clickable" onclick="ccDrillCommuneIncidents(' + z.id + ',\'' + escHtml(z.nom).replace(/'/g,'\\x27') + '\',' + z.lat + ',' + z.lng + ')">' +
       '<div><strong>' + escHtml(currentLang === 'ar' && z.nom_ar ? z.nom_ar : z.nom) + '</strong>' +
       '<div style="font-size:11px;color:var(--muted);">' + z.incidents + ' ' + t('cc.incidents_actifs') + '</div></div>' +
       '<span class="' + nClass + '">' + niveau + '</span>' +
@@ -13064,12 +13064,34 @@ async function ccDrillTerritory(type) {
   var data = await safeFetchJSON('/api/command-center/detail/' + type + '/0', {}, true);
   if (!data || !data.rows) return;
   var title = type === 'dairas' ? t('cc.dairas') : t('cc.apc');
+  var drillType = type === 'dairas' ? 'daira-incidents' : 'commune-incidents';
   var html = '<div class="cc-panel-header"><h3>' + title + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
   html += '<div class="cc-panel-list">' + data.rows.map(function(r) {
     var nom = currentLang === 'ar' && r.nom_ar ? r.nom_ar : r.nom;
-    return '<div class="cc-panel-row"><span>' + escHtml(nom) + '</span><span class="cc-badge-count">' + (r.incidents || 0) + '</span></div>';
+    var count = parseInt(r.incidents) || 0;
+    var clickable = count > 0;
+    var cls = clickable ? 'cc-panel-row cc-clickable' : 'cc-panel-row';
+    var onclick = clickable ? ' onclick="ccDrillSubTerritory(\'' + drillType + '\',' + r.id + ',\'' + escHtml(nom).replace(/'/g,'\\x27') + '\')"' : '';
+    return '<div class="' + cls + '"' + onclick + '><span>' + escHtml(nom) + '</span><span class="cc-badge-count">' + count + '</span></div>';
   }).join('') + '</div>';
   ccShowPanel(html);
+}
+
+async function ccDrillSubTerritory(type, id, nom) {
+  var data = await safeFetchJSON('/api/command-center/detail/' + type + '/' + id, {}, true);
+  if (!data || !data.rows) return;
+  var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  if (!data.rows.length) {
+    html += '<div class="cc-empty" style="margin:12px 16px;">' + t('cc.aucun_dossier') + '</div>';
+  } else {
+    html += ccBuildDossierList(data.rows);
+  }
+  ccShowPanel(html);
+}
+
+async function ccDrillCommuneIncidents(communeId, nom, lat, lng) {
+  if (_ccMap && lat && lng) _ccMap.setView([lat, lng], 14);
+  await ccDrillSubTerritory('commune-incidents', communeId, nom);
 }
 
 function ccRenderDirections(dirs) {
@@ -13115,7 +13137,7 @@ function ccRenderEpicsAutres(epics) {
   if (!el) return;
   if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
   el.innerHTML = epics.map(function(e) {
-    return '<div class="cc-epic-row">' +
+    return '<div class="cc-epic-row cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(e.nom).replace(/'/g,'\\x27') + '\')">' +
       '<span>' + escHtml(e.nom) + '</span>' +
       '<span class="cc-muted">' + e.ouverts + ' ' + t('cc.ouverts') + '</span>' +
     '</div>';
@@ -13138,49 +13160,116 @@ function ccRenderPartners(partners) {
 // ── Panneaux de drilldown ──
 
 async function ccDrillOrg(type, id, nom) {
-  var data = await safeFetchJSON('/api/command-center/detail/' + type + '/' + id, {}, true);
-  if (!data || !data.rows) return;
+  // For EPIC, use epic-info to get org details too
+  var endpoint = type === 'epic' ? 'epic-info' : type;
+  var data = await safeFetchJSON('/api/command-center/detail/' + endpoint + '/' + id, {}, true);
+  if (!data) return;
+  var rows = data.rows || [];
+  var org = data.organisation || null;
   var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
-  if (!data.rows.length) {
-    html += '<div class="cc-empty" style="margin:12px 0;">' + t('cc.aucun_dossier') + '</div>';
+  // For EPIC with org info, show tutelle/secteur
+  if (org) {
+    html += '<div style="padding:8px 16px;font-size:11px;color:var(--muted);">';
+    if (org.tutelle) html += escHtml(org.tutelle);
+    if (org.secteur) html += ' · ' + escHtml(org.secteur);
+    html += '</div>';
+    rows = data.dossiers || [];
+  }
+  if (!rows.length) {
+    html += '<div class="cc-empty" style="margin:12px 16px;">' + t('cc.aucun_dossier') + '</div>';
   } else {
-    html += '<div class="cc-panel-list">' + data.rows.map(function(r) {
-      var sla = r.slaMin > 0 ? '<span class="cc-tag-sla">+' + Math.round(r.slaMin / 60) + 'h</span>' : '';
-      return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(r.reference) + '\')">' +
-        '<span class="cc-panel-ref">' + escHtml(r.reference) + '</span>' +
-        '<span>' + escHtml(r.commune || '') + '</span>' +
-        '<span class="cc-panel-etat">' + escHtml(r.etat) + '</span>' +
-        sla +
-      '</div>';
-    }).join('') + '</div>';
+    html += ccBuildDossierList(rows);
   }
   ccShowPanel(html);
 }
 
+function ccBuildDossierList(rows) {
+  return '<div class="cc-panel-list">' + rows.map(function(r) {
+    var sla = r.slaMin > 0 ? '<span class="cc-tag-sla">+' + Math.round(r.slaMin / 60) + 'h</span>' : '';
+    return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(r.reference) + '\')">' +
+      '<span class="cc-panel-ref">' + escHtml(r.reference) + '</span>' +
+      '<span>' + escHtml(r.commune || '') + '</span>' +
+      '<span class="cc-panel-etat">' + escHtml(r.etat) + '</span>' +
+      sla +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+var _ccDirectionsList = null;
 async function ccShowPartner(id) {
   var data = await safeFetchJSON('/api/command-center/detail/partner/' + id, {}, true);
   if (!data || !data.organisation) return;
+  if (!_ccDirectionsList) {
+    _ccDirectionsList = await safeFetchJSON('/api/command-center/directions-list', {}, true) || [];
+  }
   var o = data.organisation;
   var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
   var desc = currentLang === 'ar' && o.description_ar ? o.description_ar : (o.description || '');
   var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
-  html += '<div class="cc-partner-fiche">';
-  if (o.secteur) html += '<div class="cc-partner-sector">' + escHtml(o.secteur) + '</div>';
-  if (desc) html += '<p class="cc-partner-desc">' + escHtml(desc) + '</p>';
-  if (o.telephone) html += '<div class="cc-partner-contact"><a href="tel:' + o.telephone + '">' + o.telephone + '</a></div>';
-  if (o.telephone_urgence) html += '<div class="cc-partner-contact">' + t('cc.urgence') + ' : <a href="tel:' + o.telephone_urgence + '">' + o.telephone_urgence + '</a></div>';
-  if (o.site_web) html += '<div class="cc-partner-contact"><a href="' + escHtml(o.site_web) + '" target="_blank" rel="noopener">' + escHtml(o.site_web) + '</a></div>';
-  html += '</div>';
-  // Dossiers mobilisés
-  html += '<h4 style="margin-top:12px;font-size:12px;font-weight:700;">' + t('cc.dossiers_mobilises') + '</h4>';
+  html += '<div class="cc-partner-fiche" id="cc-partner-fiche" data-id="' + o.id + '">';
+
+  // 1. Opérations en cours
+  html += '<h4 class="cc-fiche-section">' + t('cc.operations_en_cours') + '</h4>';
   if (!data.dossiers || !data.dossiers.length) {
-    html += '<div class="cc-empty" style="margin:8px 0;padding:12px;">' + t('cc.aucun_dossier_partenaire') + '</div>';
+    html += '<div class="cc-empty" style="margin:4px 0;padding:12px;">' + t('cc.aucun_dossier_partenaire') + '</div>';
   } else {
-    html += '<div class="cc-panel-list">' + data.dossiers.map(function(d) {
-      return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(d.reference) + '\')"><span class="cc-panel-ref">' + escHtml(d.reference) + '</span><span>' + escHtml(d.commune || '') + '</span><span class="cc-panel-etat">' + escHtml(d.etat) + '</span></div>';
-    }).join('') + '</div>';
+    html += ccBuildDossierList(data.dossiers);
   }
+
+  // 2. Coordonnées opérationnelles
+  html += '<h4 class="cc-fiche-section">' + t('cc.coordonnees_ops') + '</h4>';
+  html += '<div class="cc-fiche-fields">';
+  html += ccFieldRow(t('cc.contact_nom'), 'contact_nom', o.contact_nom || '');
+  html += ccFieldRow(t('cc.contact_fonction'), 'contact_fonction', o.contact_fonction || '');
+  html += ccFieldRow(t('cc.contact_tel'), 'contact_telephone', o.contact_telephone || '');
+  html += ccFieldRow(t('cc.contact_email'), 'contact_email', o.contact_email || '');
+  if (o.telephone) html += '<div class="cc-fiche-static">' + t('cc.tel_standard') + ' : <a href="tel:' + o.telephone + '">' + o.telephone + '</a></div>';
+  if (o.telephone_urgence) html += '<div class="cc-fiche-static">' + t('cc.urgence') + ' : <a href="tel:' + o.telephone_urgence + '">' + o.telephone_urgence + '</a></div>';
+  if (o.site_web) html += '<div class="cc-fiche-static"><a href="' + escHtml(o.site_web) + '" target="_blank" rel="noopener">' + escHtml(o.site_web) + '</a></div>';
+  html += '</div>';
+
+  // 3. Champs de suivi
+  html += '<h4 class="cc-fiche-section">' + t('cc.suivi') + '</h4>';
+  html += '<div class="cc-fiche-fields">';
+  html += '<div class="cc-field"><label>' + t('cc.direction_concernee') + '</label><select id="cc-f-direction_concernee_id" class="cc-field-input">';
+  html += '<option value="">—</option>';
+  (_ccDirectionsList || []).forEach(function(d) {
+    var sel = o.direction_concernee_id === d.id ? ' selected' : '';
+    html += '<option value="' + d.id + '"' + sel + '>' + escHtml(d.nom) + '</option>';
+  });
+  html += '</select></div>';
+  html += '<div class="cc-field"><label>' + t('cc.remarques') + '</label><textarea id="cc-f-remarques" class="cc-field-input" rows="2">' + escHtml(o.remarques || '') + '</textarea></div>';
+  html += '</div>';
+
+  // Bouton sauvegarder
+  html += '<button class="cc-btn-action" style="margin-top:12px;" onclick="ccSavePartnerContact(' + o.id + ')">' + t('cc.enregistrer') + '</button>';
+
+  // 4. Description (bas)
+  if (desc) {
+    html += '<details style="margin-top:12px;"><summary class="cc-partner-sector" style="cursor:pointer;">' + escHtml(o.secteur || '') + '</summary><p class="cc-partner-desc">' + escHtml(desc) + '</p></details>';
+  }
+  html += '</div>';
   ccShowPanel(html);
+}
+
+function ccFieldRow(label, field, value) {
+  return '<div class="cc-field"><label>' + label + '</label><input type="text" id="cc-f-' + field + '" class="cc-field-input" value="' + escHtml(value) + '"></div>';
+}
+
+async function ccSavePartnerContact(id) {
+  var body = {};
+  ['contact_nom','contact_fonction','contact_telephone','contact_email','remarques'].forEach(function(f) {
+    var el = document.getElementById('cc-f-' + f);
+    if (el) body[f] = el.value;
+  });
+  var dirEl = document.getElementById('cc-f-direction_concernee_id');
+  if (dirEl) body.direction_concernee_id = dirEl.value || null;
+  var res = await safeFetchJSON('/api/command-center/contact/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
+  if (res && res.ok) {
+    showToast(t('cc.contact_sauvegarde'), 'success');
+  } else {
+    showToast(t('cc.erreur'), 'error');
+  }
 }
 
 function ccShowPanel(html) {
