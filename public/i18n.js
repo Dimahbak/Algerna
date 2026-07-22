@@ -1322,6 +1322,8 @@ const I18N = {
     "cc.remarques": "Remarques particulières",
     "cc.enregistrer": "Enregistrer",
     "cc.contact_sauvegarde": "Contact enregistré",
+    "cc.directions_interface": "Directions en interface",
+    "cc.interlocuteur_principal": "Interlocuteur principal",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3031,6 +3033,8 @@ const I18N = {
     "cc.remarques": "ملاحظات خاصة",
     "cc.enregistrer": "حفظ",
     "cc.contact_sauvegarde": "تم حفظ جهة الاتصال",
+    "cc.directions_interface": "المديريات المعنية",
+    "cc.interlocuteur_principal": "المحاور الرئيسي",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",

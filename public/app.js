@@ -13203,10 +13203,17 @@ async function ccShowPartner(id) {
     _ccDirectionsList = await safeFetchJSON('/api/command-center/directions-list', {}, true) || [];
   }
   var o = data.organisation;
+  var dirsIf = data.directionsInterface || [];
   var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
   var desc = currentLang === 'ar' && o.description_ar ? o.description_ar : (o.description || '');
+  var principal = dirsIf.find(function(d) { return d.principal; });
   var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
   html += '<div class="cc-partner-fiche" id="cc-partner-fiche" data-id="' + o.id + '">';
+
+  // Interlocuteur principal en tête
+  if (principal) {
+    html += '<div class="cc-fiche-principal">' + t('cc.interlocuteur_principal') + ' : <strong>' + escHtml(principal.nom) + '</strong></div>';
+  }
 
   // 1. Opérations en cours
   html += '<h4 class="cc-fiche-section">' + t('cc.operations_en_cours') + '</h4>';
@@ -13228,23 +13235,30 @@ async function ccShowPartner(id) {
   if (o.site_web) html += '<div class="cc-fiche-static"><a href="' + escHtml(o.site_web) + '" target="_blank" rel="noopener">' + escHtml(o.site_web) + '</a></div>';
   html += '</div>';
 
-  // 3. Champs de suivi
-  html += '<h4 class="cc-fiche-section">' + t('cc.suivi') + '</h4>';
-  html += '<div class="cc-fiche-fields">';
-  html += '<div class="cc-field"><label>' + t('cc.direction_concernee') + '</label><select id="cc-f-direction_concernee_id" class="cc-field-input">';
-  html += '<option value="">—</option>';
+  // 3. Directions en interface (multi-sélection)
+  html += '<h4 class="cc-fiche-section">' + t('cc.directions_interface') + '</h4>';
+  html += '<div class="cc-fiche-fields" id="cc-dirs-interface">';
+  var selectedIds = dirsIf.map(function(d) { return d.direction_id; });
+  var principalId = principal ? principal.direction_id : null;
   (_ccDirectionsList || []).forEach(function(d) {
-    var sel = o.direction_concernee_id === d.id ? ' selected' : '';
-    html += '<option value="' + d.id + '"' + sel + '>' + escHtml(d.nom) + '</option>';
+    var checked = selectedIds.includes(d.id) ? ' checked' : '';
+    var isPrincipal = d.id === principalId;
+    html += '<div class="cc-dir-check">' +
+      '<label><input type="checkbox" data-dir-id="' + d.id + '"' + checked + '> ' + escHtml(d.nom) + '</label>' +
+      '<label class="cc-radio-principal" title="' + t('cc.interlocuteur_principal') + '"><input type="radio" name="cc-principal" value="' + d.id + '"' + (isPrincipal ? ' checked' : '') + '> ★</label>' +
+    '</div>';
   });
-  html += '</select></div>';
+  html += '</div>';
+
+  // Remarques
+  html += '<div class="cc-fiche-fields" style="margin-top:8px;">';
   html += '<div class="cc-field"><label>' + t('cc.remarques') + '</label><textarea id="cc-f-remarques" class="cc-field-input" rows="2">' + escHtml(o.remarques || '') + '</textarea></div>';
   html += '</div>';
 
   // Bouton sauvegarder
   html += '<button class="cc-btn-action" style="margin-top:12px;" onclick="ccSavePartnerContact(' + o.id + ')">' + t('cc.enregistrer') + '</button>';
 
-  // 4. Description (bas)
+  // 4. Description (bas, repliée)
   if (desc) {
     html += '<details style="margin-top:12px;"><summary class="cc-partner-sector" style="cursor:pointer;">' + escHtml(o.secteur || '') + '</summary><p class="cc-partner-desc">' + escHtml(desc) + '</p></details>';
   }
@@ -13262,8 +13276,15 @@ async function ccSavePartnerContact(id) {
     var el = document.getElementById('cc-f-' + f);
     if (el) body[f] = el.value;
   });
-  var dirEl = document.getElementById('cc-f-direction_concernee_id');
-  if (dirEl) body.direction_concernee_id = dirEl.value || null;
+  // Directions en interface
+  var directions = [];
+  var principalVal = document.querySelector('input[name="cc-principal"]:checked');
+  var principalId = principalVal ? Number(principalVal.value) : null;
+  document.querySelectorAll('#cc-dirs-interface input[type="checkbox"]:checked').forEach(function(cb) {
+    var dirId = Number(cb.dataset.dirId);
+    directions.push({ direction_id: dirId, principal: dirId === principalId });
+  });
+  body.directions = directions;
   var res = await safeFetchJSON('/api/command-center/contact/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
   if (res && res.ok) {
     showToast(t('cc.contact_sauvegarde'), 'success');

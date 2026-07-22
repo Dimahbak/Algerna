@@ -337,7 +337,15 @@ router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req
         WHERE s.organisation_executante_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
         ORDER BY s.cree_le DESC LIMIT 20
       `, [Number(id)]);
-      return res.json({ organisation: org || null, dossiers });
+      // Directions en interface (multi)
+      const { rows: directionsInterface } = await query(`
+        SELECT odi.direction_id, d.nom, odi.principal, odi.a_valider
+        FROM organisation_directions_interface odi
+        JOIN organisations d ON d.id = odi.direction_id
+        WHERE odi.partenaire_id = $1
+        ORDER BY odi.principal DESC, d.nom
+      `, [Number(id)]);
+      return res.json({ organisation: org || null, dossiers, directionsInterface });
     } else if (type === 'daira-incidents') {
       ({ rows } = await query(`
         SELECT s.reference, s.description AS titre, s.etat, s.gravite, c.nom AS commune,
@@ -364,21 +372,30 @@ router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req
   }
 });
 
-// ── PATCH /contact/:id — édition contacts opérationnels (Salle de Commandement only) ──
+// ── PATCH /contact/:id — édition contacts + directions en interface ──
 router.patch('/contact/:id', authenticate, requireCommandCenter(), async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { contact_nom, contact_fonction, contact_telephone, contact_email, direction_concernee_id, remarques } = req.body;
+    const { contact_nom, contact_fonction, contact_telephone, contact_email, remarques, directions } = req.body;
     await query(`
       UPDATE organisations SET
         contact_nom = COALESCE($1, contact_nom),
         contact_fonction = COALESCE($2, contact_fonction),
         contact_telephone = COALESCE($3, contact_telephone),
         contact_email = COALESCE($4, contact_email),
-        direction_concernee_id = $5,
-        remarques = COALESCE($6, remarques)
-      WHERE id = $7
-    `, [contact_nom || null, contact_fonction || null, contact_telephone || null, contact_email || null, direction_concernee_id ? Number(direction_concernee_id) : null, remarques || null, id]);
+        remarques = COALESCE($5, remarques)
+      WHERE id = $6
+    `, [contact_nom || null, contact_fonction || null, contact_telephone || null, contact_email || null, remarques || null, id]);
+    // Directions en interface (replace all)
+    if (Array.isArray(directions)) {
+      await query('DELETE FROM organisation_directions_interface WHERE partenaire_id = $1', [id]);
+      for (const d of directions) {
+        await query(
+          'INSERT INTO organisation_directions_interface (partenaire_id, direction_id, principal, a_valider) VALUES ($1, $2, $3, FALSE) ON CONFLICT DO NOTHING',
+          [id, Number(d.direction_id), !!d.principal]
+        );
+      }
+    }
     res.json({ ok: true });
   } catch (e) {
     console.error('[command-center/contact]', e.message);
