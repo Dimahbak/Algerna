@@ -12913,25 +12913,58 @@ async function ccLoad() {
   }
 }
 
+var _ccKpiFilter = null;
+var _ccAllPriorities = [];
+
 function ccRenderKpis(s) {
   if (!s) return;
   var grid = document.getElementById('cc-kpis');
   if (!grid) return;
   var kpis = [
-    { key:'critiques', value:s.criticalCases, icon:'🔴', color:'var(--cc-critique)' },
-    { key:'communes', value:s.communesUnderWatch, icon:'📍', color:'var(--cc-eleve)' },
-    { key:'sla', value:s.breachedSla, icon:'⏱', color:'var(--cc-vigilance)' },
-    { key:'decisions', value:s.pendingDecisions, icon:'📋', color:'var(--cc-decision)' },
-    { key:'score', value:s.operationalScore + '/100', icon:'📊', color: s.operationalScore >= 80 ? 'var(--cc-maitrise)' : s.operationalScore >= 60 ? 'var(--cc-vigilance)' : 'var(--cc-critique)' },
-    { key:'orgs', value:s.mobilizedOrganisations, icon:'🏛', color:'var(--navy-950)' },
+    { key:'critiques', value:s.criticalCases, icon:'🔴', color:'var(--cc-critique)', action:'critiques' },
+    { key:'communes', value:s.communesUnderWatch, icon:'📍', color:'var(--cc-eleve)', action:'communes' },
+    { key:'sla', value:s.breachedSla, icon:'⏱', color:'var(--cc-vigilance)', action:'sla' },
+    { key:'decisions', value:s.pendingDecisions, icon:'📋', color:'var(--cc-decision)', action:null },
+    { key:'score', value:s.operationalScore + '/100', icon:'📊', color: s.operationalScore >= 80 ? 'var(--cc-maitrise)' : s.operationalScore >= 60 ? 'var(--cc-vigilance)' : 'var(--cc-critique)', action:null },
+    { key:'orgs', value:s.mobilizedOrganisations, icon:'🏛', color:'var(--navy-950)', action:null },
   ];
   grid.innerHTML = kpis.map(function(k) {
-    return '<div class="cc-kpi-card" style="cursor:pointer;">' +
+    var clickable = !!k.action;
+    var cls = clickable ? 'cc-kpi-card cc-clickable' : 'cc-kpi-card cc-no-action';
+    var tip = clickable ? '' : ' title="' + t('cc.bientot') + '"';
+    var onclick = clickable ? ' onclick="ccKpiFilter(\'' + k.action + '\')"' : '';
+    return '<div class="' + cls + '"' + onclick + tip + '>' +
       '<div class="cc-kpi-icon" style="color:' + k.color + ';">' + k.icon + '</div>' +
       '<div class="cc-kpi-value" style="color:' + k.color + ';">' + k.value + '</div>' +
       '<div class="cc-kpi-label">' + t('cc.kpi_' + k.key) + '</div>' +
     '</div>';
   }).join('');
+}
+
+function ccKpiFilter(action) {
+  if (_ccKpiFilter === action) { _ccKpiFilter = null; } else { _ccKpiFilter = action; }
+  // Highlight active KPI
+  document.querySelectorAll('.cc-kpi-card').forEach(function(c) { c.classList.remove('cc-kpi-active'); });
+  if (_ccKpiFilter) {
+    var btns = document.querySelectorAll('.cc-kpi-card.cc-clickable');
+    btns.forEach(function(b) { if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(_ccKpiFilter)) b.classList.add('cc-kpi-active'); });
+  }
+  // Filter priorities
+  ccFilterPriorities();
+  // Filter map
+  if (_ccKpiFilter === 'critiques') ccMapFilter('critique');
+  else if (_ccKpiFilter === 'communes') { if (_ccMap) _ccMap.setView([36.7538, 3.0588], 11); }
+  else ccMapFilter('all');
+}
+
+function ccFilterPriorities() {
+  var el = document.getElementById('cc-priorities');
+  if (!el || !_ccAllPriorities.length) return;
+  var filtered = _ccAllPriorities;
+  if (_ccKpiFilter === 'critiques') filtered = filtered.filter(function(p) { return p.criticite === 'danger_immediat'; });
+  else if (_ccKpiFilter === 'sla') filtered = filtered.filter(function(p) { return p.slaDepassementMinutes > 0; });
+  ccRenderPriorityRows(el, filtered.length ? filtered : _ccAllPriorities);
+  if (!filtered.length && _ccKpiFilter) el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_priorite') + '</div>';
 }
 
 // ── Palier 2 : Carte, Directions, EPIC, Territoire, Partenaires ──
@@ -12960,17 +12993,32 @@ function ccMapFilter(type) {
   _ccMarkers = [];
   var btns = document.querySelectorAll('.cc-filter-btn');
   btns.forEach(function(b) { b.classList.toggle('active', b.dataset.filter === type); });
-  var items = _ccMapData;
-  if (type === 'critique') items = items.filter(function(i) { return i.gravite === 'danger_immediat'; });
-  items.forEach(function(inc) {
-    if (!inc.lat || !inc.lng) return;
-    var color = inc.gravite === 'danger_immediat' ? '#EF4444' : (inc.criticite === 'haute' ? '#f97316' : '#eab308');
-    var icon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>' });
-    var marker = L.marker([inc.lat, inc.lng], { icon: icon })
-      .addTo(_ccMap)
-      .bindPopup('<strong>' + escHtml(inc.reference) + '</strong><br>' + escHtml(inc.commune || ''));
-    _ccMarkers.push(marker);
-  });
+
+  if (type === 'directions' || type === 'epic') {
+    // Aggregate by commune with direction/epic label
+    var byCommune = {};
+    _ccMapData.forEach(function(inc) {
+      if (!inc.lat || !inc.lng) return;
+      var key = inc.commune || 'Inconnu';
+      if (!byCommune[key]) byCommune[key] = { lat: inc.lat, lng: inc.lng, count: 0, nom: key };
+      byCommune[key].count++;
+    });
+    Object.values(byCommune).forEach(function(c) {
+      var icon = L.divIcon({ className:'', html:'<div style="min-width:20px;height:20px;border-radius:10px;background:#063B5A;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);">' + c.count + '</div>' });
+      var marker = L.marker([c.lat, c.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(c.nom) + '</strong><br>' + c.count + ' incident(s)');
+      _ccMarkers.push(marker);
+    });
+  } else {
+    var items = _ccMapData;
+    if (type === 'critique') items = items.filter(function(i) { return i.gravite === 'danger_immediat'; });
+    items.forEach(function(inc) {
+      if (!inc.lat || !inc.lng) return;
+      var color = inc.gravite === 'danger_immediat' ? '#EF4444' : (inc.criticite === 'haute' ? '#f97316' : '#eab308');
+      var icon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>' });
+      var marker = L.marker([inc.lat, inc.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(inc.reference) + '</strong><br>' + escHtml(inc.commune || ''));
+      _ccMarkers.push(marker);
+    });
+  }
   if (_ccMarkers.length) {
     var group = L.featureGroup(_ccMarkers);
     _ccMap.fitBounds(group.getBounds().pad(0.1));
@@ -13000,16 +13048,28 @@ function ccRenderTerritory(terr) {
   var el = document.getElementById('cc-territory');
   if (!el) return;
   el.innerHTML =
-    '<div class="cc-terr-card">' +
+    '<div class="cc-terr-card cc-clickable" onclick="ccDrillTerritory(\'dairas\')">' +
       '<div class="cc-terr-value">' + (terr.dairasTotal || 14) + '</div>' +
       '<div class="cc-terr-label">' + t('cc.dairas') + '</div>' +
       '<div class="cc-terr-sub">' + (terr.dairasConcernees || 0) + ' ' + t('cc.dairas_concernees') + '</div>' +
     '</div>' +
-    '<div class="cc-terr-card">' +
+    '<div class="cc-terr-card cc-clickable" onclick="ccDrillTerritory(\'communes\')">' +
       '<div class="cc-terr-value">' + (terr.apcTotal || 57) + '</div>' +
       '<div class="cc-terr-label">' + t('cc.apc') + '</div>' +
       '<div class="cc-terr-sub">' + (terr.apcNoResponse || 0) + ' ' + t('cc.apc_vigilance') + '</div>' +
     '</div>';
+}
+
+async function ccDrillTerritory(type) {
+  var data = await safeFetchJSON('/api/command-center/detail/' + type + '/0', {}, true);
+  if (!data || !data.rows) return;
+  var title = type === 'dairas' ? t('cc.dairas') : t('cc.apc');
+  var html = '<div class="cc-panel-header"><h3>' + title + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div class="cc-panel-list">' + data.rows.map(function(r) {
+    var nom = currentLang === 'ar' && r.nom_ar ? r.nom_ar : r.nom;
+    return '<div class="cc-panel-row"><span>' + escHtml(nom) + '</span><span class="cc-badge-count">' + (r.incidents || 0) + '</span></div>';
+  }).join('') + '</div>';
+  ccShowPanel(html);
 }
 
 function ccRenderDirections(dirs) {
@@ -13027,7 +13087,7 @@ function ccRenderDirections(dirs) {
         (parseInt(d.slaDepasses) > 0 ? '<span class="cc-tag-sla">' + d.slaDepasses + ' SLA</span>' : '') +
         '<span class="cc-tag-taux">' + d.tauxTraitement + '% ' + t('cc.traitement') + '</span>' +
       '</div>' +
-      '<button class="cc-btn-disabled" disabled>' + t('cc.ouvrir_dir') + '</button>' +
+      '<button class="cc-btn-action" onclick="ccDrillOrg(\'direction\',' + d.id + ',\'' + escHtml(d.nom).replace(/'/g,'\\x27') + '\')">' + t('cc.ouvrir_dir') + '</button>' +
     '</div>';
   }).join('');
 }
@@ -13037,7 +13097,7 @@ function ccRenderEpicsPrio(epics) {
   if (!el) return;
   if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
   el.innerHTML = epics.map(function(e) {
-    return '<div class="cc-epic-card">' +
+    return '<div class="cc-epic-card cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(e.nom).replace(/'/g,'\\x27') + '\')">' +
       '<div class="cc-epic-name">' + escHtml(e.nom) + '</div>' +
       (e.tutelle ? '<div class="cc-epic-tutelle">' + escHtml(e.tutelle) + '</div>' : '') +
       '<div class="cc-epic-stats">' +
@@ -13068,21 +13128,99 @@ function ccRenderPartners(partners) {
   if (!partners.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_partenaire') + '</div>'; return; }
   el.innerHTML = partners.map(function(p) {
     var label = p.type_organisation === 'operateur_externe' ? t('cc.operateur') : t('cc.partenaire');
-    return '<div class="cc-partner-card">' +
+    return '<div class="cc-partner-card cc-clickable" onclick="ccShowPartner(' + p.id + ')">' +
       '<div class="cc-partner-name">' + escHtml(currentLang === 'ar' && p.nom_ar ? p.nom_ar : p.nom) + '</div>' +
       '<span class="cc-partner-type">' + label + '</span>' +
     '</div>';
   }).join('');
 }
 
+// ── Panneaux de drilldown ──
+
+async function ccDrillOrg(type, id, nom) {
+  var data = await safeFetchJSON('/api/command-center/detail/' + type + '/' + id, {}, true);
+  if (!data || !data.rows) return;
+  var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  if (!data.rows.length) {
+    html += '<div class="cc-empty" style="margin:12px 0;">' + t('cc.aucun_dossier') + '</div>';
+  } else {
+    html += '<div class="cc-panel-list">' + data.rows.map(function(r) {
+      var sla = r.slaMin > 0 ? '<span class="cc-tag-sla">+' + Math.round(r.slaMin / 60) + 'h</span>' : '';
+      return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(r.reference) + '\')">' +
+        '<span class="cc-panel-ref">' + escHtml(r.reference) + '</span>' +
+        '<span>' + escHtml(r.commune || '') + '</span>' +
+        '<span class="cc-panel-etat">' + escHtml(r.etat) + '</span>' +
+        sla +
+      '</div>';
+    }).join('') + '</div>';
+  }
+  ccShowPanel(html);
+}
+
+async function ccShowPartner(id) {
+  var data = await safeFetchJSON('/api/command-center/detail/partner/' + id, {}, true);
+  if (!data || !data.organisation) return;
+  var o = data.organisation;
+  var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
+  var desc = currentLang === 'ar' && o.description_ar ? o.description_ar : (o.description || '');
+  var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div class="cc-partner-fiche">';
+  if (o.secteur) html += '<div class="cc-partner-sector">' + escHtml(o.secteur) + '</div>';
+  if (desc) html += '<p class="cc-partner-desc">' + escHtml(desc) + '</p>';
+  if (o.telephone) html += '<div class="cc-partner-contact"><a href="tel:' + o.telephone + '">' + o.telephone + '</a></div>';
+  if (o.telephone_urgence) html += '<div class="cc-partner-contact">' + t('cc.urgence') + ' : <a href="tel:' + o.telephone_urgence + '">' + o.telephone_urgence + '</a></div>';
+  if (o.site_web) html += '<div class="cc-partner-contact"><a href="' + escHtml(o.site_web) + '" target="_blank" rel="noopener">' + escHtml(o.site_web) + '</a></div>';
+  html += '</div>';
+  // Dossiers mobilisés
+  html += '<h4 style="margin-top:12px;font-size:12px;font-weight:700;">' + t('cc.dossiers_mobilises') + '</h4>';
+  if (!data.dossiers || !data.dossiers.length) {
+    html += '<div class="cc-empty" style="margin:8px 0;padding:12px;">' + t('cc.aucun_dossier_partenaire') + '</div>';
+  } else {
+    html += '<div class="cc-panel-list">' + data.dossiers.map(function(d) {
+      return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(d.reference) + '\')"><span class="cc-panel-ref">' + escHtml(d.reference) + '</span><span>' + escHtml(d.commune || '') + '</span><span class="cc-panel-etat">' + escHtml(d.etat) + '</span></div>';
+    }).join('') + '</div>';
+  }
+  ccShowPanel(html);
+}
+
+function ccShowPanel(html) {
+  var panel = document.getElementById('cc-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'cc-panel';
+    panel.className = 'cc-panel';
+    document.getElementById('cc-content').appendChild(panel);
+  }
+  panel.innerHTML = html;
+  panel.classList.add('cc-panel-open');
+  var overlay = document.getElementById('cc-panel-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'cc-panel-overlay';
+    overlay.className = 'cc-panel-overlay';
+    overlay.onclick = ccClosePanel;
+    document.getElementById('cc-content').appendChild(overlay);
+  }
+  overlay.classList.add('cc-panel-open');
+}
+
+function ccClosePanel() {
+  var panel = document.getElementById('cc-panel');
+  if (panel) panel.classList.remove('cc-panel-open');
+  var overlay = document.getElementById('cc-panel-overlay');
+  if (overlay) overlay.classList.remove('cc-panel-open');
+}
+
 function ccRenderPriorities(priorities) {
+  _ccAllPriorities = priorities;
   var el = document.getElementById('cc-priorities');
   if (!el) return;
-  if (!priorities.length) {
-    el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_priorite') + '</div>';
-    return;
-  }
-  el.innerHTML = priorities.map(function(p) {
+  if (!priorities.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_priorite') + '</div>'; return; }
+  ccRenderPriorityRows(el, priorities);
+}
+
+function ccRenderPriorityRows(el, list) {
+  el.innerHTML = list.map(function(p) {
     var severity = p.criticite === 'danger_immediat' ? 'critique' : (p.slaDepassementMinutes > 0 ? 'eleve' : 'maitrise');
     var slaText = p.slaDepassementMinutes > 0 ? '+' + Math.round(p.slaDepassementMinutes / 60) + 'h' : t('cc.dans_delai');
     return '<div class="cc-priority-row cc-severity-' + severity + '">' +
@@ -13098,7 +13236,7 @@ function ccRenderPriorities(priorities) {
       '</div>' +
       '<div class="cc-priority-actions">' +
         '<button class="cc-btn-open" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')" title="' + t('cc.ouvrir') + '">↗</button>' +
-        '<button class="cc-btn-more" disabled title="' + t('cc.actions_a_venir') + '">⋯</button>' +
+        '<button class="cc-btn-more cc-no-action" title="' + t('cc.bientot') + '">⋯</button>' +
       '</div>' +
     '</div>';
   }).join('');

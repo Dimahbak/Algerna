@@ -230,7 +230,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     }));
 
     // ── EXTERNAL PARTNERS ──
-    const { rows: partners } = await query("SELECT id, nom, nom_ar, type_organisation, secteur FROM organisations WHERE type_organisation IN ('operateur_externe','partenaire_institutionnel') ORDER BY nom");
+    const { rows: partners } = await query("SELECT id, nom, nom_ar, type_organisation, secteur, description, description_ar, telephone, telephone_urgence, site_web FROM organisations WHERE type_organisation IN ('operateur_externe','partenaire_institutionnel') ORDER BY nom");
 
     // ── PENDING DECISIONS ──
     const { rows: pendingDecisions } = await query(`
@@ -278,6 +278,63 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     });
   } catch (e) {
     console.error('[command-center]', e.message);
+    res.status(500).json({ erreur: e.message });
+  }
+});
+
+// ── GET /detail/:type/:id — drilldown pour directions, EPIC, communes, daïras ──
+router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { type, id } = req.params;
+    let rows = [];
+    if (type === 'direction') {
+      ({ rows } = await query(`
+        SELECT s.reference, s.description AS titre, s.etat, s.gravite, c.nom AS commune,
+               EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaMin"
+        FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.direction_pilote_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
+        ORDER BY s.cree_le DESC
+      `, [Number(id)]));
+    } else if (type === 'epic') {
+      ({ rows } = await query(`
+        SELECT s.reference, s.description AS titre, s.etat, s.gravite, c.nom AS commune,
+               EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaMin"
+        FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.organisation_executante_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
+        ORDER BY s.cree_le DESC
+      `, [Number(id)]));
+    } else if (type === 'dairas') {
+      ({ rows } = await query(`
+        SELECT d.id, d.nom, d.nom_ar,
+               COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS incidents
+        FROM daira d LEFT JOIN signalement s ON s.daira_id = d.id
+        GROUP BY d.id, d.nom, d.nom_ar ORDER BY incidents DESC, d.nom
+      `));
+    } else if (type === 'communes') {
+      ({ rows } = await query(`
+        SELECT c.id, c.nom, c.nom_ar,
+               COUNT(s.id) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS incidents
+        FROM commune c LEFT JOIN signalement s ON s.commune_id = c.id
+        WHERE c.actif = TRUE
+        GROUP BY c.id, c.nom, c.nom_ar ORDER BY incidents DESC, c.nom
+      `));
+    } else if (type === 'partner') {
+      const { rows: [org] } = await query(`
+        SELECT id, nom, nom_ar, type_organisation, secteur, description, description_ar,
+               telephone, telephone_urgence, site_web
+        FROM organisations WHERE id = $1
+      `, [Number(id)]);
+      const { rows: dossiers } = await query(`
+        SELECT s.reference, s.description AS titre, s.etat, c.nom AS commune
+        FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+        WHERE s.organisation_executante_id = $1 AND s.etat NOT IN ('resolu','clos','rejete')
+        ORDER BY s.cree_le DESC LIMIT 20
+      `, [Number(id)]);
+      return res.json({ organisation: org || null, dossiers });
+    }
+    res.json({ rows });
+  } catch (e) {
+    console.error('[command-center/detail]', e.message);
     res.status(500).json({ erreur: e.message });
   }
 });

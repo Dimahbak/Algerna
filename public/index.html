@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=383">
+  <link rel="stylesheet" href="/app.css?v=384">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -2560,9 +2560,10 @@
               <div class="cc-map-main">
                 <div id="cc-map" style="height:400px;border-radius:var(--radius-md);"></div>
                 <div class="cc-map-filters" id="cc-map-filters">
-                  <button class="cc-filter-btn active" data-filter="all" onclick="ccMapFilter('all')" data-i18n="cc.filtre_tous">Tous</button>
-                  <button class="cc-filter-btn" data-filter="critique" onclick="ccMapFilter('critique')" data-i18n="cc.filtre_critiques">Critiques</button>
-                  <button class="cc-filter-btn" data-filter="commune" onclick="ccMapFilter('commune')" data-i18n="cc.filtre_communes">Communes</button>
+                  <button class="cc-filter-btn active" data-filter="all" onclick="ccMapFilter('all')" data-i18n="cc.filtre_incidents">Incidents</button>
+                  <button class="cc-filter-btn" data-filter="critique" onclick="ccMapFilter('critique')" data-i18n="cc.filtre_communes">Communes</button>
+                  <button class="cc-filter-btn" data-filter="directions" onclick="ccMapFilter('directions')" data-i18n="cc.filtre_directions">Directions</button>
+                  <button class="cc-filter-btn" data-filter="epic" onclick="ccMapFilter('epic')" data-i18n="cc.filtre_epic">EPIC</button>
                 </div>
               </div>
               <div class="cc-risk-zones">
@@ -3883,7 +3884,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=383"></script>
+<script src="/app.js?v=384"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->

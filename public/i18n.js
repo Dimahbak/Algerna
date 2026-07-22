@@ -1302,6 +1302,14 @@ const I18N = {
     "cc.aucun_partenaire": "Aucun partenaire",
     "cc.operateur": "Opérateur",
     "cc.partenaire": "Partenaire",
+    "cc.bientot": "Bientôt disponible",
+    "cc.filtre_incidents": "Incidents",
+    "cc.filtre_directions": "Directions",
+    "cc.filtre_epic": "EPIC",
+    "cc.aucun_dossier": "Aucun dossier en cours",
+    "cc.aucun_dossier_partenaire": "Aucun dossier en cours",
+    "cc.dossiers_mobilises": "Dossiers où ce partenaire est mobilisé",
+    "cc.urgence": "Urgence",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -2991,6 +2999,14 @@ const I18N = {
     "cc.aucun_partenaire": "لا يوجد شريك",
     "cc.operateur": "متعامل",
     "cc.partenaire": "شريك",
+    "cc.bientot": "قريبًا",
+    "cc.filtre_incidents": "الحوادث",
+    "cc.filtre_directions": "المديريات",
+    "cc.filtre_epic": "المؤسسات",
+    "cc.aucun_dossier": "لا يوجد ملف جارٍ",
+    "cc.aucun_dossier_partenaire": "لا يوجد ملف جارٍ",
+    "cc.dossiers_mobilises": "الملفات المعنية بهذا الشريك",
+    "cc.urgence": "طوارئ",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",
