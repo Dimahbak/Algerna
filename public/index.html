@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=381">
+  <link rel="stylesheet" href="/app.css?v=382">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -259,6 +259,10 @@
       <button class="nav-item hidden" onclick="showView('command-center')" data-view="command-center" id="nav-command-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <span data-i18n="cc.titre">Salle de commandement</span>
+      </button>
+      <button class="nav-item hidden" onclick="showView('bo-executive')" data-view="bo-executive" id="nav-bo-executive">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span data-i18n="sup.tableau_bord">Tableau de bord</span>
       </button>
       <button class="nav-item hidden" onclick="showView('rapports')" data-view="rapports" id="nav-rapports">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -2550,9 +2554,8 @@
             <div id="cc-priorities" class="cc-priorities"></div>
           </div>
           <!-- Navigation -->
-          <div style="display:flex;justify-content:space-between;margin-top:12px;">
+          <div style="text-align:right;margin-top:12px;">
             <a href="#" onclick="showView('bo-executive');return false;" style="font-size:11px;color:var(--teal);" data-i18n="cc.tableau_bord">Tableau de bord détaillé →</a>
-            <a href="#" onclick="showView('cockpit');return false;" style="font-size:11px;color:var(--muted);" data-i18n="cc.ancien_cockpit">Version précédente →</a>
           </div>
         </div>
       </div>
@@ -3839,7 +3842,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=381"></script>
+<script src="/app.js?v=382"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->

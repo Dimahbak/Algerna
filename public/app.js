@@ -582,7 +582,7 @@ async function initApp() {
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
-    superviseur:          hasNiveau('wilaya') ? ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval'],
+    superviseur:          hasNiveau('wilaya') ? ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
     cabinet:              ['ccoe','command-center'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
@@ -911,15 +911,15 @@ function showView(name) {
     agent_traitant:       ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     cap:                  ['bo-cap','signaler','profil','parametres','a-propos','aide','notifications'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','mes-chantiers-ccoe','profil','parametres','a-propos','aide','notifications'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','command-center','cockpit','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
-    cabinet:              ['ccoe','command-center','cockpit','profil','parametres','a-propos','aide','notifications'],
+    superviseur:          hasNiveau('wilaya') ? ['bo-executive','command-center','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
+    cabinet:              ['ccoe','command-center','profil','parametres','a-propos','aide','notifications'],
   };
   var viewsByRole = {
     citoyen: ['home','civiadmin','signaler','civisignal','watersignal','infos','communiques','carte','proprete','parkzones','equipements','mobilite','participe','mes-signalements','perdu-trouve','sentinelle','profil','parametres','notifications','securite','espace-citoyen','aide','a-propos','wilaya','legal','cap'],
     agent: ['bo-agent','perdu-trouve','profil','parametres','a-propos','aide','notifications'],
     operateur: hasCapacite('civipark') ? ['civipark','profil','parametres','a-propos','aide','notifications'] : hasCapacite('patrimoine') ? ['patrimoine','profil','parametres','a-propos','aide','notifications'] : ['bo-agent','profil','parametres','a-propos','aide','notifications'],
     admin_apc: ['bo-executive','admin-communiques','quartiers','edeval','profil','parametres','a-propos','aide','notifications'],
-    admin_wilaya: ['bo-executive','command-center','cockpit','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
+    admin_wilaya: ['bo-executive','command-center','admin-communiques','quartiers','edeval','bo-admin','profil','parametres','a-propos','aide','notifications'],
   };
   var userFonction = currentUser ? currentUser.fonction : null;
   var allowed = (userFonction && viewsByFonction[userFonction]) ? viewsByFonction[userFonction] : (viewsByRole[role] || viewsByRole.citoyen);
@@ -7338,7 +7338,7 @@ async function execLoad() {
 
     if (repCommunes) {
       repCommunes.innerHTML = (cockpitData.repartitions.communes||[]).map(function(c) {
-        return '<div onclick="cockpitDrill(\'commune\',' + c.id + ',\'' + escHtml(c.nom) + '\')" style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(arF(c.nom_ar,c.nom)) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + c.total + '</span></div>';
+        return '<div style="display:flex;justify-content:space-between;padding:6px 8px;border-bottom:1px solid var(--line);border-radius:4px;"><span style="font-weight:600;color:var(--navy);font-size:12px;">' + escHtml(arF(c.nom_ar,c.nom)) + '</span><span style="color:var(--muted);font-weight:700;font-size:12px;">' + c.total + '</span></div>';
       }).join('') || '<div style="color:var(--muted);font-size:11px;">—</div>';
     }
     if (repOrgs) {
@@ -7871,12 +7871,12 @@ function initAide() {
         agent_traitant: '1. تحققوا من البلاغات الواردة في لوحة التحكم<br>2. صنّفوا كل ملف (الفئة، الاستعجال)<br>3. أحيلوا إلى المصلحة المختصة<br>4. تابعوا التقدم وأعيدوا التذكير عند الحاجة',
         entite_responsable: '1. اطّلعوا على الملفات المحالة من الولاية<br>2. تكفّلوا بملفات قطاعكم<br>3. نظّموا التدخل (الفريق، التاريخ، المسؤول)<br>4. قدّموا التقرير بعد الإنجاز',
         cap: '1. اطّلعوا على مهامكم الميدانية المكلّفين بها<br>2. أجروا المعاينة في الميدان (صور، ملاحظات)<br>3. حرّروا تقريركم الميداني<br>4. أرسلوا قراركم (تأكيد، تعديل، رفض)',
-        superviseur: '1. راقبوا عبر لوحة القيادة (مؤشرات، خريطة، تنبيهات)<br>2. صادقوا على تقارير المصالح<br>3. تواصلوا، ذكّروا أو أبلغوا عن حالة طارئة<br>4. تابعوا أداء المؤسسات وأعوان القرب',
+        superviseur: '1. راقبوا عبر غرفة القيادة (مؤشرات، أولويات، تنبيهات)<br>2. صادقوا على تقارير المصالح<br>3. تواصلوا، ذكّروا أو أبلغوا عن حالة طارئة<br>4. تابعوا أداء المؤسسات وأعوان القرب',
       } : {
         agent_traitant: '1. Vérifiez les signalements reçus dans votre board<br>2. Qualifiez chaque dossier (catégorie, urgence)<br>3. Transmettez au service compétent<br>4. Suivez l\'avancement et relancez si nécessaire',
         entite_responsable: '1. Consultez les dossiers transmis par la Wilaya<br>2. Prenez en charge les dossiers de votre secteur<br>3. Organisez l\'intervention (équipe, date, responsable)<br>4. Soumettez le compte-rendu une fois terminé',
         cap: '1. Consultez vos missions terrain assignées<br>2. Réalisez le constat sur place (photos, observations)<br>3. Rédigez votre rapport de terrain<br>4. Transmettez votre décision (valider, amender, rejeter)',
-        superviseur: '1. Pilotez via le cockpit exécutif (KPI, carte, alertes)<br>2. Validez les comptes-rendus des services<br>3. Communiquez, relancez ou signalez une urgence au Wali<br>4. Suivez la performance des organisations et des CAP',
+        superviseur: '1. Pilotez via la Salle de commandement (KPI, priorités, alertes)<br>2. Validez les comptes-rendus des services<br>3. Communiquez, relancez ou signalez une urgence au Wali<br>4. Suivez la performance des organisations et des CAP',
       };
       guideEl.innerHTML = guides[u.fonction] || (currentLang==='ar'?'اطّلعوا على فضاء العمل الخاص بكم لتسيير ملفاتكم.':'Consultez votre espace de travail pour gérer vos dossiers.');
     }
@@ -8000,9 +8000,9 @@ async function supLoad() {
   try {
     var kpis2 = await safeFetchJSON('/api/supervision/kpis' + qs, {}, true);
     var dHtml = '';
-    if (kpis2.alertes_critiques > 0) dHtml += '<div onclick="showView(\'cockpit\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🔴 <strong>' + kpis2.alertes_critiques + '</strong> signalements hors délai</div>';
+    if (kpis2.alertes_critiques > 0) dHtml += '<div onclick="showView(\'command-center\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🔴 <strong>' + kpis2.alertes_critiques + '</strong> signalements hors délai</div>';
     if (kpis2.missions_cap > 0) dHtml += '<div style="padding:6px 0;font-size:13px;">🟣 <strong>' + kpis2.missions_cap + '</strong> interventions CAP en cours</div>';
-    if (kpis2.ouverts > 10) dHtml += '<div onclick="showView(\'cockpit\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🟠 <strong>' + kpis2.ouverts + '</strong> signalements ouverts</div>';
+    if (kpis2.ouverts > 10) dHtml += '<div onclick="showView(\'command-center\');" style="padding:6px 0;font-size:13px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background=\'var(--gray-50)\'" onmouseout="this.style.background=\'transparent\'">🟠 <strong>' + kpis2.ouverts + '</strong> signalements ouverts</div>';
     document.getElementById('sup-decisions').innerHTML = dHtml || '<div style="padding:12px;font-size:13px;color:var(--muted);">Aucune décision urgente</div>';
   } catch(e) { console.warn('[supervision] échec chargement décisions:', e.message); }
 
@@ -12879,7 +12879,7 @@ async function ccLoad() {
 
     // Updated timestamp
     var updEl = document.getElementById('cc-updated');
-    if (updEl) updEl.textContent = t('cc.maj') + ' ' + new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {hour:'2-digit',minute:'2-digit'});
+    if (updEl) updEl.textContent = t('cc.maj') + ' ' + new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {hour:'2-digit',minute:'2-digit',hour12:false});
 
     // Synthesis phrase
     var syn = document.getElementById('cc-synthesis');
@@ -12940,8 +12940,9 @@ function ccRenderPriorities(priorities) {
         '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + '</div>' +
         '<div class="cc-priority-meta">' +
           '<span>' + escHtml(p.commune || '—') + '</span>' +
-          '<span>' + escHtml(p.directionPilote || '—') + '</span>' +
-          '<span>' + escHtml(p.executant || '—') + '</span>' +
+          (p.directionPilote && p.executant && p.directionPilote === p.executant
+            ? '<span>' + t('cc.pilote_executant') + ' : ' + escHtml(p.directionPilote) + '</span>'
+            : '<span>' + escHtml(p.directionPilote || '—') + '</span><span>' + escHtml(p.executant || '—') + '</span>') +
           '<span class="cc-sla-badge cc-sla-' + severity + '">' + slaText + '</span>' +
         '</div>' +
       '</div>' +
