@@ -2229,3 +2229,49 @@
 .cc-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;}
 [dir="rtl"] .cc-priority-row::before{order:1;}
 [dir="rtl"] .cc-priority-meta{direction:rtl;}
+/* ── Palier 2 : Carte, Directions, EPIC, Territoire, Partenaires ── */
+.cc-map-container{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+.cc-map-main{min-width:0;}
+.cc-map-filters{display:flex;gap:6px;margin-top:8px;}
+.cc-filter-btn{padding:6px 12px;border:1px solid var(--cc-border);border-radius:8px;background:white;font-size:11px;cursor:pointer;transition:all .15s;}
+.cc-filter-btn.active{background:var(--navy-950);color:white;border-color:var(--navy-950);}
+.cc-risk-zones{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:14px;}
+.cc-risk-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--cc-border);}
+.cc-risk-row:last-child{border-bottom:none;}
+.cc-subsection-title{font-size:13px;font-weight:700;color:var(--navy-950);margin-bottom:10px;}
+.cc-tag-eleve{background:#fee2e2;color:#EF4444;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.cc-tag-moyen{background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.cc-tag-sla{background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.cc-tag-taux{background:#dbeafe;color:#2563eb;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.cc-btn-disabled{padding:6px 12px;border:1px solid var(--cc-border);border-radius:8px;background:var(--cc-surface);color:var(--muted);font-size:11px;cursor:not-allowed;opacity:.6;width:100%;margin-top:6px;}
+.cc-territory-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.cc-terr-card{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:20px;text-align:center;}
+.cc-terr-value{font-size:32px;font-weight:800;color:var(--navy-950);}
+.cc-terr-label{font-size:14px;font-weight:600;color:var(--navy-950);margin-top:4px;}
+.cc-terr-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+.cc-directions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+.cc-dir-card{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:14px;}
+.cc-dir-name{font-size:13px;font-weight:700;color:var(--navy-950);margin-bottom:8px;}
+.cc-dir-stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.cc-dir-stats span{font-size:11px;}
+.cc-epics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.cc-epic-card{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:14px;padding:14px;}
+.cc-epic-name{font-size:13px;font-weight:700;color:var(--navy-950);margin-bottom:4px;}
+.cc-epic-tutelle{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.cc-epic-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.cc-epic-stat{text-align:center;}
+.cc-epic-num{display:block;font-size:18px;font-weight:800;color:var(--navy-950);}
+.cc-epic-lbl{font-size:10px;color:var(--muted);}
+.cc-critique-num{color:var(--cc-critique);}
+.cc-sla-num{color:var(--cc-vigilance);}
+.cc-epic-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--cc-card);border:1px solid var(--cc-border);border-radius:10px;margin-bottom:6px;}
+.cc-muted{color:var(--muted);font-size:12px;}
+.cc-epics-list{max-height:300px;overflow-y:auto;}
+.cc-partners-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.cc-partner-card{background:var(--cc-card);border:1px solid var(--cc-border);border-radius:12px;padding:12px;text-align:center;}
+.cc-partner-name{font-size:12px;font-weight:600;color:var(--navy-950);margin-bottom:4px;}
+.cc-partner-type{font-size:10px;color:var(--muted);}
+@media(max-width:768px){.cc-map-container{grid-template-columns:1fr;}.cc-territory-grid{grid-template-columns:1fr;}.cc-epic-stats{grid-template-columns:repeat(2,1fr);}}
+[dir="rtl"] .cc-risk-row{flex-direction:row-reverse;}
+[dir="rtl"] .cc-dir-stats{direction:rtl;}
+[dir="rtl"] .cc-epic-row{flex-direction:row-reverse;}

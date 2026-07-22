@@ -12896,6 +12896,15 @@ async function ccLoad() {
     // Priorities
     ccRenderPriorities(data.priorities || []);
 
+    // Palier 2
+    ccRenderMap(data.mapIncidents || []);
+    ccRenderRiskZones(data.riskZones || []);
+    ccRenderTerritory(data.territory || {});
+    ccRenderDirections(data.directions || []);
+    ccRenderEpicsPrio(data.priorityEpics || []);
+    ccRenderEpicsAutres(data.otherEpics || []);
+    ccRenderPartners(data.externalPartners || []);
+
     applyTranslations();
   } catch(e) {
     if (loading) loading.style.display = 'none';
@@ -12921,6 +12930,147 @@ function ccRenderKpis(s) {
       '<div class="cc-kpi-icon" style="color:' + k.color + ';">' + k.icon + '</div>' +
       '<div class="cc-kpi-value" style="color:' + k.color + ';">' + k.value + '</div>' +
       '<div class="cc-kpi-label">' + t('cc.kpi_' + k.key) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Palier 2 : Carte, Directions, EPIC, Territoire, Partenaires ──
+
+var _ccMap = null;
+var _ccMarkers = [];
+var _ccMapData = [];
+
+function ccRenderMap(incidents) {
+  _ccMapData = incidents;
+  var mapEl = document.getElementById('cc-map');
+  if (!mapEl) return;
+  if (!_ccMap) {
+    _ccMap = L.map('cc-map').setView([36.7538, 3.0588], 11);
+    createTileLayer(_ccMap);
+    setTimeout(function() { _ccMap.invalidateSize(); }, 400);
+  } else {
+    setTimeout(function() { _ccMap.invalidateSize(); }, 200);
+  }
+  ccMapFilter('all');
+}
+
+function ccMapFilter(type) {
+  if (!_ccMap) return;
+  _ccMarkers.forEach(function(m) { _ccMap.removeLayer(m); });
+  _ccMarkers = [];
+  var btns = document.querySelectorAll('.cc-filter-btn');
+  btns.forEach(function(b) { b.classList.toggle('active', b.dataset.filter === type); });
+  var items = _ccMapData;
+  if (type === 'critique') items = items.filter(function(i) { return i.gravite === 'danger_immediat'; });
+  items.forEach(function(inc) {
+    if (!inc.lat || !inc.lng) return;
+    var color = inc.gravite === 'danger_immediat' ? '#EF4444' : (inc.criticite === 'haute' ? '#f97316' : '#eab308');
+    var icon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:'+color+';border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>' });
+    var marker = L.marker([inc.lat, inc.lng], { icon: icon })
+      .addTo(_ccMap)
+      .bindPopup('<strong>' + escHtml(inc.reference) + '</strong><br>' + escHtml(inc.commune || ''));
+    _ccMarkers.push(marker);
+  });
+  if (_ccMarkers.length) {
+    var group = L.featureGroup(_ccMarkers);
+    _ccMap.fitBounds(group.getBounds().pad(0.1));
+  }
+}
+
+function ccRenderRiskZones(zones) {
+  var el = document.getElementById('cc-risk-zones-list');
+  if (!el) return;
+  if (!zones.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_zone') + '</div>'; return; }
+  el.innerHTML = zones.map(function(z) {
+    var niveau = z.critiques > 0 ? t('cc.niveau_eleve') : t('cc.niveau_moyen');
+    var nClass = z.critiques > 0 ? 'cc-tag-eleve' : 'cc-tag-moyen';
+    return '<div class="cc-risk-row" onclick="ccMapZoom(' + z.lat + ',' + z.lng + ')" style="cursor:pointer;">' +
+      '<div><strong>' + escHtml(currentLang === 'ar' && z.nom_ar ? z.nom_ar : z.nom) + '</strong>' +
+      '<div style="font-size:11px;color:var(--muted);">' + z.incidents + ' ' + t('cc.incidents_actifs') + '</div></div>' +
+      '<span class="' + nClass + '">' + niveau + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function ccMapZoom(lat, lng) {
+  if (_ccMap && lat && lng) _ccMap.setView([lat, lng], 14);
+}
+
+function ccRenderTerritory(terr) {
+  var el = document.getElementById('cc-territory');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="cc-terr-card">' +
+      '<div class="cc-terr-value">' + (terr.dairasTotal || 14) + '</div>' +
+      '<div class="cc-terr-label">' + t('cc.dairas') + '</div>' +
+      '<div class="cc-terr-sub">' + (terr.dairasConcernees || 0) + ' ' + t('cc.dairas_concernees') + '</div>' +
+    '</div>' +
+    '<div class="cc-terr-card">' +
+      '<div class="cc-terr-value">' + (terr.apcTotal || 57) + '</div>' +
+      '<div class="cc-terr-label">' + t('cc.apc') + '</div>' +
+      '<div class="cc-terr-sub">' + (terr.apcNoResponse || 0) + ' ' + t('cc.apc_vigilance') + '</div>' +
+    '</div>';
+}
+
+function ccRenderDirections(dirs) {
+  var el = document.getElementById('cc-directions');
+  if (!el) return;
+  var mobilized = dirs.filter(function(d) { return parseInt(d.ouverts) > 0; });
+  mobilized.sort(function(a, b) { return parseInt(b.critiques) - parseInt(a.critiques) || parseInt(b.slaDepasses) - parseInt(a.slaDepasses) || parseInt(b.ouverts) - parseInt(a.ouverts); });
+  if (!mobilized.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_direction') + '</div>'; return; }
+  el.innerHTML = mobilized.map(function(d) {
+    return '<div class="cc-dir-card">' +
+      '<div class="cc-dir-name">' + escHtml(d.nom) + '</div>' +
+      '<div class="cc-dir-stats">' +
+        '<span>' + d.ouverts + ' ' + t('cc.ouverts') + '</span>' +
+        (parseInt(d.critiques) > 0 ? '<span class="cc-tag-eleve">' + d.critiques + ' ' + t('cc.critiques_label') + '</span>' : '') +
+        (parseInt(d.slaDepasses) > 0 ? '<span class="cc-tag-sla">' + d.slaDepasses + ' SLA</span>' : '') +
+        '<span class="cc-tag-taux">' + d.tauxTraitement + '% ' + t('cc.traitement') + '</span>' +
+      '</div>' +
+      '<button class="cc-btn-disabled" disabled>' + t('cc.ouvrir_dir') + '</button>' +
+    '</div>';
+  }).join('');
+}
+
+function ccRenderEpicsPrio(epics) {
+  var el = document.getElementById('cc-epics-prio');
+  if (!el) return;
+  if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
+  el.innerHTML = epics.map(function(e) {
+    return '<div class="cc-epic-card">' +
+      '<div class="cc-epic-name">' + escHtml(e.nom) + '</div>' +
+      (e.tutelle ? '<div class="cc-epic-tutelle">' + escHtml(e.tutelle) + '</div>' : '') +
+      '<div class="cc-epic-stats">' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num">' + e.ouverts + '</span><span class="cc-epic-lbl">' + t('cc.ouverts') + '</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num cc-critique-num">' + e.critiques + '</span><span class="cc-epic-lbl">' + t('cc.critiques_label') + '</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num cc-sla-num">' + e.slaDepasses + '</span><span class="cc-epic-lbl">SLA</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num">' + e.tauxReponse + '%</span><span class="cc-epic-lbl">' + t('cc.reponse') + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function ccRenderEpicsAutres(epics) {
+  var el = document.getElementById('cc-epics-autres');
+  if (!el) return;
+  if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
+  el.innerHTML = epics.map(function(e) {
+    return '<div class="cc-epic-row">' +
+      '<span>' + escHtml(e.nom) + '</span>' +
+      '<span class="cc-muted">' + e.ouverts + ' ' + t('cc.ouverts') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function ccRenderPartners(partners) {
+  var el = document.getElementById('cc-partners');
+  if (!el) return;
+  if (!partners.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_partenaire') + '</div>'; return; }
+  el.innerHTML = partners.map(function(p) {
+    var label = p.type_organisation === 'operateur_externe' ? t('cc.operateur') : t('cc.partenaire');
+    return '<div class="cc-partner-card">' +
+      '<div class="cc-partner-name">' + escHtml(currentLang === 'ar' && p.nom_ar ? p.nom_ar : p.nom) + '</div>' +
+      '<span class="cc-partner-type">' + label + '</span>' +
     '</div>';
   }).join('');
 }

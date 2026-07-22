@@ -126,6 +126,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     // ── PRIORITIES ── (top 5 critical/overdue)
     const { rows: priorities } = await query(`
       SELECT s.reference, s.description AS titre, s.gravite AS criticite,
+             s.lat, s.lng,
              c.nom AS commune, d.nom AS daira,
              dp.nom AS "directionPilote", oe.nom AS executant,
              EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaDepassementMinutes"
@@ -143,6 +144,29 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       LIMIT 5
     `);
     priorities.forEach(p => { p.slaDepassementMinutes = Math.max(0, Math.round(p.slaDepassementMinutes || 0)); });
+
+    // ── MAP INCIDENTS ── all active incidents with coordinates
+    const { rows: mapIncidents } = await query(`
+      SELECT s.reference, s.lat, s.lng, s.gravite, cs.criticite, c.nom AS commune, s.etat
+      FROM signalement s
+      JOIN categorie_signal cs ON cs.id = s.categorie_id
+      LEFT JOIN commune c ON c.id = s.commune_id
+      WHERE s.etat NOT IN ('resolu','clos','rejete')
+        AND s.lat IS NOT NULL AND s.lng IS NOT NULL
+    `);
+
+    // ── RISK ZONES ── top 5 communes by active incident count
+    const { rows: riskZones } = await query(`
+      SELECT c.id, c.nom, c.nom_ar, c.centre_lat AS lat, c.centre_lng AS lng,
+             COUNT(*) AS incidents,
+             COUNT(*) FILTER (WHERE s.gravite = 'danger_immediat') AS critiques
+      FROM signalement s
+      JOIN commune c ON c.id = s.commune_id
+      WHERE s.etat NOT IN ('resolu','clos','rejete')
+      GROUP BY c.id, c.nom, c.nom_ar, c.centre_lat, c.centre_lng
+      ORDER BY critiques DESC, incidents DESC
+      LIMIT 5
+    `);
 
     // ── TERRITORY ──
     const { rows: [terr] } = await query(`
@@ -179,17 +203,30 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       SELECT o.id, o.nom, o.nom_ar, o.prioritaire, o.ordre_affichage,
              t.nom AS tutelle,
              (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.etat NOT IN ('resolu','clos','rejete')) AS ouverts,
-             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id) AS total_dossiers
+             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id) AS total_dossiers,
+             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.gravite = 'danger_immediat' AND s.etat NOT IN ('resolu','clos','rejete')) AS critiques,
+             (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.cree_le < NOW() - INTERVAL '48 hours' AND s.etat NOT IN ('resolu','clos','rejete')) AS sla_depasses,
+             (SELECT CASE WHEN COUNT(*) FILTER (WHERE s2.etat NOT IN ('resolu','clos','rejete')) > 0
+                     THEN ROUND(COUNT(*) FILTER (WHERE s2.etat NOT IN ('resolu','clos','rejete') AND s2.etat <> 'recu')::numeric
+                          / COUNT(*) FILTER (WHERE s2.etat NOT IN ('resolu','clos','rejete')) * 100)
+                     ELSE 0 END
+              FROM signalement s2 WHERE s2.organisation_executante_id = o.id) AS taux_reponse
       FROM organisations o
       LEFT JOIN organisations t ON t.id = o.direction_tutelle_id
       WHERE o.type_organisation = 'epic'
       ORDER BY o.prioritaire DESC, o.ordre_affichage, o.nom
     `);
     const priorityEpics = epicOrgs.filter(e => e.prioritaire).map(e => ({
-      id: e.id, nom: e.nom, tutelle: e.tutelle, ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers)
+      id: e.id, nom: e.nom, tutelle: e.tutelle,
+      ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers),
+      critiques: parseInt(e.critiques), slaDepasses: parseInt(e.sla_depasses),
+      tauxReponse: parseInt(e.taux_reponse)
     }));
     const otherEpics = epicOrgs.filter(e => !e.prioritaire).map(e => ({
-      id: e.id, nom: e.nom, tutelle: e.tutelle, ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers)
+      id: e.id, nom: e.nom, tutelle: e.tutelle,
+      ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers),
+      critiques: parseInt(e.critiques), slaDepasses: parseInt(e.sla_depasses),
+      tauxReponse: parseInt(e.taux_reponse)
     }));
 
     // ── EXTERNAL PARTNERS ──
@@ -228,6 +265,8 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     res.json({
       summary,
       priorities,
+      mapIncidents,
+      riskZones,
       territory,
       directions,
       priorityEpics,
