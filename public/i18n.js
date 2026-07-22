@@ -1270,6 +1270,7 @@ const I18N = {
     "cc.dans_delai": "Dans le délai",
     "cc.ouvrir": "Ouvrir le dossier",
     "cc.actions_a_venir": "Actions à venir",
+    "cc.tableau_bord": "Tableau de bord détaillé →",
     "cc.ancien_cockpit": "Version précédente →",
     "cc.nouvelle_version": "Nouvelle version →",
 
@@ -2929,6 +2930,7 @@ const I18N = {
     "cc.dans_delai": "ضمن المهلة",
     "cc.ouvrir": "فتح الملف",
     "cc.actions_a_venir": "إجراءات قادمة",
+    "cc.tableau_bord": "← لوحة المتابعة التفصيلية",
     "cc.ancien_cockpit": "← النسخة السابقة",
     "cc.nouvelle_version": "← النسخة الجديدة",
 

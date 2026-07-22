@@ -582,8 +582,8 @@ async function initApp() {
     agent_traitant:       ['bo-agent'],
     cap:                  ['bo-cap'],
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
-    superviseur:          hasNiveau('wilaya') ? ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
-    cabinet:              ['ccoe'],
+    superviseur:          hasNiveau('wilaya') ? ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval'],
+    cabinet:              ['ccoe','command-center'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
@@ -591,7 +591,7 @@ async function initApp() {
     agent: ['bo-agent'],
     operateur: ['bo-agent'],
     admin_apc: ['bo-executive','rapports','admin-communiques','quartiers','edeval'],
-    admin_wilaya: ['bo-executive','rapports','admin-communiques','quartiers','edeval','bo-admin'],
+    admin_wilaya: ['command-center','rapports','admin-communiques','quartiers','edeval','bo-admin'],
   };
   var fonction = u ? u.fonction : null;
   var allowedViews = (fonction && menusByFonction[fonction]) ? menusByFonction[fonction] : (menusByRole[role] || menusByRole.citoyen);
@@ -872,7 +872,7 @@ function getDefaultView() {
   if (fn === 'agent_traitant') return 'bo-agent';
   if (fn === 'cap') return 'bo-cap';
   if (fn === 'entite_responsable') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
-  if (fn === 'superviseur') return 'bo-executive';
+  if (fn === 'superviseur') return hasNiveau('wilaya') ? 'command-center' : 'bo-executive';
   if (fn === 'cabinet') return 'ccoe';
   if (fn === 'citoyen') return 'home';
   // Fallback sur role
@@ -880,7 +880,7 @@ function getDefaultView() {
   if (r === 'agent') return 'bo-agent';
   if (r === 'operateur') return hasCapacite('civipark') ? 'civipark' : hasCapacite('patrimoine') ? 'patrimoine' : 'bo-agent';
   if (r === 'admin_apc') return 'bo-executive';
-  if (r === 'admin_wilaya') return 'bo-executive';
+  if (r === 'admin_wilaya') return 'command-center';
   return 'home';
 }
 
