@@ -2530,21 +2530,24 @@
             </div>
           </header>
           <!-- Phrase de synthèse -->
-          <div id="cc-synthesis" class="cc-synthesis"></div>
-          <!-- 6 cartes KPI -->
-          <div id="cc-kpis" class="cc-kpi-grid"></div>
-          <div id="cc-kpi-dropdown" class="cc-kpi-dropdown"></div>
+          <div data-cc-section="pilotage">
+            <div id="cc-synthesis" class="cc-synthesis"></div>
+            <div id="cc-kpis" class="cc-kpi-grid"></div>
+            <div id="cc-kpi-dropdown" class="cc-kpi-dropdown"></div>
+          </div>
           <!-- Priorités à traiter -->
-          <div class="cc-section">
+          <div class="cc-section" data-cc-section="pilotage">
             <h2 class="cc-section-title" data-i18n="cc.priorites_titre">Priorités à traiter</h2>
             <div id="cc-priorities" class="cc-priorities"></div>
+            <button class="cc-mob-voir-toutes" onclick="ccMobilePrioritiesDrawer()" data-i18n="cc.voir_toutes">Voir toutes les priorités</button>
           </div>
-          <!-- A. Carte opérationnelle + Zones à risque -->
-          <div class="cc-section">
+          <!-- Carte opérationnelle + Zones à risque -->
+          <div class="cc-section" data-cc-section="carte">
             <h2 class="cc-section-title" data-i18n="cc.carte_titre">Carte opérationnelle</h2>
             <div class="cc-map-container">
-              <div class="cc-map-main">
+              <div class="cc-map-main" id="cc-map-main">
                 <div id="cc-map" style="height:400px;border-radius:var(--radius-md);"></div>
+                <button class="cc-mob-open-map" onclick="ccMapFullscreenOpen()" data-i18n="cc.ouvrir_carte">Ouvrir la carte</button>
                 <div class="cc-map-filters" id="cc-map-filters">
                   <button class="cc-filter-btn active" data-filter="all" onclick="ccMapFilter('all')" data-i18n="cc.filtre_incidents">Incidents</button>
                   <button class="cc-filter-btn" data-filter="critique" onclick="ccMapFilter('critique')" data-i18n="cc.filtre_communes">Communes</button>
@@ -2559,47 +2562,57 @@
               </div>
             </div>
           </div>
-          <!-- D. Territoire administratif -->
-          <div class="cc-section">
+          <!-- Territoire administratif -->
+          <div class="cc-section" data-cc-section="pilotage">
             <h2 class="cc-section-title" data-i18n="cc.territoire_titre">Territoire administratif</h2>
             <div id="cc-territory" class="cc-territory-grid"></div>
           </div>
-          <!-- B. Directions de la Wilaya -->
-          <div class="cc-section">
+          <!-- Directions de la Wilaya -->
+          <div class="cc-section" data-cc-section="organismes">
             <h2 class="cc-section-title" data-i18n="cc.directions_titre">Directions de la Wilaya</h2>
             <div id="cc-directions" class="cc-directions-grid"></div>
           </div>
-          <!-- C. EPIC prioritaires -->
-          <div class="cc-section">
+          <!-- EPIC prioritaires -->
+          <div class="cc-section" data-cc-section="organismes">
             <h2 class="cc-section-title" data-i18n="cc.epic_prio_titre">EPIC prioritaires</h2>
             <div id="cc-epics-prio" class="cc-epics-grid"></div>
           </div>
-          <!-- C. Autres EPIC -->
-          <div class="cc-section">
+          <!-- Autres EPIC -->
+          <div class="cc-section" data-cc-section="plus-epics">
             <h2 class="cc-section-title" data-i18n="cc.epic_autres_titre">Autres EPIC</h2>
             <div id="cc-epics-autres" class="cc-epics-list"></div>
-            <button class="cc-btn-disabled" disabled data-i18n="cc.voir_epics" style="margin-top:8px;">Voir les autres EPIC</button>
           </div>
-          <!-- C. Partenaires externes -->
-          <div class="cc-section">
+          <!-- Partenaires externes -->
+          <div class="cc-section" data-cc-section="plus-partenaires">
             <h2 class="cc-section-title" data-i18n="cc.partenaires_titre">Partenaires et opérateurs externes</h2>
             <div id="cc-partners" class="cc-partners-grid"></div>
           </div>
-          <!-- D. Décisions en attente -->
-          <div class="cc-section">
+          <!-- Décisions en attente -->
+          <div class="cc-section" data-cc-section="plus-decisions">
             <h2 class="cc-section-title" data-i18n="cc.decisions_titre">Décisions en attente</h2>
             <div id="cc-decisions" class="cc-decisions-list"></div>
           </div>
-          <!-- E. Briefing du jour -->
-          <div class="cc-section">
+          <!-- Briefing du jour -->
+          <div class="cc-section" data-cc-section="plus-briefing">
             <h2 class="cc-section-title" data-i18n="cc.briefing_titre">Briefing du jour</h2>
             <div id="cc-briefing" class="cc-briefing-list"></div>
           </div>
-          <!-- F. Activité récente -->
-          <div class="cc-section">
+          <!-- Activité récente -->
+          <div class="cc-section" data-cc-section="plus-activite">
             <h2 class="cc-section-title" data-i18n="cc.activite_titre">Activité récente</h2>
             <div id="cc-activity" class="cc-activity-timeline"></div>
           </div>
+          <!-- Plus menu (mobile) -->
+          <div class="cc-section" data-cc-section="plus" id="cc-plus-menu-section"></div>
+        </div>
+        <!-- Fullscreen map overlay (mobile) -->
+        <div id="cc-map-fullscreen" class="cc-map-fullscreen hidden">
+          <div class="cc-map-fs-header">
+            <h3 data-i18n="cc.carte_titre">Carte opérationnelle</h3>
+            <button class="cc-map-fs-close" onclick="ccMapFullscreenClose()">✕</button>
+          </div>
+          <div id="cc-map-fs-container" style="flex:1;min-height:0;"></div>
+          <div class="cc-map-fs-filters" id="cc-map-fs-filters"></div>
         </div>
       </div>
 
@@ -3824,6 +3837,32 @@
       <button class="bottom-nav-item active" onclick="showView('home')" data-view="home" data-i18n="sidebar.accueil">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Accueil
+      </button>
+    </div>
+  </nav>
+
+  <!-- CC BOTTOM NAV (mobile, CC profiles only) -->
+  <nav class="cc-bottom-nav" id="cc-bottom-nav" style="display:none;">
+    <div class="cc-bottom-nav-inner">
+      <button class="cc-bnav-item active" data-cc-tab="pilotage" onclick="ccMobileTab('pilotage')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span data-i18n="cc.tab_pilotage">Pilotage</span>
+      </button>
+      <button class="cc-bnav-item" data-cc-tab="alertes" onclick="ccMobileTab('alertes')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span data-i18n="cc.tab_alertes">Alertes</span>
+      </button>
+      <button class="cc-bnav-item" data-cc-tab="carte" onclick="ccMobileTab('carte')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        <span data-i18n="cc.tab_carte">Carte</span>
+      </button>
+      <button class="cc-bnav-item" data-cc-tab="organismes" onclick="ccMobileTab('organismes')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span data-i18n="cc.tab_organismes">Organismes</span>
+      </button>
+      <button class="cc-bnav-item" data-cc-tab="plus" onclick="ccMobileTab('plus')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        <span data-i18n="cc.tab_plus">Plus</span>
       </button>
     </div>
   </nav>
