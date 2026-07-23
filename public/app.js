@@ -12861,6 +12861,8 @@ function saksiniToggle() {
 }
 
 // ═══ COMMAND-CENTER — Salle de Commandement v2 ═══
+function ccNom(obj) { return currentLang === 'ar' && obj.nom_ar ? obj.nom_ar : obj.nom; }
+function ccLtr(v) { return '<span dir="ltr">' + v + '</span>'; }
 async function ccLoad() {
   var loading = document.getElementById('cc-loading');
   var error = document.getElementById('cc-error');
@@ -12885,9 +12887,7 @@ async function ccLoad() {
     var syn = document.getElementById('cc-synthesis');
     if (syn && data.summary) {
       var s = data.summary;
-      syn.textContent = currentLang === 'ar'
-        ? s.criticalCases + ' ' + t('cc.syn_critiques') + ' · ' + s.breachedSla + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + s.operationalScore + '/100'
-        : s.criticalCases + ' ' + t('cc.syn_critiques') + ' · ' + s.breachedSla + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + s.operationalScore + '/100';
+      syn.innerHTML = ccLtr(s.criticalCases) + ' ' + t('cc.syn_critiques') + ' · ' + ccLtr(s.breachedSla) + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + ccLtr(s.operationalScore + '/100');
     }
 
     // KPI cards
@@ -12935,7 +12935,7 @@ function ccRenderKpis(s) {
     var onclick = clickable ? ' onclick="ccKpiFilter(\'' + k.action + '\')"' : '';
     return '<div class="' + cls + '"' + onclick + tip + '>' +
       '<div class="cc-kpi-icon" style="color:' + k.color + ';">' + k.icon + '</div>' +
-      '<div class="cc-kpi-value" style="color:' + k.color + ';">' + k.value + '</div>' +
+      '<div class="cc-kpi-value" style="color:' + k.color + ';" dir="ltr">' + k.value + '</div>' +
       '<div class="cc-kpi-label">' + t('cc.kpi_' + k.key) + '</div>' +
     '</div>';
   }).join('');
@@ -13005,7 +13005,7 @@ function ccMapFilter(type) {
     });
     Object.values(byCommune).forEach(function(c) {
       var icon = L.divIcon({ className:'', html:'<div style="min-width:20px;height:20px;border-radius:10px;background:#063B5A;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);">' + c.count + '</div>' });
-      var marker = L.marker([c.lat, c.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(c.nom) + '</strong><br>' + c.count + ' incident(s)');
+      var marker = L.marker([c.lat, c.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(c.nom) + '</strong><br>' + ccLtr(c.count) + ' ' + t('cc.incidents_actifs'));
       _ccMarkers.push(marker);
     });
   } else {
@@ -13034,7 +13034,7 @@ function ccRenderRiskZones(zones) {
     var nClass = z.critiques > 0 ? 'cc-tag-eleve' : 'cc-tag-moyen';
     return '<div class="cc-risk-row cc-clickable" onclick="ccDrillCommuneIncidents(' + z.id + ',\'' + escHtml(z.nom).replace(/'/g,'\\x27') + '\',' + z.lat + ',' + z.lng + ')">' +
       '<div><strong>' + escHtml(currentLang === 'ar' && z.nom_ar ? z.nom_ar : z.nom) + '</strong>' +
-      '<div style="font-size:11px;color:var(--muted);">' + z.incidents + ' ' + t('cc.incidents_actifs') + '</div></div>' +
+      '<div style="font-size:11px;color:var(--muted);">' + ccLtr(z.incidents) + ' ' + t('cc.incidents_actifs') + '</div></div>' +
       '<span class="' + nClass + '">' + niveau + '</span>' +
     '</div>';
   }).join('');
@@ -13049,14 +13049,14 @@ function ccRenderTerritory(terr) {
   if (!el) return;
   el.innerHTML =
     '<div class="cc-terr-card cc-clickable" onclick="ccDrillTerritory(\'dairas\')">' +
-      '<div class="cc-terr-value">' + (terr.dairasTotal || 14) + '</div>' +
+      '<div class="cc-terr-value" dir="ltr">' + (terr.dairasTotal || 14) + '</div>' +
       '<div class="cc-terr-label">' + t('cc.dairas') + '</div>' +
-      '<div class="cc-terr-sub">' + (terr.dairasConcernees || 0) + ' ' + t('cc.dairas_concernees') + '</div>' +
+      '<div class="cc-terr-sub">' + ccLtr(terr.dairasConcernees || 0) + ' ' + t('cc.dairas_concernees') + '</div>' +
     '</div>' +
     '<div class="cc-terr-card cc-clickable" onclick="ccDrillTerritory(\'communes\')">' +
-      '<div class="cc-terr-value">' + (terr.apcTotal || 57) + '</div>' +
+      '<div class="cc-terr-value" dir="ltr">' + (terr.apcTotal || 57) + '</div>' +
       '<div class="cc-terr-label">' + t('cc.apc') + '</div>' +
-      '<div class="cc-terr-sub">' + (terr.apcNoResponse || 0) + ' ' + t('cc.apc_vigilance') + '</div>' +
+      '<div class="cc-terr-sub">' + ccLtr(terr.apcNoResponse || 0) + ' ' + t('cc.apc_vigilance') + '</div>' +
     '</div>';
 }
 
@@ -13072,7 +13072,7 @@ async function ccDrillTerritory(type) {
     var clickable = count > 0;
     var cls = clickable ? 'cc-panel-row cc-clickable' : 'cc-panel-row';
     var onclick = clickable ? ' onclick="ccDrillSubTerritory(\'' + drillType + '\',' + r.id + ',\'' + escHtml(nom).replace(/'/g,'\\x27') + '\')"' : '';
-    return '<div class="' + cls + '"' + onclick + '><span>' + escHtml(nom) + '</span><span class="cc-badge-count">' + count + '</span></div>';
+    return '<div class="' + cls + '"' + onclick + '><span>' + escHtml(nom) + '</span><span class="cc-badge-count" dir="ltr">' + count + '</span></div>';
   }).join('') + '</div>';
   ccShowPanel(html);
 }
@@ -13101,15 +13101,16 @@ function ccRenderDirections(dirs) {
   mobilized.sort(function(a, b) { return parseInt(b.critiques) - parseInt(a.critiques) || parseInt(b.slaDepasses) - parseInt(a.slaDepasses) || parseInt(b.ouverts) - parseInt(a.ouverts); });
   if (!mobilized.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucune_direction') + '</div>'; return; }
   el.innerHTML = mobilized.map(function(d) {
+    var dNom = ccNom(d);
     return '<div class="cc-dir-card">' +
-      '<div class="cc-dir-name">' + escHtml(d.nom) + '</div>' +
+      '<div class="cc-dir-name">' + escHtml(dNom) + '</div>' +
       '<div class="cc-dir-stats">' +
-        '<span>' + d.ouverts + ' ' + t('cc.ouverts') + '</span>' +
-        (parseInt(d.critiques) > 0 ? '<span class="cc-tag-eleve">' + d.critiques + ' ' + t('cc.critiques_label') + '</span>' : '') +
-        (parseInt(d.slaDepasses) > 0 ? '<span class="cc-tag-sla">' + d.slaDepasses + ' SLA</span>' : '') +
-        '<span class="cc-tag-taux">' + d.tauxTraitement + '% ' + t('cc.traitement') + '</span>' +
+        '<span>' + ccLtr(d.ouverts) + ' ' + t('cc.ouverts') + '</span>' +
+        (parseInt(d.critiques) > 0 ? '<span class="cc-tag-eleve">' + ccLtr(d.critiques) + ' ' + t('cc.critiques_label') + '</span>' : '') +
+        (parseInt(d.slaDepasses) > 0 ? '<span class="cc-tag-sla">' + ccLtr(d.slaDepasses) + ' SLA</span>' : '') +
+        '<span class="cc-tag-taux">' + ccLtr(d.tauxTraitement + '%') + ' ' + t('cc.traitement') + '</span>' +
       '</div>' +
-      '<button class="cc-btn-action" onclick="ccDrillOrg(\'direction\',' + d.id + ',\'' + escHtml(d.nom).replace(/'/g,'\\x27') + '\')">' + t('cc.ouvrir_dir') + '</button>' +
+      '<button class="cc-btn-action" onclick="ccDrillOrg(\'direction\',' + d.id + ',\'' + escHtml(dNom).replace(/'/g,'\\x27') + '\')">' + t('cc.ouvrir_dir') + '</button>' +
     '</div>';
   }).join('');
 }
@@ -13119,14 +13120,16 @@ function ccRenderEpicsPrio(epics) {
   if (!el) return;
   if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
   el.innerHTML = epics.map(function(e) {
-    return '<div class="cc-epic-card cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(e.nom).replace(/'/g,'\\x27') + '\')">' +
-      '<div class="cc-epic-name">' + escHtml(e.nom) + '</div>' +
-      (e.tutelle ? '<div class="cc-epic-tutelle">' + escHtml(e.tutelle) + '</div>' : '') +
+    var eNom = ccNom(e);
+    var eTutelle = currentLang === 'ar' && e.tutelle_ar ? e.tutelle_ar : e.tutelle;
+    return '<div class="cc-epic-card cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(eNom).replace(/'/g,'\\x27') + '\')">' +
+      '<div class="cc-epic-name">' + escHtml(eNom) + '</div>' +
+      (eTutelle ? '<div class="cc-epic-tutelle">' + escHtml(eTutelle) + '</div>' : '') +
       '<div class="cc-epic-stats">' +
-        '<div class="cc-epic-stat"><span class="cc-epic-num">' + e.ouverts + '</span><span class="cc-epic-lbl">' + t('cc.ouverts') + '</span></div>' +
-        '<div class="cc-epic-stat"><span class="cc-epic-num cc-critique-num">' + e.critiques + '</span><span class="cc-epic-lbl">' + t('cc.critiques_label') + '</span></div>' +
-        '<div class="cc-epic-stat"><span class="cc-epic-num cc-sla-num">' + e.slaDepasses + '</span><span class="cc-epic-lbl">SLA</span></div>' +
-        '<div class="cc-epic-stat"><span class="cc-epic-num">' + e.tauxReponse + '%</span><span class="cc-epic-lbl">' + t('cc.reponse') + '</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num" dir="ltr">' + e.ouverts + '</span><span class="cc-epic-lbl">' + t('cc.ouverts') + '</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num cc-critique-num" dir="ltr">' + e.critiques + '</span><span class="cc-epic-lbl">' + t('cc.critiques_label') + '</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num cc-sla-num" dir="ltr">' + e.slaDepasses + '</span><span class="cc-epic-lbl">SLA</span></div>' +
+        '<div class="cc-epic-stat"><span class="cc-epic-num" dir="ltr">' + e.tauxReponse + '%</span><span class="cc-epic-lbl">' + t('cc.reponse') + '</span></div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -13137,9 +13140,10 @@ function ccRenderEpicsAutres(epics) {
   if (!el) return;
   if (!epics.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_epic') + '</div>'; return; }
   el.innerHTML = epics.map(function(e) {
-    return '<div class="cc-epic-row cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(e.nom).replace(/'/g,'\\x27') + '\')">' +
-      '<span>' + escHtml(e.nom) + '</span>' +
-      '<span class="cc-muted">' + e.ouverts + ' ' + t('cc.ouverts') + '</span>' +
+    var eNom = ccNom(e);
+    return '<div class="cc-epic-row cc-clickable" onclick="ccDrillOrg(\'epic\',' + e.id + ',\'' + escHtml(eNom).replace(/'/g,'\\x27') + '\')">' +
+      '<span>' + escHtml(eNom) + '</span>' +
+      '<span class="cc-muted">' + ccLtr(e.ouverts) + ' ' + t('cc.ouverts') + '</span>' +
     '</div>';
   }).join('');
 }
@@ -13169,8 +13173,9 @@ async function ccDrillOrg(type, id, nom) {
   var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
   // For EPIC with org info, show tutelle/secteur
   if (org) {
+    var orgTutelle = currentLang === 'ar' && org.tutelle_ar ? org.tutelle_ar : org.tutelle;
     html += '<div style="padding:8px 16px;font-size:11px;color:var(--muted);">';
-    if (org.tutelle) html += escHtml(org.tutelle);
+    if (orgTutelle) html += escHtml(orgTutelle);
     if (org.secteur) html += ' · ' + escHtml(org.secteur);
     html += '</div>';
     rows = data.dossiers || [];
@@ -13185,7 +13190,7 @@ async function ccDrillOrg(type, id, nom) {
 
 function ccBuildDossierList(rows) {
   return '<div class="cc-panel-list">' + rows.map(function(r) {
-    var sla = r.slaMin > 0 ? '<span class="cc-tag-sla">+' + Math.round(r.slaMin / 60) + 'h</span>' : '';
+    var sla = r.slaMin > 0 ? '<span class="cc-tag-sla" dir="ltr">+' + Math.round(r.slaMin / 60) + 'h</span>' : '';
     return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(r.reference) + '\')">' +
       '<span class="cc-panel-ref">' + escHtml(r.reference) + '</span>' +
       '<span>' + escHtml(r.commune || '') + '</span>' +
@@ -13212,7 +13217,7 @@ async function ccShowPartner(id) {
 
   // Interlocuteur principal en tête
   if (principal) {
-    html += '<div class="cc-fiche-principal">' + t('cc.interlocuteur_principal') + ' : <strong>' + escHtml(principal.nom) + '</strong></div>';
+    html += '<div class="cc-fiche-principal">' + t('cc.interlocuteur_principal') + ' : <strong>' + escHtml(ccNom(principal)) + '</strong></div>';
   }
 
   // 1. Opérations en cours
@@ -13243,8 +13248,9 @@ async function ccShowPartner(id) {
   (_ccDirectionsList || []).forEach(function(d) {
     var checked = selectedIds.includes(d.id) ? ' checked' : '';
     var isPrincipal = d.id === principalId;
+    var dNom = ccNom(d);
     html += '<div class="cc-dir-check">' +
-      '<label><input type="checkbox" data-dir-id="' + d.id + '"' + checked + '> ' + escHtml(d.nom) + '</label>' +
+      '<label><input type="checkbox" data-dir-id="' + d.id + '"' + checked + '> ' + escHtml(dNom) + '</label>' +
       '<label class="cc-radio-principal" title="' + t('cc.interlocuteur_principal') + '"><input type="radio" name="cc-principal" value="' + d.id + '"' + (isPrincipal ? ' checked' : '') + '> ★</label>' +
     '</div>';
   });
@@ -13332,15 +13338,17 @@ function ccRenderPriorities(priorities) {
 function ccRenderPriorityRows(el, list) {
   el.innerHTML = list.map(function(p) {
     var severity = p.criticite === 'danger_immediat' ? 'critique' : (p.slaDepassementMinutes > 0 ? 'eleve' : 'maitrise');
-    var slaText = p.slaDepassementMinutes > 0 ? '+' + Math.round(p.slaDepassementMinutes / 60) + 'h' : t('cc.dans_delai');
+    var slaText = p.slaDepassementMinutes > 0 ? '<span dir="ltr">+' + Math.round(p.slaDepassementMinutes / 60) + 'h</span>' : t('cc.dans_delai');
+    var pPilote = currentLang === 'ar' && p.directionPiloteAr ? p.directionPiloteAr : p.directionPilote;
+    var pExec = currentLang === 'ar' && p.executantAr ? p.executantAr : p.executant;
     return '<div class="cc-priority-row cc-severity-' + severity + '">' +
       '<div class="cc-priority-body">' +
         '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + '</div>' +
         '<div class="cc-priority-meta">' +
           '<span>' + escHtml(p.commune || '—') + '</span>' +
-          (p.directionPilote && p.executant && p.directionPilote === p.executant
-            ? '<span>' + t('cc.pilote_executant') + ' : ' + escHtml(p.directionPilote) + '</span>'
-            : '<span>' + escHtml(p.directionPilote || '—') + '</span><span>' + escHtml(p.executant || '—') + '</span>') +
+          (pPilote && pExec && pPilote === pExec
+            ? '<span>' + t('cc.pilote_executant') + ' : ' + escHtml(pPilote) + '</span>'
+            : '<span>' + escHtml(pPilote || '—') + '</span><span>' + escHtml(pExec || '—') + '</span>') +
           '<span class="cc-sla-badge cc-sla-' + severity + '">' + slaText + '</span>' +
         '</div>' +
       '</div>' +

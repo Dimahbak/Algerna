@@ -128,7 +128,8 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       SELECT s.reference, s.description AS titre, s.gravite AS criticite,
              s.lat, s.lng,
              c.nom AS commune, d.nom AS daira,
-             dp.nom AS "directionPilote", oe.nom AS executant,
+             dp.nom AS "directionPilote", dp.nom_ar AS "directionPiloteAr",
+             oe.nom AS executant, oe.nom_ar AS "executantAr",
              EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS "slaDepassementMinutes"
       FROM signalement s
       LEFT JOIN commune c ON c.id = s.commune_id
@@ -183,7 +184,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
 
     // ── DIRECTIONS ──
     const { rows: directions } = await query(`
-      SELECT dp.id, dp.nom,
+      SELECT dp.id, dp.nom, dp.nom_ar,
              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS ouverts,
              COUNT(*) FILTER (WHERE s.gravite='danger_immediat' OR cs.criticite='haute') AS critiques,
              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.cree_le < NOW() - INTERVAL '48 hours') AS "slaDepasses",
@@ -192,7 +193,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       JOIN categorie_signal cs ON cs.id = s.categorie_id
       JOIN organisations dp ON dp.id = s.direction_pilote_id
       WHERE 1=1 ${periodWhere}
-      GROUP BY dp.id, dp.nom
+      GROUP BY dp.id, dp.nom, dp.nom_ar
       ORDER BY ouverts DESC
     `);
 
@@ -201,7 +202,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     // Directions n'apparaissent QUE dans le bloc directions
     const { rows: epicOrgs } = await query(`
       SELECT o.id, o.nom, o.nom_ar, o.prioritaire, o.ordre_affichage,
-             t.nom AS tutelle,
+             t.nom AS tutelle, t.nom_ar AS tutelle_ar,
              (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.etat NOT IN ('resolu','clos','rejete')) AS ouverts,
              (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id) AS total_dossiers,
              (SELECT COUNT(*) FROM signalement s WHERE s.organisation_executante_id = o.id AND s.gravite = 'danger_immediat' AND s.etat NOT IN ('resolu','clos','rejete')) AS critiques,
@@ -217,13 +218,13 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       ORDER BY o.prioritaire DESC, o.ordre_affichage, o.nom
     `);
     const priorityEpics = epicOrgs.filter(e => e.prioritaire).map(e => ({
-      id: e.id, nom: e.nom, tutelle: e.tutelle,
+      id: e.id, nom: e.nom, nom_ar: e.nom_ar, tutelle: e.tutelle, tutelle_ar: e.tutelle_ar,
       ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers),
       critiques: parseInt(e.critiques), slaDepasses: parseInt(e.sla_depasses),
       tauxReponse: parseInt(e.taux_reponse)
     }));
     const otherEpics = epicOrgs.filter(e => !e.prioritaire).map(e => ({
-      id: e.id, nom: e.nom, tutelle: e.tutelle,
+      id: e.id, nom: e.nom, nom_ar: e.nom_ar, tutelle: e.tutelle, tutelle_ar: e.tutelle_ar,
       ouverts: parseInt(e.ouverts), totalDossiers: parseInt(e.total_dossiers),
       critiques: parseInt(e.critiques), slaDepasses: parseInt(e.sla_depasses),
       tauxReponse: parseInt(e.taux_reponse)
@@ -324,7 +325,7 @@ router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req
                o.telephone, o.telephone_urgence, o.site_web, o.sigle_officiel,
                o.contact_nom, o.contact_fonction, o.contact_telephone, o.contact_email,
                o.direction_concernee_id, o.remarques,
-               t.nom AS tutelle, dc.nom AS direction_concernee_nom
+               t.nom AS tutelle, t.nom_ar AS tutelle_ar, dc.nom AS direction_concernee_nom
         FROM organisations o
         LEFT JOIN organisations t ON t.id = o.direction_tutelle_id
         LEFT JOIN organisations dc ON dc.id = o.direction_concernee_id
@@ -339,7 +340,7 @@ router.get('/detail/:type/:id', authenticate, requireCommandCenter(), async (req
       `, [Number(id)]);
       // Directions en interface (multi)
       const { rows: directionsInterface } = await query(`
-        SELECT odi.direction_id, d.nom, odi.principal, odi.a_valider
+        SELECT odi.direction_id, d.nom, d.nom_ar, odi.principal, odi.a_valider
         FROM organisation_directions_interface odi
         JOIN organisations d ON d.id = odi.direction_id
         WHERE odi.partenaire_id = $1
@@ -406,7 +407,7 @@ router.patch('/contact/:id', authenticate, requireCommandCenter(), async (req, r
 // ── GET /directions-list — liste des directions pour le sélecteur ──
 router.get('/directions-list', authenticate, requireCommandCenter(), async (req, res) => {
   try {
-    const { rows } = await query("SELECT id, nom FROM organisations WHERE type_organisation = 'direction_wilaya' AND actif = TRUE ORDER BY nom");
+    const { rows } = await query("SELECT id, nom, nom_ar FROM organisations WHERE type_organisation = 'direction_wilaya' AND actif = TRUE ORDER BY nom");
     res.json(rows);
   } catch (e) {
     res.status(500).json({ erreur: e.message });
