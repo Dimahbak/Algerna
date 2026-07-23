@@ -12863,6 +12863,24 @@ function saksiniToggle() {
 // ═══ COMMAND-CENTER — Salle de Commandement v2 ═══
 function ccNom(obj) { return currentLang === 'ar' && obj.nom_ar ? obj.nom_ar : obj.nom; }
 function ccLtr(v) { return '<span dir="ltr">' + v + '</span>'; }
+function boOpenSignalement(ref) {
+  // Open the signalement drawer from any view
+  if (typeof _boSignals !== 'undefined' && _boSignals && _boSignals.length) {
+    var existing = _boSignals.find(function(s) { return s.reference === ref; });
+    if (existing) { boOpenDrawer(existing.id); return; }
+  }
+  // Fallback: fetch board, populate _boSignals, then open
+  safeFetchJSON('/api/signaler/board', {}, true).then(function(data) {
+    var items = Array.isArray(data) ? data : [];
+    if (typeof _boSignals === 'undefined' || !_boSignals || !_boSignals.length) _boSignals = items;
+    var s = items.find(function(x) { return x.reference === ref; });
+    if (s) {
+      document.getElementById('bo-drawer').classList.remove('hidden');
+      boOpenDrawer(s.id);
+    }
+    else showToast(t('cc.aucun_dossier'), 'error');
+  }).catch(function() { showToast(t('cc.aucun_dossier'), 'error'); });
+}
 async function ccLoad() {
   var loading = document.getElementById('cc-loading');
   var error = document.getElementById('cc-error');
@@ -12904,6 +12922,11 @@ async function ccLoad() {
     ccRenderEpicsPrio(data.priorityEpics || []);
     ccRenderEpicsAutres(data.otherEpics || []);
     ccRenderPartners(data.externalPartners || []);
+    _ccDecisions = data.pendingDecisions || [];
+    ccRenderDecisions(_ccDecisions);
+    _ccBriefingItems = (data.dailyBriefing || {}).items || [];
+    ccRenderBriefing(data.dailyBriefing || {});
+    ccRenderActivity(data.recentActivity || []);
 
     applyTranslations();
   } catch(e) {
@@ -13299,6 +13322,152 @@ async function ccSavePartnerContact(id) {
   }
 }
 
+// ── Décisions en attente ──
+function ccRenderDecisions(decisions) {
+  var el = document.getElementById('cc-decisions');
+  if (!el) return;
+  if (!decisions.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_dossier') + '</div>'; return; }
+  el.innerHTML = decisions.map(function(d) {
+    var titre = currentLang === 'ar' && d.titre_ar ? d.titre_ar : d.titre;
+    var dir = currentLang === 'ar' && d.direction_ar ? d.direction_ar : (d.direction || '—');
+    var jours = Math.max(1, Math.round((Date.now() - new Date(d.cree_le).getTime()) / 86400000));
+    var badgeCls = d.priorite === 'haute' ? 'cc-badge-haute' : 'cc-badge-moyenne';
+    var badgeLabel = d.priorite === 'haute' ? t('cc.priorite_haute') : t('cc.priorite_moyenne');
+    return '<div class="cc-decision-row" onclick="ccShowDecision(' + d.id + ')">' +
+      '<div>' +
+        '<div class="cc-decision-title">' + escHtml(titre) + '</div>' +
+        '<div class="cc-decision-meta">' +
+          '<span>' + t('cc.propose_par') + ' : ' + escHtml(dir) + '</span>' +
+          '<span>' + t('cc.anciennete') + ' : ' + ccLtr(jours) + ' ' + t('cc.jours') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<span class="cc-badge-decision ' + badgeCls + '">' + badgeLabel + '</span>' +
+    '</div>';
+  }).join('');
+  var btnDisabled = decisions.length <= 4;
+  el.innerHTML += '<button class="' + (btnDisabled ? 'cc-btn-disabled' : 'cc-btn-action') + '"' + (btnDisabled ? ' disabled' : '') +
+    ' style="margin-top:8px;">' + t('cc.voir_decisions') + '</button>';
+}
+
+var _ccDecisions = [];
+function ccShowDecision(id) {
+  if (!_ccDecisions.length) {
+    safeFetchJSON('/api/command-center/overview?period=30d', {}, true).then(function(data) {
+      _ccDecisions = data.pendingDecisions || [];
+      _ccShowDecisionPanel(id);
+    });
+    return;
+  }
+  _ccShowDecisionPanel(id);
+}
+function _ccShowDecisionPanel(id) {
+  var d = _ccDecisions.find(function(x) { return x.id === id; });
+  if (!d) return;
+  var titre = currentLang === 'ar' && d.titre_ar ? d.titre_ar : d.titre;
+  var desc = currentLang === 'ar' && d.description_ar ? d.description_ar : (d.description || '');
+  var dir = currentLang === 'ar' && d.direction_ar ? d.direction_ar : (d.direction || '—');
+  var jours = Math.max(1, Math.round((Date.now() - new Date(d.cree_le).getTime()) / 86400000));
+  var badgeCls = d.priorite === 'haute' ? 'cc-badge-haute' : 'cc-badge-moyenne';
+  var badgeLabel = d.priorite === 'haute' ? t('cc.priorite_haute') : t('cc.priorite_moyenne');
+  var html = '<div class="cc-panel-header"><h3>' + t('cc.decision_detail') + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div style="padding:16px;">';
+  html += '<div style="margin-bottom:12px;"><span class="cc-badge-decision ' + badgeCls + '">' + badgeLabel + '</span></div>';
+  html += '<h4 style="margin:0 0 8px;">' + escHtml(titre) + '</h4>';
+  html += '<p style="color:var(--gray-600);font-size:13px;margin:0 0 12px;">' + escHtml(desc) + '</p>';
+  html += '<div class="cc-decision-meta" style="flex-direction:column;gap:4px;">';
+  html += '<span>' + t('cc.propose_par') + ' : <strong>' + escHtml(dir) + '</strong></span>';
+  html += '<span>' + t('cc.anciennete') + ' : ' + ccLtr(jours) + ' ' + t('cc.jours') + '</span>';
+  html += '</div></div>';
+  ccShowPanel(html);
+}
+
+// ── Briefing du jour ──
+function ccRenderBriefing(briefing) {
+  var el = document.getElementById('cc-briefing');
+  if (!el) return;
+  var items = briefing.items || [];
+  if (!items.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.activite_vide') + '</div>'; return; }
+  var typeIcons = { reunion: '🤝', visite: '📍', point_presse: '🎙' };
+  el.innerHTML = items.map(function(b) {
+    var titre = currentLang === 'ar' && b.titre_ar ? b.titre_ar : b.titre;
+    var contenu = currentLang === 'ar' && b.contenu_ar ? b.contenu_ar : (b.contenu || '');
+    var icon = typeIcons[b.type] || '📋';
+    return '<div class="cc-briefing-row" onclick="ccShowBriefingDetail(' + b.id + ')">' +
+      '<div class="cc-briefing-heure" dir="ltr">' + escHtml(b.heure || '') + '</div>' +
+      '<div class="cc-briefing-body">' +
+        '<div class="cc-briefing-title">' + icon + ' ' + escHtml(titre) + '</div>' +
+        (contenu ? '<div class="cc-briefing-type">' + escHtml(contenu.substring(0, 80)) + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+  el.innerHTML += '<button class="cc-btn-action" style="margin-top:8px;" onclick="ccExportBriefing()">' + t('cc.exporter_briefing') + '</button>';
+}
+
+var _ccBriefingItems = [];
+function ccShowBriefingDetail(id) {
+  if (!_ccBriefingItems.length) {
+    safeFetchJSON('/api/command-center/overview?period=30d', {}, true).then(function(data) {
+      _ccBriefingItems = (data.dailyBriefing || {}).items || [];
+      _ccShowBriefingPanel(id);
+    });
+    return;
+  }
+  _ccShowBriefingPanel(id);
+}
+function _ccShowBriefingPanel(id) {
+  var b = _ccBriefingItems.find(function(x) { return x.id === id; });
+  if (!b) return;
+  var titre = currentLang === 'ar' && b.titre_ar ? b.titre_ar : b.titre;
+  var contenu = currentLang === 'ar' && b.contenu_ar ? b.contenu_ar : (b.contenu || '');
+  var html = '<div class="cc-panel-header"><h3>' + escHtml(titre) + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div style="padding:16px;">';
+  html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;" dir="ltr">' + escHtml(b.heure || '') + '</div>';
+  html += '<p style="font-size:13px;color:var(--gray-700);margin:0;">' + escHtml(contenu) + '</p>';
+  html += '</div>';
+  ccShowPanel(html);
+}
+
+function ccExportBriefing() {
+  window.open('/api/command-center/briefing-pdf?lang=' + currentLang, '_blank');
+}
+
+// ── Activité récente ──
+function ccRenderActivity(activity) {
+  var el = document.getElementById('cc-activity');
+  if (!el) return;
+  if (!activity.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.activite_vide') + '</div>'; return; }
+  el.innerHTML = activity.map(function(a) {
+    var ago = Math.round((Date.now() - new Date(a.le).getTime()) / 60000);
+    var agoStr = ago >= 60 ? ccLtr(Math.round(ago / 60)) + t('cc.heures') : ccLtr(ago) + t('cc.minutes');
+    var actionLabels = { creation: '📥', prise_en_charge: '👤', transmission: '📤', intervention: '🔧', compte_rendu: '📝', validation: '✅', resolution: '🎯', commentaire: '💬', cloture: '🔒' };
+    var icon = actionLabels[a.action] || '📌';
+    var desc = (a.agent_prenom || '') + ' — ' + (a.action || '').replace(/_/g, ' ');
+    if (a.etat) desc += ' → ' + a.etat.replace(/_/g, ' ');
+    return '<div class="cc-activity-item">' +
+      '<div class="cc-activity-time">' + t('cc.il_y_a') + ' ' + agoStr + '</div>' +
+      '<div class="cc-activity-desc">' + icon + ' ' + escHtml(desc) + '</div>' +
+      (a.reference ? '<div class="cc-activity-ref" onclick="boOpenSignalement(\'' + escHtml(a.reference) + '\')">' + escHtml(a.reference) + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+// ── Voir toutes les communes ──
+async function ccShowAllCommunes() {
+  var data = await safeFetchJSON('/api/command-center/detail/communes/0', {}, true);
+  if (!data || !data.rows) return;
+  var title = t('cc.apc');
+  var html = '<div class="cc-panel-header"><h3>' + title + ' (' + ccLtr(data.rows.length) + ')</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div class="cc-panel-list">' + data.rows.map(function(r) {
+    var nom = currentLang === 'ar' && r.nom_ar ? r.nom_ar : r.nom;
+    var count = parseInt(r.incidents) || 0;
+    var clickable = count > 0;
+    var cls = clickable ? 'cc-panel-row cc-clickable' : 'cc-panel-row';
+    var onclick = clickable ? ' onclick="ccDrillCommuneIncidents(' + r.id + ',\'' + escHtml(nom).replace(/'/g,'\\x27') + '\',null,null)"' : '';
+    return '<div class="' + cls + '"' + onclick + '><span>' + escHtml(nom) + '</span><span class="cc-badge-count" dir="ltr">' + count + '</span></div>';
+  }).join('') + '</div>';
+  ccShowPanel(html);
+}
+
 function ccShowPanel(html) {
   var panel = document.getElementById('cc-panel');
   if (!panel) {
@@ -13352,11 +13521,48 @@ function ccRenderPriorityRows(el, list) {
           '<span class="cc-sla-badge cc-sla-' + severity + '">' + slaText + '</span>' +
         '</div>' +
       '</div>' +
-      '<div class="cc-priority-actions">' +
+      '<div class="cc-priority-actions" style="position:relative;">' +
         '<button class="cc-btn-open" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')" title="' + t('cc.ouvrir') + '">↗</button>' +
-        '<button class="cc-btn-more cc-no-action" title="' + t('cc.bientot') + '">⋯</button>' +
+        '<button class="cc-btn-more" onclick="ccTogglePrioMenu(this,\'' + escHtml(p.reference) + '\')">⋯</button>' +
+        '<div class="cc-priority-menu">' +
+          '<button class="cc-priority-menu-item" onclick="ccAddNote(\'' + escHtml(p.reference) + '\')">' + t('cc.ajouter_note') + '</button>' +
+          '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.escalader') + '</button>' +
+          '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.relancer') + '</button>' +
+          '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.affecter') + '</button>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
 }
+
+function ccTogglePrioMenu(btn, ref) {
+  var menu = btn.parentElement.querySelector('.cc-priority-menu');
+  var wasOpen = menu.classList.contains('open');
+  // Close all menus
+  document.querySelectorAll('.cc-priority-menu.open').forEach(function(m) { m.classList.remove('open'); });
+  if (!wasOpen) menu.classList.add('open');
+}
+
+function ccAddNote(reference) {
+  document.querySelectorAll('.cc-priority-menu.open').forEach(function(m) { m.classList.remove('open'); });
+  showPromptModal(t('cc.ajouter_note'), '', async function(note) {
+    if (!note || !note.trim()) return;
+    // Find signalement ID
+    var data = await safeFetchJSON('/api/signaler/board?reference=' + encodeURIComponent(reference), {}, true);
+    var items = Array.isArray(data) ? data : [];
+    var s = items.find(function(x) { return x.reference === reference; });
+    if (!s) { showToast(t('cc.aucun_dossier'), 'error'); return; }
+    var res = await safeFetchJSON('/api/signaler/board/' + s.id + '/commentaire', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commentaire: note.trim(), type: 'message' })
+    }, true);
+    if (res && res.ok) showToast(t('cc.note_ajoutee'), 'success');
+    else showToast(t('cc.erreur'), 'error');
+  }, { textarea: true, desc: t('cc.note_placeholder') });
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cc-btn-more') && !e.target.closest('.cc-priority-menu')) {
+    document.querySelectorAll('.cc-priority-menu.open').forEach(function(m) { m.classList.remove('open'); });
+  }
+});
 

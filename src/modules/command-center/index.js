@@ -4,9 +4,13 @@
  * Accès : superviseur wilaya | cabinet | capacité salle_commandement.
  */
 const { Router } = require('express');
+const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
 const { authenticate } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const router = Router();
+const FONT_DIR = path.join(__dirname, '../../../public/assets/fonts');
 
 function requireCommandCenter() {
   return (req, res, next) => {
@@ -236,7 +240,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     // ── PENDING DECISIONS ──
     const { rows: pendingDecisions } = await query(`
       SELECT dd.id, dd.titre, dd.titre_ar, dd.description, dd.description_ar,
-             dd.priorite, dd.statut, dp.nom AS direction,
+             dd.priorite, dd.statut, dp.nom AS direction, dp.nom_ar AS direction_ar,
              dd.is_demo, dd.cree_le
       FROM demo_decisions dd
       LEFT JOIN organisations dp ON dp.id = dd.direction_id
@@ -410,6 +414,141 @@ router.get('/directions-list', authenticate, requireCommandCenter(), async (req,
     const { rows } = await query("SELECT id, nom, nom_ar FROM organisations WHERE type_organisation = 'direction_wilaya' AND actif = TRUE ORDER BY nom");
     res.json(rows);
   } catch (e) {
+    res.status(500).json({ erreur: e.message });
+  }
+});
+
+// ── GET /briefing-pdf — export PDF briefing du jour ──
+router.get('/briefing-pdf', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const isAr = req.query.lang === 'ar';
+    const fo = isAr ? { features: ['rtla', 'rtlm'] } : {};
+
+    // Fetch all data
+    const { rows: [stock] } = await query(`
+      SELECT COUNT(*) FILTER (WHERE s.gravite = 'danger_immediat') AS critical_cases,
+             COUNT(*) FILTER (WHERE s.cree_le < NOW() - INTERVAL '48 hours') AS breached_sla,
+             COUNT(*) AS active
+      FROM signalement s WHERE s.etat NOT IN ('resolu','clos','rejete')
+    `);
+    const { rows: [flux] } = await query(`
+      SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE s.etat IN ('resolu','clos')) AS resolved
+      FROM signalement s WHERE s.cree_le >= NOW() - INTERVAL '30 days'
+    `);
+    const active = parseInt(stock.active) || 0;
+    const breached = parseInt(stock.breached_sla) || 0;
+    const critical = parseInt(stock.critical_cases) || 0;
+    const fluxTotal = parseInt(flux.total) || 1;
+    const fluxResolved = parseInt(flux.resolved) || 0;
+    const slaRespect = active > 0 ? Math.max(0, (active - breached) / active * 100) : 100;
+    const tauxTraitement = fluxTotal > 0 ? (fluxResolved / fluxTotal * 100) : 0;
+    const { rows: [decCount] } = await query("SELECT COUNT(*) AS n FROM demo_decisions WHERE statut = 'en_attente'");
+    const pendingDec = parseInt(decCount.n) || 0;
+    const inverseCritiques = Math.max(0, 100 - (critical * 20));
+    const inverseDecisions = Math.max(0, 100 - (pendingDec * 15));
+    const score = Math.round(slaRespect * 0.30 + tauxTraitement * 0.25 + 100 * 0.20 + inverseCritiques * 0.15 + inverseDecisions * 0.10);
+
+    const { rows: priorities } = await query(`
+      SELECT s.reference, s.description AS titre, s.gravite, c.nom AS commune,
+             dp.nom AS direction, dp.nom_ar AS direction_ar,
+             EXTRACT(EPOCH FROM (NOW() - s.cree_le - INTERVAL '48 hours'))/60 AS sla_min
+      FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+      LEFT JOIN organisations dp ON dp.id = s.direction_pilote_id
+      WHERE s.etat NOT IN ('resolu','clos','rejete')
+      ORDER BY CASE WHEN s.gravite='danger_immediat' THEN 0 ELSE 1 END, (NOW()-s.cree_le) DESC LIMIT 5
+    `);
+    const { rows: briefings } = await query("SELECT titre, titre_ar, contenu, contenu_ar, type, heure FROM demo_briefing WHERE date_briefing = CURRENT_DATE OR is_demo = TRUE ORDER BY heure");
+    const { rows: decisions } = await query(`
+      SELECT dd.titre, dd.titre_ar, dd.priorite, dp.nom AS direction, dp.nom_ar AS direction_ar
+      FROM demo_decisions dd LEFT JOIN organisations dp ON dp.id = dd.direction_id
+      WHERE dd.statut = 'en_attente' ORDER BY CASE dd.priorite WHEN 'haute' THEN 0 ELSE 1 END
+    `);
+
+    // Build PDF
+    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const fontR = path.join(FONT_DIR, 'DejaVuSans.ttf');
+    const fontB = path.join(FONT_DIR, 'DejaVuSans-Bold.ttf');
+    const fonts = { fontR: 'Helvetica', fontB: 'Helvetica-Bold' };
+    if (fs.existsSync(fontR)) { doc.registerFont('main', fontR); fonts.fontR = 'main'; }
+    if (fs.existsSync(fontB)) { doc.registerFont('mainB', fontB); fonts.fontB = 'mainB'; }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=briefing_' + new Date().toISOString().slice(0,10) + '.pdf');
+    doc.pipe(res);
+
+    // Header
+    doc.rect(0, 0, doc.page.width, 70).fill('#041F38');
+    doc.font(fonts.fontB).fontSize(16).fillColor('#FFFFFF').text('ALGERNA', 40, 18, { width: doc.page.width - 80 });
+    doc.font(fonts.fontR).fontSize(9).fillColor('#8ecae6');
+    doc.text(isAr ? 'ولاية الجزائر — قاعة القيادة' : 'Wilaya d\'Alger — Salle de commandement', 40, 38, { width: doc.page.width - 80, ...fo });
+    doc.fillColor('#041F38').font(fonts.fontB).fontSize(14);
+    const title = isAr ? 'الإحاطة اليومية' : 'Briefing du jour';
+    doc.text(title, 40, 85, { width: doc.page.width - 80, ...fo });
+    doc.font(fonts.fontR).fontSize(9).fillColor('#666666');
+    const dateStr = new Date().toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    doc.text(dateStr, 40, 105, { width: doc.page.width - 80, ...fo });
+    let y = 130;
+
+    // Section helper
+    function sec(label) {
+      if (y > 700) { doc.addPage(); y = 40; }
+      doc.rect(40, y, doc.page.width - 80, 22).fill('#063B5A');
+      doc.font(fonts.fontB).fontSize(10).fillColor('#FFFFFF').text(label, 50, y + 5, { width: doc.page.width - 100, ...fo });
+      doc.fillColor('#333333');
+      y += 30;
+    }
+    function row(label, value) {
+      if (y > 740) { doc.addPage(); y = 40; }
+      doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { continued: false, ...fo });
+      doc.font(fonts.fontB).fontSize(10).fillColor('#041F38').text(String(value), 200, y, { ...fo });
+      y += 16;
+    }
+    function line(text) {
+      if (y > 740) { doc.addPage(); y = 40; }
+      doc.font(fonts.fontR).fontSize(9).fillColor('#333').text(text, 50, y, { width: doc.page.width - 100, ...fo });
+      y += 14;
+    }
+
+    // 1. Synthèse KPI
+    sec(isAr ? 'المؤشرات الرئيسية' : 'Synthèse opérationnelle');
+    row(isAr ? 'حوادث حرجة' : 'Incidents critiques', critical);
+    row(isAr ? 'تجاوزات المهل' : 'SLA dépassés', breached);
+    row(isAr ? 'ملفات نشطة' : 'Dossiers actifs', active);
+    row(isAr ? 'النتيجة التشغيلية' : 'Score opérationnel', score + '/100');
+    row(isAr ? 'قرارات معلقة' : 'Décisions en attente', pendingDec);
+    y += 8;
+
+    // 2. Priorités
+    sec(isAr ? 'الأولويات' : 'Priorités du jour');
+    priorities.forEach(p => {
+      const dir = isAr && p.direction_ar ? p.direction_ar : (p.direction || '—');
+      const sla = Math.max(0, Math.round((p.sla_min || 0) / 60));
+      line((p.reference || '') + ' — ' + (p.titre || '').substring(0, 60) + ' — ' + dir + (sla > 0 ? ' (+' + sla + 'h)' : ''));
+    });
+    y += 8;
+
+    // 3. Briefing
+    sec(isAr ? 'الإحاطة' : 'Briefing');
+    briefings.forEach(b => {
+      const t = isAr && b.titre_ar ? b.titre_ar : b.titre;
+      const c = isAr && b.contenu_ar ? b.contenu_ar : b.contenu;
+      line((b.heure || '') + ' — ' + t);
+      if (c) { doc.font(fonts.fontR).fontSize(8).fillColor('#666').text('   ' + c, 60, y, { width: doc.page.width - 120, ...fo }); y += 12; }
+    });
+    y += 8;
+
+    // 4. Décisions
+    sec(isAr ? 'القرارات المعلقة' : 'Décisions en attente');
+    decisions.forEach(d => {
+      const t = isAr && d.titre_ar ? d.titre_ar : d.titre;
+      const dir = isAr && d.direction_ar ? d.direction_ar : (d.direction || '—');
+      const prio = d.priorite === 'haute' ? (isAr ? '● عالية' : '● Haute') : (isAr ? '○ متوسطة' : '○ Moyenne');
+      line(prio + ' — ' + t + ' (' + dir + ')');
+    });
+
+    doc.end();
+  } catch (e) {
+    console.error('[command-center/briefing-pdf]', e.message);
     res.status(500).json({ erreur: e.message });
   }
 });

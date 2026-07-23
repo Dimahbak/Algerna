@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=387">
+  <link rel="stylesheet" href="/app.css?v=388">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -2569,7 +2569,7 @@
               <div class="cc-risk-zones">
                 <h3 class="cc-subsection-title" data-i18n="cc.zones_risque">Zones à risque</h3>
                 <div id="cc-risk-zones-list"></div>
-                <button class="cc-btn-disabled" disabled data-i18n="cc.voir_communes">Voir toutes les communes</button>
+                <button class="cc-btn-action" onclick="ccShowAllCommunes()" data-i18n="cc.voir_communes">Voir toutes les communes</button>
               </div>
             </div>
           </div>
@@ -2598,6 +2598,21 @@
           <div class="cc-section">
             <h2 class="cc-section-title" data-i18n="cc.partenaires_titre">Partenaires et opérateurs externes</h2>
             <div id="cc-partners" class="cc-partners-grid"></div>
+          </div>
+          <!-- D. Décisions en attente -->
+          <div class="cc-section">
+            <h2 class="cc-section-title" data-i18n="cc.decisions_titre">Décisions en attente</h2>
+            <div id="cc-decisions" class="cc-decisions-list"></div>
+          </div>
+          <!-- E. Briefing du jour -->
+          <div class="cc-section">
+            <h2 class="cc-section-title" data-i18n="cc.briefing_titre">Briefing du jour</h2>
+            <div id="cc-briefing" class="cc-briefing-list"></div>
+          </div>
+          <!-- F. Activité récente -->
+          <div class="cc-section">
+            <h2 class="cc-section-title" data-i18n="cc.activite_titre">Activité récente</h2>
+            <div id="cc-activity" class="cc-activity-timeline"></div>
           </div>
         </div>
       </div>
@@ -3884,7 +3899,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=387"></script>
+<script src="/app.js?v=388"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->
