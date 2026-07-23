@@ -8580,6 +8580,7 @@ async function capConfirmAssistance() {
 var _boSignals = [];
 var _boFiltered = [];
 var _boCurrentId = null;
+var _boDrawerContext = 'bo'; // 'bo' | 'cc' — context where drawer was opened
 var _boAgentMode = 'workbench'; // 'workbench' | 'board'
 var _boAgentMap = null;
 var _boCapMap = null;
@@ -9200,6 +9201,9 @@ function boTimeAgo(d) {
 
 async function boOpenDrawer(id) {
   _boCurrentId = id;
+  // If not called from boOpenSignalement, context is BO
+  if (_boDrawerContext !== 'cc') _boDrawerContext = 'bo';
+  var isCcContext = _boDrawerContext === 'cc';
   var s = _boSignals.find(function(x){return x.id===id;});
   if (!s) { showToast(t('bo.dossier_introuvable'), 'error'); return; }
   var content = document.getElementById('bo-drawer-content');
@@ -9223,6 +9227,22 @@ async function boOpenDrawer(id) {
   if (s.citoyen_prenom) ficheHtml += '<div style="font-size:12px;color:var(--muted);margin-top:2px;">👤 ' + escHtml(s.citoyen_prenom + ' ' + (s.citoyen_nom||'')) + (s.citoyen_tel ? ' · 📞 ' + escHtml(s.citoyen_tel) : '') + '</div>';
   ficheHtml += '</div>';
 
+  // ── BLOC CC — Pilotage institutionnel (CC context only, before Analyse) ──
+  if (isCcContext) {
+    var dpNom = currentLang === 'ar' && s.direction_pilote_nom_ar ? s.direction_pilote_nom_ar : (s.direction_pilote_nom || '—');
+    var oeNom = currentLang === 'ar' && s.executant_nom_ar ? s.executant_nom_ar : (s.executant_nom || '—');
+    var daNom = currentLang === 'ar' && s.daira_nom_ar ? s.daira_nom_ar : (s.daira_nom || '—');
+    var coNom = currentLang === 'ar' && s.commune_nom_ar ? s.commune_nom_ar : (s.commune_nom || '—');
+    ficheHtml += '<div style="margin-bottom:16px;background:#EFF6FF;border-radius:12px;padding:14px 16px;border:1px solid #BFDBFE;">';
+    ficheHtml += '<div style="font-size:11px;font-weight:700;color:#1E40AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + t('cc.pilotage_institutionnel') + '</div>';
+    ficheHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:12px;">';
+    ficheHtml += '<div><span style="color:var(--muted);">' + t('cc.direction_pilote') + '</span><div style="font-weight:600;color:var(--navy);margin-top:2px;">' + escHtml(dpNom) + '</div></div>';
+    ficheHtml += '<div><span style="color:var(--muted);">' + t('cc.executant') + '</span><div style="font-weight:600;color:var(--navy);margin-top:2px;">' + escHtml(oeNom) + '</div></div>';
+    ficheHtml += '<div><span style="color:var(--muted);">' + t('cc.dairas') + '</span><div style="font-weight:600;color:var(--navy);margin-top:2px;">' + escHtml(daNom) + '</div></div>';
+    ficheHtml += '<div><span style="color:var(--muted);">' + t('cc.commune_label') + '</span><div style="font-weight:600;color:var(--navy);margin-top:2px;">' + escHtml(coNom) + '</div></div>';
+    ficheHtml += '</div></div>';
+  }
+
   // ── BLOC 2 — Analyse ──
   var etatLabels = {recu:t('bo.col_recu'),transmis:t('bo.col_transmis'),pris_en_charge:t('bo.col_pris_en_charge'),en_intervention:t('bo.col_en_intervention'),a_valider:t('bo.col_a_valider'),resolu:'Résolu',clos:t('bo.col_clos'),rejete:t('bo.col_rejete')};
   // Note: etatLabels redéfini ici pour usage local dans le drawer
@@ -9240,9 +9260,11 @@ async function boOpenDrawer(id) {
   ficheHtml += '<div style="font-size:12px;color:var(--muted);">' + escHtml(s.reference||'—') + '</div>';
   ficheHtml += '</div>';
 
-  // ── BLOC 2B — Planification interne (EPIC + superviseur lecture) ──
-  if (['pris_en_charge','en_intervention','a_valider','resolu'].includes(s.etat) && (hasFonction('entite_responsable') || hasFonction('superviseur'))) {
-    var isEpic = hasFonction('entite_responsable');
+  // ── BLOC 2B — Planification interne (EPIC + superviseur lecture, CC always read-only) ──
+  var showPlanifBlock = ['pris_en_charge','en_intervention','a_valider','resolu'].includes(s.etat) && (hasFonction('entite_responsable') || hasFonction('superviseur'));
+  if (isCcContext && !['clos','rejete'].includes(s.etat)) showPlanifBlock = true;
+  if (showPlanifBlock) {
+    var isEpic = hasFonction('entite_responsable') && !isCcContext;
     var hasPlanif = s.equipe_interne || s.responsable_intervention || s.delai_prevu;
     var canEdit = isEpic && ['pris_en_charge'].includes(s.etat);
     var canModify = isEpic && s.etat === 'en_intervention';
@@ -9288,7 +9310,7 @@ async function boOpenDrawer(id) {
         '</div>';
       }
     } else {
-      // a_valider, resolu, superviseur : lecture seule
+      // a_valider, resolu, superviseur, CC : lecture seule
       if (hasPlanif) {
         ficheHtml += '<div style="font-size:12px;color:var(--navy);line-height:1.8;">' +
           (s.equipe_interne ? '<div>' + lEquipe + ' : <strong>' + escHtml(s.equipe_interne) + '</strong></div>' : '') +
@@ -9296,7 +9318,7 @@ async function boOpenDrawer(id) {
           (s.delai_prevu ? '<div>' + lDate + ' : <strong>' + fmtDateTime(s.delai_prevu) + '</strong></div>' : '') +
         '</div>';
       } else {
-        ficheHtml += '<div style="font-size:12px;color:var(--muted);">—</div>';
+        ficheHtml += '<div style="font-size:12px;color:var(--muted);font-style:italic;">' + t('cc.aucune_planif') + '</div>';
       }
     }
     ficheHtml += '</div>';
@@ -9331,6 +9353,17 @@ async function boOpenDrawer(id) {
   var canAct = ['recu','transmis','en_intervention','pris_en_charge','a_valider','resolu'].includes(s.etat);
   if (!canAct) {
     actions.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;width:100;">Ce dossier est ' + escHtml(etatLabels[s.etat]||s.etat) + '.</div>';
+  } else if (isCcContext) {
+    // ── Variante Commandement : Relancer, Message, Urgence Wali, Note ──
+    var ccBtns = '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+      '<button class="btn btn-sm btn-outline" onclick="boRelancerService()" style="flex:1;font-size:11px;">🔔 ' + t('bo.btn_relancer') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="boEnvoyerMessage()" style="flex:1;font-size:11px;">💬 ' + t('bo.btn_message') + '</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">' +
+      '<button class="btn btn-sm" style="background:#fef2f2;color:#EF4444;flex:1;font-size:11px;" onclick="boSignalerUrgenceWali()">🚨 ' + t('bo.btn_urgence_wali') + '</button>' +
+      '<button class="btn btn-sm btn-outline" onclick="boCcAjouterNote()" style="flex:1;font-size:11px;">📝 ' + t('cc.ajouter_note_dossier') + '</button>' +
+    '</div>';
+    actions.innerHTML = ccBtns;
   } else if (hasFonction('entite_responsable')) {
     // Entité responsable (EPIC) : aide contextuelle + actions selon l'état
     var epicAide = {transmis:t('epic.aide_transmis'), pris_en_charge:t('epic.aide_pec'), en_intervention:t('epic.aide_intervention'), a_valider:t('epic.aide_avalider')};
@@ -9475,7 +9508,7 @@ async function boOpenDrawer(id) {
   } catch(e) { console.warn('[bo] échec chargement suggestion routage:', e.message); }
 }
 
-function boCloseDrawer() { document.getElementById('bo-drawer').classList.add('hidden'); _boCurrentId = null; }
+function boCloseDrawer() { document.getElementById('bo-drawer').classList.add('hidden'); _boCurrentId = null; _boDrawerContext = 'bo'; }
 
 async function boAction(newEtat, opts) {
   if (!_boCurrentId) return;
@@ -9695,6 +9728,21 @@ async function boEstimerDelai() {
     if (res.ok) { showToast(t('bo.delai_enregistre')); boOpenDrawer(_boCurrentId); }
     else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
   } catch(e) { showToast(e.message, 'error'); }
+}
+
+function boCcAjouterNote() {
+  if (!_boCurrentId) return;
+  showPromptModal(t('cc.ajouter_note_dossier'), '', async function(note) {
+    if (!note || !note.trim()) return;
+    try {
+      var res = await apiFetch('/api/signaler/board/' + _boCurrentId + '/commentaire', {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commentaire: note.trim(), type: 'note_commandement' })
+      });
+      if (res.ok) { showToast(t('cc.note_ajoutee_dossier')); boOpenDrawer(_boCurrentId); }
+      else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+    } catch(e) { showToast(e.message, 'error'); }
+  }, { textarea: true, desc: t('cc.note_desc') });
 }
 
 async function boSavePlanification() {
@@ -12858,7 +12906,8 @@ function saksiniToggle() {
 function ccNom(obj) { return currentLang === 'ar' && obj.nom_ar ? obj.nom_ar : obj.nom; }
 function ccLtr(v) { return '<span dir="ltr">' + v + '</span>'; }
 function boOpenSignalement(ref) {
-  // Open the signalement drawer from any view
+  // Open the signalement drawer from CC view — set context
+  _boDrawerContext = 'cc';
   if (typeof _boSignals !== 'undefined' && _boSignals && _boSignals.length) {
     var existing = _boSignals.find(function(s) { return s.reference === ref; });
     if (existing) { boOpenDrawer(existing.id); return; }

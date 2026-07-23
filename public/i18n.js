@@ -1371,6 +1371,14 @@ const I18N = {
     "cc.score_reponse": "Taux de réponse",
     "cc.score_critiques": "Maîtrise des critiques",
     "cc.score_decisions": "Résorption décisions",
+    "cc.pilotage_institutionnel": "Pilotage institutionnel",
+    "cc.direction_pilote": "Direction pilote",
+    "cc.executant": "Exécutant",
+    "cc.commune_label": "Commune",
+    "cc.aucune_planif": "Aucune intervention planifiée",
+    "cc.ajouter_note_dossier": "Ajouter une note",
+    "cc.note_ajoutee_dossier": "Note ajoutée au dossier",
+    "cc.note_desc": "Note de commandement — visible dans l'historique du dossier",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3129,6 +3137,14 @@ const I18N = {
     "cc.score_reponse": "معدل الاستجابة",
     "cc.score_critiques": "التحكم في الحوادث الحرجة",
     "cc.score_decisions": "استيعاب القرارات",
+    "cc.pilotage_institutionnel": "القيادة المؤسسية",
+    "cc.direction_pilote": "المديرية المسيّرة",
+    "cc.executant": "الجهة المنفذة",
+    "cc.commune_label": "البلدية",
+    "cc.aucune_planif": "لا يوجد تدخل مخطط",
+    "cc.ajouter_note_dossier": "إضافة ملاحظة",
+    "cc.note_ajoutee_dossier": "تمت إضافة الملاحظة",
+    "cc.note_desc": "ملاحظة قيادية — مرئية في سجل الملف",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",

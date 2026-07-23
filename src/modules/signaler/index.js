@@ -491,11 +491,17 @@ router.get('/board',
                       s.compte_rendu_description, s.compte_rendu_resultat, s.compte_rendu_date_fin, s.compte_rendu_observation,
                       cs.libelle AS categorie_nom, cs.libelle_ar AS categorie_nom_ar, cs.famille AS categorie_famille, s.sous_categorie_a_affiner,
                       c.nom AS commune_nom, c.nom_ar AS commune_nom_ar, s.commune_id,
-                      u.prenom AS citoyen_prenom, u.nom AS citoyen_nom, u.telephone AS citoyen_tel
+                      u.prenom AS citoyen_prenom, u.nom AS citoyen_nom, u.telephone AS citoyen_tel,
+                      dp.nom AS direction_pilote_nom, dp.nom_ar AS direction_pilote_nom_ar,
+                      oe.nom AS executant_nom, oe.nom_ar AS executant_nom_ar,
+                      d.nom AS daira_nom, d.nom_ar AS daira_nom_ar
                  FROM signalement s
                  LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
                  LEFT JOIN commune c ON c.id = s.commune_id
                  LEFT JOIN utilisateur u ON u.id = s.citoyen_id
+                 LEFT JOIN organisations dp ON dp.id = s.direction_pilote_id
+                 LEFT JOIN organisations oe ON oe.id = s.organisation_executante_id
+                 LEFT JOIN daira d ON d.id = s.daira_id
                 WHERE 1=1`;
     const params = [];
     if (communeId) { params.push(Number(communeId)); sql += ` AND s.commune_id = $${params.length}`; }
