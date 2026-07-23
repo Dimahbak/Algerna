@@ -631,6 +631,7 @@ async function initApp() {
   if (navDeconnexion) navDeconnexion.style.display = 'none';
   var bottomNav = document.querySelector('.bottom-nav');
   if (bottomNav) { bottomNav.style.display = role === 'citoyen' ? '' : 'none'; }
+  // CC bottom nav: handled by showView based on current view + role + screen width
   var hamburgerBtn = document.querySelector('.hamburger-btn');
   if (hamburgerBtn) { hamburgerBtn.style.display = role === 'citoyen' ? 'none' : ''; }
   var appFooter = document.getElementById('app-footer');
@@ -943,6 +944,9 @@ function showView(name) {
     item.classList.toggle('active',
       item.dataset.view === name || (univers && item.dataset.univers === univers));
   });
+
+  // CC bottom nav: show/hide based on view + role + width
+  ccUpdateMobileNav(name);
 
   // Load data for specific views
   if (name === 'signaler') initSignaler();
@@ -13924,4 +13928,177 @@ document.addEventListener('click', function(e) {
     document.querySelectorAll('.cc-priority-menu.open').forEach(function(m) { m.classList.remove('open'); });
   }
 });
+
+// ═══ CC MOBILE — navigation basse + interactions ═══
+
+var _ccMobileTab = 'pilotage';
+
+function ccIsCCProfile() {
+  return currentUser && (currentUser.role === 'admin_wilaya' || currentUser.fonction === 'cabinet' ||
+    (currentUser.fonction === 'superviseur' && hasNiveau('wilaya')));
+}
+
+function ccUpdateMobileNav(viewName) {
+  var ccBnav = document.getElementById('cc-bottom-nav');
+  if (!ccBnav) return;
+  var show = viewName === 'command-center' && ccIsCCProfile() && window.innerWidth <= 768;
+  ccBnav.style.display = show ? '' : 'none';
+  if (show) {
+    document.body.classList.add('cc-mob-tabs');
+    ccMobileTab(_ccMobileTab);
+  } else {
+    document.body.classList.remove('cc-mob-tabs');
+    // Show all sections when not in mobile CC
+    document.querySelectorAll('[data-cc-section]').forEach(function(s) { s.classList.remove('cc-sec-vis'); });
+  }
+}
+
+window.addEventListener('resize', function() {
+  var ccView = document.getElementById('view-command-center');
+  if (!ccView) return;
+  var isActive = !ccView.classList.contains('hidden') && ccView.style.display !== 'none';
+  if (isActive) ccUpdateMobileNav('command-center');
+  else ccUpdateMobileNav('');
+});
+
+function ccMobileTab(tab) {
+  _ccMobileTab = tab;
+  // Active state on nav
+  document.querySelectorAll('.cc-bnav-item').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.ccTab === tab);
+  });
+  document.body.classList.add('cc-mob-tabs');
+  // Show/hide sections
+  document.querySelectorAll('[data-cc-section]').forEach(function(sec) {
+    var secTab = sec.dataset.ccSection;
+    if (tab === 'alertes') {
+      // Alertes = priorities (pilotage priorities section) with all rows visible
+      sec.classList.toggle('cc-sec-vis', secTab === 'pilotage');
+    } else if (tab === 'plus') {
+      sec.classList.toggle('cc-sec-vis', secTab === 'plus');
+    } else {
+      sec.classList.toggle('cc-sec-vis', secTab === tab);
+    }
+  });
+  // Alertes: show all priority rows (override nth-child hiding)
+  if (tab === 'alertes') {
+    document.querySelectorAll('.cc-priority-row').forEach(function(r) { r.style.display = ''; });
+  } else {
+    document.querySelectorAll('.cc-priority-row').forEach(function(r) { r.style.display = ''; });
+  }
+  // Plus: render the menu
+  if (tab === 'plus') ccRenderPlusMenu();
+  // Carte: invalidate map
+  if (tab === 'carte' && _ccMap) setTimeout(function() { _ccMap.invalidateSize(); }, 300);
+  // Scroll to top
+  var ccContent = document.getElementById('cc-content');
+  if (ccContent) ccContent.scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+// ── Plus menu ──
+function ccRenderPlusMenu() {
+  var el = document.getElementById('cc-plus-menu-section');
+  if (!el || el.querySelector('.cc-plus-menu')) return;
+  el.innerHTML = '<div class="cc-plus-menu">' +
+    '<button class="cc-plus-item" onclick="ccMobilePlusView(\'plus-epics\')">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>' +
+      t('cc.epic_autres_titre') + '</button>' +
+    '<button class="cc-plus-item" onclick="ccMobilePlusView(\'plus-partenaires\')">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' +
+      t('cc.partenaires_titre') + '</button>' +
+    '<button class="cc-plus-item" onclick="ccMobilePlusView(\'plus-decisions\')">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/></svg>' +
+      t('cc.decisions_titre') + '</button>' +
+    '<button class="cc-plus-item" onclick="ccMobilePlusView(\'plus-briefing\')">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>' +
+      t('cc.briefing_titre') + '</button>' +
+    '<button class="cc-plus-item" onclick="ccMobilePlusView(\'plus-activite\')">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+      t('cc.activite_titre') + '</button>' +
+  '</div>';
+}
+
+function ccMobilePlusView(section) {
+  // Show only this section + a back button
+  document.querySelectorAll('[data-cc-section]').forEach(function(s) {
+    s.classList.toggle('cc-sec-vis', s.dataset.ccSection === section);
+  });
+  // Add back button at top of the section
+  var sec = document.querySelector('[data-cc-section="' + section + '"]');
+  if (sec && !sec.querySelector('.cc-mob-back')) {
+    var btn = document.createElement('button');
+    btn.className = 'cc-mob-back';
+    btn.innerHTML = '← ' + t('cc.tab_plus');
+    btn.onclick = function() { ccMobileTab('plus'); };
+    sec.insertBefore(btn, sec.firstChild);
+  }
+  window.scrollTo(0, 0);
+}
+
+// ── Priorities fullscreen drawer ──
+function ccMobilePrioritiesDrawer() {
+  var existing = document.getElementById('cc-prio-drawer');
+  if (existing) { existing.style.transform = 'translateY(0)'; return; }
+  var drawer = document.createElement('div');
+  drawer.id = 'cc-prio-drawer';
+  drawer.style.cssText = 'position:fixed;inset:0;background:white;z-index:1100;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s ease;';
+  drawer.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--cc-border);min-height:44px;">' +
+      '<h3 style="margin:0;font-size:16px;font-weight:700;">' + t('cc.priorites_titre') + '</h3>' +
+      '<button onclick="ccMobilePrioritiesClose()" style="border:none;background:none;font-size:20px;cursor:pointer;padding:8px;min-width:44px;min-height:44px;">✕</button>' +
+    '</div>' +
+    '<div id="cc-prio-drawer-body" style="flex:1;overflow-y:auto;padding:12px;"></div>';
+  document.body.appendChild(drawer);
+  var body = document.getElementById('cc-prio-drawer-body');
+  ccRenderPriorityRows(body, _ccAllPriorities);
+  // Show all rows (override mobile nth-child)
+  body.querySelectorAll('.cc-priority-row').forEach(function(r) { r.style.display = ''; });
+  requestAnimationFrame(function() { drawer.style.transform = 'translateY(0)'; });
+}
+
+function ccMobilePrioritiesClose() {
+  var drawer = document.getElementById('cc-prio-drawer');
+  if (drawer) {
+    drawer.style.transform = 'translateY(100%)';
+    setTimeout(function() { drawer.remove(); }, 300);
+  }
+}
+
+// ── Map fullscreen (with safe re-parenting) ──
+var _ccMapOrigParent = null;
+
+function ccMapFullscreenOpen() {
+  var overlay = document.getElementById('cc-map-fullscreen');
+  var mapEl = document.getElementById('cc-map');
+  if (!overlay || !mapEl || !_ccMap) return;
+  // Store original parent
+  _ccMapOrigParent = mapEl.parentNode;
+  // Move map to fullscreen container
+  var fsContainer = document.getElementById('cc-map-fs-container');
+  fsContainer.appendChild(mapEl);
+  mapEl.style.height = '100%';
+  mapEl.style.borderRadius = '0';
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  // Clone filters
+  var fsFilters = document.getElementById('cc-map-fs-filters');
+  var origFilters = document.getElementById('cc-map-filters');
+  if (fsFilters && origFilters) fsFilters.innerHTML = origFilters.innerHTML;
+  setTimeout(function() { _ccMap.invalidateSize(); }, 200);
+}
+
+function ccMapFullscreenClose() {
+  var overlay = document.getElementById('cc-map-fullscreen');
+  if (overlay) overlay.classList.add('hidden');
+  // Move map back to original container
+  var mapEl = document.getElementById('cc-map');
+  if (_ccMapOrigParent && mapEl) {
+    _ccMapOrigParent.insertBefore(mapEl, _ccMapOrigParent.firstChild);
+    mapEl.style.height = window.innerWidth <= 768 ? '240px' : '400px';
+    mapEl.style.borderRadius = 'var(--radius-md)';
+    setTimeout(function() { if (_ccMap) _ccMap.invalidateSize(); }, 200);
+  }
+  document.body.style.overflow = '';
+}
 

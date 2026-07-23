@@ -1382,6 +1382,13 @@ const I18N = {
     "cc.deja_relance": "Déjà relancé il y a",
     "cc.deja_envoye": "Déjà envoyé il y a",
     "cc.urgence_wali_desc": "Alerte prioritaire — notification envoyée au cabinet et aux superviseurs.",
+    "cc.tab_pilotage": "Pilotage",
+    "cc.tab_alertes": "Alertes",
+    "cc.tab_carte": "Carte",
+    "cc.tab_organismes": "Organismes",
+    "cc.tab_plus": "Plus",
+    "cc.voir_toutes": "Voir toutes les priorités",
+    "cc.ouvrir_carte": "Ouvrir la carte",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3151,6 +3158,13 @@ const I18N = {
     "cc.deja_relance": "تمت المتابعة منذ",
     "cc.deja_envoye": "تم الإرسال منذ",
     "cc.urgence_wali_desc": "تنبيه ذو أولوية — إشعار للديوان والمشرفين.",
+    "cc.tab_pilotage": "القيادة",
+    "cc.tab_alertes": "التنبيهات",
+    "cc.tab_carte": "الخريطة",
+    "cc.tab_organismes": "الهيئات",
+    "cc.tab_plus": "المزيد",
+    "cc.voir_toutes": "عرض جميع الأولويات",
+    "cc.ouvrir_carte": "فتح الخريطة",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",
