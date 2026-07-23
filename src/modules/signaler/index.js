@@ -705,8 +705,8 @@ router.post('/board/:id/commentaire',
     }
 
     if (type === 'urgence_wali') {
-      // Marquer le dossier urgence_wali
-      await query('UPDATE signalement SET gravite = $1 WHERE id = $2', ['danger_immediat', req.params.id]);
+      // Marquer le dossier urgence_wali (champ distinct, ne touche PAS la gravité)
+      await query('UPDATE signalement SET urgence_wali = TRUE, urgence_wali_le = NOW(), urgence_wali_par = $1 WHERE id = $2', [req.user.id, req.params.id]);
       // Notifier cabinet + superviseurs wilaya
       try {
         const { rows: destUsers } = await query(

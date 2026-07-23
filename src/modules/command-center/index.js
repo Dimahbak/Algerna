@@ -127,9 +127,10 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       }
     };
 
-    // ── PRIORITIES ── (top 5 critical/overdue)
+    // ── PRIORITIES ── (top 5 critical/overdue, urgence_wali first)
     const { rows: priorities } = await query(`
-      SELECT s.reference, s.description AS titre, s.gravite AS criticite, s.gravite,
+      SELECT s.reference, s.description AS titre, s.gravite AS criticite,
+             s.urgence_wali,
              s.lat, s.lng,
              c.nom AS commune, d.nom AS daira,
              dp.nom AS "directionPilote", dp.nom_ar AS "directionPiloteAr",
@@ -143,6 +144,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
       JOIN categorie_signal cs ON cs.id = s.categorie_id
       WHERE s.etat NOT IN ('resolu','clos','rejete') ${periodWhere}
       ORDER BY
+        CASE WHEN s.urgence_wali THEN 0 ELSE 1 END,
         CASE WHEN s.gravite='danger_immediat' THEN 0 WHEN cs.criticite='haute' THEN 1 ELSE 2 END,
         (NOW() - s.cree_le) DESC,
         s.cree_le ASC

@@ -13868,7 +13868,7 @@ function ccRenderPriorityRows(el, list) {
     var slaText = p.slaDepassementMinutes > 0 ? '<span dir="ltr">+' + Math.round(p.slaDepassementMinutes / 60) + 'h</span>' : t('cc.dans_delai');
     var pPilote = currentLang === 'ar' && p.directionPiloteAr ? p.directionPiloteAr : p.directionPilote;
     var pExec = currentLang === 'ar' && p.executantAr ? p.executantAr : p.executant;
-    var urgBadge = p.gravite === 'danger_immediat' ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 URGENCE</span>' : '';
+    var urgBadge = p.urgence_wali ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 URGENCE</span>' : '';
     return '<div class="cc-priority-row cc-severity-' + severity + '">' +
       '<div class="cc-priority-body">' +
         '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + urgBadge + '</div>' +
