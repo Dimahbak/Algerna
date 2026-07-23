@@ -1379,6 +1379,9 @@ const I18N = {
     "cc.ajouter_note_dossier": "Ajouter une note",
     "cc.note_ajoutee_dossier": "Note ajoutée au dossier",
     "cc.note_desc": "Note de commandement — visible dans l'historique du dossier",
+    "cc.deja_relance": "Déjà relancé il y a",
+    "cc.deja_envoye": "Déjà envoyé il y a",
+    "cc.urgence_wali_desc": "Alerte prioritaire — notification envoyée au cabinet et aux superviseurs.",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3145,6 +3148,9 @@ const I18N = {
     "cc.ajouter_note_dossier": "إضافة ملاحظة",
     "cc.note_ajoutee_dossier": "تمت إضافة الملاحظة",
     "cc.note_desc": "ملاحظة قيادية — مرئية في سجل الملف",
+    "cc.deja_relance": "تمت المتابعة منذ",
+    "cc.deja_envoye": "تم الإرسال منذ",
+    "cc.urgence_wali_desc": "تنبيه ذو أولوية — إشعار للديوان والمشرفين.",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",

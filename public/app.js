@@ -3680,6 +3680,20 @@ function notifClick(id, lien, el) {
   var sigId = parts[1] || '';
   var viewPath = parts[0] || '';
 
+  // CC notification → open dossier from command center
+  if (viewPath === '/command-center' && sigId) {
+    showView('command-center');
+    setTimeout(function() {
+      safeFetchJSON('/api/signaler/board', {}, true).then(function(data) {
+        var items = Array.isArray(data) ? data : [];
+        _boSignals = items;
+        var s = items.find(function(x) { return String(x.id) === String(sigId); });
+        if (s) boOpenSignalement(s.reference);
+      });
+    }, 1000);
+    return;
+  }
+
   // CCOE notification → open chantier directly
   if (viewPath === '/mes-chantiers-ccoe' && sigId) {
     showView('mes-chantiers-ccoe');
@@ -9620,8 +9634,12 @@ function boEnvoyerMessage() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: msg.trim(), type: 'message' })
       });
-      if (res.ok) { showToast(t('bo.message_envoye_service')); boOpenDrawer(_boCurrentId); }
-      else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+      if (res.ok) {
+        var data = await res.json();
+        if (data.spam) { showToast(t('cc.deja_envoye') + ' (' + data.agoMin + 'min)', 'error'); }
+        else { showToast(t('bo.message_envoye_service')); }
+        boOpenDrawer(_boCurrentId);
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true });
 }
@@ -9635,8 +9653,12 @@ function boRelancerService() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: msg.trim(), type: 'relance' })
       });
-      if (res.ok) { showToast(t('bo.relance_envoyee')); boOpenDrawer(_boCurrentId); }
-      else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+      if (res.ok) {
+        var data = await res.json();
+        if (data.spam) { showToast(t('cc.deja_relance') + ' (' + data.agoMin + 'min)', 'error'); }
+        else { showToast(t('bo.relance_envoyee')); }
+        boOpenDrawer(_boCurrentId);
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
   }, { textarea: true });
 }
@@ -9691,10 +9713,14 @@ function boSignalerUrgenceWali() {
         method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ commentaire: '🚨 URGENCE WALI — ' + motif.trim(), type: 'urgence_wali' })
       });
-      if (res.ok) { showToast(t('bo.urgence_wali')); boOpenDrawer(_boCurrentId); }
-      else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
+      if (res.ok) {
+        var data = await res.json();
+        if (data.spam) { showToast(t('cc.deja_envoye') + ' (' + data.agoMin + 'min)', 'error'); }
+        else { showToast(t('bo.urgence_wali')); }
+        boOpenDrawer(_boCurrentId);
+      } else { var err = await res.json(); showToast(err.erreur || 'Erreur', 'error'); }
     } catch(e) { showToast(e.message, 'error'); }
-  }, { textarea: true, desc: 'Cette action créera une alerte prioritaire visible par le cabinet.' });
+  }, { textarea: true, desc: t('cc.urgence_wali_desc') });
 }
 
 function boReorienter() {
@@ -13842,9 +13868,10 @@ function ccRenderPriorityRows(el, list) {
     var slaText = p.slaDepassementMinutes > 0 ? '<span dir="ltr">+' + Math.round(p.slaDepassementMinutes / 60) + 'h</span>' : t('cc.dans_delai');
     var pPilote = currentLang === 'ar' && p.directionPiloteAr ? p.directionPiloteAr : p.directionPilote;
     var pExec = currentLang === 'ar' && p.executantAr ? p.executantAr : p.executant;
+    var urgBadge = p.gravite === 'danger_immediat' ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 URGENCE</span>' : '';
     return '<div class="cc-priority-row cc-severity-' + severity + '">' +
       '<div class="cc-priority-body">' +
-        '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + '</div>' +
+        '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + urgBadge + '</div>' +
         '<div class="cc-priority-meta">' +
           '<span>' + escHtml(p.commune || '—') + '</span>' +
           (pPilote && pExec && pPilote === pExec

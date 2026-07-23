@@ -624,9 +624,16 @@ router.post('/board/:id/commentaire',
     if (!userCaps.includes('reception') && !userCaps.includes('qualification') && !userCaps.includes('pilotage')) {
       return res.status(403).json({ erreur: 'Capacité insuffisante.' });
     }
-    // Vérifier que le signalement existe
-    const { rows: sig } = await query('SELECT etat FROM signalement WHERE id=$1', [req.params.id]);
+    // Vérifier que le signalement existe + récupérer infos pour notifications
+    const { rows: sig } = await query(
+      `SELECT s.etat, s.reference, s.organisation_executante_id, s.transmis_a, s.direction_pilote_id,
+              cs.libelle AS categorie, c.nom AS commune_nom
+       FROM signalement s
+       LEFT JOIN categorie_signal cs ON cs.id = s.categorie_id
+       LEFT JOIN commune c ON c.id = s.commune_id
+       WHERE s.id=$1`, [req.params.id]);
     if (!sig.length) return res.status(404).json({ erreur: 'Signalement introuvable.' });
+    const dossier = sig[0];
     // Récupérer le nom de l'auteur
     const { rows: usr } = await query('SELECT prenom, nom FROM utilisateur WHERE id=$1', [req.user.id]);
     const auteur = usr.length ? (usr[0].prenom || '') + ' ' + (usr[0].nom || '') : '';
@@ -636,15 +643,94 @@ router.post('/board/:id/commentaire',
       communique: { action: 'communique_superviseur', label: 'Communiqué' },
       notification: { action: 'notification_superviseur', label: 'Notification' },
       urgence_wali: { action: 'urgence_wali', label: 'Urgence Wali' },
+      note_commandement: { action: 'note_commandement', label: 'Note commandement' },
     };
     const tm = typeMap[type] || typeMap.message;
     const action = tm.action;
     const label = tm.label;
+
+    // ── Anti-spam : même action, même utilisateur, même dossier, < 1h ──
+    if (['relance', 'message', 'urgence_wali'].includes(type)) {
+      const { rows: recent } = await query(
+        `SELECT le FROM signalement_historique
+         WHERE signalement_id=$1 AND par_utilisateur=$2 AND action=$3
+           AND le > NOW() - INTERVAL '1 hour'
+         ORDER BY le DESC LIMIT 1`,
+        [req.params.id, req.user.id, action]);
+      if (recent.length) {
+        const agoMin = Math.round((Date.now() - new Date(recent[0].le).getTime()) / 60000);
+        return res.json({ ok: true, action, commentaire, spam: true, agoMin });
+      }
+    }
+
+    // ── Trace historique ──
     await query(
       `INSERT INTO signalement_historique (signalement_id, etat, par_utilisateur, action, commentaire)
        VALUES ($1, $2, $3, $4, $5)`,
-      [req.params.id, sig[0].etat, req.user.id, action, label + ' de ' + auteur.trim() + ' : ' + commentaire]
+      [req.params.id, dossier.etat, req.user.id, action, label + ' de ' + auteur.trim() + ' : ' + commentaire]
     );
+
+    // ── Notifications réelles ──
+    const ref = dossier.reference || '';
+    const ctx = [ref, dossier.categorie, dossier.commune_nom].filter(Boolean).join(' · ');
+
+    if (type === 'relance' || type === 'message') {
+      // Notifier les entite_responsable de l'organisation exécutante (ou transmis_a)
+      const orgId = dossier.organisation_executante_id || (dossier.transmis_a ? Number(dossier.transmis_a) : null);
+      if (orgId) {
+        try {
+          const { rows: destUsers } = await query(
+            `SELECT id FROM utilisateur
+             WHERE organisation_id = $1 AND actif = TRUE AND fonction = 'entite_responsable'`,
+            [orgId]);
+          const titreFr = type === 'relance'
+            ? 'Relance de la Salle de Commandement — ' + ref
+            : 'Message de la Salle de Commandement — ' + ref;
+          const titreAr = type === 'relance'
+            ? 'متابعة من قاعة القيادة — ' + ref
+            : 'رسالة من قاعة القيادة — ' + ref;
+          const msgFr = commentaire.length > 80 ? commentaire.substring(0, 80) + '…' : commentaire;
+          for (const u of destUsers) {
+            // Détecter la langue du destinataire (fallback fr)
+            const { rows: prefRows } = await query('SELECT langue FROM utilisateur WHERE id=$1', [u.id]);
+            const lang = (prefRows.length && prefRows[0].langue === 'ar') ? 'ar' : 'fr';
+            const titre = lang === 'ar' ? titreAr : titreFr;
+            await query(
+              `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+               VALUES ($1, 'signalement', $2, $3, $4)`,
+              [u.id, titre, msgFr, '/bo-agent#' + req.params.id]);
+          }
+        } catch (e) { console.warn('[notif] relance/message notification failed:', e.message); }
+      }
+    }
+
+    if (type === 'urgence_wali') {
+      // Marquer le dossier urgence_wali
+      await query('UPDATE signalement SET gravite = $1 WHERE id = $2', ['danger_immediat', req.params.id]);
+      // Notifier cabinet + superviseurs wilaya
+      try {
+        const { rows: destUsers } = await query(
+          `SELECT id FROM utilisateur
+           WHERE actif = TRUE AND (
+             fonction = 'cabinet'
+             OR (fonction = 'superviseur' AND niveau_perimetre = 'wilaya')
+           ) AND id != $1`,
+          [req.user.id]);
+        const titreFr = '🚨 Urgence signalée — ' + ref;
+        const titreAr = '🚨 حالة طوارئ — ' + ref;
+        const msgFr = commentaire.length > 80 ? commentaire.substring(0, 80) + '…' : commentaire;
+        for (const u of destUsers) {
+          const { rows: prefRows } = await query('SELECT langue FROM utilisateur WHERE id=$1', [u.id]);
+          const lang = (prefRows.length && prefRows[0].langue === 'ar') ? 'ar' : 'fr';
+          const titre = lang === 'ar' ? titreAr : titreFr;
+          await query(
+            `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+             VALUES ($1, 'signalement', $2, $3, $4)`,
+            [u.id, titre, msgFr, '/command-center#' + req.params.id]);
+        }
+      } catch (e) { console.warn('[notif] urgence_wali notification failed:', e.message); }
+    }
+
     res.json({ ok: true, action, commentaire });
   }));
 

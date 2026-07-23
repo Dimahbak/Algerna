@@ -129,7 +129,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
 
     // ── PRIORITIES ── (top 5 critical/overdue)
     const { rows: priorities } = await query(`
-      SELECT s.reference, s.description AS titre, s.gravite AS criticite,
+      SELECT s.reference, s.description AS titre, s.gravite AS criticite, s.gravite,
              s.lat, s.lng,
              c.nom AS commune, d.nom AS daira,
              dp.nom AS "directionPilote", dp.nom_ar AS "directionPiloteAr",
