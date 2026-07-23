@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=389">
+  <link rel="stylesheet" href="/app.css?v=390">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -205,11 +205,11 @@
     <!-- SIDEBAR -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
     <aside class="sidebar" id="sidebar">
-      <div style="text-align:center;padding:8px 12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:10px;">
+      <div id="sidebar-logo-block" style="text-align:center;padding:8px 12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:10px;">
         <div id="sidebar-slogan" style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:1px;margin-bottom:10px;" data-i18n="sidebar.slogan">MA VILLE, MA VIE</div>
-        <div style="background:rgba(255,255,255,0.92);border-radius:12px;padding:10px 14px;text-align:center;">
+        <a href="#" onclick="showView('home');return false;" style="display:block;background:rgba(255,255,255,0.92);border-radius:12px;padding:10px 14px;text-align:center;cursor:pointer;transition:opacity .15s;" title="Accueil">
           <img src="/assets/algerna/design-v1/logo-wilaya-alger-officiel.png" alt="Wilaya d'Alger" style="width:100%;max-width:180px;height:auto;border-radius:6px;" loading="lazy">
-        </div>
+        </a>
       </div>
       <div class="nav-label" id="sidebar-citoyen-label" data-i18n="sidebar.accueil">Accueil</div>
       <button class="nav-item active" onclick="showView('home')" data-view="home" data-i18n="sidebar.accueil">
@@ -254,8 +254,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
         Communiques
       </button>
-      <div class="nav-divider" id="admin-divider" style="display:none"></div>
-      <div class="nav-label hidden" id="admin-nav-label" data-i18n="bo.operations">Opérations</div>
+      <div class="nav-label hidden" id="admin-nav-label" data-i18n="bo.operations" style="margin-top:4px;">Opérations</div>
       <button class="nav-item hidden" onclick="showView('command-center')" data-view="command-center" id="nav-command-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <span data-i18n="cc.titre">Salle de commandement</span>
@@ -2535,6 +2534,7 @@
           <div id="cc-synthesis" class="cc-synthesis"></div>
           <!-- 6 cartes KPI -->
           <div id="cc-kpis" class="cc-kpi-grid"></div>
+          <div id="cc-kpi-dropdown" class="cc-kpi-dropdown"></div>
           <!-- Priorités à traiter -->
           <div class="cc-section">
             <h2 class="cc-section-title" data-i18n="cc.priorites_titre">Priorités à traiter</h2>
@@ -3898,7 +3898,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=389"></script>
+<script src="/app.js?v=390"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->

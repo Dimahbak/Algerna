@@ -521,8 +521,6 @@ function handleLogout() {
     var el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   });
-  var divider = document.getElementById('admin-divider');
-  if (divider) divider.style.display = 'none';
   // Hide bandeau
   var bandeau = document.getElementById('bandeau-communiques');
   if (bandeau) bandeau.classList.add('hidden');
@@ -606,18 +604,14 @@ async function initApp() {
   });
   if (role === 'citoyen') {
     var adminLabel = document.getElementById('admin-nav-label');
-    var adminDivider = document.getElementById('admin-divider');
     if (adminLabel) adminLabel.style.display = 'none';
-    if (adminDivider) adminDivider.style.display = 'none';
   } else {
     // Masquer les éléments citoyen de la sidebar
     ['sidebar-slogan','sidebar-citoyen-label','sidebar-citoyen-divider','sidebar-citoyen-services'].forEach(function(id) {
       var el = document.getElementById(id); if (el) el.style.display = 'none';
     });
     var adminLabel = document.getElementById('admin-nav-label');
-    var adminDivider = document.getElementById('admin-divider');
     if (adminLabel) { adminLabel.classList.remove('hidden'); adminLabel.style.display = ''; }
-    if (adminDivider) adminDivider.style.display = '';
     var sysDivider = document.getElementById('admin-sys-divider');
     var sysLabel = document.getElementById('admin-sys-label');
     if (role === 'admin_wilaya') {
@@ -12910,19 +12904,28 @@ async function ccLoad() {
       syn.innerHTML = ccLtr(s.criticalCases) + ' ' + t('cc.syn_critiques') + ' · ' + ccLtr(s.breachedSla) + ' ' + t('cc.syn_sla') + ' · ' + t('cc.syn_score') + ' ' + ccLtr(s.operationalScore + '/100');
     }
 
+    // Cache data for KPI dropdowns
+    _ccSummary = data.summary;
+    _ccRiskZones = data.riskZones || [];
+    _ccDirectionsData = data.directions || [];
+    _ccEpicsPrioData = data.priorityEpics || [];
+    _ccEpicsAutresData = data.otherEpics || [];
+
     // KPI cards
     ccRenderKpis(data.summary);
+    // Close any open dropdown on reload
+    ccKpiDropdownClose();
 
     // Priorities
     ccRenderPriorities(data.priorities || []);
 
     // Palier 2
     ccRenderMap(data.mapIncidents || []);
-    ccRenderRiskZones(data.riskZones || []);
+    ccRenderRiskZones(_ccRiskZones);
     ccRenderTerritory(data.territory || {});
-    ccRenderDirections(data.directions || []);
-    ccRenderEpicsPrio(data.priorityEpics || []);
-    ccRenderEpicsAutres(data.otherEpics || []);
+    ccRenderDirections(_ccDirectionsData);
+    ccRenderEpicsPrio(_ccEpicsPrioData);
+    ccRenderEpicsAutres(_ccEpicsAutresData);
     ccRenderPartners(data.externalPartners || []);
     _ccDecisions = data.pendingDecisions || [];
     ccRenderDecisions(_ccDecisions);
@@ -12941,6 +12944,11 @@ async function ccLoad() {
 var _ccKpiFilter = null;
 var _ccCanEdit = false; // true for CC profiles (admin_wilaya, cabinet, cap salle_commandement)
 var _ccAllPriorities = [];
+var _ccSummary = null; // cached summary with scoreDetails
+var _ccRiskZones = [];
+var _ccDirectionsData = [];
+var _ccEpicsPrioData = [];
+var _ccEpicsAutresData = [];
 
 function ccRenderKpis(s) {
   if (!s) return;
@@ -12950,16 +12958,12 @@ function ccRenderKpis(s) {
     { key:'critiques', value:s.criticalCases, icon:'🔴', color:'var(--cc-critique)', action:'critiques' },
     { key:'communes', value:s.communesUnderWatch, icon:'📍', color:'var(--cc-eleve)', action:'communes' },
     { key:'sla', value:s.breachedSla, icon:'⏱', color:'var(--cc-vigilance)', action:'sla' },
-    { key:'decisions', value:s.pendingDecisions, icon:'📋', color:'var(--cc-decision)', action:null },
-    { key:'score', value:s.operationalScore + '/100', icon:'📊', color: s.operationalScore >= 80 ? 'var(--cc-maitrise)' : s.operationalScore >= 60 ? 'var(--cc-vigilance)' : 'var(--cc-critique)', action:null },
-    { key:'orgs', value:s.mobilizedOrganisations, icon:'🏛', color:'var(--navy-950)', action:null },
+    { key:'decisions', value:s.pendingDecisions, icon:'📋', color:'var(--cc-decision)', action:'decisions' },
+    { key:'score', value:s.operationalScore + '/100', icon:'📊', color: s.operationalScore >= 80 ? 'var(--cc-maitrise)' : s.operationalScore >= 60 ? 'var(--cc-vigilance)' : 'var(--cc-critique)', action:'score' },
+    { key:'orgs', value:s.mobilizedOrganisations, icon:'🏛', color:'var(--navy-950)', action:'orgs' },
   ];
   grid.innerHTML = kpis.map(function(k) {
-    var clickable = !!k.action;
-    var cls = clickable ? 'cc-kpi-card cc-clickable' : 'cc-kpi-card cc-no-action';
-    var tip = clickable ? '' : ' title="' + t('cc.bientot') + '"';
-    var onclick = clickable ? ' onclick="ccKpiFilter(\'' + k.action + '\')"' : '';
-    return '<div class="' + cls + '"' + onclick + tip + '>' +
+    return '<div class="cc-kpi-card cc-clickable" data-kpi="' + k.action + '" onclick="ccKpiFilter(\'' + k.action + '\')">' +
       '<div class="cc-kpi-icon" style="color:' + k.color + ';">' + k.icon + '</div>' +
       '<div class="cc-kpi-value" style="color:' + k.color + ';" dir="ltr">' + k.value + '</div>' +
       '<div class="cc-kpi-label">' + t('cc.kpi_' + k.key) + '</div>' +
@@ -12968,19 +12972,150 @@ function ccRenderKpis(s) {
 }
 
 function ccKpiFilter(action) {
-  if (_ccKpiFilter === action) { _ccKpiFilter = null; } else { _ccKpiFilter = action; }
-  // Highlight active KPI
-  document.querySelectorAll('.cc-kpi-card').forEach(function(c) { c.classList.remove('cc-kpi-active'); });
-  if (_ccKpiFilter) {
-    var btns = document.querySelectorAll('.cc-kpi-card.cc-clickable');
-    btns.forEach(function(b) { if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(_ccKpiFilter)) b.classList.add('cc-kpi-active'); });
+  // Toggle: second click = close
+  if (_ccKpiFilter === action) {
+    ccKpiDropdownClose();
+    return;
   }
+  _ccKpiFilter = action;
+  // Highlight active KPI
+  document.querySelectorAll('.cc-kpi-card').forEach(function(c) {
+    c.classList.toggle('cc-kpi-active', c.dataset.kpi === action);
+  });
+  // Filter map
+  if (action === 'critiques') ccMapFilter('critique');
+  else if (action === 'communes') { if (_ccMap) _ccMap.setView([36.7538, 3.0588], 11); }
+  else ccMapFilter('all');
   // Filter priorities
   ccFilterPriorities();
-  // Filter map
-  if (_ccKpiFilter === 'critiques') ccMapFilter('critique');
-  else if (_ccKpiFilter === 'communes') { if (_ccMap) _ccMap.setView([36.7538, 3.0588], 11); }
-  else ccMapFilter('all');
+  // Render dropdown
+  ccKpiDropdownRender(action);
+}
+
+function ccKpiDropdownClose() {
+  _ccKpiFilter = null;
+  document.querySelectorAll('.cc-kpi-card').forEach(function(c) { c.classList.remove('cc-kpi-active'); });
+  var dd = document.getElementById('cc-kpi-dropdown');
+  if (dd) { dd.classList.remove('cc-dd-open'); dd.innerHTML = ''; }
+  // Restore map & priorities
+  ccMapFilter('all');
+  ccFilterPriorities();
+}
+
+function ccKpiDropdownRender(action) {
+  var dd = document.getElementById('cc-kpi-dropdown');
+  if (!dd) return;
+  var title = t('cc.kpi_' + (action === 'critiques' ? 'critiques' : action === 'communes' ? 'communes' : action === 'sla' ? 'sla' : action === 'decisions' ? 'decisions' : action === 'score' ? 'score' : 'orgs'));
+  var html = '<div class="cc-kpi-dd-inner"><div class="cc-kpi-dd-header"><h4>' + escHtml(title) + '</h4><button class="cc-kpi-dd-close" onclick="ccKpiDropdownClose()">✕</button></div>';
+
+  if (action === 'critiques') {
+    // Critical dossiers from priorities
+    var items = _ccAllPriorities.filter(function(p) { return p.criticite === 'danger_immediat'; });
+    if (!items.length) { html += '<div class="cc-empty" style="padding:12px;">' + t('cc.aucune_priorite') + '</div>'; }
+    else { html += '<div class="cc-kpi-dd-list">' + items.map(function(p) {
+      var slaH = p.slaDepassementMinutes > 0 ? '+' + Math.round(p.slaDepassementMinutes / 60) + 'h' : '';
+      return '<div class="cc-kpi-dd-row" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')">' +
+        '<span class="cc-kpi-dd-ref">' + escHtml(p.reference) + '</span>' +
+        '<span class="cc-kpi-dd-label">' + escHtml(p.commune || '') + ' — ' + escHtml(ccNom(p) || p.titre || '') + '</span>' +
+        (slaH ? '<span class="cc-kpi-dd-badge cc-tag-sla" dir="ltr">' + slaH + '</span>' : '<span class="cc-kpi-dd-badge" style="background:#e8f5e9;color:#159447;">' + t('cc.dans_delai') + '</span>') +
+      '</div>';
+    }).join('') + '</div>'; }
+
+  } else if (action === 'communes') {
+    // Communes under watch from riskZones
+    if (!_ccRiskZones.length) { html += '<div class="cc-empty" style="padding:12px;">' + t('cc.aucune_zone') + '</div>'; }
+    else { html += '<div class="cc-kpi-dd-list">' + _ccRiskZones.map(function(z) {
+      var nom = currentLang === 'ar' && z.nom_ar ? z.nom_ar : z.nom;
+      var nClass = z.critiques > 0 ? 'cc-tag-eleve' : 'cc-tag-moyen';
+      return '<div class="cc-kpi-dd-row" onclick="ccDrillCommuneIncidents(' + z.id + ',\'' + escHtml(nom).replace(/'/g,'\\x27') + '\',' + z.lat + ',' + z.lng + ')">' +
+        '<span class="cc-kpi-dd-label" style="margin:0;">' + escHtml(nom) + '</span>' +
+        '<span dir="ltr" style="font-weight:700;margin:0 6px;">' + z.incidents + '</span>' +
+        '<span class="cc-kpi-dd-badge ' + nClass + '">' + (z.critiques > 0 ? t('cc.niveau_eleve') : t('cc.niveau_moyen')) + '</span>' +
+      '</div>';
+    }).join('') + '</div>'; }
+
+  } else if (action === 'sla') {
+    // SLA-breached dossiers from priorities
+    var items = _ccAllPriorities.filter(function(p) { return p.slaDepassementMinutes > 0; });
+    if (!items.length) { html += '<div class="cc-empty" style="padding:12px;">' + t('cc.aucune_priorite') + '</div>'; }
+    else { html += '<div class="cc-kpi-dd-list">' + items.map(function(p) {
+      var slaH = '+' + Math.round(p.slaDepassementMinutes / 60) + 'h';
+      return '<div class="cc-kpi-dd-row" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')">' +
+        '<span class="cc-kpi-dd-ref">' + escHtml(p.reference) + '</span>' +
+        '<span class="cc-kpi-dd-label">' + escHtml(p.commune || '') + ' — ' + escHtml(ccNom(p) || p.titre || '') + '</span>' +
+        '<span class="cc-kpi-dd-badge cc-tag-sla" dir="ltr">' + slaH + '</span>' +
+      '</div>';
+    }).join('') + '</div>'; }
+
+  } else if (action === 'decisions') {
+    // Pending decisions
+    if (!_ccDecisions.length) { html += '<div class="cc-empty" style="padding:12px;">' + t('cc.aucun_dossier') + '</div>'; }
+    else { html += '<div class="cc-kpi-dd-list">' + _ccDecisions.map(function(d) {
+      var titre = currentLang === 'ar' && d.titre_ar ? d.titre_ar : d.titre;
+      var dir = currentLang === 'ar' && d.direction_ar ? d.direction_ar : (d.direction || '—');
+      var badgeCls = d.priorite === 'haute' ? 'cc-badge-haute' : 'cc-badge-moyenne';
+      var badgeLabel = d.priorite === 'haute' ? t('cc.priorite_haute') : t('cc.priorite_moyenne');
+      return '<div class="cc-kpi-dd-row" onclick="ccShowDecision(' + d.id + ')">' +
+        '<span class="cc-kpi-dd-label" style="margin:0;">' + escHtml(titre) + '</span>' +
+        '<span style="font-size:11px;color:var(--muted);margin:0 6px;flex-shrink:0;">' + escHtml(dir) + '</span>' +
+        '<span class="cc-badge-decision ' + badgeCls + '">' + badgeLabel + '</span>' +
+      '</div>';
+    }).join('') + '</div>'; }
+
+  } else if (action === 'score') {
+    // Score details with 5 components
+    if (!_ccSummary || !_ccSummary.scoreDetails) { html += '<div class="cc-empty" style="padding:12px;">—</div>'; }
+    else {
+      var sd = _ccSummary.scoreDetails;
+      var w = sd.weights;
+      var components = [
+        { label: t('cc.score_sla'), value: sd.slaRespect, weight: w.slaRespect, color: '#2563eb' },
+        { label: t('cc.score_traitement'), value: sd.tauxTraitement, weight: w.tauxTraitement, color: '#159447' },
+        { label: t('cc.score_reponse'), value: sd.tauxReponse, weight: w.tauxReponse, color: '#7c3aed' },
+        { label: t('cc.score_critiques'), value: sd.inverseCritiques, weight: w.inverseCritiques, color: '#e53935' },
+        { label: t('cc.score_decisions'), value: sd.inverseDecisions, weight: w.inverseDecisions, color: '#f57c00' }
+      ];
+      html += '<div class="cc-kpi-dd-list"><table class="cc-score-table">';
+      html += '<tr><th>' + t('cc.score_composante') + '</th><th>' + t('cc.score_poids') + '</th><th>' + t('cc.score_valeur') + '</th><th></th></tr>';
+      components.forEach(function(c) {
+        html += '<tr><td>' + c.label + '</td><td style="text-align:center;" dir="ltr">' + Math.round(c.weight * 100) + '%</td>' +
+          '<td style="text-align:center;font-weight:700;" dir="ltr">' + c.value + '/100</td>' +
+          '<td><div class="cc-score-bar"><div class="cc-score-bar-fill" style="width:' + c.value + '%;background:' + c.color + ';"></div></div></td></tr>';
+      });
+      html += '</table><div style="padding:8px 10px;font-size:12px;font-weight:700;color:var(--navy-950);border-top:2px solid var(--cc-border);">' +
+        t('cc.score_total') + ' : <span dir="ltr">' + _ccSummary.operationalScore + '/100</span></div></div>';
+    }
+
+  } else if (action === 'orgs') {
+    // Mobilized organisations by type
+    var dirCount = _ccDirectionsData.filter(function(d) { return parseInt(d.ouverts) > 0; }).length;
+    var epicCount = _ccEpicsPrioData.length + _ccEpicsAutresData.length;
+    var types = [];
+    if (dirCount > 0) types.push({ label: t('cc.directions_titre'), count: dirCount, icon: '🏢' });
+    if (_ccEpicsPrioData.length > 0) types.push({ label: t('cc.epic_prio_titre'), count: _ccEpicsPrioData.length, icon: '⚡' });
+    if (_ccEpicsAutresData.length > 0) types.push({ label: t('cc.epic_autres_titre'), count: _ccEpicsAutresData.length, icon: '🏛' });
+    html += '<div class="cc-kpi-dd-list">';
+    types.forEach(function(tp) {
+      html += '<div class="cc-kpi-dd-row" style="cursor:default;">' +
+        '<span style="margin-right:6px;">' + tp.icon + '</span>' +
+        '<span class="cc-kpi-dd-label" style="margin:0;">' + tp.label + '</span>' +
+        '<span class="cc-badge-count" dir="ltr">' + tp.count + '</span>' +
+      '</div>';
+    });
+    // List mobilized directions
+    _ccDirectionsData.filter(function(d) { return parseInt(d.ouverts) > 0; }).forEach(function(d) {
+      var dNom = ccNom(d);
+      html += '<div class="cc-kpi-dd-row" onclick="ccDrillOrg(\'direction\',' + d.id + ',\'' + escHtml(dNom).replace(/'/g,'\\x27') + '\')">' +
+        '<span class="cc-kpi-dd-label" style="margin:0;font-weight:600;">' + escHtml(dNom) + '</span>' +
+        '<span dir="ltr" style="font-size:11px;color:var(--muted);">' + d.ouverts + ' ' + t('cc.ouverts') + '</span>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '</div>';
+  dd.innerHTML = html;
+  dd.classList.add('cc-dd-open');
 }
 
 function ccFilterPriorities() {

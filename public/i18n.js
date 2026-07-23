@@ -1362,6 +1362,15 @@ const I18N = {
     "cc.direction_concernee": "Direction concernée",
     "cc.niveau": "Niveau",
     "cc.heure": "Heure",
+    "cc.score_composante": "Composante",
+    "cc.score_poids": "Poids",
+    "cc.score_valeur": "Valeur",
+    "cc.score_total": "Score total",
+    "cc.score_sla": "Respect des délais SLA",
+    "cc.score_traitement": "Taux de traitement",
+    "cc.score_reponse": "Taux de réponse",
+    "cc.score_critiques": "Maîtrise des critiques",
+    "cc.score_decisions": "Résorption décisions",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3111,6 +3120,15 @@ const I18N = {
     "cc.direction_concernee": "المديرية المعنية",
     "cc.niveau": "المستوى",
     "cc.heure": "الساعة",
+    "cc.score_composante": "المكوّن",
+    "cc.score_poids": "الوزن",
+    "cc.score_valeur": "القيمة",
+    "cc.score_total": "النتيجة الإجمالية",
+    "cc.score_sla": "احترام المهل",
+    "cc.score_traitement": "معدل المعالجة",
+    "cc.score_reponse": "معدل الاستجابة",
+    "cc.score_critiques": "التحكم في الحوادث الحرجة",
+    "cc.score_decisions": "استيعاب القرارات",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",
