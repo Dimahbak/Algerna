@@ -418,6 +418,84 @@ router.get('/directions-list', authenticate, requireCommandCenter(), async (req,
   }
 });
 
+// ── POST /decisions — créer une décision ──
+router.post('/decisions', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { titre, description, direction_id, priorite } = req.body;
+    if (!titre) return res.status(400).json({ erreur: 'Titre requis' });
+    const { rows: [row] } = await query(
+      `INSERT INTO demo_decisions (titre, description, direction_id, priorite, statut, is_demo, cree_le)
+       VALUES ($1, $2, $3, $4, 'en_attente', FALSE, NOW()) RETURNING id`,
+      [titre, description || null, direction_id ? Number(direction_id) : null, priorite || 'moyenne']
+    );
+    res.json({ ok: true, id: row.id });
+  } catch (e) { console.error('[cc/decisions]', e.message); res.status(500).json({ erreur: e.message }); }
+});
+
+// ── PATCH /decisions/:id — modifier une décision ──
+router.patch('/decisions/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { titre, description, direction_id, priorite } = req.body;
+    await query(
+      `UPDATE demo_decisions SET titre = COALESCE($1, titre), description = COALESCE($2, description),
+       direction_id = COALESCE($3, direction_id), priorite = COALESCE($4, priorite) WHERE id = $5`,
+      [titre || null, description || null, direction_id ? Number(direction_id) : null, priorite || null, id]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── POST /decisions/:id/trancher — marquer comme tranchée ──
+router.post('/decisions/:id/trancher', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { note } = req.body;
+    if (note) {
+      await query(`UPDATE demo_decisions SET statut = 'tranchee', description = description || E'\n— ' || $1 WHERE id = $2`, [note, id]);
+    } else {
+      await query(`UPDATE demo_decisions SET statut = 'tranchee' WHERE id = $1`, [id]);
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── POST /briefings — créer un item briefing ──
+router.post('/briefings', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { titre, contenu, heure, type } = req.body;
+    if (!titre) return res.status(400).json({ erreur: 'Titre requis' });
+    const { rows: [row] } = await query(
+      `INSERT INTO demo_briefing (titre, contenu, heure, type, date_briefing, is_demo, cree_le)
+       VALUES ($1, $2, $3, $4, CURRENT_DATE, FALSE, NOW()) RETURNING id`,
+      [titre, contenu || null, heure || '09:00', type || 'reunion']
+    );
+    res.json({ ok: true, id: row.id });
+  } catch (e) { console.error('[cc/briefings]', e.message); res.status(500).json({ erreur: e.message }); }
+});
+
+// ── PATCH /briefings/:id — modifier un item briefing ──
+router.patch('/briefings/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { titre, contenu, heure, type } = req.body;
+    await query(
+      `UPDATE demo_briefing SET titre = COALESCE($1, titre), contenu = COALESCE($2, contenu),
+       heure = COALESCE($3, heure), type = COALESCE($4, type) WHERE id = $5`,
+      [titre || null, contenu || null, heure || null, type || null, id]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── DELETE /briefings/:id — supprimer un item briefing ──
+router.delete('/briefings/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    await query('DELETE FROM demo_briefing WHERE id = $1', [Number(req.params.id)]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
 // ── GET /briefing-pdf — export PDF briefing du jour ──
 router.get('/briefing-pdf', authenticate, requireCommandCenter(), async (req, res) => {
   try {

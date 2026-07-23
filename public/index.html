@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=388">
+  <link rel="stylesheet" href="/app.css?v=389">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -1847,19 +1847,6 @@
             <div class="kanban-col" data-etat="resolu"><div class="kanban-col-header" style="border-color:#f97316;"><span>Résolu — à clôturer</span><span class="kanban-count" id="kc-resolu">0</span></div><div class="kanban-cards" id="kl-resolu"></div></div>
             <div class="kanban-col" data-etat="clos"><div class="kanban-col-header" style="border-color:#16a34a;"><span data-i18n="bo.col_clos">Clos</span><span class="kanban-count" id="kc-clos">0</span></div><div class="kanban-cards" id="kl-clos"></div></div>
             <div class="kanban-col" data-etat="rejete"><div class="kanban-col-header" style="border-color:#EF4444;"><span data-i18n="bo.col_rejete">Rejeté</span><span class="kanban-count" id="kc-rejete">0</span></div><div class="kanban-cards" id="kl-rejete"></div></div>
-          </div>
-        </div>
-
-        <!-- ── Drawer fiche signalement ── -->
-        <div id="bo-drawer" class="bo-drawer hidden">
-          <div class="bo-drawer-overlay" onclick="boCloseDrawer()"></div>
-          <div class="bo-drawer-panel">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);">
-              <h3 id="bo-drawer-title" style="font-size:16px;font-weight:700;color:var(--navy);margin:0;">Fiche signalement</h3>
-              <button onclick="boCloseDrawer()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
-            </div>
-            <div id="bo-drawer-content" style="padding:20px 24px;overflow-y:auto;flex:1;"></div>
-            <div id="bo-drawer-actions" style="padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;"></div>
           </div>
         </div>
 
@@ -3797,6 +3784,18 @@
           <div style="text-align:center;padding:40px;color:var(--muted);">Chargement…</div>
         </div>
       </div>
+      <!-- ── Drawer fiche signalement (global, hors views) ── -->
+      <div id="bo-drawer" class="bo-drawer hidden">
+        <div class="bo-drawer-overlay" onclick="boCloseDrawer()"></div>
+        <div class="bo-drawer-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);">
+            <h3 id="bo-drawer-title" style="font-size:16px;font-weight:700;color:var(--navy);margin:0;">Fiche signalement</h3>
+            <button onclick="boCloseDrawer()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+          </div>
+          <div id="bo-drawer-content" style="padding:20px 24px;overflow-y:auto;flex:1;"></div>
+          <div id="bo-drawer-actions" style="padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -3899,7 +3898,7 @@
 
 
 <!-- JavaScript externalisé -->
-<script src="/app.js?v=388"></script>
+<script src="/app.js?v=389"></script>
 
 
 <!-- SAKSINI CHATBOT WIDGET (CSS externalisé dans app.css) -->

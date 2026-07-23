@@ -12896,6 +12896,8 @@ async function ccLoad() {
     var data = await safeFetchJSON('/api/command-center/overview?period=' + periodVal, {}, true);
     if (loading) loading.style.display = 'none';
     if (content) content.classList.remove('hidden');
+    // CC edit rights: admin_wilaya or cabinet
+    _ccCanEdit = currentUser && (currentUser.role === 'admin_wilaya' || currentUser.fonction === 'cabinet');
 
     // Updated timestamp
     var updEl = document.getElementById('cc-updated');
@@ -12937,6 +12939,7 @@ async function ccLoad() {
 }
 
 var _ccKpiFilter = null;
+var _ccCanEdit = false; // true for CC profiles (admin_wilaya, cabinet, cap salle_commandement)
 var _ccAllPriorities = [];
 
 function ccRenderKpis(s) {
@@ -13326,8 +13329,9 @@ async function ccSavePartnerContact(id) {
 function ccRenderDecisions(decisions) {
   var el = document.getElementById('cc-decisions');
   if (!el) return;
-  if (!decisions.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.aucun_dossier') + '</div>'; return; }
-  el.innerHTML = decisions.map(function(d) {
+  var addBtn = _ccCanEdit ? '<button class="cc-btn-action" style="margin-bottom:8px;" onclick="ccCreateDecision()">' + t('cc.ajouter_decision') + '</button>' : '';
+  if (!decisions.length) { el.innerHTML = addBtn + '<div class="cc-empty">' + t('cc.aucun_dossier') + '</div>'; return; }
+  el.innerHTML = addBtn + decisions.map(function(d) {
     var titre = currentLang === 'ar' && d.titre_ar ? d.titre_ar : d.titre;
     var dir = currentLang === 'ar' && d.direction_ar ? d.direction_ar : (d.direction || '—');
     var jours = Math.max(1, Math.round((Date.now() - new Date(d.cree_le).getTime()) / 86400000));
@@ -13377,8 +13381,135 @@ function _ccShowDecisionPanel(id) {
   html += '<div class="cc-decision-meta" style="flex-direction:column;gap:4px;">';
   html += '<span>' + t('cc.propose_par') + ' : <strong>' + escHtml(dir) + '</strong></span>';
   html += '<span>' + t('cc.anciennete') + ' : ' + ccLtr(jours) + ' ' + t('cc.jours') + '</span>';
-  html += '</div></div>';
+  html += '</div>';
+  if (_ccCanEdit) {
+    html += '<div style="margin-top:16px;display:flex;gap:8px;">';
+    html += '<button class="cc-btn-action" onclick="ccEditDecision(' + d.id + ')">' + t('cc.modifier') + '</button>';
+    html += '<button class="cc-btn-action" style="background:#7c3aed;color:#fff;" onclick="ccTrancherDecision(' + d.id + ')">' + t('cc.trancher') + '</button>';
+    html += '</div>';
+  }
+  html += '</div>';
   ccShowPanel(html);
+}
+
+// ── CRUD Décisions ──
+function ccCreateDecision() {
+  if (!_ccDirectionsList) {
+    safeFetchJSON('/api/command-center/directions-list', {}, true).then(function(dirs) {
+      _ccDirectionsList = dirs;
+      _ccShowDecisionForm();
+    });
+    return;
+  }
+  _ccShowDecisionForm();
+}
+
+function _ccShowDecisionForm(existing) {
+  var d = existing || {};
+  var html = '<div class="cc-panel-header"><h3>' + t(d.id ? 'cc.modifier' : 'cc.ajouter_decision') + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div style="padding:16px;">';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.intitule') + '</label><input type="text" id="cc-dec-titre" class="cc-field-input" value="' + escHtml(d.titre || '') + '"></div>';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.description') + '</label><textarea id="cc-dec-desc" class="cc-field-input" rows="3">' + escHtml(d.description || '') + '</textarea></div>';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.direction_concernee') + '</label><select id="cc-dec-dir" class="cc-field-input">';
+  html += '<option value="">—</option>';
+  (_ccDirectionsList || []).forEach(function(dir) {
+    var sel = d.direction_id && Number(d.direction_id) === dir.id ? ' selected' : '';
+    html += '<option value="' + dir.id + '"' + sel + '>' + escHtml(ccNom(dir)) + '</option>';
+  });
+  html += '</select></div>';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.niveau') + '</label><select id="cc-dec-prio" class="cc-field-input">';
+  html += '<option value="haute"' + (d.priorite === 'haute' ? ' selected' : '') + '>' + t('cc.priorite_haute') + '</option>';
+  html += '<option value="moyenne"' + (d.priorite !== 'haute' ? ' selected' : '') + '>' + t('cc.priorite_moyenne') + '</option>';
+  html += '</select></div>';
+  html += '<button class="cc-btn-action" style="margin-top:8px;" onclick="ccSaveDecision(' + (d.id || 0) + ')">' + t('cc.enregistrer') + '</button>';
+  html += '</div>';
+  ccShowPanel(html);
+}
+
+async function ccSaveDecision(id) {
+  var body = {
+    titre: document.getElementById('cc-dec-titre').value,
+    description: document.getElementById('cc-dec-desc').value,
+    direction_id: document.getElementById('cc-dec-dir').value || null,
+    priorite: document.getElementById('cc-dec-prio').value
+  };
+  if (!body.titre) return;
+  var url = id ? '/api/command-center/decisions/' + id : '/api/command-center/decisions';
+  var method = id ? 'PATCH' : 'POST';
+  var res = await safeFetchJSON(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
+  if (res && res.ok) {
+    showToast(t(id ? 'cc.decision_modifiee' : 'cc.decision_creee'), 'success');
+    ccClosePanel();
+    ccLoad();
+  }
+}
+
+function ccEditDecision(id) {
+  var d = _ccDecisions.find(function(x) { return x.id === id; });
+  if (!d) return;
+  if (!_ccDirectionsList) {
+    safeFetchJSON('/api/command-center/directions-list', {}, true).then(function(dirs) {
+      _ccDirectionsList = dirs;
+      _ccShowDecisionForm(d);
+    });
+    return;
+  }
+  _ccShowDecisionForm(d);
+}
+
+function ccTrancherDecision(id) {
+  ccClosePanel();
+  showPromptModal(t('cc.trancher'), '', async function(note) {
+    var res = await safeFetchJSON('/api/command-center/decisions/' + id + '/trancher', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note: note || null })
+    }, true);
+    if (res && res.ok) {
+      showToast(t('cc.decision_tranchee'), 'success');
+      ccLoad();
+    }
+  }, { textarea: true, desc: t('cc.note_trancher') });
+}
+
+// ── CRUD Briefing ──
+function ccCreateBriefing() { _ccShowBriefingForm(); }
+
+function _ccShowBriefingForm(existing) {
+  var b = existing || {};
+  var html = '<div class="cc-panel-header"><h3>' + t(b.id ? 'cc.modifier' : 'cc.ajouter_briefing') + '</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += '<div style="padding:16px;">';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.heure') + '</label><input type="text" id="cc-br-heure" class="cc-field-input" value="' + escHtml(b.heure || '09:00') + '" placeholder="HH:MM"></div>';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.intitule') + '</label><input type="text" id="cc-br-titre" class="cc-field-input" value="' + escHtml(b.titre || '') + '"></div>';
+  html += '<div class="cc-field" style="margin-bottom:10px;"><label>' + t('cc.description') + '</label><textarea id="cc-br-desc" class="cc-field-input" rows="2">' + escHtml(b.contenu || '') + '</textarea></div>';
+  html += '<button class="cc-btn-action" style="margin-top:8px;" onclick="ccSaveBriefing(' + (b.id || 0) + ')">' + t('cc.enregistrer') + '</button>';
+  html += '</div>';
+  ccShowPanel(html);
+}
+
+async function ccSaveBriefing(id) {
+  var body = {
+    titre: document.getElementById('cc-br-titre').value,
+    contenu: document.getElementById('cc-br-desc').value,
+    heure: document.getElementById('cc-br-heure').value
+  };
+  if (!body.titre) return;
+  var url = id ? '/api/command-center/briefings/' + id : '/api/command-center/briefings';
+  var method = id ? 'PATCH' : 'POST';
+  var res = await safeFetchJSON(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
+  if (res && res.ok) {
+    showToast(t(id ? 'cc.briefing_modifie' : 'cc.briefing_cree'), 'success');
+    ccClosePanel();
+    ccLoad();
+  }
+}
+
+async function ccDeleteBriefing(id) {
+  var res = await safeFetchJSON('/api/command-center/briefings/' + id, { method: 'DELETE' }, true);
+  if (res && res.ok) {
+    showToast(t('cc.briefing_supprime'), 'success');
+    ccClosePanel();
+    ccLoad();
+  }
 }
 
 // ── Briefing du jour ──
@@ -13386,9 +13517,10 @@ function ccRenderBriefing(briefing) {
   var el = document.getElementById('cc-briefing');
   if (!el) return;
   var items = briefing.items || [];
-  if (!items.length) { el.innerHTML = '<div class="cc-empty">' + t('cc.activite_vide') + '</div>'; return; }
+  var addBtn = _ccCanEdit ? '<button class="cc-btn-action" style="margin-bottom:8px;" onclick="ccCreateBriefing()">' + t('cc.ajouter_briefing') + '</button>' : '';
+  if (!items.length) { el.innerHTML = addBtn + '<div class="cc-empty">' + t('cc.activite_vide') + '</div>'; return; }
   var typeIcons = { reunion: '🤝', visite: '📍', point_presse: '🎙' };
-  el.innerHTML = items.map(function(b) {
+  el.innerHTML = addBtn + items.map(function(b) {
     var titre = currentLang === 'ar' && b.titre_ar ? b.titre_ar : b.titre;
     var contenu = currentLang === 'ar' && b.contenu_ar ? b.contenu_ar : (b.contenu || '');
     var icon = typeIcons[b.type] || '📋';
@@ -13423,12 +13555,28 @@ function _ccShowBriefingPanel(id) {
   html += '<div style="padding:16px;">';
   html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;" dir="ltr">' + escHtml(b.heure || '') + '</div>';
   html += '<p style="font-size:13px;color:var(--gray-700);margin:0;">' + escHtml(contenu) + '</p>';
+  if (_ccCanEdit) {
+    html += '<div style="margin-top:16px;display:flex;gap:8px;">';
+    html += '<button class="cc-btn-action" onclick="_ccShowBriefingForm({id:' + b.id + ',titre:\'' + escHtml(b.titre || '').replace(/'/g,'\\x27') + '\',contenu:\'' + escHtml(b.contenu || '').replace(/'/g,'\\x27') + '\',heure:\'' + escHtml(b.heure || '') + '\'})">' + t('cc.modifier') + '</button>';
+    html += '<button class="cc-btn-action" style="background:var(--red);color:#fff;" onclick="ccDeleteBriefing(' + b.id + ')">' + t('cc.supprimer_briefing') + '</button>';
+    html += '</div>';
+  }
   html += '</div>';
   ccShowPanel(html);
 }
 
 function ccExportBriefing() {
-  window.open('/api/command-center/briefing-pdf?lang=' + currentLang, '_blank');
+  // Fetch PDF with auth and open as blob
+  apiFetch('/api/command-center/briefing-pdf?lang=' + currentLang).then(function(r) {
+    return r.blob();
+  }).then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'briefing_' + new Date().toISOString().slice(0,10) + '.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  }).catch(function() { showToast(t('cc.erreur'), 'error'); });
 }
 
 // ── Activité récente ──
