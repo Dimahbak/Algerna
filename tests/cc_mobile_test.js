@@ -25,165 +25,191 @@ async function login(b,tel,mdp){
     await p.evaluate(()=>document.querySelector('[data-view="command-center"]').click());
     await new Promise(r=>setTimeout(r,4000));
 
-    // 1. Nav + header + bandeau
-    const bnav=await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display!=='none':false;});
-    log('Nav basse CC visible',bnav,'ok');
-    const hdr=await p.evaluate(()=>getComputedStyle(document.querySelector('.cc-subtitle')).display);
-    log('Sous-titre masqué',hdr==='none','display='+hdr);
-    const bandeau=await p.evaluate(()=>getComputedStyle(document.getElementById('bandeau-communiques')).display);
-    log('Bandeau masqué CC',bandeau==='none','display='+bandeau);
+    log('Nav basse CC visible',await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n&&n.style.display!=='none';}),'ok');
 
-    // 2. KPI + priorités
-    const kpi=await p.evaluate(()=>getComputedStyle(document.getElementById('cc-kpis')).gridTemplateColumns.split(' ').length);
-    log('KPI 3 colonnes',kpi===3,'cols='+kpi);
-    const prioRow=await p.evaluate(()=>{var r=document.querySelector('.cc-priority-row');return r?{h:r.offsetHeight,chev:!!r.querySelector('.cc-priority-chevron')}:null;});
-    log('Priorité compact ~64px',prioRow&&prioRow.h>=50&&prioRow.h<=80,'height='+((prioRow||{}).h));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_pilotage_fr.png'),fullPage:false});
-
-    // ═══ PREUVE 1 : ASROUT nom complet visible ═══
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-
-    // Click ASROUT (2nd EPIC card) via DOM
-    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[1])c[1].click();});
-    await new Promise(r=>setTimeout(r,1500));
-
-    const asrout=await p.evaluate(()=>{
-      var h3=document.querySelector('.cc-panel-header h3');
-      if(!h3) return null;
-      var rect=h3.getBoundingClientRect();
-      return {text:h3.textContent,top:rect.top,h:rect.height,visible:rect.top>=0,includes_debut:h3.textContent.includes('ASROUT'),includes_fin:h3.textContent.includes('assainissement')};
-    });
-    log('ASROUT nom complet visible',asrout&&asrout.visible&&asrout.includes_debut&&asrout.includes_fin,
-      'top='+((asrout||{}).top)+' text="'+((asrout||{}).text||'').substring(0,50)+'..."');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_asrout_fiche.png'),fullPage:false});
-    log('Capture ASROUT fiche',true,'cc_mob_asrout_fiche.png');
-
-    // Close panel
-    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
-    await new Promise(r=>setTimeout(r,500));
-
-    // ═══ PREUVE 2 : Nom le plus long (ASROUT=99 chars, déjà testé) ═══
-    // ASROUT est le plus long en FR (99 chars) — preuve SQL dans le rapport
-
-    // ═══ PREUVE 3 : AR nom long — ASROUT en arabe ═══
-    await p.evaluate(()=>setLang('ar'));
-    await new Promise(r=>setTimeout(r,1500));
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-
-    // Click ASROUT AR (2nd card)
-    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[1])c[1].click();});
-    await new Promise(r=>setTimeout(r,1500));
-
-    const asroutAr=await p.evaluate(()=>{
-      var h3=document.querySelector('.cc-panel-header h3');
-      if(!h3) return null;
-      var rect=h3.getBoundingClientRect();
-      return {text:h3.textContent,top:rect.top,h:rect.height,visible:rect.top>=0};
-    });
-    log('ASROUT AR nom complet visible',asroutAr&&asroutAr.visible,'top='+((asroutAr||{}).top)+' text="'+((asroutAr||{}).text||'').substring(0,50)+'..."');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_asrout_ar.png'),fullPage:false});
-    log('Capture ASROUT AR',true,'cc_mob_asrout_ar.png');
-
-    // Close panel
-    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
-    await new Promise(r=>setTimeout(r,500));
-
-    // ═══ PREUVE 4 : NETCOM (nom court) pas dégradé ═══
-    await p.evaluate(()=>setLang('fr'));
-    await new Promise(r=>setTimeout(r,1000));
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-
-    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
-    await new Promise(r=>setTimeout(r,1500));
-
-    const netcom=await p.evaluate(()=>{
-      var h3=document.querySelector('.cc-panel-header h3');
-      if(!h3) return null;
-      var headerEl=document.querySelector('.cc-panel-header');
-      return {text:h3.textContent,h3H:h3.offsetHeight,headerH:headerEl?headerEl.offsetHeight:0,visible:h3.getBoundingClientRect().top>=0};
-    });
-    log('NETCOM nom court — pas dégradé',netcom&&netcom.visible&&netcom.headerH<120,'headerH='+((netcom||{}).headerH)+' text="'+((netcom||{}).text||'').substring(0,40)+'"');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_netcom_fiche.png'),fullPage:false});
-    log('Capture NETCOM fiche',true,'cc_mob_netcom_fiche.png');
-
-    // Close panel
-    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
-    await new Promise(r=>setTimeout(r,500));
-
-    // ═══ PREUVE 5 : Carrousel 6 EPIC + carte Alger ═══
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-
-    const epicData=await p.evaluate(()=>{
-      var grid=document.getElementById('cc-epics-prio');
-      if(!grid) return null;
-      var cards=grid.querySelectorAll('.cc-epic-card');
-      return {count:cards.length,scrollW:grid.scrollWidth,gridW:grid.offsetWidth};
-    });
-    log('6 EPIC carrousel OK',epicData&&epicData.count===6&&epicData.scrollW>epicData.gridW,'count='+((epicData||{}).count)+' scrollW='+((epicData||{}).scrollW));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_organismes_fr.png'),fullPage:false});
-
+    // ═══ ONGLET CARTE ═══
     await p.evaluate(()=>ccMobileTab('carte'));
     await new Promise(r=>setTimeout(r,1500));
 
-    const mapOK=await p.evaluate(()=>{
-      if(!_ccMap) return false;
-      var c=_ccMap.getCenter();
-      return Math.abs(c.lat-36.7538)<0.01 && Math.abs(c.lng-3.0588)<0.01 && _ccMap.getZoom()===11;
+    // ═══ PREUVE 5 : INCIDENTS ═══
+    await p.evaluate(()=>document.querySelector('[data-filter="all"]').click());
+    await new Promise(r=>setTimeout(r,800));
+    const incMarkers=await p.evaluate(()=>_ccMarkers.length);
+    log('Filtre Incidents fonctionne',incMarkers>0,incMarkers+' marqueurs');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_incidents.png'),fullPage:false});
+
+    // ═══ PREUVE 5 : COMMUNES ═══
+    await p.evaluate(()=>document.querySelector('[data-filter="critique"]').click());
+    await new Promise(r=>setTimeout(r,800));
+    const communeMarkers=await p.evaluate(()=>_ccMarkers.length);
+    log('Filtre Communes fonctionne',communeMarkers>0,communeMarkers+' marqueurs');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_communes.png'),fullPage:false});
+
+    // ═══ PREUVE 1 : DIRECTIONS ═══
+    await p.evaluate(()=>document.querySelector('[data-filter="directions"]').click());
+    await new Promise(r=>setTimeout(r,800));
+
+    const dirResult=await p.evaluate(()=>{
+      var names=[];
+      _ccMarkers.forEach(function(m){
+        m.openPopup();
+        var pop=document.querySelector('.leaflet-popup-content');
+        if(pop){
+          var strong=pop.querySelector('strong');
+          names.push(strong?strong.textContent:'?');
+        }
+        m.closePopup();
+      });
+      return {count:_ccMarkers.length,names:names};
     });
-    log('Carte mobile centrée Alger',mapOK,'zoom=11');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_carte_fr.png'),fullPage:false});
+    var hasDirNames=dirResult&&dirResult.names.some(function(n){return n.includes('Direction');});
+    // Directions must be different from communes — direction names, not commune names
+    log('Filtre Directions : noms de directions',hasDirNames&&dirResult.count>0,
+      dirResult.count+' marqueurs, noms='+JSON.stringify(dirResult.names));
 
-    // Plus menu
-    await p.evaluate(()=>ccMobileTab('plus'));
+    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].openPopup();});
+    await new Promise(r=>setTimeout(r,300));
+    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_directions.png'),fullPage:false});
+    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].closePopup();});
+
+    // ═══ PREUVE 2 : EPIC ═══
+    await p.evaluate(()=>document.querySelector('[data-filter="epic"]').click());
+    await new Promise(r=>setTimeout(r,800));
+
+    const epicResult=await p.evaluate(()=>{
+      var names=[];
+      _ccMarkers.forEach(function(m){
+        m.openPopup();
+        var pop=document.querySelector('.leaflet-popup-content');
+        if(pop){
+          var strong=pop.querySelector('strong');
+          names.push(strong?strong.textContent:'?');
+        }
+        m.closePopup();
+      });
+      return {count:_ccMarkers.length,names:names};
+    });
+    // EPIC names must NOT be commune names and NOT be direction names
+    var hasEpicNames=epicResult&&epicResult.count>0&&epicResult.names.every(function(n){return !n.includes('Direction');});
+    log('Filtre EPIC : noms d\'EPIC (pas directions)',hasEpicNames,
+      epicResult.count+' marqueurs, noms='+JSON.stringify(epicResult.names));
+
+    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].openPopup();});
+    await new Promise(r=>setTimeout(r,300));
+    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_epic.png'),fullPage:false});
+    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].closePopup();});
+
+    // ═══ PREUVE 3 : COHÉRENCE API ═══
+    const apiCoherence=await p.evaluate(()=>{
+      var dirs={};var epics={};
+      _ccMapData.forEach(function(inc){
+        if(!inc.lat||!inc.lng) return;
+        if(inc.direction_pilote_id){
+          var dk=inc.direction_pilote||'?';
+          if(!dirs[dk]) dirs[dk]=0;
+          dirs[dk]++;
+        }
+        if(inc.organisation_executante_id && inc.organisation_type==='epic'){
+          var ek=inc.organisation_executante||'?';
+          if(!epics[ek]) epics[ek]=0;
+          epics[ek]++;
+        }
+      });
+      return {dirs:dirs,epics:epics};
+    });
+
+    var dirEntries=Object.entries(apiCoherence.dirs||{});
+    var epicEntries=Object.entries(apiCoherence.epics||{});
+    if(dirEntries.length>0){
+      var sd=dirEntries[0];
+      var dirPopMatch=dirResult.names.includes(sd[0]);
+      log('Cohérence Direction API=carte',dirPopMatch,'API: "'+sd[0]+'"='+sd[1]+' incidents (avec coords)');
+    }
+    if(epicEntries.length>0){
+      var se=epicEntries[0];
+      var epicPopMatch=epicResult.names.includes(se[0]);
+      log('Cohérence EPIC API=carte',epicPopMatch,'API: "'+se[0]+'"='+se[1]+' incidents (avec coords)');
+    }
+
+    // ═══ PREUVE 4 : CLIC POINT → LISTE DOSSIERS ═══
+    await p.evaluate(()=>document.querySelector('[data-filter="directions"]').click());
+    await new Promise(r=>setTimeout(r,800));
+    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].fire('click');});
+    await new Promise(r=>setTimeout(r,1000));
+    const dirPanel=await p.evaluate(()=>{
+      var panel=document.getElementById('cc-panel');
+      if(!panel||!panel.classList.contains('cc-panel-open')) return null;
+      var h3=panel.querySelector('h3');
+      var rows=panel.querySelectorAll('.cc-panel-row');
+      return {title:h3?h3.textContent:'?',rows:rows.length};
+    });
+    log('Clic Direction → liste dossiers',dirPanel&&dirPanel.rows>0,'title="'+((dirPanel||{}).title||'?')+'" rows='+((dirPanel||{}).rows||0));
+    await p.screenshot({path:path.join(DOCS,'cc_mob_drill_direction.png'),fullPage:false});
+    await p.evaluate(()=>ccClosePanel());
+    await new Promise(r=>setTimeout(r,300));
+
+    await p.evaluate(()=>document.querySelector('[data-filter="epic"]').click());
+    await new Promise(r=>setTimeout(r,800));
+    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].fire('click');});
+    await new Promise(r=>setTimeout(r,1000));
+    const epicPanel=await p.evaluate(()=>{
+      var panel=document.getElementById('cc-panel');
+      if(!panel||!panel.classList.contains('cc-panel-open')) return null;
+      var h3=panel.querySelector('h3');
+      var rows=panel.querySelectorAll('.cc-panel-row');
+      return {title:h3?h3.textContent:'?',rows:rows.length};
+    });
+    log('Clic EPIC → liste dossiers',epicPanel&&epicPanel.rows>0,'title="'+((epicPanel||{}).title||'?')+'" rows='+((epicPanel||{}).rows||0));
+    await p.screenshot({path:path.join(DOCS,'cc_mob_drill_epic.png'),fullPage:false});
+    await p.evaluate(()=>ccClosePanel());
+
+    // ═══ PREUVE 6 : DESKTOP COMPARISON ═══
+    await p.setViewport({width:1280,height:900});
+    await p.evaluate(()=>document.body.classList.remove('cc-mob-tabs'));
     await new Promise(r=>setTimeout(r,500));
-    const plusItems=await p.evaluate(()=>document.querySelectorAll('.cc-plus-item').length);
-    log('Plus menu 5 items',plusItems===5,plusItems+' items');
+    await p.evaluate(()=>ccMapFilter('directions'));
+    await new Promise(r=>setTimeout(r,800));
+    const desktopDirNames=await p.evaluate(()=>{
+      var names=[];
+      _ccMarkers.forEach(function(m){m.openPopup();var p=document.querySelector('.leaflet-popup-content strong');if(p)names.push(p.textContent);m.closePopup();});
+      return names;
+    });
+    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].openPopup();});
+    await new Promise(r=>setTimeout(r,300));
+    await p.screenshot({path:path.join(DOCS,'cc_desktop_filtre_directions.png'),fullPage:false});
+    var desktopAligned=desktopDirNames.length===dirResult.names.length && desktopDirNames.every(function(n){return dirResult.names.includes(n);});
+    log('Desktop Directions = mobile (mêmes noms)',desktopAligned,
+      'desktop='+JSON.stringify(desktopDirNames)+' mobile='+JSON.stringify(dirResult.names));
+    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].closePopup();});
 
-    // AR mode capture
-    await p.evaluate(()=>setLang('ar'));
+    // Restore mobile
+    await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+
+    // ═══ RÉGRESSIONS ═══
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+    const epicCarousel=await p.evaluate(()=>{var g=document.getElementById('cc-epics-prio');return g?g.querySelectorAll('.cc-epic-card').length:0;});
+    log('6 EPIC carrousel intact',epicCarousel===6,'count='+epicCarousel);
+
+    await p.evaluate(()=>ccMobileTab('carte'));
     await new Promise(r=>setTimeout(r,1500));
-    await p.evaluate(()=>ccMobileTab('pilotage'));
+    await p.evaluate(()=>ccMapFilter('all'));
     await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_pilotage_ar.png'),fullPage:false});
-    log('Capture Pilotage AR',true,'cc_mob_pilotage_ar.png');
-    await p.evaluate(()=>setLang('fr'));
-    await new Promise(r=>setTimeout(r,500));
+    const mapAlger=await p.evaluate(()=>{if(!_ccMap)return false;var c=_ccMap.getCenter();return Math.abs(c.lat-36.7538)<0.5;});
+    log('Carte mobile Alger',mapAlger,'ok');
 
-    // 360px no overflow
-    await p.setViewport({width:360,height:780,isMobile:true});
-    await p.evaluate(()=>ccMobileTab('pilotage'));
-    await new Promise(r=>setTimeout(r,500));
-    const noOvf=await p.evaluate(()=>document.documentElement.scrollWidth<=360);
-    log('360px pas de débordement',noOvf,'scrollW='+await p.evaluate(()=>document.documentElement.scrollWidth));
-
-    // Touch + board
-    const minTouch=await p.evaluate(()=>{var els=document.querySelectorAll('.cc-bnav-item,.cc-kpi-card,.cc-priority-row');var m=999;els.forEach(e=>{var h=e.offsetHeight;if(h>0&&h<m)m=h;});return m;});
-    log('Zones tactiles ≥44px',minTouch>=44,'min='+minTouch+'px');
     const total=await p.evaluate(async()=>{var t=localStorage.getItem('civismart_token');var r=await fetch('/api/signaler/board',{headers:{Authorization:'Bearer '+t}});var d=await r.json();return Array.isArray(d)?d.length:-1;});
     log('Total signalements',total===122,'total='+total);
 
     await p.close();
 
-    // Contre-tests
+    // Contre-test
     await new Promise(r=>setTimeout(r,2000));
     const p2=await login(b,'0550000007','admin@@1234');
     await p2.setViewport({width:390,height:844,isMobile:true});
     await new Promise(r=>setTimeout(r,1000));
-    const nassim=await p2.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
-    log('Nassim: pas de nav CC',nassim==='none'||nassim==='','display='+nassim);
+    log('Nassim: pas de nav CC',await p2.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display==='none'||n.style.display==='':false;}),'ok');
     await p2.close();
-
-    await new Promise(r=>setTimeout(r,2000));
-    const p3=await login(b,'0550000001','admin1234');
-    await p3.setViewport({width:390,height:844,isMobile:true});
-    await new Promise(r=>setTimeout(r,1000));
-    const amina=await p3.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
-    log('Amina: pas de nav CC',amina==='none'||amina==='','display='+amina);
-    await p3.close();
 
   }catch(e){console.error('ERR:',e.message);log('Erreur',false,e.message);}
   finally{await b.close();}

@@ -13236,18 +13236,62 @@ function ccMapFilter(type) {
   var btns = document.querySelectorAll('.cc-filter-btn');
   btns.forEach(function(b) { b.classList.toggle('active', b.dataset.filter === type); });
 
-  if (type === 'directions' || type === 'epic') {
-    // Aggregate by commune with direction/epic label
+  if (type === 'communes') {
+    // Aggregate by commune
     var byCommune = {};
     _ccMapData.forEach(function(inc) {
       if (!inc.lat || !inc.lng) return;
       var key = inc.commune || 'Inconnu';
-      if (!byCommune[key]) byCommune[key] = { lat: inc.lat, lng: inc.lng, count: 0, nom: key };
+      if (!byCommune[key]) byCommune[key] = { lat: inc.lat, lng: inc.lng, count: 0, nom: key, refs: [] };
       byCommune[key].count++;
+      byCommune[key].refs.push(inc.reference);
     });
     Object.values(byCommune).forEach(function(c) {
       var icon = L.divIcon({ className:'', html:'<div style="min-width:20px;height:20px;border-radius:10px;background:#063B5A;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);">' + c.count + '</div>' });
       var marker = L.marker([c.lat, c.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(c.nom) + '</strong><br>' + ccLtr(c.count) + ' ' + t('cc.incidents_actifs'));
+      marker.on('click', function() { ccMapDrillRefs(c.nom, c.refs); });
+      _ccMarkers.push(marker);
+    });
+  } else if (type === 'directions') {
+    // Aggregate by direction pilote
+    var byDir = {};
+    _ccMapData.forEach(function(inc) {
+      if (!inc.lat || !inc.lng || !inc.direction_pilote_id) return;
+      var key = inc.direction_pilote_id;
+      var nom = currentLang === 'ar' && inc.direction_pilote_ar ? inc.direction_pilote_ar : inc.direction_pilote;
+      if (!byDir[key]) byDir[key] = { lat: 0, lng: 0, count: 0, nom: nom || 'Inconnu', refs: [], latSum: 0, lngSum: 0 };
+      byDir[key].count++;
+      byDir[key].latSum += parseFloat(inc.lat);
+      byDir[key].lngSum += parseFloat(inc.lng);
+      byDir[key].lat = byDir[key].latSum / byDir[key].count;
+      byDir[key].lng = byDir[key].lngSum / byDir[key].count;
+      byDir[key].refs.push(inc.reference);
+    });
+    Object.values(byDir).forEach(function(d) {
+      var icon = L.divIcon({ className:'', html:'<div style="min-width:20px;height:20px;border-radius:10px;background:#2563EB;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);">' + d.count + '</div>' });
+      var marker = L.marker([d.lat, d.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(d.nom) + '</strong><br>' + ccLtr(d.count) + ' ' + t('cc.incidents_actifs'));
+      marker.on('click', function() { ccMapDrillRefs(d.nom, d.refs); });
+      _ccMarkers.push(marker);
+    });
+  } else if (type === 'epic') {
+    // Aggregate by organisation executante (EPIC)
+    var byEpic = {};
+    _ccMapData.forEach(function(inc) {
+      if (!inc.lat || !inc.lng || !inc.organisation_executante_id || inc.organisation_type !== 'epic') return;
+      var key = inc.organisation_executante_id;
+      var nom = currentLang === 'ar' && inc.organisation_executante_ar ? inc.organisation_executante_ar : inc.organisation_executante;
+      if (!byEpic[key]) byEpic[key] = { lat: 0, lng: 0, count: 0, nom: nom || 'Inconnu', refs: [], latSum: 0, lngSum: 0 };
+      byEpic[key].count++;
+      byEpic[key].latSum += parseFloat(inc.lat);
+      byEpic[key].lngSum += parseFloat(inc.lng);
+      byEpic[key].lat = byEpic[key].latSum / byEpic[key].count;
+      byEpic[key].lng = byEpic[key].lngSum / byEpic[key].count;
+      byEpic[key].refs.push(inc.reference);
+    });
+    Object.values(byEpic).forEach(function(e) {
+      var icon = L.divIcon({ className:'', html:'<div style="min-width:20px;height:20px;border-radius:10px;background:#7c3aed;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);">' + e.count + '</div>' });
+      var marker = L.marker([e.lat, e.lng], { icon: icon }).addTo(_ccMap).bindPopup('<strong>' + escHtml(e.nom) + '</strong><br>' + ccLtr(e.count) + ' ' + t('cc.incidents_actifs'));
+      marker.on('click', function() { ccMapDrillRefs(e.nom, e.refs); });
       _ccMarkers.push(marker);
     });
   } else {
@@ -13852,6 +13896,17 @@ async function ccShowAllCommunes() {
     var onclick = clickable ? ' onclick="ccDrillCommuneIncidents(' + r.id + ',\'' + escHtml(nom).replace(/'/g,'\\x27') + '\',null,null)"' : '';
     return '<div class="' + cls + '"' + onclick + '><span>' + escHtml(nom) + '</span><span class="cc-badge-count" dir="ltr">' + count + '</span></div>';
   }).join('') + '</div>';
+  ccShowPanel(html);
+}
+
+function ccMapDrillRefs(nom, refs) {
+  if (!refs || !refs.length) return;
+  var rows = refs.map(function(ref) {
+    var inc = _ccMapData.find(function(i) { return i.reference === ref; });
+    return inc ? { reference: inc.reference, commune: inc.commune || '', etat: inc.etat || '', slaMin: 0 } : { reference: ref, commune: '', etat: '', slaMin: 0 };
+  });
+  var html = '<div class="cc-panel-header"><h3>' + escHtml(nom) + ' (' + rows.length + ')</h3><button class="cc-panel-close" onclick="ccClosePanel()">✕</button></div>';
+  html += ccBuildDossierList(rows);
   ccShowPanel(html);
 }
 

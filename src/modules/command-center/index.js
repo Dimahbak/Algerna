@@ -154,10 +154,15 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
 
     // ── MAP INCIDENTS ── all active incidents with coordinates
     const { rows: mapIncidents } = await query(`
-      SELECT s.reference, s.lat, s.lng, s.gravite, cs.criticite, c.nom AS commune, s.etat
+      SELECT s.reference, s.lat, s.lng, s.gravite, cs.criticite, c.nom AS commune, s.etat,
+             dp.nom AS direction_pilote, dp.nom_ar AS direction_pilote_ar, dp.id AS direction_pilote_id,
+             oe.nom AS organisation_executante, oe.nom_ar AS organisation_executante_ar, oe.id AS organisation_executante_id,
+             oe.type_organisation AS organisation_type
       FROM signalement s
       JOIN categorie_signal cs ON cs.id = s.categorie_id
       LEFT JOIN commune c ON c.id = s.commune_id
+      LEFT JOIN organisations dp ON dp.id = s.direction_pilote_id
+      LEFT JOIN organisations oe ON oe.id = s.organisation_executante_id
       WHERE s.etat NOT IN ('resolu','clos','rejete')
         AND s.lat IS NOT NULL AND s.lng IS NOT NULL
     `);
