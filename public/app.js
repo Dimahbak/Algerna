@@ -8883,9 +8883,15 @@ async function initBoAgent() {
   var idUser = document.getElementById('bo-agent-id-user');
   if (idUser) idUser.textContent = (u.prenom || '') + ' ' + (u.nom || '');
   var roleEl = document.getElementById('bo-agent-role');
+  // Correction 3 — supprimer la description générique du rôle en accueil
+  if (roleEl) roleEl.style.display = 'none';
+  // Correction 2 — masquer bouton Perdu-Trouvé pour fonctions non autorisées (backend: agent_traitant/superviseur uniquement)
+  var ptBtn = document.querySelector('[onclick="boShowPerduTrouve()"]');
+  if (ptBtn && u.fonction !== 'agent_traitant' && u.fonction !== 'superviseur') {
+    ptBtn.style.display = 'none';
+  }
   // Adapter le sous-titre selon le rôle
   if (u.fonction === 'entite_responsable' || u.role === 'operateur') {
-    if (roleEl) roleEl.textContent = t('bo.role_epic_desc');
     // Adapter identité structurée
     var idPoste = document.getElementById('bo-agent-id-poste');
     var idService = document.getElementById('bo-agent-id-service');

@@ -514,10 +514,28 @@ router.get('/board',
       params.push(req.user.commune_id);
       sql += ` AND s.commune_id = $${params.length}`;
     }
-    // Entité responsable : voit les dossiers assignés à son org OU transmis à son org OU routés vers les EPIC liés
+    // Entité responsable : filtrage par organisation de rattachement
+    // Direction → dossiers pilotés par cette direction + exécutés par les EPIC sous sa tutelle
+    // EPIC → dossiers exécutés par cet EPIC
+    // Service interne → résolution vers la direction parente (parent_id)
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
       const orgId = Number(req.user.organisation_id);
-      sql += ` AND (s.assigne_a IN (SELECT id FROM utilisateur WHERE organisation_id = ${orgId}) OR s.transmis_a = '${orgId}' OR s.epic_id IN (SELECT epic_id FROM epic_organisation_map WHERE organisation_id = ${orgId}))`;
+      params.push(orgId);
+      const pOrg = params.length;
+      const { rows: orgInfo } = await query('SELECT type_organisation, parent_id FROM organisations WHERE id = $1', [orgId]);
+      const orgType = orgInfo.length ? orgInfo[0].type_organisation : null;
+      if (orgType === 'epic') {
+        sql += ` AND s.organisation_executante_id = $${pOrg}`;
+      } else {
+        // For direction_wilaya: use org_id. For other types: resolve via parent_id to find parent direction.
+        let effectiveDir = orgId;
+        if (orgType !== 'direction_wilaya' && orgInfo.length && orgInfo[0].parent_id) {
+          effectiveDir = orgInfo[0].parent_id;
+        }
+        params.push(effectiveDir);
+        const pDir = params.length;
+        sql += ` AND (s.direction_pilote_id = $${pDir} OR s.organisation_executante_id IN (SELECT id FROM organisations WHERE direction_tutelle_id = $${pDir}))`;
+      }
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
     const { rows } = await query(sql, params);
