@@ -13241,7 +13241,7 @@ function ccMapFilter(type) {
     var byCommune = {};
     _ccMapData.forEach(function(inc) {
       if (!inc.lat || !inc.lng) return;
-      var key = inc.commune || 'Inconnu';
+      var key = inc.commune || t('cc.inconnu');
       if (!byCommune[key]) byCommune[key] = { lat: inc.lat, lng: inc.lng, count: 0, nom: key, refs: [] };
       byCommune[key].count++;
       byCommune[key].refs.push(inc.reference);
@@ -13259,7 +13259,7 @@ function ccMapFilter(type) {
       if (!inc.lat || !inc.lng || !inc.direction_pilote_id) return;
       var key = inc.direction_pilote_id;
       var nom = currentLang === 'ar' && inc.direction_pilote_ar ? inc.direction_pilote_ar : inc.direction_pilote;
-      if (!byDir[key]) byDir[key] = { lat: 0, lng: 0, count: 0, nom: nom || 'Inconnu', refs: [], latSum: 0, lngSum: 0 };
+      if (!byDir[key]) byDir[key] = { lat: 0, lng: 0, count: 0, nom: nom || t('cc.inconnu'), refs: [], latSum: 0, lngSum: 0 };
       byDir[key].count++;
       byDir[key].latSum += parseFloat(inc.lat);
       byDir[key].lngSum += parseFloat(inc.lng);
@@ -13280,7 +13280,7 @@ function ccMapFilter(type) {
       if (!inc.lat || !inc.lng || !inc.organisation_executante_id || inc.organisation_type !== 'epic') return;
       var key = inc.organisation_executante_id;
       var nom = currentLang === 'ar' && inc.organisation_executante_ar ? inc.organisation_executante_ar : inc.organisation_executante;
-      if (!byEpic[key]) byEpic[key] = { lat: 0, lng: 0, count: 0, nom: nom || 'Inconnu', refs: [], latSum: 0, lngSum: 0 };
+      if (!byEpic[key]) byEpic[key] = { lat: 0, lng: 0, count: 0, nom: nom || t('cc.inconnu'), refs: [], latSum: 0, lngSum: 0 };
       byEpic[key].count++;
       byEpic[key].latSum += parseFloat(inc.lat);
       byEpic[key].lngSum += parseFloat(inc.lng);
@@ -13503,7 +13503,7 @@ function ccBuildDossierList(rows) {
     return '<div class="cc-panel-row cc-clickable" onclick="boOpenSignalement(\'' + escHtml(r.reference) + '\')">' +
       '<span class="cc-panel-ref">' + escHtml(r.reference) + '</span>' +
       '<span>' + escHtml(r.commune || '') + '</span>' +
-      '<span class="cc-panel-etat">' + escHtml(r.etat) + '</span>' +
+      '<span class="cc-panel-etat">' + (t('etat.' + r.etat) || escHtml(r.etat)) + '</span>' +
       sla +
     '</div>';
   }).join('') + '</div>';
@@ -13952,7 +13952,7 @@ function ccRenderPriorityRows(el, list) {
     var slaText = p.slaDepassementMinutes > 0 ? '<span dir="ltr">+' + Math.round(p.slaDepassementMinutes / 60) + 'h</span>' : t('cc.dans_delai');
     var pPilote = currentLang === 'ar' && p.directionPiloteAr ? p.directionPiloteAr : p.directionPilote;
     var pExec = currentLang === 'ar' && p.executantAr ? p.executantAr : p.executant;
-    var urgBadge = p.urgence_wali ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 URGENCE</span>' : '';
+    var urgBadge = p.urgence_wali ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 ' + t('cc.urgence_badge') + '</span>' : '';
     var refSafe = escHtml(p.reference).replace(/'/g,'\\x27');
     return '<div class="cc-priority-row cc-severity-' + severity + '" onclick="boOpenSignalement(\'' + refSafe + '\')">' +
       '<div class="cc-priority-body">' +

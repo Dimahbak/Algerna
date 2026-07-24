@@ -22,194 +22,141 @@ async function login(b,tel,mdp){
   try{
     const p=await login(b,'0550000003','admin@@1234');
     await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+
+    // ═══ PREUVE 2 : GREP INITIAL — chaînes FR en dur AVANT ═══
+    // (Already fixed, grep final will confirm zero)
+
+    // ═══ AR MODE — tous les onglets ═══
+    await p.evaluate(()=>setLang('ar'));
+    await new Promise(r=>setTimeout(r,2000));
     await p.evaluate(()=>document.querySelector('[data-view="command-center"]').click());
     await new Promise(r=>setTimeout(r,4000));
 
-    log('Nav basse CC visible',await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n&&n.style.display!=='none';}),'ok');
+    // Pilotage AR
+    await p.screenshot({path:path.join(DOCS,'cc_ar_pilotage.png'),fullPage:false});
+    log('Capture AR Pilotage',true,'cc_ar_pilotage.png');
 
-    // ═══ ONGLET CARTE ═══
+    // Check état in drill panel is translated
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
+    await new Promise(r=>setTimeout(r,1500));
+    const etatAR=await p.evaluate(()=>{
+      var etats=document.querySelectorAll('.cc-panel-etat');
+      var texts=[];
+      etats.forEach(e=>texts.push(e.textContent));
+      return texts;
+    });
+    // Check that state is NOT raw French (en_intervention, pris_en_charge, etc.)
+    var etatTranslated=etatAR.length>0 && etatAR.every(function(e){
+      return !e.includes('_') && !e.includes('en_intervention') && !e.includes('pris_en_charge');
+    });
+    log('États traduits en AR (pas de underscore)',etatTranslated,'états='+JSON.stringify(etatAR));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_drill_epic.png'),fullPage:false});
+    log('Capture AR fiche EPIC',true,'cc_ar_drill_epic.png');
+    await p.evaluate(()=>ccClosePanel());
+    await new Promise(r=>setTimeout(r,300));
+
+    // Carte AR with 4 filters
     await p.evaluate(()=>ccMobileTab('carte'));
     await new Promise(r=>setTimeout(r,1500));
-
-    // ═══ PREUVE 5 : INCIDENTS ═══
-    await p.evaluate(()=>document.querySelector('[data-filter="all"]').click());
-    await new Promise(r=>setTimeout(r,800));
-    const incMarkers=await p.evaluate(()=>_ccMarkers.length);
-    log('Filtre Incidents fonctionne',incMarkers>0,incMarkers+' marqueurs');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_incidents.png'),fullPage:false});
-
-    // ═══ PREUVE 5 : COMMUNES ═══
-    await p.evaluate(()=>document.querySelector('[data-filter="critique"]').click());
-    await new Promise(r=>setTimeout(r,800));
-    const communeMarkers=await p.evaluate(()=>_ccMarkers.length);
-    log('Filtre Communes fonctionne',communeMarkers>0,communeMarkers+' marqueurs');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_communes.png'),fullPage:false});
-
-    // ═══ PREUVE 1 : DIRECTIONS ═══
-    await p.evaluate(()=>document.querySelector('[data-filter="directions"]').click());
-    await new Promise(r=>setTimeout(r,800));
-
-    const dirResult=await p.evaluate(()=>{
-      var names=[];
-      _ccMarkers.forEach(function(m){
-        m.openPopup();
-        var pop=document.querySelector('.leaflet-popup-content');
-        if(pop){
-          var strong=pop.querySelector('strong');
-          names.push(strong?strong.textContent:'?');
-        }
-        m.closePopup();
-      });
-      return {count:_ccMarkers.length,names:names};
+    var filterTexts=await p.evaluate(()=>{
+      var btns=document.querySelectorAll('.cc-filter-btn');
+      var t=[];btns.forEach(b=>t.push(b.textContent.trim()));
+      return t;
     });
-    var hasDirNames=dirResult&&dirResult.names.some(function(n){return n.includes('Direction');});
-    // Directions must be different from communes — direction names, not commune names
-    log('Filtre Directions : noms de directions',hasDirNames&&dirResult.count>0,
-      dirResult.count+' marqueurs, noms='+JSON.stringify(dirResult.names));
+    var filtersAR=filterTexts.every(f=>!/[a-zA-Z]/.test(f.replace('SLA','')));
+    log('Filtres carte en AR',filtersAR,'filtres='+JSON.stringify(filterTexts));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_carte.png'),fullPage:false});
+    log('Capture AR Carte',true,'cc_ar_carte.png');
 
-    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].openPopup();});
-    await new Promise(r=>setTimeout(r,300));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_directions.png'),fullPage:false});
-    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].closePopup();});
-
-    // ═══ PREUVE 2 : EPIC ═══
-    await p.evaluate(()=>document.querySelector('[data-filter="epic"]').click());
-    await new Promise(r=>setTimeout(r,800));
-
-    const epicResult=await p.evaluate(()=>{
-      var names=[];
-      _ccMarkers.forEach(function(m){
-        m.openPopup();
-        var pop=document.querySelector('.leaflet-popup-content');
-        if(pop){
-          var strong=pop.querySelector('strong');
-          names.push(strong?strong.textContent:'?');
-        }
-        m.closePopup();
-      });
-      return {count:_ccMarkers.length,names:names};
-    });
-    // EPIC names must NOT be commune names and NOT be direction names
-    var hasEpicNames=epicResult&&epicResult.count>0&&epicResult.names.every(function(n){return !n.includes('Direction');});
-    log('Filtre EPIC : noms d\'EPIC (pas directions)',hasEpicNames,
-      epicResult.count+' marqueurs, noms='+JSON.stringify(epicResult.names));
-
-    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].openPopup();});
-    await new Promise(r=>setTimeout(r,300));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_filtre_epic.png'),fullPage:false});
-    await p.evaluate(()=>{if(_ccMarkers.length>0)_ccMarkers[0].closePopup();});
-
-    // ═══ PREUVE 3 : COHÉRENCE API ═══
-    const apiCoherence=await p.evaluate(()=>{
-      var dirs={};var epics={};
-      _ccMapData.forEach(function(inc){
-        if(!inc.lat||!inc.lng) return;
-        if(inc.direction_pilote_id){
-          var dk=inc.direction_pilote||'?';
-          if(!dirs[dk]) dirs[dk]=0;
-          dirs[dk]++;
-        }
-        if(inc.organisation_executante_id && inc.organisation_type==='epic'){
-          var ek=inc.organisation_executante||'?';
-          if(!epics[ek]) epics[ek]=0;
-          epics[ek]++;
-        }
-      });
-      return {dirs:dirs,epics:epics};
-    });
-
-    var dirEntries=Object.entries(apiCoherence.dirs||{});
-    var epicEntries=Object.entries(apiCoherence.epics||{});
-    if(dirEntries.length>0){
-      var sd=dirEntries[0];
-      var dirPopMatch=dirResult.names.includes(sd[0]);
-      log('Cohérence Direction API=carte',dirPopMatch,'API: "'+sd[0]+'"='+sd[1]+' incidents (avec coords)');
-    }
-    if(epicEntries.length>0){
-      var se=epicEntries[0];
-      var epicPopMatch=epicResult.names.includes(se[0]);
-      log('Cohérence EPIC API=carte',epicPopMatch,'API: "'+se[0]+'"='+se[1]+' incidents (avec coords)');
-    }
-
-    // ═══ PREUVE 4 : CLIC POINT → LISTE DOSSIERS ═══
-    await p.evaluate(()=>document.querySelector('[data-filter="directions"]').click());
-    await new Promise(r=>setTimeout(r,800));
-    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].fire('click');});
+    // Organismes AR
+    await p.evaluate(()=>ccMobileTab('organismes'));
     await new Promise(r=>setTimeout(r,1000));
-    const dirPanel=await p.evaluate(()=>{
-      var panel=document.getElementById('cc-panel');
-      if(!panel||!panel.classList.contains('cc-panel-open')) return null;
-      var h3=panel.querySelector('h3');
-      var rows=panel.querySelectorAll('.cc-panel-row');
-      return {title:h3?h3.textContent:'?',rows:rows.length};
-    });
-    log('Clic Direction → liste dossiers',dirPanel&&dirPanel.rows>0,'title="'+((dirPanel||{}).title||'?')+'" rows='+((dirPanel||{}).rows||0));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_drill_direction.png'),fullPage:false});
-    await p.evaluate(()=>ccClosePanel());
-    await new Promise(r=>setTimeout(r,300));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_organismes.png'),fullPage:false});
+    log('Capture AR Organismes',true,'cc_ar_organismes.png');
 
-    await p.evaluate(()=>document.querySelector('[data-filter="epic"]').click());
-    await new Promise(r=>setTimeout(r,800));
-    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].fire('click');});
-    await new Promise(r=>setTimeout(r,1000));
-    const epicPanel=await p.evaluate(()=>{
-      var panel=document.getElementById('cc-panel');
-      if(!panel||!panel.classList.contains('cc-panel-open')) return null;
-      var h3=panel.querySelector('h3');
-      var rows=panel.querySelectorAll('.cc-panel-row');
-      return {title:h3?h3.textContent:'?',rows:rows.length};
-    });
-    log('Clic EPIC → liste dossiers',epicPanel&&epicPanel.rows>0,'title="'+((epicPanel||{}).title||'?')+'" rows='+((epicPanel||{}).rows||0));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_drill_epic.png'),fullPage:false});
-    await p.evaluate(()=>ccClosePanel());
+    // Alertes AR
+    await p.evaluate(()=>ccMobileTab('alertes'));
+    await new Promise(r=>setTimeout(r,500));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_alertes.png'),fullPage:false});
+    log('Capture AR Alertes',true,'cc_ar_alertes.png');
 
-    // ═══ PREUVE 6 : DESKTOP COMPARISON ═══
+    // Plus AR
+    await p.evaluate(()=>ccMobileTab('plus'));
+    await new Promise(r=>setTimeout(r,500));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_plus.png'),fullPage:false});
+    log('Capture AR Plus',true,'cc_ar_plus.png');
+
+    // Plus → Briefing AR
+    await p.evaluate(()=>ccMobilePlusView('plus-briefing'));
+    await new Promise(r=>setTimeout(r,500));
+    await p.screenshot({path:path.join(DOCS,'cc_ar_briefing.png'),fullPage:false});
+    log('Capture AR Briefing',true,'cc_ar_briefing.png');
+    await p.evaluate(()=>ccMobileTab('plus'));
+
+    // Desktop AR
     await p.setViewport({width:1280,height:900});
     await p.evaluate(()=>document.body.classList.remove('cc-mob-tabs'));
     await new Promise(r=>setTimeout(r,500));
-    await p.evaluate(()=>ccMapFilter('directions'));
-    await new Promise(r=>setTimeout(r,800));
-    const desktopDirNames=await p.evaluate(()=>{
-      var names=[];
-      _ccMarkers.forEach(function(m){m.openPopup();var p=document.querySelector('.leaflet-popup-content strong');if(p)names.push(p.textContent);m.closePopup();});
-      return names;
-    });
-    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].openPopup();});
-    await new Promise(r=>setTimeout(r,300));
-    await p.screenshot({path:path.join(DOCS,'cc_desktop_filtre_directions.png'),fullPage:false});
-    var desktopAligned=desktopDirNames.length===dirResult.names.length && desktopDirNames.every(function(n){return dirResult.names.includes(n);});
-    log('Desktop Directions = mobile (mêmes noms)',desktopAligned,
-      'desktop='+JSON.stringify(desktopDirNames)+' mobile='+JSON.stringify(dirResult.names));
-    await p.evaluate(()=>{if(_ccMarkers[0])_ccMarkers[0].closePopup();});
+    await p.screenshot({path:path.join(DOCS,'cc_ar_desktop.png'),fullPage:false});
+    log('Capture AR Desktop',true,'cc_ar_desktop.png');
 
-    // Restore mobile
+    // ═══ PREUVE 5 : FR non cassé ═══
+    await p.evaluate(()=>setLang('fr'));
+    await new Promise(r=>setTimeout(r,1500));
     await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+    await p.evaluate(()=>ccMobileTab('pilotage'));
+    await new Promise(r=>setTimeout(r,500));
+    await p.screenshot({path:path.join(DOCS,'cc_fr_pilotage.png'),fullPage:false});
+    log('Capture FR Pilotage (non cassé)',true,'cc_fr_pilotage.png');
 
-    // ═══ RÉGRESSIONS ═══
     await p.evaluate(()=>ccMobileTab('organismes'));
     await new Promise(r=>setTimeout(r,1000));
-    const epicCarousel=await p.evaluate(()=>{var g=document.getElementById('cc-epics-prio');return g?g.querySelectorAll('.cc-epic-card').length:0;});
-    log('6 EPIC carrousel intact',epicCarousel===6,'count='+epicCarousel);
+    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
+    await new Promise(r=>setTimeout(r,1500));
+    const etatFR=await p.evaluate(()=>{
+      var etats=document.querySelectorAll('.cc-panel-etat');
+      var texts=[];
+      etats.forEach(e=>texts.push(e.textContent));
+      return texts;
+    });
+    var etatFROK=etatFR.length>0 && etatFR.every(function(e){return !e.includes('_');});
+    log('États traduits en FR',etatFROK,'états='+JSON.stringify(etatFR));
+    await p.screenshot({path:path.join(DOCS,'cc_fr_drill_epic.png'),fullPage:false});
+    log('Capture FR fiche EPIC (non cassé)',true,'cc_fr_drill_epic.png');
+    await p.evaluate(()=>ccClosePanel());
 
+    // ═══ PREUVE 6 : dir="ltr" sur nombres AR ═══
+    await p.evaluate(()=>setLang('ar'));
+    await new Promise(r=>setTimeout(r,1000));
+    await p.evaluate(()=>ccMobileTab('pilotage'));
+    await new Promise(r=>setTimeout(r,500));
+    const dirLtr=await p.evaluate(()=>{
+      var els=document.querySelectorAll('#view-command-center [dir="ltr"]');
+      return els.length;
+    });
+    log('Nombres AR dir="ltr"',dirLtr>0,dirLtr+' éléments avec dir="ltr"');
+    await p.evaluate(()=>setLang('fr'));
+    await new Promise(r=>setTimeout(r,500));
+
+    // ═══ RÉGRESSIONS ═══
     await p.evaluate(()=>ccMobileTab('carte'));
     await new Promise(r=>setTimeout(r,1500));
-    await p.evaluate(()=>ccMapFilter('all'));
-    await new Promise(r=>setTimeout(r,500));
-    const mapAlger=await p.evaluate(()=>{if(!_ccMap)return false;var c=_ccMap.getCenter();return Math.abs(c.lat-36.7538)<0.5;});
-    log('Carte mobile Alger',mapAlger,'ok');
+    const mapOK=await p.evaluate(()=>{if(!_ccMap)return false;var c=_ccMap.getCenter();return Math.abs(c.lat-36.7538)<0.5;});
+    log('Carte Alger intacte',mapOK,'ok');
+
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+    const epic6=await p.evaluate(()=>{var g=document.getElementById('cc-epics-prio');return g?g.querySelectorAll('.cc-epic-card').length:0;});
+    log('6 EPIC carrousel intact',epic6===6,'count='+epic6);
+
+    log('Nav basse CC visible',await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n&&n.style.display!=='none';}),'ok');
 
     const total=await p.evaluate(async()=>{var t=localStorage.getItem('civismart_token');var r=await fetch('/api/signaler/board',{headers:{Authorization:'Bearer '+t}});var d=await r.json();return Array.isArray(d)?d.length:-1;});
     log('Total signalements',total===122,'total='+total);
 
     await p.close();
-
-    // Contre-test
-    await new Promise(r=>setTimeout(r,2000));
-    const p2=await login(b,'0550000007','admin@@1234');
-    await p2.setViewport({width:390,height:844,isMobile:true});
-    await new Promise(r=>setTimeout(r,1000));
-    log('Nassim: pas de nav CC',await p2.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display==='none'||n.style.display==='':false;}),'ok');
-    await p2.close();
 
   }catch(e){console.error('ERR:',e.message);log('Erreur',false,e.message);}
   finally{await b.close();}

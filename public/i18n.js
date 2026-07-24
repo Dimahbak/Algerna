@@ -1389,6 +1389,10 @@ const I18N = {
     "cc.tab_plus": "Plus",
     "cc.voir_toutes": "Voir toutes les priorités",
     "cc.ouvrir_carte": "Ouvrir la carte",
+    "cc.inconnu": "Inconnu",
+    "cc.urgence_badge": "URGENCE",
+    "etat.pris_en_charge": "Pris en charge",
+    "etat.a_valider": "À valider",
 
     // ─── SIGNALER (double chemin unifié) ───
     "signaler.titre": "Que souhaitez-vous signaler ?",
@@ -3165,6 +3169,10 @@ const I18N = {
     "cc.tab_plus": "المزيد",
     "cc.voir_toutes": "عرض جميع الأولويات",
     "cc.ouvrir_carte": "فتح الخريطة",
+    "cc.inconnu": "غير معروف",
+    "cc.urgence_badge": "طارئ",
+    "etat.pris_en_charge": "تم التكفل",
+    "etat.a_valider": "للمصادقة",
 
     // ─── EDEVAL SMART GREEN ─── // À RELIRE
     "edeval.titre": "IQEP — الفضاءات العمومية",

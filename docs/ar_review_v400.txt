@@ -1,0 +1,25 @@
+═══ LISTE DE RELECTURE ARABOPHONE — v400 ═══
+Date : 2026-07-24
+Auteur traductions AR : Claude Code (relecture humaine requise)
+
+Nouvelles clés AR ajoutées en v400 :
+
+1. cc.inconnu = غير معروف
+   Contexte : valeur par défaut quand un nom de commune/direction/EPIC est absent
+   FR : Inconnu
+
+2. cc.urgence_badge = طارئ
+   Contexte : badge rouge affiché sur les priorités marquées urgence Wali
+   FR : URGENCE
+
+3. etat.pris_en_charge = تم التكفل
+   Contexte : état d'un dossier dans les panneaux de détail
+   FR : Pris en charge
+
+4. etat.a_valider = للمصادقة
+   Contexte : état d'un dossier dans les panneaux de détail
+   FR : À valider
+
+═══ RAPPEL ═══
+- Les noms d'organismes AR viennent de la base (décret 26-112) — INTOUCHABLES
+- Les traductions ci-dessus sont des propositions à valider par un arabophone
