@@ -13005,6 +13005,8 @@ async function ccLoad() {
     ccRenderDirections(_ccDirectionsData);
     ccRenderEpicsPrio(_ccEpicsPrioData);
     ccRenderEpicsAutres(_ccEpicsAutresData);
+    ccCarouselDots(document.getElementById('cc-directions'));
+    ccCarouselDots(document.getElementById('cc-epics-prio'));
     ccRenderPartners(data.externalPartners || []);
     _ccDecisions = data.pendingDecisions || [];
     ccRenderDecisions(_ccDecisions);
@@ -13386,6 +13388,29 @@ function ccRenderEpicsAutres(epics) {
       '<span class="cc-muted">' + ccLtr(e.ouverts) + ' ' + t('cc.ouverts') + '</span>' +
     '</div>';
   }).join('');
+}
+
+function ccCarouselDots(gridEl) {
+  if (window.innerWidth > 768 || !gridEl) return;
+  var existing = gridEl.parentNode.querySelector('.cc-carousel-dots');
+  if (existing) existing.remove();
+  var cards = gridEl.children;
+  if (cards.length <= 1) return;
+  var dots = document.createElement('div');
+  dots.className = 'cc-carousel-dots';
+  for (var i = 0; i < cards.length; i++) {
+    var d = document.createElement('span');
+    d.className = 'cc-carousel-dot' + (i === 0 ? ' active' : '');
+    dots.appendChild(d);
+  }
+  gridEl.parentNode.insertBefore(dots, gridEl.nextSibling);
+  gridEl.addEventListener('scroll', function() {
+    var cardW = cards[0].offsetWidth + 10;
+    var idx = Math.round(gridEl.scrollLeft / cardW);
+    dots.querySelectorAll('.cc-carousel-dot').forEach(function(dd, j) {
+      dd.classList.toggle('active', j === idx);
+    });
+  });
 }
 
 function ccRenderPartners(partners) {
@@ -13873,27 +13898,26 @@ function ccRenderPriorityRows(el, list) {
     var pPilote = currentLang === 'ar' && p.directionPiloteAr ? p.directionPiloteAr : p.directionPilote;
     var pExec = currentLang === 'ar' && p.executantAr ? p.executantAr : p.executant;
     var urgBadge = p.urgence_wali ? ' <span style="background:#fef2f2;color:#EF4444;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:700;">🚨 URGENCE</span>' : '';
-    return '<div class="cc-priority-row cc-severity-' + severity + '">' +
+    var refSafe = escHtml(p.reference).replace(/'/g,'\\x27');
+    return '<div class="cc-priority-row cc-severity-' + severity + '" onclick="boOpenSignalement(\'' + refSafe + '\')">' +
       '<div class="cc-priority-body">' +
         '<div class="cc-priority-title">' + escHtml(p.titre || p.reference) + urgBadge + '</div>' +
         '<div class="cc-priority-meta">' +
-          '<span>' + escHtml(p.commune || '—') + '</span>' +
-          (pPilote && pExec && pPilote === pExec
-            ? '<span>' + t('cc.pilote_executant') + ' : ' + escHtml(pPilote) + '</span>'
-            : '<span>' + escHtml(pPilote || '—') + '</span><span>' + escHtml(pExec || '—') + '</span>') +
+          '<span>' + escHtml(p.commune || '—') + ' · ' + escHtml(pPilote || '—') + '</span>' +
           '<span class="cc-sla-badge cc-sla-' + severity + '">' + slaText + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="cc-priority-actions" style="position:relative;">' +
-        '<button class="cc-btn-open" onclick="boOpenSignalement(\'' + escHtml(p.reference) + '\')" title="' + t('cc.ouvrir') + '">↗</button>' +
-        '<button class="cc-btn-more" onclick="ccTogglePrioMenu(this,\'' + escHtml(p.reference) + '\')">⋯</button>' +
+        '<button class="cc-btn-open" onclick="event.stopPropagation();boOpenSignalement(\'' + refSafe + '\')" title="' + t('cc.ouvrir') + '">↗</button>' +
+        '<button class="cc-btn-more" onclick="event.stopPropagation();ccTogglePrioMenu(this,\'' + refSafe + '\')">⋯</button>' +
         '<div class="cc-priority-menu">' +
-          '<button class="cc-priority-menu-item" onclick="ccAddNote(\'' + escHtml(p.reference) + '\')">' + t('cc.ajouter_note') + '</button>' +
+          '<button class="cc-priority-menu-item" onclick="event.stopPropagation();ccAddNote(\'' + refSafe + '\')">' + t('cc.ajouter_note') + '</button>' +
           '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.escalader') + '</button>' +
           '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.relancer') + '</button>' +
           '<button class="cc-priority-menu-item disabled" title="' + t('cc.bientot') + '">' + t('cc.affecter') + '</button>' +
         '</div>' +
       '</div>' +
+      '<div class="cc-priority-chevron">›</div>' +
     '</div>';
   }).join('');
 }

@@ -192,7 +192,7 @@ router.get('/overview', authenticate, requireCommandCenter(), async (req, res) =
     const { rows: directions } = await query(`
       SELECT dp.id, dp.nom, dp.nom_ar,
              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete')) AS ouverts,
-             COUNT(*) FILTER (WHERE s.gravite='danger_immediat' OR cs.criticite='haute') AS critiques,
+             COUNT(*) FILTER (WHERE s.gravite='danger_immediat' AND s.etat NOT IN ('resolu','clos','rejete')) AS critiques,
              COUNT(*) FILTER (WHERE s.etat NOT IN ('resolu','clos','rejete') AND s.cree_le < NOW() - INTERVAL '48 hours') AS "slaDepasses",
              CASE WHEN COUNT(*)>0 THEN ROUND(COUNT(*) FILTER (WHERE s.etat IN ('resolu','clos'))::numeric / COUNT(*) * 100) ELSE 0 END AS "tauxTraitement"
       FROM signalement s
