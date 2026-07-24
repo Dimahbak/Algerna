@@ -244,7 +244,7 @@
     .wb-header { background:linear-gradient(135deg,#063B5A,#0B6078); color:white; border-radius:var(--radius-lg); padding:14px 20px; margin-bottom:12px; }
     .wb-header-inner { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; }
     .wb-greeting { font-size:17px; font-weight:700; margin-bottom:2px; }
-    .wb-subtitle { font-size:11px; opacity:0.7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wb-subtitle { font-size:11px; opacity:0.7; word-break:break-word; }
     .wb-meta { font-size:12px; opacity:0.6; margin-top:6px; }
     .wb-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
     @media(max-width:900px) { .wb-kpis { grid-template-columns:repeat(2,1fr); } }
@@ -1757,7 +1757,7 @@
       .wb-header { padding:12px 14px !important; }
       .wb-header-inner { flex-direction:column; gap:8px; }
       .wb-greeting { font-size:16px !important; word-wrap:break-word; overflow-wrap:break-word; }
-      .wb-subtitle { font-size:11px !important; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      .wb-subtitle { font-size:11px !important; word-break:break-word; }
       /* ICUA gauge compact on mobile */
       #exec-icua-card { padding:10px !important; }
       #exec-icua-gauge { width:60px !important; height:60px !important; }

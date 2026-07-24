@@ -4902,7 +4902,7 @@ function ccoeInitDrawMap(evt) {
   }
 
   if (_ccoeDrawMap) { _ccoeDrawMap.remove(); _ccoeDrawMap = null; }
-  _ccoeDrawMap = L.map(el).setView([36.753, 3.058], 12);
+  _ccoeDrawMap = L.map(el).setView([36.7538, 3.0588], 11);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OSM' }).addTo(_ccoeDrawMap);
 
   _ccoeDrawnItems = new L.FeatureGroup();
@@ -5414,7 +5414,7 @@ function ccoeLoadCarte(container) {
     var points = data.chantiers || data; // backward compat
     var evenements = data.evenements || [];
     if (_ccoeMap) { _ccoeMap.remove(); _ccoeMap = null; }
-    _ccoeMap = L.map('ccoe-map-container').setView([36.753, 3.058], 11);
+    _ccoeMap = L.map('ccoe-map-container').setView([36.7538, 3.0588], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OSM' }).addTo(_ccoeMap);
     var statutColors = { non_commence:'#9CA3AF', en_preparation:'#3B82F6', en_cours:'#F59E0B', termine:'#10B981', valide:'#059669', bloque:'#DC2626' };
     // Chantier markers
@@ -7097,8 +7097,7 @@ async function initBoExecutive() {
     createTileLayer(execMap);
   }
   if (execMap) {
-    if (isCommune) execMap.setView(defaultCenter, defaultZoom);
-    setTimeout(function() { execMap.invalidateSize(); }, 300);
+    setTimeout(function() { execMap.invalidateSize(); execMap.setView(defaultCenter, defaultZoom); }, 300);
     setTimeout(function() { execMap.invalidateSize(); }, 800);
   }
 
@@ -8619,7 +8618,7 @@ function initWorkbenchMap(mapElId, signals) {
     setTimeout(function() { map.invalidateSize(); }, 200);
   } else {
     // Première initialisation
-    map = L.map(mapElId).setView([36.75, 3.06], 12);
+    map = L.map(mapElId).setView([36.7538, 3.0588], 11);
     createTileLayer(map);
     el._leafletMap = map;
     setTimeout(function() { map.invalidateSize(); }, 300);

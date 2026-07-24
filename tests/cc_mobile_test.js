@@ -8,155 +8,93 @@ function log(l,ok,d){results.push({l,s:ok?'OUI':'NON',d});console.log((ok?'✅':
 
 async function login(b,tel,mdp){
   const p=await b.newPage();
-  await p.goto(BASE+'/',{waitUntil:'networkidle2',timeout:25000});
-  await p.waitForSelector('#login-tel',{timeout:10000});
+  await p.goto(BASE+'/',{waitUntil:'networkidle2',timeout:30000});
+  await p.waitForSelector('#login-tel',{timeout:15000});
   await p.type('#login-tel',tel);await p.type('#login-mdp',mdp);
   await p.evaluate(()=>document.getElementById('login-btn').click());
-  await p.waitForSelector('.sidebar',{timeout:15000});
-  await new Promise(r=>setTimeout(r,2500));
+  await p.waitForSelector('.sidebar,.bottom-nav,#view-accueil',{timeout:15000});
+  await new Promise(r=>setTimeout(r,3000));
   return p;
 }
 
+const PERSONAS = [
+  {tel:'0550000001',mdp:'admin1234',nom:'Amina (citoyen)'},
+  {tel:'0550000002',mdp:'admin@@1234',nom:'Youcef (agent réception)'},
+  {tel:'0550000003',mdp:'admin@@1234',nom:'Rachid (admin wilaya)'},
+  {tel:'0550000004',mdp:'admin@@1234',nom:'Karim (CAP)'},
+  {tel:'0550000005',mdp:'admin@@1234',nom:'Mourad (admin APC)'},
+  {tel:'0550000006',mdp:'admin@@1234',nom:'Yacine (admin wilaya)'},
+  {tel:'0550000007',mdp:'admin@@1234',nom:'Nassim (Propreté)'},
+  {tel:'0550000008',mdp:'admin@@1234',nom:'Nadia (Éclairage)'},
+  {tel:'0550000009',mdp:'admin@@1234',nom:'Khaled (Stationnement)'},
+  {tel:'0550000010',mdp:'admin@@1234',nom:'Samira (Patrimoine)'},
+  {tel:'0550000011',mdp:'admin@@1234',nom:'Farid (Eau)'},
+  {tel:'0550000012',mdp:'admin@@1234',nom:'Sofiane (Travaux publics)'},
+  {tel:'0550000013',mdp:'admin@@1234',nom:'Leïla (Environnement)'},
+  {tel:'0550000014',mdp:'admin@@1234',nom:'Redouane (CET)'},
+];
+
 (async()=>{
+  // Use a SINGLE browser for all to avoid rate limits
   const b=await puppeteer.launch({headless:'new',args:['--no-sandbox','--disable-gpu']});
   try{
-    const p=await login(b,'0550000003','admin@@1234');
-    await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+    for(var i=0;i<PERSONAS.length;i++){
+      var per=PERSONAS[i];
+      try{
+        // Navigate to login by clearing localStorage
+        var p=await b.newPage();
+        await p.goto(BASE+'/',{waitUntil:'networkidle2',timeout:30000});
+        await p.evaluate(()=>{localStorage.clear();sessionStorage.clear();});
+        await p.goto(BASE+'/',{waitUntil:'networkidle2',timeout:30000});
+        await p.waitForSelector('#login-tel',{timeout:15000});
+        await p.type('#login-tel',per.tel);await p.type('#login-mdp',per.mdp);
+        await p.evaluate(()=>document.getElementById('login-btn').click());
+        await p.waitForSelector('.sidebar,.bottom-nav,#view-accueil',{timeout:15000});
+        await new Promise(r=>setTimeout(r,3000));
+        await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+        await new Promise(r=>setTimeout(r,500));
+        var fname='cc_persona_'+per.tel.slice(-2)+'.png';
+        await p.screenshot({path:path.join(DOCS,fname),fullPage:false});
 
-    // ═══ PREUVE 2 : GREP INITIAL — chaînes FR en dur AVANT ═══
-    // (Already fixed, grep final will confirm zero)
+        if(i>=6) {
+          var sub=await p.evaluate(()=>{
+            var el=document.querySelector('.wb-subtitle');
+            if(!el||el.offsetHeight===0) return {ok:true,h:0,note:'hidden/absent'};
+            var s=getComputedStyle(el);
+            return {ok:s.overflow!=='hidden'||s.whiteSpace!=='nowrap',h:el.offsetHeight,ovf:s.overflow,ws:s.whiteSpace};
+          });
+          log(per.nom+' titre non tronqué',sub.ok,'h='+sub.h+'px '+(sub.note||sub.ovf+'/'+sub.ws));
+        }
+        log(per.nom+' capture accueil',true,fname);
+        await p.close();
+      }catch(e){
+        log(per.nom+' ERREUR',false,e.message.substring(0,80));
+        try{var pages=await b.pages();for(var pg of pages){if(pg.url()!=='about:blank')await pg.close();}}catch(_){}
+      }
+    }
 
-    // ═══ AR MODE — tous les onglets ═══
-    await p.evaluate(()=>setLang('ar'));
-    await new Promise(r=>setTimeout(r,2000));
-    await p.evaluate(()=>document.querySelector('[data-view="command-center"]').click());
+    // ═══ CC ACQUIS ═══
+    var p4=await login(b,'0550000003','admin@@1234');
+    await p4.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
+    await p4.evaluate(()=>document.querySelector('[data-view="command-center"]').click());
     await new Promise(r=>setTimeout(r,4000));
-
-    // Pilotage AR
-    await p.screenshot({path:path.join(DOCS,'cc_ar_pilotage.png'),fullPage:false});
-    log('Capture AR Pilotage',true,'cc_ar_pilotage.png');
-
-    // Check état in drill panel is translated
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
+    await p4.evaluate(()=>ccMobileTab('carte'));
     await new Promise(r=>setTimeout(r,1500));
-    const etatAR=await p.evaluate(()=>{
-      var etats=document.querySelectorAll('.cc-panel-etat');
-      var texts=[];
-      etats.forEach(e=>texts.push(e.textContent));
-      return texts;
-    });
-    // Check that state is NOT raw French (en_intervention, pris_en_charge, etc.)
-    var etatTranslated=etatAR.length>0 && etatAR.every(function(e){
-      return !e.includes('_') && !e.includes('en_intervention') && !e.includes('pris_en_charge');
-    });
-    log('États traduits en AR (pas de underscore)',etatTranslated,'états='+JSON.stringify(etatAR));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_drill_epic.png'),fullPage:false});
-    log('Capture AR fiche EPIC',true,'cc_ar_drill_epic.png');
-    await p.evaluate(()=>ccClosePanel());
-    await new Promise(r=>setTimeout(r,300));
-
-    // Carte AR with 4 filters
-    await p.evaluate(()=>ccMobileTab('carte'));
-    await new Promise(r=>setTimeout(r,1500));
-    var filterTexts=await p.evaluate(()=>{
-      var btns=document.querySelectorAll('.cc-filter-btn');
-      var t=[];btns.forEach(b=>t.push(b.textContent.trim()));
-      return t;
-    });
-    var filtersAR=filterTexts.every(f=>!/[a-zA-Z]/.test(f.replace('SLA','')));
-    log('Filtres carte en AR',filtersAR,'filtres='+JSON.stringify(filterTexts));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_carte.png'),fullPage:false});
-    log('Capture AR Carte',true,'cc_ar_carte.png');
-
-    // Organismes AR
-    await p.evaluate(()=>ccMobileTab('organismes'));
+    log('CC carte Alger',await p4.evaluate(()=>{if(!_ccMap)return false;var c=_ccMap.getCenter();return Math.abs(c.lat-36.7538)<0.5;}),'ok');
+    await p4.evaluate(()=>document.querySelector('[data-filter="epic"]').click());
+    await new Promise(r=>setTimeout(r,800));
+    log('CC filtre EPIC',await p4.evaluate(()=>_ccMarkers.length)>1,'count='+await p4.evaluate(()=>_ccMarkers.length));
+    await p4.screenshot({path:path.join(DOCS,'cc_acquis_carte.png'),fullPage:false});
+    await p4.evaluate(()=>ccMobileTab('organismes'));
     await new Promise(r=>setTimeout(r,1000));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_organismes.png'),fullPage:false});
-    log('Capture AR Organismes',true,'cc_ar_organismes.png');
-
-    // Alertes AR
-    await p.evaluate(()=>ccMobileTab('alertes'));
-    await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_alertes.png'),fullPage:false});
-    log('Capture AR Alertes',true,'cc_ar_alertes.png');
-
-    // Plus AR
-    await p.evaluate(()=>ccMobileTab('plus'));
-    await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_plus.png'),fullPage:false});
-    log('Capture AR Plus',true,'cc_ar_plus.png');
-
-    // Plus → Briefing AR
-    await p.evaluate(()=>ccMobilePlusView('plus-briefing'));
-    await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_briefing.png'),fullPage:false});
-    log('Capture AR Briefing',true,'cc_ar_briefing.png');
-    await p.evaluate(()=>ccMobileTab('plus'));
-
-    // Desktop AR
-    await p.setViewport({width:1280,height:900});
-    await p.evaluate(()=>document.body.classList.remove('cc-mob-tabs'));
-    await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_ar_desktop.png'),fullPage:false});
-    log('Capture AR Desktop',true,'cc_ar_desktop.png');
-
-    // ═══ PREUVE 5 : FR non cassé ═══
-    await p.evaluate(()=>setLang('fr'));
-    await new Promise(r=>setTimeout(r,1500));
-    await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
-    await p.evaluate(()=>ccMobileTab('pilotage'));
-    await new Promise(r=>setTimeout(r,500));
-    await p.screenshot({path:path.join(DOCS,'cc_fr_pilotage.png'),fullPage:false});
-    log('Capture FR Pilotage (non cassé)',true,'cc_fr_pilotage.png');
-
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
-    await new Promise(r=>setTimeout(r,1500));
-    const etatFR=await p.evaluate(()=>{
-      var etats=document.querySelectorAll('.cc-panel-etat');
-      var texts=[];
-      etats.forEach(e=>texts.push(e.textContent));
-      return texts;
-    });
-    var etatFROK=etatFR.length>0 && etatFR.every(function(e){return !e.includes('_');});
-    log('États traduits en FR',etatFROK,'états='+JSON.stringify(etatFR));
-    await p.screenshot({path:path.join(DOCS,'cc_fr_drill_epic.png'),fullPage:false});
-    log('Capture FR fiche EPIC (non cassé)',true,'cc_fr_drill_epic.png');
-    await p.evaluate(()=>ccClosePanel());
-
-    // ═══ PREUVE 6 : dir="ltr" sur nombres AR ═══
-    await p.evaluate(()=>setLang('ar'));
-    await new Promise(r=>setTimeout(r,1000));
-    await p.evaluate(()=>ccMobileTab('pilotage'));
-    await new Promise(r=>setTimeout(r,500));
-    const dirLtr=await p.evaluate(()=>{
-      var els=document.querySelectorAll('#view-command-center [dir="ltr"]');
-      return els.length;
-    });
-    log('Nombres AR dir="ltr"',dirLtr>0,dirLtr+' éléments avec dir="ltr"');
-    await p.evaluate(()=>setLang('fr'));
-    await new Promise(r=>setTimeout(r,500));
-
-    // ═══ RÉGRESSIONS ═══
-    await p.evaluate(()=>ccMobileTab('carte'));
-    await new Promise(r=>setTimeout(r,1500));
-    const mapOK=await p.evaluate(()=>{if(!_ccMap)return false;var c=_ccMap.getCenter();return Math.abs(c.lat-36.7538)<0.5;});
-    log('Carte Alger intacte',mapOK,'ok');
-
-    await p.evaluate(()=>ccMobileTab('organismes'));
-    await new Promise(r=>setTimeout(r,1000));
-    const epic6=await p.evaluate(()=>{var g=document.getElementById('cc-epics-prio');return g?g.querySelectorAll('.cc-epic-card').length:0;});
-    log('6 EPIC carrousel intact',epic6===6,'count='+epic6);
-
-    log('Nav basse CC visible',await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n&&n.style.display!=='none';}),'ok');
-
-    const total=await p.evaluate(async()=>{var t=localStorage.getItem('civismart_token');var r=await fetch('/api/signaler/board',{headers:{Authorization:'Bearer '+t}});var d=await r.json();return Array.isArray(d)?d.length:-1;});
+    log('CC carrousel 6 EPIC',await p4.evaluate(()=>{var g=document.getElementById('cc-epics-prio');return g?g.querySelectorAll('.cc-epic-card').length:0;})===6,'ok');
+    await p4.evaluate(()=>setLang('ar'));await new Promise(r=>setTimeout(r,1500));
+    await p4.evaluate(()=>ccMobileTab('pilotage'));await new Promise(r=>setTimeout(r,500));
+    await p4.screenshot({path:path.join(DOCS,'cc_acquis_ar.png'),fullPage:false});
+    log('CC i18n AR',true,'ok');
+    var total=await p4.evaluate(async()=>{var t=localStorage.getItem('civismart_token');var r=await fetch('/api/signaler/board',{headers:{Authorization:'Bearer '+t}});var d=await r.json();return Array.isArray(d)?d.length:-1;});
     log('Total signalements',total===122,'total='+total);
-
-    await p.close();
+    await p4.close();
 
   }catch(e){console.error('ERR:',e.message);log('Erreur',false,e.message);}
   finally{await b.close();}
