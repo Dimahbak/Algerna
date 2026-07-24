@@ -13820,7 +13820,7 @@ function ccRenderBriefing(briefing) {
       '</div>' +
     '</div>';
   }).join('');
-  el.innerHTML += '<button class="cc-btn-action" style="margin-top:8px;" onclick="ccExportBriefing()">' + t('cc.exporter_briefing') + '</button>';
+  el.innerHTML += '<button id="cc-export-briefing-btn" class="cc-btn-action" style="margin-top:8px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0.1);" onclick="ccExportBriefing(this)">' + t('cc.exporter_briefing') + '</button>';
 }
 
 var _ccBriefingItems = [];
@@ -13853,18 +13853,36 @@ function _ccShowBriefingPanel(id) {
   ccShowPanel(html);
 }
 
-function ccExportBriefing() {
-  // Fetch PDF with auth and open as blob
+function ccExportBriefing(btn) {
+  if (btn && btn.disabled) return;
+  var origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = '⏳ ' + t('cc.export_en_cours'); }
   apiFetch('/api/command-center/briefing-pdf?lang=' + currentLang).then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.blob();
   }).then(function(blob) {
     var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'briefing_' + new Date().toISOString().slice(0,10) + '.pdf';
-    a.click();
-    URL.revokeObjectURL(url);
-  }).catch(function() { showToast(t('cc.erreur'), 'error'); });
+    var fname = 'briefing_' + new Date().toISOString().slice(0,10) + '.pdf';
+    // PWA standalone (iOS/Android) : window.open car a.download ne fonctionne pas
+    var isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isPWA) {
+      window.open(url, '_blank');
+    } else {
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    // Révoquer après délai pour laisser le téléchargement démarrer
+    setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+    if (btn) { btn.textContent = '✓ ' + t('cc.export_termine'); setTimeout(function() { btn.disabled = false; btn.style.opacity = ''; btn.textContent = origText; }, 2000); }
+  }).catch(function(e) {
+    console.error('[ccExportBriefing]', e);
+    showToast(t('cc.erreur'), 'error');
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.textContent = origText; }
+  });
 }
 
 // ── Activité récente ──
