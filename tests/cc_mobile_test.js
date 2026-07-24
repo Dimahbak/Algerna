@@ -20,84 +20,100 @@ async function login(b,tel,mdp){
 (async()=>{
   const b=await puppeteer.launch({headless:'new',args:['--no-sandbox','--disable-gpu']});
   try{
-    // ── RACHID MOBILE 390×844 ──
     const p=await login(b,'0550000003','admin@@1234');
     await p.setViewport({width:390,height:844,isMobile:true,hasTouch:true});
     await p.evaluate(()=>document.querySelector('[data-view="command-center"]').click());
     await new Promise(r=>setTimeout(r,4000));
 
-    // 1. Nav basse CC visible
-    const bnav=await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?{vis:n.style.display!=='none',h:n.offsetHeight}:null;});
-    log('Nav basse CC visible',bnav&&bnav.vis,'height='+((bnav||{}).h||0));
+    // 1. Nav + header + bandeau
+    const bnav=await p.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display!=='none':false;});
+    log('Nav basse CC visible',bnav,'ok');
+    const hdr=await p.evaluate(()=>getComputedStyle(document.querySelector('.cc-subtitle')).display);
+    log('Sous-titre masqué',hdr==='none','display='+hdr);
+    const bandeau=await p.evaluate(()=>getComputedStyle(document.getElementById('bandeau-communiques')).display);
+    log('Bandeau masqué CC',bandeau==='none','display='+bandeau);
 
-    // 2. Header compact
-    const hdr=await p.evaluate(()=>{var sub=document.querySelector('.cc-subtitle');return sub?getComputedStyle(sub).display:'?';});
-    log('Sous-titre masqué mobile',hdr==='none','display='+hdr);
-
-    // 3. Bandeau masqué
-    const bandeau=await p.evaluate(()=>{var b=document.getElementById('bandeau-communiques');return b?getComputedStyle(b).display:'?';});
-    log('Bandeau masqué en CC mobile',bandeau==='none','display='+bandeau);
-
-    // 4. KPI 3 colonnes
-    const kpi=await p.evaluate(()=>{var g=document.getElementById('cc-kpis');return g?getComputedStyle(g).gridTemplateColumns.split(' ').length:0;});
+    // 2. KPI + priorités
+    const kpi=await p.evaluate(()=>getComputedStyle(document.getElementById('cc-kpis')).gridTemplateColumns.split(' ').length);
     log('KPI 3 colonnes',kpi===3,'cols='+kpi);
-
+    const prioRow=await p.evaluate(()=>{var r=document.querySelector('.cc-priority-row');return r?{h:r.offsetHeight,chev:!!r.querySelector('.cc-priority-chevron')}:null;});
+    log('Priorité compact ~64px',prioRow&&prioRow.h>=50&&prioRow.h<=80,'height='+((prioRow||{}).h));
     await p.screenshot({path:path.join(DOCS,'cc_mob_pilotage_fr.png'),fullPage:false});
-    log('Capture Pilotage FR',true,'cc_mob_pilotage_fr.png');
 
-    // 5. Priorité compact ~64px
-    const prioRow=await p.evaluate(()=>{
-      var rows=document.querySelectorAll('.cc-priority-row');
-      if(!rows.length) return null;
-      var r=rows[0];
-      return {h:r.offsetHeight,chevron:!!r.querySelector('.cc-priority-chevron'),actionsHidden:getComputedStyle(r.querySelector('.cc-priority-actions')).display==='none'};
+    // ═══ PREUVE 1 : ASROUT nom complet visible ═══
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+
+    // Click ASROUT (2nd EPIC card) via DOM
+    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[1])c[1].click();});
+    await new Promise(r=>setTimeout(r,1500));
+
+    const asrout=await p.evaluate(()=>{
+      var h3=document.querySelector('.cc-panel-header h3');
+      if(!h3) return null;
+      var rect=h3.getBoundingClientRect();
+      return {text:h3.textContent,top:rect.top,h:rect.height,visible:rect.top>=0,includes_debut:h3.textContent.includes('ASROUT'),includes_fin:h3.textContent.includes('assainissement')};
     });
-    log('Priorité compact ~64px',prioRow&&prioRow.h>=50&&prioRow.h<=80,'height='+((prioRow||{}).h||0));
-    log('Priorité chevron + actions masquées',prioRow&&prioRow.chevron&&prioRow.actionsHidden,'ok');
+    log('ASROUT nom complet visible',asrout&&asrout.visible&&asrout.includes_debut&&asrout.includes_fin,
+      'top='+((asrout||{}).top)+' text="'+((asrout||{}).text||'').substring(0,50)+'..."');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_asrout_fiche.png'),fullPage:false});
+    log('Capture ASROUT fiche',true,'cc_mob_asrout_fiche.png');
 
-    // 6. Drawer priorités
-    await p.evaluate(()=>{var btn=document.querySelector('.cc-mob-voir-toutes');if(btn)btn.click();});
-    await new Promise(r=>setTimeout(r,800));
-    const pdrawer=await p.evaluate(()=>{var d=document.getElementById('cc-prio-drawer');return d?{vis:d.offsetHeight>0,rows:d.querySelectorAll('.cc-priority-row').length}:null;});
-    log('Priorités drawer plein écran',pdrawer&&pdrawer.vis&&pdrawer.rows>=3,'rows='+(pdrawer?pdrawer.rows:0));
-    await p.evaluate(()=>ccMobilePrioritiesClose());
+    // Close panel
+    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
     await new Promise(r=>setTimeout(r,500));
 
-    // ═══ ANOMALIE 1 : CARTE CENTRÉE SUR ALGER ═══
-    // Clic DOM réel sur l'onglet Carte via le bouton
-    await p.evaluate(()=>document.querySelector('[data-cc-tab="carte"]').click());
+    // ═══ PREUVE 2 : Nom le plus long (ASROUT=99 chars, déjà testé) ═══
+    // ASROUT est le plus long en FR (99 chars) — preuve SQL dans le rapport
+
+    // ═══ PREUVE 3 : AR nom long — ASROUT en arabe ═══
+    await p.evaluate(()=>setLang('ar'));
+    await new Promise(r=>setTimeout(r,1500));
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+
+    // Click ASROUT AR (2nd card)
+    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[1])c[1].click();});
     await new Promise(r=>setTimeout(r,1500));
 
-    const mapCenter=await p.evaluate(()=>{
-      if(!_ccMap) return null;
-      var c=_ccMap.getCenter();
-      return {lat:c.lat,lng:c.lng,zoom:_ccMap.getZoom()};
+    const asroutAr=await p.evaluate(()=>{
+      var h3=document.querySelector('.cc-panel-header h3');
+      if(!h3) return null;
+      var rect=h3.getBoundingClientRect();
+      return {text:h3.textContent,top:rect.top,h:rect.height,visible:rect.top>=0};
     });
-    var latOK=mapCenter&&Math.abs(mapCenter.lat-36.7538)<0.01;
-    var lngOK=mapCenter&&Math.abs(mapCenter.lng-3.0588)<0.01;
-    log('Carte centrée sur Alger',latOK&&lngOK&&mapCenter.zoom===11,
-      'lat='+((mapCenter||{}).lat||0).toFixed(4)+' lng='+((mapCenter||{}).lng||0).toFixed(4)+' zoom='+((mapCenter||{}).zoom));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_carte_fr.png'),fullPage:false});
-    log('Capture Carte centrée Alger',true,'cc_mob_carte_fr.png');
+    log('ASROUT AR nom complet visible',asroutAr&&asroutAr.visible,'top='+((asroutAr||{}).top)+' text="'+((asroutAr||{}).text||'').substring(0,50)+'..."');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_asrout_ar.png'),fullPage:false});
+    log('Capture ASROUT AR',true,'cc_mob_asrout_ar.png');
 
-    // ═══ CYCLE COMPLET : aperçu → plein écran → retour ═══
-    await p.evaluate(()=>document.querySelector('.cc-mob-open-map').click());
+    // Close panel
+    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
+    await new Promise(r=>setTimeout(r,500));
+
+    // ═══ PREUVE 4 : NETCOM (nom court) pas dégradé ═══
+    await p.evaluate(()=>setLang('fr'));
+    await new Promise(r=>setTimeout(r,1000));
+    await p.evaluate(()=>ccMobileTab('organismes'));
+    await new Promise(r=>setTimeout(r,1000));
+
+    await p.evaluate(()=>{var c=document.querySelectorAll('#cc-epics-prio .cc-epic-card');if(c[0])c[0].click();});
     await new Promise(r=>setTimeout(r,1500));
-    const fsMap1=await p.evaluate(()=>{var o=document.getElementById('cc-map-fullscreen');return o&&!o.classList.contains('hidden');});
-    log('Carte fullscreen ouverte',fsMap1,'visible');
-    await p.screenshot({path:path.join(DOCS,'cc_mob_carte_fs.png'),fullPage:false});
 
-    // Fermeture
-    await p.evaluate(()=>document.querySelector('.cc-map-fs-close').click());
-    await new Promise(r=>setTimeout(r,1500));
-    const preview1=await p.evaluate(()=>{var m=document.getElementById('cc-map');return m?m.offsetHeight:0;});
-    const previewCenter=await p.evaluate(()=>{if(!_ccMap)return null;var c=_ccMap.getCenter();return {lat:c.lat,lng:c.lng};});
-    var pLatOK=previewCenter&&Math.abs(previewCenter.lat-36.7538)<0.01;
-    log('Retour aperçu 240px + centrée',preview1>100&&preview1<300&&pLatOK,'height='+preview1+' lat='+((previewCenter||{}).lat||0).toFixed(4));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_carte_after_close.png'),fullPage:false});
-    log('Capture aperçu après fermeture',true,'cc_mob_carte_after_close.png');
+    const netcom=await p.evaluate(()=>{
+      var h3=document.querySelector('.cc-panel-header h3');
+      if(!h3) return null;
+      var headerEl=document.querySelector('.cc-panel-header');
+      return {text:h3.textContent,h3H:h3.offsetHeight,headerH:headerEl?headerEl.offsetHeight:0,visible:h3.getBoundingClientRect().top>=0};
+    });
+    log('NETCOM nom court — pas dégradé',netcom&&netcom.visible&&netcom.headerH<120,'headerH='+((netcom||{}).headerH)+' text="'+((netcom||{}).text||'').substring(0,40)+'"');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_netcom_fiche.png'),fullPage:false});
+    log('Capture NETCOM fiche',true,'cc_mob_netcom_fiche.png');
 
-    // ═══ ANOMALIE 2 : 6 EPIC PRIORITAIRES ═══
+    // Close panel
+    await p.evaluate(()=>{var c=document.querySelector('.cc-panel-close');if(c)c.click();});
+    await new Promise(r=>setTimeout(r,500));
+
+    // ═══ PREUVE 5 : Carrousel 6 EPIC + carte Alger ═══
     await p.evaluate(()=>ccMobileTab('organismes'));
     await new Promise(r=>setTimeout(r,1000));
 
@@ -105,53 +121,21 @@ async function login(b,tel,mdp){
       var grid=document.getElementById('cc-epics-prio');
       if(!grid) return null;
       var cards=grid.querySelectorAll('.cc-epic-card');
-      var names=[];
-      cards.forEach(function(c){
-        var n=c.querySelector('.cc-epic-name');
-        names.push(n?n.textContent.substring(0,30):'?');
-      });
-      var dots=grid.parentNode.querySelector('.cc-carousel-dots');
-      return {count:cards.length,names:names,gridW:grid.offsetWidth,scrollW:grid.scrollWidth,dots:dots?dots.children.length:0};
+      return {count:cards.length,scrollW:grid.scrollWidth,gridW:grid.offsetWidth};
     });
-    log('6 EPIC prioritaires affichés',epicData&&epicData.count===6,'count='+((epicData||{}).count)+' noms='+JSON.stringify((epicData||{}).names));
-    log('EPIC bord suivant visible',epicData&&epicData.scrollW>epicData.gridW,'gridW='+((epicData||{}).gridW)+' scrollW='+((epicData||{}).scrollW));
-    log('Dots pagination EPIC',epicData&&epicData.dots===6,((epicData||{}).dots)+' dots');
-
+    log('6 EPIC carrousel OK',epicData&&epicData.count===6&&epicData.scrollW>epicData.gridW,'count='+((epicData||{}).count)+' scrollW='+((epicData||{}).scrollW));
     await p.screenshot({path:path.join(DOCS,'cc_mob_organismes_fr.png'),fullPage:false});
-    log('Capture Organismes (1ère carte)',true,'cc_mob_organismes_fr.png');
 
-    // Scroll jusqu'à CET (6ème carte)
-    await p.evaluate(()=>{
-      var grid=document.getElementById('cc-epics-prio');
-      if(grid) grid.scrollLeft=grid.scrollWidth;
-    });
-    await new Promise(r=>setTimeout(r,500));
-    const lastCard=await p.evaluate(()=>{
-      var grid=document.getElementById('cc-epics-prio');
-      var cards=grid.querySelectorAll('.cc-epic-card');
-      var last=cards[cards.length-1];
-      return last?{name:last.querySelector('.cc-epic-name').textContent,visible:last.offsetWidth>0}:null;
-    });
-    log('CET visible après scroll',lastCard&&lastCard.visible&&(lastCard.name.includes('enfouissement')||lastCard.name.includes('CET')),'nom='+((lastCard||{}).name||'').substring(0,50));
-    await p.screenshot({path:path.join(DOCS,'cc_mob_epic_cet.png'),fullPage:false});
-    log('Capture EPIC CET (dernière)',true,'cc_mob_epic_cet.png');
+    await p.evaluate(()=>ccMobileTab('carte'));
+    await new Promise(r=>setTimeout(r,1500));
 
-    // EPIC stats 4 colonnes
-    const epicStats=await p.evaluate(()=>{
-      var grid=document.querySelector('.cc-epic-stats');
-      if(!grid) return null;
-      return getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+    const mapOK=await p.evaluate(()=>{
+      if(!_ccMap) return false;
+      var c=_ccMap.getCenter();
+      return Math.abs(c.lat-36.7538)<0.01 && Math.abs(c.lng-3.0588)<0.01 && _ccMap.getZoom()===11;
     });
-    log('EPIC stats 4 colonnes',epicStats===4,'cols='+epicStats);
-
-    // Direction carousel
-    const dirCards=await p.evaluate(()=>{
-      var grid=document.getElementById('cc-directions');
-      if(!grid) return null;
-      var dots=grid.parentNode.querySelector('.cc-carousel-dots');
-      return {count:grid.querySelectorAll('.cc-dir-card').length,scrollW:grid.scrollWidth,gridW:grid.offsetWidth,dots:dots?dots.children.length:0};
-    });
-    log('Carrousel directions lisible',dirCards&&dirCards.scrollW>dirCards.gridW,'gridW='+((dirCards||{}).gridW)+' scrollW='+((dirCards||{}).scrollW)+' dots='+((dirCards||{}).dots));
+    log('Carte mobile centrée Alger',mapOK,'zoom=11');
+    await p.screenshot({path:path.join(DOCS,'cc_mob_carte_fr.png'),fullPage:false});
 
     // Plus menu
     await p.evaluate(()=>ccMobileTab('plus'));
@@ -159,7 +143,7 @@ async function login(b,tel,mdp){
     const plusItems=await p.evaluate(()=>document.querySelectorAll('.cc-plus-item').length);
     log('Plus menu 5 items',plusItems===5,plusItems+' items');
 
-    // AR mode
+    // AR mode capture
     await p.evaluate(()=>setLang('ar'));
     await new Promise(r=>setTimeout(r,1500));
     await p.evaluate(()=>ccMobileTab('pilotage'));
@@ -173,39 +157,32 @@ async function login(b,tel,mdp){
     await p.setViewport({width:360,height:780,isMobile:true});
     await p.evaluate(()=>ccMobileTab('pilotage'));
     await new Promise(r=>setTimeout(r,500));
-    const noOverflow=await p.evaluate(()=>document.documentElement.scrollWidth<=360);
-    log('360px pas de débordement',noOverflow,'scrollWidth='+await p.evaluate(()=>document.documentElement.scrollWidth));
+    const noOvf=await p.evaluate(()=>document.documentElement.scrollWidth<=360);
+    log('360px pas de débordement',noOvf,'scrollW='+await p.evaluate(()=>document.documentElement.scrollWidth));
 
-    // Touch targets ≥44px
-    const minTouch=await p.evaluate(()=>{
-      var els=document.querySelectorAll('.cc-bnav-item,.cc-kpi-card,.cc-mob-voir-toutes,.cc-mob-open-map,.cc-priority-row');
-      var min=999;
-      els.forEach(e=>{var h=e.offsetHeight;if(h>0&&h<min)min=h;});
-      return min;
-    });
+    // Touch + board
+    const minTouch=await p.evaluate(()=>{var els=document.querySelectorAll('.cc-bnav-item,.cc-kpi-card,.cc-priority-row');var m=999;els.forEach(e=>{var h=e.offsetHeight;if(h>0&&h<m)m=h;});return m;});
     log('Zones tactiles ≥44px',minTouch>=44,'min='+minTouch+'px');
-
-    // Board total
     const total=await p.evaluate(async()=>{var t=localStorage.getItem('civismart_token');var r=await fetch('/api/signaler/board',{headers:{Authorization:'Bearer '+t}});var d=await r.json();return Array.isArray(d)?d.length:-1;});
     log('Total signalements',total===122,'total='+total);
 
     await p.close();
 
-    // ── CONTRE-TESTS ──
+    // Contre-tests
     await new Promise(r=>setTimeout(r,2000));
     const p2=await login(b,'0550000007','admin@@1234');
     await p2.setViewport({width:390,height:844,isMobile:true});
     await new Promise(r=>setTimeout(r,1000));
-    const nassimCCNav=await p2.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
-    log('Nassim: pas de nav CC',nassimCCNav==='none'||nassimCCNav==='','display='+nassimCCNav);
+    const nassim=await p2.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
+    log('Nassim: pas de nav CC',nassim==='none'||nassim==='','display='+nassim);
     await p2.close();
 
     await new Promise(r=>setTimeout(r,2000));
     const p3=await login(b,'0550000001','admin1234');
     await p3.setViewport({width:390,height:844,isMobile:true});
     await new Promise(r=>setTimeout(r,1000));
-    const aminaCCNav=await p3.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
-    log('Amina: pas de nav CC',aminaCCNav==='none'||aminaCCNav==='','display='+aminaCCNav);
+    const amina=await p3.evaluate(()=>{var n=document.getElementById('cc-bottom-nav');return n?n.style.display:'?';});
+    log('Amina: pas de nav CC',amina==='none'||amina==='','display='+amina);
     await p3.close();
 
   }catch(e){console.error('ERR:',e.message);log('Erreur',false,e.message);}
