@@ -520,21 +520,18 @@ router.get('/board',
     // Service interne → résolution vers la direction parente (parent_id)
     if (req.user.fonction === 'entite_responsable' && req.user.organisation_id) {
       const orgId = Number(req.user.organisation_id);
-      params.push(orgId);
-      const pOrg = params.length;
       const { rows: orgInfo } = await query('SELECT type_organisation, parent_id FROM organisations WHERE id = $1', [orgId]);
       const orgType = orgInfo.length ? orgInfo[0].type_organisation : null;
       if (orgType === 'epic') {
-        sql += ` AND s.organisation_executante_id = $${pOrg}`;
+        params.push(orgId);
+        sql += ` AND s.organisation_executante_id = $${params.length}`;
       } else {
-        // For direction_wilaya: use org_id. For other types: resolve via parent_id to find parent direction.
         let effectiveDir = orgId;
         if (orgType !== 'direction_wilaya' && orgInfo.length && orgInfo[0].parent_id) {
           effectiveDir = orgInfo[0].parent_id;
         }
         params.push(effectiveDir);
-        const pDir = params.length;
-        sql += ` AND (s.direction_pilote_id = $${pDir} OR s.organisation_executante_id IN (SELECT id FROM organisations WHERE direction_tutelle_id = $${pDir}))`;
+        sql += ` AND (s.direction_pilote_id = $${params.length} OR s.organisation_executante_id IN (SELECT id FROM organisations WHERE direction_tutelle_id = $${params.length}))`;
       }
     }
     sql += ` ORDER BY s.cree_le DESC LIMIT 500`;
