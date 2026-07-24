@@ -78,7 +78,7 @@ async function checkCommuneAccess(req, signalementId) {
 }
 
 // Phase 3B — dual-mode : nouveau modèle avec fallback ancien
-const STAFF_FONCTIONS = ['agent_traitant', 'cap', 'entite_responsable', 'superviseur'];
+const STAFF_FONCTIONS = ['agent_traitant', 'cap', 'entite_responsable', 'superviseur', 'cabinet'];
 function requireStaff() {
   return (req, res, next) => {
     if (!req.user) return next(require('../../utils/http').unauthorized());
