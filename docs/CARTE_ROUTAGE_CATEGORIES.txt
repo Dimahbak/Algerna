@@ -1,92 +1,75 @@
-CARTE DE ROUTAGE DES CATEGORIES DE SIGNALEMENT
-Generee le 2026-07-20 depuis la base de donnees
+CARTE DE ROUTAGE DES CATÉGORIES DE SIGNALEMENT
+Générée le 2026-07-24 depuis la base de données (post-migration 060)
 
-cat_id | libelle FR                               | famille          | epic_id | nom EPIC                                       | responsable
--------|-----------------------------------------|------------------|---------|------------------------------------------------|------------------------------------
-    69 | Trottoir non accessible PMR             | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    70 | Absence de rampe / main courante        | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    71 | Place PMR occupée / non conforme        | accessibilite    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
-    72 | Autre accessibilité                     | accessibilite    | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    65 | Animal errant (chien, chat)             | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    66 | Animal mort sur la voie publique        | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    67 | Nid d'insectes dangereux                | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    68 | Autre animal                            | animaux          | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    37 | Regard/avaloir bouché                   | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    38 | Odeurs nauséabondes                     | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    39 | Refoulement eaux usées                  | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    40 | Autre assainissement                    | assainissement   | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    36 | Autre problème                          | autre            |   —     | (tri humain)                                   | TRI HUMAIN (Youcef Kaci 0550000002)
-    41 | Bâtiment dégradé                        | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
-    42 | Accessibilité non conforme              | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
-    43 | Équipement défectueux                   | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
-    44 | Autre bâtiment public                   | batiments        | 7       | EPIC — Direction Voirie et Trottoirs           | Sofiane Cherif 0550000012
-     8 | Fuite d'eau visible                     | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-     9 | Coupure d'eau ou pression faible        | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    10 | Eau non potable ou colorée              | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    11 | Fuite sur compteur                      | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    12 | Pression insuffisante                   | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    13 | Inondation ou refoulement               | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-    14 | Autre eau                               | eau              | 17      | EPIC — Direction Eau et Assainissement         | Farid Mebarki 0550000011
-     6 | Éclairage défaillant                    | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    23 | Lampadaire éteint                       | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    24 | Lampadaire clignotant ou défectueux     | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    25 | Câble électrique apparent               | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    26 | Autre éclairage                         | eclairage        | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    57 | Déversement illicite                    | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
-    58 | Cours d'eau / oued pollué               | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
-    59 | Terrain vague insalubre                 | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
-    60 | Autre environnement                     | environnement    | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
-    15 | Arbre dangereux ou espace vert dégradé  | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    18 | Arrosage défectueux ou fuite            | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    19 | Mobilier urbain dégradé                 | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    20 | Aire de jeux endommagée                 | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    21 | Plantation ou fleurissement à entretenir | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    22 | Autre espaces verts                     | espaces_verts    | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    49 | Banc / abri bus dégradé                 | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    50 | Poubelle publique manquante ou cassée   | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    51 | Panneau / affichage endommagé           | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    52 | Autre mobilier urbain                   | mobilier_urbain  | 3       | EPIC — Direction Espaces Verts                 | Leïla Haddad 0550000013
-    45 | Bruit excessif                          | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    46 | Pollution de l'air / fumées             | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    47 | Nuisibles                               | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-    48 | Autre nuisance                          | nuisances        | 1       | EPIC — Direction Propreté (Centre)             | Nassim Taleb 0550000007
-     1 | Dépôt sauvage                           | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
-     2 | Benne pleine ou débordante              | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
-     3 | Encombrants sur la voie publique        | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
-     4 | Tags ou graffitis                       | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
-     7 | Autre propreté                          | proprete         |   —     | (dynamique zone)                               | DYNAMIQUE (zone commune)
-    17 | Décharge sauvage                        | proprete         | 32      | EPIC — Direction Centres d'Enfouissement       | Redouane Ferhat 0550000014
-    61 | Trou / excavation non protégé           | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    62 | Mur / structure menaçant de s'effondrer | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    63 | Câble / fil électrique au sol           | securite         | 8       | EPIC — Direction Éclairage Public              | Nadia Aissaoui 0550000008
-    64 | Autre danger                            | securite         | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    16 | Stationnement gênant ou anarchique      | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
-    33 | Place PMR non respectée                 | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
-    34 | Zone à réguler                          | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
-    35 | Autre stationnement                     | stationnement    | 31      | EPIC — Direction Stationnement                 | Khaled Boumediene 0550000009
-    53 | Arrêt de bus sans abri / dégradé        | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    54 | Signalisation routière manquante        | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    55 | Passage piéton effacé / dangereux       | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    56 | Autre transport                         | transport        | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-     5 | Chaussée dégradée                       | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    28 | Trottoir dégradé ou inaccessible        | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    29 | Signalisation manquante ou endommagée   | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    30 | Feu tricolore en panne                  | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-    31 | Autre voirie                            | voirie           | 30      | EPIC — Direction Circulation et Transports     | Sofiane Cherif 0550000012
-
-Total categories : 70
-Colonnes "AUCUN" : 0
-
-RECAPITULATIF PAR RESPONSABLE
----------------------------------------------|-----
-responsable                                  | nb categories
----------------------------------------------|-----
-Sofiane Cherif                                | 19
-Farid Mebarki                                 | 11
-Leïla Haddad                                  | 10
-Nassim Taleb                                  | 8
-Nadia Aissaoui                                | 6
-Khaled Boumediene                             | 5
-Redouane Ferhat                               | 5
-Nassim Taleb (dynamique)                      | 5
-TRI HUMAIN (Youcef Kaci                       | 1
+cat_id | libellé                                  | domaine     | direction pilote                               | exécutant (EPIC/direction)
+-------|------------------------------------------|-------------|------------------------------------------------|--------------------------------------------
+    70 | Absence de rampe / main courante         | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    72 | Autre accessibilité                      | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    71 | Place PMR occupée / non conforme         | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    69 | Trottoir non accessible PMR              | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    65 | Animal errant (chien, chat)              | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    66 | Animal mort sur la voie publique         | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    68 | Autre animal                             | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    67 | Nid d'insectes dangereux                 | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    40 | Autre assainissement                     | general     | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    38 | Odeurs nauséabondes                      | general     | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    39 | Refoulement eaux usées                   | general     | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    37 | Regard/avaloir bouché                    | general     | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    36 | Autre problème                           | general     | (aucun)                                        | (aucun)
+    42 | Accessibilité non conforme               | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    44 | Autre bâtiment public                    | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    41 | Bâtiment dégradé                         | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    43 | Équipement défectueux                    | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    14 | Autre eau                                | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+     9 | Coupure d'eau ou pression faible         | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    10 | Eau non potable ou colorée               | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+     8 | Fuite d'eau visible                      | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    11 | Fuite sur compteur                       | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    13 | Inondation ou refoulement                | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    12 | Pression insuffisante                    | eau         | Direction de l'Eau et de l'Assainissement      | Direction de l'Eau et de l'Assainissement
+    26 | Autre éclairage                          | general     | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+    25 | Câble électrique apparent                | general     | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+     6 | Éclairage défaillant                     | proprete    | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+    24 | Lampadaire clignotant ou défectueux      | general     | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+    23 | Lampadaire éteint                        | general     | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+    60 | Autre environnement                      | general     | Direction de l'Environnement                   | Établissement de gestion des centres d'enfou
+    58 | Cours d'eau / oued pollué                | general     | Direction de l'Environnement                   | Établissement de gestion des centres d'enfou
+    57 | Déversement illicite                     | general     | Direction de l'Environnement                   | Établissement de gestion des centres d'enfou
+    59 | Terrain vague insalubre                  | general     | Direction de l'Environnement                   | Établissement de gestion des centres d'enfou
+    20 | Aire de jeux endommagée                  | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    15 | Arbre dangereux ou espace vert dégradé   | proprete    | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    18 | Arrosage défectueux ou fuite             | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    22 | Autre espaces verts                      | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    19 | Mobilier urbain dégradé                  | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    21 | Plantation ou fleurissement à entretenir | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    52 | Autre mobilier urbain                    | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    49 | Banc / abri bus dégradé                  | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    51 | Panneau / affichage endommagé            | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    50 | Poubelle publique manquante ou cassée    | general     | Direction de l'Environnement                   | EDEVAL — Entreprise de Développement des Esp
+    48 | Autre nuisance                           | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    45 | Bruit excessif                           | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    47 | Nuisibles                                | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    46 | Pollution de l'air / fumées              | general     | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+     7 | Autre propreté                           | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+     2 | Benne pleine ou débordante               | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    17 | Décharge sauvage                         | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+     1 | Dépôt sauvage                            | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+     3 | Encombrants sur la voie publique         | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+     4 | Tags ou graffitis                        | proprete    | Direction de la Propreté                       | NETCOM — Entreprise de Nettoiement et Collec
+    64 | Autre danger                             | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    63 | Câble / fil électrique au sol            | general     | Direction de l'Éclairage public                | ERMA — Établissement public de Réalisation e
+    62 | Mur / structure menaçant de s'effondrer  | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    61 | Trou / excavation non protégé            | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    35 | Autre stationnement                      | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    33 | Place PMR non respectée                  | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    16 | Stationnement gênant ou anarchique       | proprete    | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    34 | Zone à réguler                           | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    53 | Arrêt de bus sans abri / dégradé         | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    56 | Autre transport                          | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    55 | Passage piéton effacé / dangereux        | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    54 | Signalisation routière manquante         | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    31 | Autre voirie                             | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+     5 | Chaussée dégradée                        | proprete    | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré
+    30 | Feu tricolore en panne                   | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    29 | Signalisation manquante ou endommagée    | general     | Direction des Transports de la Wilaya d'Alger  | EGCTU — Établissement de Gestion de la Circu
+    28 | Trottoir dégradé ou inaccessible         | general     | Direction des Travaux publics de la Wilaya d'A | ASROUT — Établissement de maintenance des ré

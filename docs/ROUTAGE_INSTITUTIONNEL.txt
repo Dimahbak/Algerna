@@ -1,144 +1,142 @@
 === ROUTAGE INSTITUTIONNEL — Wilaya d'Alger ===
-Généré le 2026-07-22
+Mis à jour le 2026-07-24 (post-migration 060 : bascule exécutants → EPIC)
+
+PRINCIPE : la direction est PILOTE, l'EPIC prioritaire sous tutelle est EXÉCUTANT.
+Eau/Assainissement : pas d'EPIC sous tutelle → la direction reste exécutante.
 
 ── Direction de la Culture et des Arts (id=117) ──
   Catégories pilotées : 0
   EPIC de tutelle :
-    — : Établissement public art et culture
+    — Établissement public art et culture
 
 ── Direction de l'Administration Locale (id=120) ──
   Catégories pilotées : 0
   EPIC de tutelle :
-    — : Établissement de gestion des pompes funèbres et des cimetières
+    — Établissement de gestion des pompes funèbres et des cimetièr
 
 ── Direction de la Jeunesse, des Sports et des Loisirs (id=118) ──
   Catégories pilotées : 0
   EPIC de tutelle :
-    OPLA : Office des parcs des sports et des loisirs d'Alger
+    — Office des parcs des sports et des loisirs d'Alger
 
 ── Direction de la Propreté (id=5) ──
   Catégories pilotées : 14
-    1: Dépôt sauvage
-    2: Benne pleine ou débordante
-    3: Encombrants sur la voie publique
-    4: Tags ou graffitis
-    7: Autre propreté
-    17: Décharge sauvage
-    45: Bruit excessif
-    46: Pollution de l'air / fumées
-    47: Nuisibles
-    48: Autre nuisance
-    65: Animal errant (chien, chat)
-    66: Animal mort sur la voie publique
-    67: Nid d'insectes dangereux
-    68: Autre animal
+    65: Animal errant (chien, chat) → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    66: Animal mort sur la voie publique → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    68: Autre animal → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    48: Autre nuisance → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    7: Autre propreté → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    2: Benne pleine ou débordante → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    45: Bruit excessif → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    17: Décharge sauvage → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    1: Dépôt sauvage → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    3: Encombrants sur la voie publique → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    67: Nid d'insectes dangereux → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    47: Nuisibles → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    46: Pollution de l'air / fumées → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
+    4: Tags ou graffitis → EXEC: NETCOM — Entreprise de Nettoiement et Collecte des
   EPIC de tutelle :
-    NETCOM : NETCOM — Entreprise de Nettoiement et Collecte des Ordures Ménagères d'Alger
-    EXTRANET : EXTRANET — Entreprise de Nettoiement de la Banlieue d'Alger
+    ★ NETCOM — Entreprise de Nettoiement et Collecte des Ordures M
+    — EXTRANET — Entreprise de Nettoiement de la Banlieue d'Alger
 
 ── Direction de la Santé et de la Protection Civile (id=24) ──
   Catégories pilotées : 0
 
 ── Direction de l'Eau et de l'Assainissement (id=18) ──
   Catégories pilotées : 11
-    8: Fuite d'eau visible
-    9: Coupure d'eau ou pression faible
-    10: Eau non potable ou colorée
-    11: Fuite sur compteur
-    12: Pression insuffisante
-    13: Inondation ou refoulement
-    14: Autre eau
-    37: Regard/avaloir bouché
-    38: Odeurs nauséabondes
-    39: Refoulement eaux usées
-    40: Autre assainissement
+    40: Autre assainissement → EXEC: Direction de l'Eau et de l'Assainissement
+    14: Autre eau → EXEC: Direction de l'Eau et de l'Assainissement
+    9: Coupure d'eau ou pression faible → EXEC: Direction de l'Eau et de l'Assainissement
+    10: Eau non potable ou colorée → EXEC: Direction de l'Eau et de l'Assainissement
+    8: Fuite d'eau visible → EXEC: Direction de l'Eau et de l'Assainissement
+    11: Fuite sur compteur → EXEC: Direction de l'Eau et de l'Assainissement
+    13: Inondation ou refoulement → EXEC: Direction de l'Eau et de l'Assainissement
+    38: Odeurs nauséabondes → EXEC: Direction de l'Eau et de l'Assainissement
+    12: Pression insuffisante → EXEC: Direction de l'Eau et de l'Assainissement
+    39: Refoulement eaux usées → EXEC: Direction de l'Eau et de l'Assainissement
+    37: Regard/avaloir bouché → EXEC: Direction de l'Eau et de l'Assainissement
 
 ── Direction de l'Éclairage public (id=23) ──
   Catégories pilotées : 6
-    6: Éclairage défaillant
-    23: Lampadaire éteint
-    24: Lampadaire clignotant ou défectueux
-    25: Câble électrique apparent
-    26: Autre éclairage
-    63: Câble / fil électrique au sol
+    26: Autre éclairage → EXEC: ERMA — Établissement public de Réalisation et de M
+    25: Câble électrique apparent → EXEC: ERMA — Établissement public de Réalisation et de M
+    63: Câble / fil électrique au sol → EXEC: ERMA — Établissement public de Réalisation et de M
+    6: Éclairage défaillant → EXEC: ERMA — Établissement public de Réalisation et de M
+    24: Lampadaire clignotant ou défectueux → EXEC: ERMA — Établissement public de Réalisation et de M
+    23: Lampadaire éteint → EXEC: ERMA — Établissement public de Réalisation et de M
   EPIC de tutelle :
-    ERMA : ERMA — Établissement public de Réalisation et de Maintenance de l'Éclairage public
+    ★ ERMA — Établissement public de Réalisation et de Maintenance
 
 ── Direction de l'Environnement (id=13) ──
   Catégories pilotées : 14
-    15: Arbre dangereux ou espace vert dégradé
-    18: Arrosage défectueux ou fuite
-    19: Mobilier urbain dégradé
-    20: Aire de jeux endommagée
-    21: Plantation ou fleurissement à entretenir
-    22: Autre espaces verts
-    49: Banc / abri bus dégradé
-    50: Poubelle publique manquante ou cassée
-    51: Panneau / affichage endommagé
-    52: Autre mobilier urbain
-    57: Déversement illicite
-    58: Cours d'eau / oued pollué
-    59: Terrain vague insalubre
-    60: Autre environnement
+    20: Aire de jeux endommagée → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    15: Arbre dangereux ou espace vert dégradé → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    18: Arrosage défectueux ou fuite → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    60: Autre environnement → EXEC: Établissement de gestion des centres d'enfouisseme
+    22: Autre espaces verts → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    52: Autre mobilier urbain → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    49: Banc / abri bus dégradé → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    58: Cours d'eau / oued pollué → EXEC: Établissement de gestion des centres d'enfouisseme
+    57: Déversement illicite → EXEC: Établissement de gestion des centres d'enfouisseme
+    19: Mobilier urbain dégradé → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    51: Panneau / affichage endommagé → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    21: Plantation ou fleurissement à entretenir → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    50: Poubelle publique manquante ou cassée → EXEC: EDEVAL — Entreprise de Développement des Espaces V
+    59: Terrain vague insalubre → EXEC: Établissement de gestion des centres d'enfouisseme
   EPIC de tutelle :
-    EDEVAL : EDEVAL — Entreprise de Développement des Espaces Verts d'Alger
-    CET : Établissement de gestion des centres d'enfouissement technique
-    EMCU : EMCU — Établissement Mobilier et Confort Urbain
-    — : Jardin d'Essai du Hamma
-    — : Parc zoologique et des loisirs La Concorde Civile
+    ★ EDEVAL — Entreprise de Développement des Espaces Verts d'Alg
+    ★ Établissement de gestion des centres d'enfouissement techniq
+    — EMCU — Établissement Mobilier et Confort Urbain
+    — Jardin d'Essai du Hamma
+    — Parc zoologique et des loisirs La Concorde Civile
 
 ── Direction de l'Urbanisme (id=14) ──
   Catégories pilotées : 0
   EPIC de tutelle :
-    AETI : Agence des études techniques et d'ingénierie
-    AGRU : Agence de gestion et de régulation foncières urbaines
+    — Agence des études techniques et d'ingénierie
+    — Agence de gestion et de régulation foncières urbaines
 
 ── Direction des Transports de la Wilaya d'Alger (id=136) ──
   Catégories pilotées : 11
-    16: Stationnement gênant ou anarchique
-    29: Signalisation manquante ou endommagée
-    30: Feu tricolore en panne
-    33: Place PMR non respectée
-    34: Zone à réguler
-    35: Autre stationnement
-    53: Arrêt de bus sans abri / dégradé
-    54: Signalisation routière manquante
-    55: Passage piéton effacé / dangereux
-    56: Autre transport
-    71: Place PMR occupée / non conforme
+    53: Arrêt de bus sans abri / dégradé → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    35: Autre stationnement → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    56: Autre transport → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    30: Feu tricolore en panne → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    55: Passage piéton effacé / dangereux → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    33: Place PMR non respectée → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    71: Place PMR occupée / non conforme → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    29: Signalisation manquante ou endommagée → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    54: Signalisation routière manquante → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    16: Stationnement gênant ou anarchique → EXEC: EGCTU — Établissement de Gestion de la Circulation
+    34: Zone à réguler → EXEC: EGCTU — Établissement de Gestion de la Circulation
   EPIC de tutelle :
-    EGCTU : EGCTU — Établissement de Gestion de la Circulation et du Transport Urbain
+    ★ EGCTU — Établissement de Gestion de la Circulation et du Tra
 
 ── Direction des Travaux publics de la Wilaya d'Alger (id=6) ──
   Catégories pilotées : 13
-    5: Chaussée dégradée
-    28: Trottoir dégradé ou inaccessible
-    31: Autre voirie
-    41: Bâtiment dégradé
-    42: Accessibilité non conforme
-    43: Équipement défectueux
-    44: Autre bâtiment public
-    61: Trou / excavation non protégé
-    62: Mur / structure menaçant de s'effondrer
-    64: Autre danger
-    69: Trottoir non accessible PMR
-    70: Absence de rampe / main courante
-    72: Autre accessibilité
+    70: Absence de rampe / main courante → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    42: Accessibilité non conforme → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    72: Autre accessibilité → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    44: Autre bâtiment public → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    64: Autre danger → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    31: Autre voirie → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    41: Bâtiment dégradé → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    5: Chaussée dégradée → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    43: Équipement défectueux → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    62: Mur / structure menaçant de s'effondrer → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    28: Trottoir dégradé ou inaccessible → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    69: Trottoir non accessible PMR → EXEC: ASROUT — Établissement de maintenance des réseaux 
+    61: Trou / excavation non protégé → EXEC: ASROUT — Établissement de maintenance des réseaux 
   EPIC de tutelle :
-    ASROUT : ASROUT — Établissement de maintenance des réseaux routiers et d'assainissement de la Wilaya d'Alger
+    ★ ASROUT — Établissement de maintenance des réseaux routiers e
 
 ── Direction du Commerce (id=119) ──
   Catégories pilotées : 0
   EPIC de tutelle :
-    — : Établissement de gestion des abattoirs, poissonneries et marché de gros des fruits et légumes
+    — Établissement de gestion des abattoirs, poissonneries et mar
 
 ── Direction du Patrimoine (id=17) ──
   Catégories pilotées : 0
 
 ── Services internes ──
-  Coordination Opérationnelle (id=4) → parent : Wilaya d'Alger
-  Cabinet (id=3) → parent : Wilaya d'Alger
-  Service de Réception (id=2) → parent : Wilaya d'Alger
-  Brigade CAP (id=19) → parent : Wilaya d'Alger
-  Cellule Communication — Cabinet (id=25) → parent : Cabinet
-  Direction du Stationnement (id=16) → parent : Direction des Transports de la Wilaya d'Alger
+  (voir table organisations type_organisation=service_interne)
