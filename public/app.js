@@ -14012,8 +14012,8 @@ function ccMobileTab(tab) {
   }
   // Plus: render the menu
   if (tab === 'plus') ccRenderPlusMenu();
-  // Carte: invalidate map
-  if (tab === 'carte' && _ccMap) setTimeout(function() { _ccMap.invalidateSize(); }, 300);
+  // Carte: invalidate map + recentrer sur Alger (la carte initialisée dans un conteneur masqué perd son centre)
+  if (tab === 'carte' && _ccMap) setTimeout(function() { _ccMap.invalidateSize(); _ccMap.setView([36.7538, 3.0588], 11); }, 300);
   // Scroll to top
   var ccContent = document.getElementById('cc-content');
   if (ccContent) ccContent.scrollTop = 0;
@@ -14109,7 +14109,7 @@ function ccMapFullscreenOpen() {
   var fsFilters = document.getElementById('cc-map-fs-filters');
   var origFilters = document.getElementById('cc-map-filters');
   if (fsFilters && origFilters) fsFilters.innerHTML = origFilters.innerHTML;
-  setTimeout(function() { _ccMap.invalidateSize(); }, 200);
+  setTimeout(function() { _ccMap.invalidateSize(); setTimeout(function() { _ccMap.setView([36.7538, 3.0588], 11); }, 100); }, 200);
 }
 
 function ccMapFullscreenClose() {
@@ -14121,7 +14121,7 @@ function ccMapFullscreenClose() {
     _ccMapOrigParent.insertBefore(mapEl, _ccMapOrigParent.firstChild);
     mapEl.style.height = window.innerWidth <= 768 ? '240px' : '400px';
     mapEl.style.borderRadius = 'var(--radius-md)';
-    setTimeout(function() { if (_ccMap) _ccMap.invalidateSize(); }, 200);
+    setTimeout(function() { if (_ccMap) { _ccMap.invalidateSize(); setTimeout(function() { _ccMap.setView([36.7538, 3.0588], 11); }, 100); } }, 200);
   }
   document.body.style.overflow = '';
 }
