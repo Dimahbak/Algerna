@@ -504,12 +504,13 @@ router.delete('/briefings/:id', authenticate, requireCommandCenter(), async (req
 });
 
 // ── GET /briefing-pdf — export PDF briefing du jour ──
+// AR = Puppeteer (HTML→PDF, bidi natif parfait)
+// FR = PDFKit   (rendu direct, pas de dépendance Chrome)
 router.get('/briefing-pdf', authenticate, requireCommandCenter(), async (req, res) => {
   try {
     const isAr = req.query.lang === 'ar';
-    const fo = isAr ? { features: ['rtla', 'rtlm'] } : {};
 
-    // Fetch all data
+    // Fetch all data (shared by both renderers)
     const { rows: [stock] } = await query(`
       SELECT COUNT(*) FILTER (WHERE s.gravite = 'danger_immediat') AS critical_cases,
              COUNT(*) FILTER (WHERE s.cree_le < NOW() - INTERVAL '48 hours') AS breached_sla,
@@ -549,89 +550,176 @@ router.get('/briefing-pdf', authenticate, requireCommandCenter(), async (req, re
       WHERE dd.statut = 'en_attente' ORDER BY CASE dd.priorite WHEN 'haute' THEN 0 ELSE 1 END
     `);
 
-    // Build PDF
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
-    const fontR = path.join(FONT_DIR, 'DejaVuSans.ttf');
-    const fontB = path.join(FONT_DIR, 'DejaVuSans-Bold.ttf');
-    const fonts = { fontR: 'Helvetica', fontB: 'Helvetica-Bold' };
-    if (fs.existsSync(fontR)) { doc.registerFont('main', fontR); fonts.fontR = 'main'; }
-    if (fs.existsSync(fontB)) { doc.registerFont('mainB', fontB); fonts.fontB = 'mainB'; }
-
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=briefing_' + new Date().toISOString().slice(0,10) + '.pdf');
-    doc.pipe(res);
 
-    // Header
-    doc.rect(0, 0, doc.page.width, 70).fill('#041F38');
-    doc.font(fonts.fontB).fontSize(16).fillColor('#FFFFFF').text('ALGERNA', 40, 18, { width: doc.page.width - 80 });
-    doc.font(fonts.fontR).fontSize(9).fillColor('#8ecae6');
-    doc.text(isAr ? 'ولاية الجزائر — قاعة القيادة' : 'Wilaya d\'Alger — Salle de commandement', 40, 38, { width: doc.page.width - 80, ...fo });
-    doc.fillColor('#041F38').font(fonts.fontB).fontSize(14);
-    const title = isAr ? 'الإحاطة اليومية' : 'Briefing du jour';
-    doc.text(title, 40, 85, { width: doc.page.width - 80, ...fo });
-    doc.font(fonts.fontR).fontSize(9).fillColor('#666666');
-    const dateStr = new Date().toLocaleDateString(isAr ? 'ar-DZ' : 'fr-DZ', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    doc.text(dateStr, 40, 105, { width: doc.page.width - 80, ...fo });
-    let y = 130;
+    if (isAr) {
+      // ── RENDU ARABE VIA PUPPETEER (bidi natif) ──
+      const puppeteer = require('puppeteer');
+      const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const dateStr = new Date().toLocaleDateString('ar-DZ', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
-    // Section helper
-    function sec(label) {
-      if (y > 700) { doc.addPage(); y = 40; }
-      doc.rect(40, y, doc.page.width - 80, 22).fill('#063B5A');
-      doc.font(fonts.fontB).fontSize(10).fillColor('#FFFFFF').text(label, 50, y + 5, { width: doc.page.width - 100, ...fo });
-      doc.fillColor('#333333');
-      y += 30;
+      // KPI rows
+      const kpiRows = [
+        ['حوادث حرجة', critical],
+        ['تجاوزات المهل', breached],
+        ['ملفات نشطة', active],
+        ['النتيجة التشغيلية', score + '/100'],
+        ['قرارات معلقة', pendingDec]
+      ].map(([l,v]) => `<tr><td class="kpi-label">${esc(l)}</td><td class="kpi-value">${esc(String(v))}</td></tr>`).join('');
+
+      // Priority rows
+      const prioRows = priorities.map(p => {
+        const dir = p.direction_ar || p.direction || '—';
+        const sla = Math.max(0, Math.round((p.sla_min || 0) / 60));
+        return `<div class="line">${esc(p.reference||'')} — ${esc((p.titre||'').substring(0,60))} — ${esc(dir)}${sla > 0 ? ' <span dir="ltr">(+' + sla + 'h)</span>' : ''}</div>`;
+      }).join('');
+
+      // Briefing rows
+      const briefRows = briefings.map(b => {
+        const t = b.titre_ar || b.titre;
+        const c = b.contenu_ar || b.contenu;
+        let h = '';
+        if (b.heure) h = `<span dir="ltr">${esc(b.heure)}</span> — `;
+        return `<div class="line">${h}${esc(t)}</div>` + (c ? `<div class="sub-line">${esc(c)}</div>` : '');
+      }).join('');
+
+      // Decision rows
+      const decRows = decisions.map(d => {
+        const t = d.titre_ar || d.titre;
+        const dir = d.direction_ar || d.direction || '—';
+        const prio = d.priorite === 'haute' ? '● عالية' : '○ متوسطة';
+        return `<div class="line">${esc(prio)} — ${esc(t)} (${esc(dir)})</div>`;
+      }).join('');
+
+      const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Naskh Arabic','DejaVu Sans',serif; direction:rtl; color:#333; font-size:10px; line-height:1.6; padding:0 24px; }
+  .header { background:#041F38; color:white; padding:14px 24px; margin:0 -24px 16px; }
+  .header h1 { font-size:16px; font-weight:700; color:white; margin-bottom:2px; }
+  .header .sub { font-size:9px; color:#8ecae6; }
+  .title { font-size:14px; font-weight:700; color:#041F38; margin-bottom:4px; }
+  .date { font-size:9px; color:#666; margin-bottom:16px; }
+  .section { background:#063B5A; color:white; padding:5px 14px; border-radius:3px; font-size:10px; font-weight:700; margin:16px 0 8px; }
+  table.kpi { width:auto; border-collapse:collapse; margin-bottom:8px; }
+  table.kpi td { padding:4px 16px 4px 8px; border-bottom:1px solid #e5e7eb; }
+  .kpi-label { color:#666; font-size:9px; }
+  .kpi-value { font-weight:700; font-size:11px; color:#041F38; }
+  .line { font-size:9px; color:#333; margin-bottom:4px; line-height:1.6; }
+  .sub-line { font-size:8px; color:#666; margin:0 20px 6px 0; }
+  .page-footer { text-align:center; font-size:7px; color:#999; margin-top:30px; }
+</style></head><body>
+
+<div class="header">
+  <h1>ALGERNA</h1>
+  <div class="sub">ولاية الجزائر — قاعة القيادة</div>
+</div>
+<div class="title">الإحاطة اليومية</div>
+<div class="date">${esc(dateStr)}</div>
+
+<div class="section">المؤشرات الرئيسية</div>
+<table class="kpi">${kpiRows}</table>
+
+<div class="section">الأولويات</div>
+${prioRows || '<div class="line" style="color:#999;">لا توجد أولويات</div>'}
+
+<div class="section">الإحاطة</div>
+${briefRows || '<div class="line" style="color:#999;">لا توجد عناصر إحاطة</div>'}
+
+<div class="section">القرارات المعلقة</div>
+${decRows || '<div class="line" style="color:#999;">لا توجد قرارات معلقة</div>'}
+
+<div class="page-footer">ALGERNA — منصة الحوكمة المدنية</div>
+</body></html>`;
+
+      const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 15000 });
+      const pdfBuf = await page.pdf({ format: 'A4', margin: { top:'15mm', bottom:'15mm', left:'12mm', right:'12mm' }, printBackground: true });
+      await browser.close();
+      res.end(pdfBuf);
+
+    } else {
+      // ── RENDU FRANÇAIS VIA PDFKIT (inchangé) ──
+      const fo = {};
+      const doc = new PDFDocument({ size: 'A4', margin: 40 });
+      const fontR = path.join(FONT_DIR, 'DejaVuSans.ttf');
+      const fontB = path.join(FONT_DIR, 'DejaVuSans-Bold.ttf');
+      const fonts = { fontR: 'Helvetica', fontB: 'Helvetica-Bold' };
+      if (fs.existsSync(fontR)) { doc.registerFont('main', fontR); fonts.fontR = 'main'; }
+      if (fs.existsSync(fontB)) { doc.registerFont('mainB', fontB); fonts.fontB = 'mainB'; }
+
+      doc.pipe(res);
+
+      // Header
+      doc.rect(0, 0, doc.page.width, 70).fill('#041F38');
+      doc.font(fonts.fontB).fontSize(16).fillColor('#FFFFFF').text('ALGERNA', 40, 18, { width: doc.page.width - 80 });
+      doc.font(fonts.fontR).fontSize(9).fillColor('#8ecae6');
+      doc.text('Wilaya d\'Alger — Salle de commandement', 40, 38, { width: doc.page.width - 80 });
+      doc.fillColor('#041F38').font(fonts.fontB).fontSize(14);
+      doc.text('Briefing du jour', 40, 85, { width: doc.page.width - 80 });
+      doc.font(fonts.fontR).fontSize(9).fillColor('#666666');
+      const dateStr = new Date().toLocaleDateString('fr-DZ', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      doc.text(dateStr, 40, 105, { width: doc.page.width - 80 });
+      let y = 130;
+
+      // Section helper
+      function sec(label) {
+        if (y > 700) { doc.addPage(); y = 40; }
+        doc.rect(40, y, doc.page.width - 80, 22).fill('#063B5A');
+        doc.font(fonts.fontB).fontSize(10).fillColor('#FFFFFF').text(label, 50, y + 5, { width: doc.page.width - 100 });
+        doc.fillColor('#333333');
+        y += 30;
+      }
+      function row(label, value) {
+        if (y > 740) { doc.addPage(); y = 40; }
+        doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { continued: false });
+        doc.font(fonts.fontB).fontSize(10).fillColor('#041F38').text(String(value), 200, y);
+        y += 16;
+      }
+      function line(text) {
+        if (y > 740) { doc.addPage(); y = 40; }
+        doc.font(fonts.fontR).fontSize(9).fillColor('#333').text(text, 50, y, { width: doc.page.width - 100 });
+        y += 14;
+      }
+
+      // 1. Synthèse KPI
+      sec('Synthèse opérationnelle');
+      row('Incidents critiques', critical);
+      row('SLA dépassés', breached);
+      row('Dossiers actifs', active);
+      row('Score opérationnel', score + '/100');
+      row('Décisions en attente', pendingDec);
+      y += 8;
+
+      // 2. Priorités
+      sec('Priorités du jour');
+      priorities.forEach(p => {
+        const dir = p.direction || '—';
+        const sla = Math.max(0, Math.round((p.sla_min || 0) / 60));
+        line((p.reference || '') + ' — ' + (p.titre || '').substring(0, 60) + ' — ' + dir + (sla > 0 ? ' (+' + sla + 'h)' : ''));
+      });
+      y += 8;
+
+      // 3. Briefing
+      sec('Briefing');
+      briefings.forEach(b => {
+        line((b.heure || '') + ' — ' + b.titre);
+        if (b.contenu) { doc.font(fonts.fontR).fontSize(8).fillColor('#666').text('   ' + b.contenu, 60, y, { width: doc.page.width - 120 }); y += 12; }
+      });
+      y += 8;
+
+      // 4. Décisions
+      sec('Décisions en attente');
+      decisions.forEach(d => {
+        const prio = d.priorite === 'haute' ? '● Haute' : '○ Moyenne';
+        line(prio + ' — ' + d.titre + ' (' + (d.direction || '—') + ')');
+      });
+
+      doc.end();
     }
-    function row(label, value) {
-      if (y > 740) { doc.addPage(); y = 40; }
-      doc.font(fonts.fontR).fontSize(9).fillColor('#666').text(label, 50, y, { continued: false, ...fo });
-      doc.font(fonts.fontB).fontSize(10).fillColor('#041F38').text(String(value), 200, y, { ...fo });
-      y += 16;
-    }
-    function line(text) {
-      if (y > 740) { doc.addPage(); y = 40; }
-      doc.font(fonts.fontR).fontSize(9).fillColor('#333').text(text, 50, y, { width: doc.page.width - 100, ...fo });
-      y += 14;
-    }
-
-    // 1. Synthèse KPI
-    sec(isAr ? 'المؤشرات الرئيسية' : 'Synthèse opérationnelle');
-    row(isAr ? 'حوادث حرجة' : 'Incidents critiques', critical);
-    row(isAr ? 'تجاوزات المهل' : 'SLA dépassés', breached);
-    row(isAr ? 'ملفات نشطة' : 'Dossiers actifs', active);
-    row(isAr ? 'النتيجة التشغيلية' : 'Score opérationnel', score + '/100');
-    row(isAr ? 'قرارات معلقة' : 'Décisions en attente', pendingDec);
-    y += 8;
-
-    // 2. Priorités
-    sec(isAr ? 'الأولويات' : 'Priorités du jour');
-    priorities.forEach(p => {
-      const dir = isAr && p.direction_ar ? p.direction_ar : (p.direction || '—');
-      const sla = Math.max(0, Math.round((p.sla_min || 0) / 60));
-      line((p.reference || '') + ' — ' + (p.titre || '').substring(0, 60) + ' — ' + dir + (sla > 0 ? ' (+' + sla + 'h)' : ''));
-    });
-    y += 8;
-
-    // 3. Briefing
-    sec(isAr ? 'الإحاطة' : 'Briefing');
-    briefings.forEach(b => {
-      const t = isAr && b.titre_ar ? b.titre_ar : b.titre;
-      const c = isAr && b.contenu_ar ? b.contenu_ar : b.contenu;
-      line((b.heure || '') + ' — ' + t);
-      if (c) { doc.font(fonts.fontR).fontSize(8).fillColor('#666').text('   ' + c, 60, y, { width: doc.page.width - 120, ...fo }); y += 12; }
-    });
-    y += 8;
-
-    // 4. Décisions
-    sec(isAr ? 'القرارات المعلقة' : 'Décisions en attente');
-    decisions.forEach(d => {
-      const t = isAr && d.titre_ar ? d.titre_ar : d.titre;
-      const dir = isAr && d.direction_ar ? d.direction_ar : (d.direction || '—');
-      const prio = d.priorite === 'haute' ? (isAr ? '● عالية' : '● Haute') : (isAr ? '○ متوسطة' : '○ Moyenne');
-      line(prio + ' — ' + t + ' (' + dir + ')');
-    });
-
-    doc.end();
   } catch (e) {
     console.error('[command-center/briefing-pdf]', e.message);
     res.status(500).json({ erreur: e.message });
