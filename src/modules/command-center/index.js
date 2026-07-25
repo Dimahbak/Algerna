@@ -726,4 +726,157 @@ ${decRows || '<div class="line" style="color:#999;">لا توجد قرارات �
   }
 });
 
+// ── Référentiel géographique (pour formulaire crise) ──
+router.get('/circonscriptions', authenticate, async (req, res) => {
+  try {
+    const { rows } = await query('SELECT id, nom FROM circonscription ORDER BY id');
+    res.json({ ok: true, circonscriptions: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ══════════════════════════════════════════════
+// ── MODE CRISE — sessions multi-événements ──
+// ══════════════════════════════════════════════
+
+// Gouvernance d'activation à 3 niveaux :
+//   vigilance : tout profil CC autorisé
+//   majeur    : admin_wilaya (cabinet + superviseur)
+//   critique  : admin_wilaya superviseur uniquement
+function canActivateCrise(user, niveau) {
+  const isWilaya = user.role === 'admin_wilaya';
+  const isSuperviseur = isWilaya && user.fonction === 'superviseur';
+  const isCabinet = isWilaya && user.fonction === 'cabinet';
+  const hasCC = Array.isArray(user.capacites) && user.capacites.includes('salle_commandement');
+  if (niveau === 'critique') return isSuperviseur;
+  if (niveau === 'majeur') return isSuperviseur || isCabinet;
+  // vigilance : any CC-authorized user
+  return isWilaya || isCabinet || hasCC;
+}
+
+function hasAnyCriseAccess(user) {
+  const isWilaya = user.role === 'admin_wilaya';
+  const isCabinet = user.fonction === 'cabinet';
+  const hasCC = Array.isArray(user.capacites) && user.capacites.includes('salle_commandement');
+  return isWilaya || isCabinet || hasCC;
+}
+
+// GET /crises — list active crisis sessions
+router.get('/crises', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT cs.*, u.prenom || ' ' || u.nom AS active_par_nom,
+        ARRAY(SELECT cc.circonscription_id FROM crise_circonscription cc WHERE cc.crise_id = cs.id) AS circonscription_ids,
+        ARRAY(SELECT cm.commune_id FROM crise_commune cm WHERE cm.crise_id = cs.id) AS commune_ids
+      FROM crise_session cs
+      LEFT JOIN utilisateur u ON u.id = cs.active_par
+      WHERE cs.statut IN ('active', 'cloture_provisoire')
+      ORDER BY cs.active_le DESC
+    `);
+    res.json({ ok: true, crises: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/active — lightweight: only active sessions (for banner)
+router.get('/crises/active', authenticate, async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
+      FROM crise_session cs WHERE cs.statut = 'active'
+      ORDER BY cs.active_le DESC
+    `);
+    res.json({ ok: true, crises: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// POST /crises — create a new crisis session
+router.post('/crises', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { titre, titre_ar, type_crise, niveau, notes, circonscription_ids, commune_ids } = req.body;
+    if (!titre || !type_crise || !niveau) return res.status(400).json({ erreur: 'titre, type_crise et niveau requis' });
+    if (!canActivateCrise(req.user, niveau)) return res.status(403).json({ erreur: 'Niveau d\'activation non autorisé pour ce profil' });
+
+    const { rows: [session] } = await query(
+      `INSERT INTO crise_session (titre, titre_ar, type_crise, niveau, active_par, notes)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [titre, titre_ar || null, type_crise, niveau, req.user.id, notes || null]
+    );
+
+    // Attach geographic perimeter from reference tables
+    if (Array.isArray(circonscription_ids) && circonscription_ids.length) {
+      for (const cid of circonscription_ids) {
+        await query('INSERT INTO crise_circonscription (crise_id, circonscription_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, cid]);
+      }
+    }
+    if (Array.isArray(commune_ids) && commune_ids.length) {
+      for (const cid of commune_ids) {
+        await query('INSERT INTO crise_commune (crise_id, commune_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, cid]);
+      }
+    }
+
+    res.json({ ok: true, crise: session });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// PATCH /crises/:id/cloturer — clôture provisoire
+router.patch('/crises/:id/cloturer', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { rows: [existing] } = await query('SELECT * FROM crise_session WHERE id = $1', [id]);
+    if (!existing) return res.status(404).json({ erreur: 'Session non trouvée' });
+    if (existing.statut !== 'active') return res.status(400).json({ erreur: 'Session non active' });
+    if (!canActivateCrise(req.user, existing.niveau)) return res.status(403).json({ erreur: 'Non autorisé' });
+
+    const { rows: [updated] } = await query(
+      `UPDATE crise_session SET statut = 'cloture_provisoire', cloture_le = NOW(), cloture_par = $1, maj_le = NOW()
+       WHERE id = $2 RETURNING *`,
+      [req.user.id, id]
+    );
+    res.json({ ok: true, crise: updated });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// DELETE /crises/:id — suppression (tests uniquement)
+router.delete('/crises/:id', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    await query('DELETE FROM crise_session WHERE id = $1', [Number(req.params.id)]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/hors-perimetre — signalements hors périmètre des crises actives
+router.get('/crises/hors-perimetre', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows: actives } = await query("SELECT id FROM crise_session WHERE statut = 'active'");
+    if (!actives.length) return res.json({ ok: true, count: 0, signalements: [] });
+
+    // Get all commune_ids covered by active crises
+    const { rows: covered } = await query(`
+      SELECT DISTINCT commune_id FROM crise_commune WHERE crise_id IN (SELECT id FROM crise_session WHERE statut = 'active')
+      UNION
+      SELECT DISTINCT c.id FROM commune c
+      JOIN crise_circonscription cc ON cc.circonscription_id = c.circonscription_id
+      WHERE cc.crise_id IN (SELECT id FROM crise_session WHERE statut = 'active')
+    `);
+    const coveredIds = covered.map(r => r.commune_id || r.id);
+
+    if (!coveredIds.length) return res.json({ ok: true, count: 0, signalements: [] });
+
+    const { rows } = await query(`
+      SELECT s.id, s.reference, s.description, s.commune_id, c.nom AS commune_nom
+      FROM signalement s LEFT JOIN commune c ON c.id = s.commune_id
+      WHERE s.etat NOT IN ('resolu','clos','rejete')
+        AND s.commune_id IS NOT NULL
+        AND s.commune_id != ALL($1::int[])
+      ORDER BY s.cree_le DESC LIMIT 20
+    `, [coveredIds]);
+
+    res.json({ ok: true, count: rows.length, signalements: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/can-activate — check if current user can activate crises
+router.get('/crises/can-activate', authenticate, async (req, res) => {
+  res.json({ ok: true, canActivate: hasAnyCriseAccess(req.user) });
+});
+
 module.exports = router;

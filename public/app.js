@@ -12977,6 +12977,10 @@ async function ccLoad() {
     // CC edit rights: admin_wilaya or cabinet
     _ccCanEdit = currentUser && (currentUser.role === 'admin_wilaya' || currentUser.fonction === 'cabinet');
 
+    // Crisis mode: activate button + load banner
+    criseInitButton();
+    criseLoadBanner();
+
     // Updated timestamp
     var updEl = document.getElementById('cc-updated');
     if (updEl) updEl.textContent = t('cc.maj') + ' ' + new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', {hour:'2-digit',minute:'2-digit',hour12:false});
@@ -14202,5 +14206,169 @@ function ccMapFullscreenClose() {
     setTimeout(function() { if (_ccMap) { _ccMap.invalidateSize(); setTimeout(function() { _ccMap.setView([36.7538, 3.0588], 11); }, 100); } }, 200);
   }
   document.body.style.overflow = '';
+}
+
+// ══════════════════════════════════════════════
+// ── MODE CRISE — multi-événements ──
+// ══════════════════════════════════════════════
+var _criseChronoInterval = null;
+var _criseActiveSessions = [];
+
+function criseInitButton() {
+  var btn = document.getElementById('cc-btn-crisis');
+  if (!btn || !currentUser) return;
+  var isWilaya = currentUser.role === 'admin_wilaya';
+  var isCabinet = currentUser.fonction === 'cabinet';
+  var hasCC = Array.isArray(currentUser.capacites) && currentUser.capacites.includes('salle_commandement');
+  if (isWilaya || isCabinet || hasCC) {
+    btn.disabled = false;
+    btn.classList.add('active');
+    btn.setAttribute('title', t('cc.mode_crise_info'));
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function criseLoadBanner() {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/active', {}, true);
+    if (!data || !data.crises) return;
+    _criseActiveSessions = data.crises;
+    criseRenderBanner();
+  } catch (e) { /* silent */ }
+}
+
+function criseRenderBanner() {
+  var banner = document.getElementById('cc-crise-banner');
+  if (!banner) return;
+  if (!_criseActiveSessions.length) {
+    banner.style.display = 'none';
+    if (_criseChronoInterval) { clearInterval(_criseChronoInterval); _criseChronoInterval = null; }
+    return;
+  }
+  banner.style.display = '';
+  var html = '';
+  _criseActiveSessions.forEach(function(c) {
+    var titre = currentLang === 'ar' && c.titre_ar ? c.titre_ar : c.titre;
+    var niveauLabel = t('cc.crise_n_' + c.niveau);
+    html += '<div class="cc-crise-banner-item" data-crise-id="' + c.id + '">' +
+      '<span class="crise-niveau">' + escHtml(niveauLabel) + '</span>' +
+      '<span class="crise-titre">' + escHtml(titre) + '</span>' +
+      '<span class="crise-chrono" dir="ltr" data-crise-start="' + c.active_le + '">--:--:--</span>' +
+      '</div>';
+  });
+  banner.innerHTML = html;
+  criseUpdateChronos();
+  if (_criseChronoInterval) clearInterval(_criseChronoInterval);
+  _criseChronoInterval = setInterval(criseUpdateChronos, 1000);
+}
+
+function criseUpdateChronos() {
+  var els = document.querySelectorAll('.crise-chrono[data-crise-start]');
+  var now = Date.now();
+  els.forEach(function(el) {
+    var start = new Date(el.getAttribute('data-crise-start')).getTime();
+    var diff = Math.max(0, Math.floor((now - start) / 1000));
+    var h = Math.floor(diff / 3600);
+    var m = Math.floor((diff % 3600) / 60);
+    var s = diff % 60;
+    el.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  });
+}
+
+function criseOpenDrawer() {
+  var drawer = document.getElementById('cc-crise-drawer');
+  if (!drawer) return;
+  drawer.classList.remove('hidden');
+  criseLoadCirconscriptions();
+  criseLoadActiveList();
+  applyTranslations();
+}
+
+function criseCloseDrawer() {
+  var drawer = document.getElementById('cc-crise-drawer');
+  if (drawer) drawer.classList.add('hidden');
+}
+
+async function criseLoadCirconscriptions() {
+  try {
+    var data = await safeFetchJSON('/api/command-center/circonscriptions', {}, true);
+    var container = document.getElementById('crise-circs');
+    if (!container || !data) return;
+    var circs = data.circonscriptions || data.rows || data;
+    if (!Array.isArray(circs)) return;
+    container.innerHTML = circs.map(function(c) {
+      return '<label style="font-size:11px;display:flex;align-items:center;gap:3px;">' +
+        '<input type="checkbox" value="' + c.id + '" class="crise-circ-cb"> ' + escHtml(c.nom) + '</label>';
+    }).join('');
+  } catch (e) {
+    // fallback: fetch from DB directly via command-center
+    var container = document.getElementById('crise-circs');
+    if (container) container.innerHTML = '<span style="color:#999;font-size:11px;">Chargement...</span>';
+  }
+}
+
+async function criseCreate() {
+  var titre = document.getElementById('crise-titre').value.trim();
+  if (!titre) { showToast(t('cc.crise_titre'), 'error'); return; }
+  var body = {
+    titre: titre,
+    titre_ar: document.getElementById('crise-titre-ar').value.trim() || null,
+    type_crise: document.getElementById('crise-type').value,
+    niveau: document.getElementById('crise-niveau').value,
+    notes: document.getElementById('crise-notes').value.trim() || null,
+    circonscription_ids: Array.from(document.querySelectorAll('.crise-circ-cb:checked')).map(function(cb) { return Number(cb.value); })
+  };
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_creee'), 'success');
+      document.getElementById('crise-titre').value = '';
+      document.getElementById('crise-titre-ar').value = '';
+      document.getElementById('crise-notes').value = '';
+      criseLoadActiveList();
+      criseLoadBanner();
+    } else {
+      showToast((data && data.erreur) || 'Erreur', 'error');
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function criseLoadActiveList() {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises', {}, true);
+    var container = document.getElementById('crise-active-list');
+    if (!container || !data || !data.crises) return;
+    if (!data.crises.length) {
+      container.innerHTML = '<p style="color:#999;font-size:12px;">' + t('cc.crise_aucune') + '</p>';
+      return;
+    }
+    container.innerHTML = data.crises.map(function(c) {
+      var titre = currentLang === 'ar' && c.titre_ar ? c.titre_ar : c.titre;
+      var statut = c.statut === 'active' ? '🔴 ' + t('cc.crise_n_' + c.niveau) : '⏸ ' + t('cc.crise_cloturer');
+      var dateStr = new Date(c.active_le).toLocaleString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', hour12: false });
+      var actions = '';
+      if (c.statut === 'active') {
+        actions = '<button class="danger" onclick="criseCloturer(' + c.id + ')">' + t('cc.crise_cloturer') + '</button>';
+      }
+      return '<div class="cc-crise-card"><h4>' + escHtml(titre) + '</h4>' +
+        '<div class="meta">' + escHtml(statut) + ' · ' + t('cc.crise_depuis') + ' <span dir="ltr">' + dateStr + '</span>' +
+        (c.active_par_nom ? ' · ' + escHtml(c.active_par_nom) : '') + '</div>' +
+        '<div class="cc-crise-card-actions">' + actions + '</div></div>';
+    }).join('');
+  } catch (e) { /* silent */ }
+}
+
+async function criseCloturer(id) {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + id + '/cloturer', { method: 'PATCH' }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_cloturee'), 'success');
+      criseLoadActiveList();
+      criseLoadBanner();
+    } else {
+      showToast((data && data.erreur) || 'Erreur', 'error');
+    }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 

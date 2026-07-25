@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=404">
+  <link rel="stylesheet" href="/app.css?v=405">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -2525,10 +2525,12 @@
                   <option value="7d" data-i18n="cc.sept_jours">7 jours</option>
                   <option value="30d" selected data-i18n="cc.trente_jours">30 jours</option>
                 </select>
-                <button class="cc-btn-crisis" disabled title="" data-i18n-title="cc.mode_crise_info" data-i18n="cc.mode_crise">Mode crise</button>
+                <button id="cc-btn-crisis" class="cc-btn-crisis" disabled title="" data-i18n-title="cc.mode_crise_info" data-i18n="cc.mode_crise" onclick="criseOpenDrawer()">Mode crise</button>
               </div>
             </div>
           </header>
+          <!-- Bandeau crise multi-événements -->
+          <div id="cc-crise-banner" class="cc-crise-banner" style="display:none;"></div>
           <!-- Phrase de synthèse -->
           <div data-cc-section="pilotage">
             <div id="cc-synthesis" class="cc-synthesis"></div>
@@ -3960,6 +3962,49 @@
   <div class="sak-input-row">
     <input type="text" id="saksini-input" data-i18n-placeholder="saksini.placeholder" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')saksiniAsk(this.value)" />
     <button onclick="saksiniAsk(document.getElementById('saksini-input').value)">➤</button>
+  </div>
+</div>
+<!-- Drawer gestion crises -->
+<div id="cc-crise-drawer" class="cc-crise-drawer hidden">
+  <div class="cc-crise-drawer-overlay" onclick="criseCloseDrawer()"></div>
+  <div class="cc-crise-drawer-panel">
+    <div class="cc-crise-drawer-header">
+      <h3 data-i18n="cc.crise_gestion">Gestion des crises</h3>
+      <button onclick="criseCloseDrawer()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">&times;</button>
+    </div>
+    <div class="cc-crise-drawer-body">
+      <div class="cc-crise-form">
+        <label data-i18n="cc.crise_titre">Titre de la crise</label>
+        <input id="crise-titre" type="text" placeholder="" data-i18n-placeholder="cc.crise_titre_ph">
+        <label data-i18n="cc.crise_titre_ar">Titre arabe</label>
+        <input id="crise-titre-ar" type="text" placeholder="" data-i18n-placeholder="cc.crise_titre_ar_ph">
+        <label data-i18n="cc.crise_type">Type</label>
+        <select id="crise-type">
+          <option value="incendie" data-i18n="cc.crise_t_incendie">Incendie</option>
+          <option value="inondation" data-i18n="cc.crise_t_inondation">Inondation</option>
+          <option value="seisme" data-i18n="cc.crise_t_seisme">Séisme</option>
+          <option value="manifestation" data-i18n="cc.crise_t_manifestation">Manifestation</option>
+          <option value="sanitaire" data-i18n="cc.crise_t_sanitaire">Sanitaire</option>
+          <option value="infrastructure" data-i18n="cc.crise_t_infrastructure">Infrastructure</option>
+          <option value="general" data-i18n="cc.crise_t_general">Général</option>
+        </select>
+        <label data-i18n="cc.crise_niveau">Niveau d'activation</label>
+        <select id="crise-niveau">
+          <option value="vigilance" data-i18n="cc.crise_n_vigilance">Vigilance</option>
+          <option value="majeur" data-i18n="cc.crise_n_majeur">Majeur</option>
+          <option value="critique" data-i18n="cc.crise_n_critique">Critique</option>
+        </select>
+        <label data-i18n="cc.crise_perimetre">Périmètre (circonscriptions)</label>
+        <div id="crise-circs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+        <label data-i18n="cc.crise_notes">Notes</label>
+        <textarea id="crise-notes" rows="2"></textarea>
+        <button class="cc-crise-submit" onclick="criseCreate()" data-i18n="cc.crise_activer">Activer la crise</button>
+      </div>
+      <div class="cc-crise-list">
+        <h4 data-i18n="cc.crise_actives">Sessions actives</h4>
+        <div id="crise-active-list"></div>
+      </div>
+    </div>
   </div>
 </div>
 </body>
