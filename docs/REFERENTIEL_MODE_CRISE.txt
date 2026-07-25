@@ -1,0 +1,174 @@
+REFERENTIEL MODE CRISE — ALGERNA
+Document de reference officiel — 25 juillet 2026
+Source : decisions actees par Hamid Bakli. Ce document fait foi pour les etapes Crise-1 a Crise-4.
+Emplacement cible dans le depot : docs/REFERENTIEL_MODE_CRISE.txt
+Inspirations : plan ORSEC (Wali directeur des operations), ICS (etats des ressources,
+points de situation a cadence fixe), modele Gold-Silver-Bronze (strategique/tactique/terrain).
+
+============================================================
+PRINCIPE FONDATEUR — MULTI-EVENEMENTS (NON NEGOCIABLE)
+============================================================
+La plateforme gere PLUSIEURS crises simultanees et independantes
+(exemple type : incendies + manifestation + attentat en meme temps).
+- Chaque crise = une SESSION independante (objet crise_session).
+- Jamais de "mode crise" global unique de type interrupteur.
+- Bandeau multi : toutes les crises actives visibles pour les profils concernes.
+- Ressources partagees entre sessions (un meme organisme mobilisable
+  sur plusieurs crises ; arbitrage par la Salle de Commandement).
+- Fusion de deux sessions / scission d'une session : prevues (Crise-3/4).
+- Cercle de visibilite restreint pour les crises d'ordre public :
+  seuls les profils explicitement habilites voient la session (Crise-3).
+
+============================================================
+LES TROIS ETAGES DE COMMANDEMENT
+============================================================
+- STRATEGIQUE : Salle de Commandement (Rachid, Yacine). Decide, arbitre,
+  rend compte au Wali.
+- TACTIQUE : (a) territorial = Wilaya deleguee (Wali delegue de
+  circonscription) ; (b) metier = directions pilotes et EPIC executants.
+- TERRAIN : agents CAP, equipes EPIC, APC.
+L'information MONTE terrain -> tactique -> strategique. Les ordres
+DESCENDENT en sens inverse. Pas de court-circuit, sauf le marqueur
+Urgence Wali existant.
+Double canal : ligne territoriale (APC -> Wilaya deleguee -> CC) +
+ligne metier (EPIC/direction -> CC). Le CC croise les deux.
+
+============================================================
+ECHELONS TERRITORIAUX
+============================================================
+WILAYA DELEGUEE (circonscription, decret 26-112) :
+- Notifiee AUTOMATIQUEMENT des activation si son territoire est dans le
+  perimetre (determine par les jointures geographiques de la session).
+- Coordonne localement : cellule locale, lien entre ses APC et les
+  organismes intervenants.
+- Consolide les points de situation de ses APC avant remontee au CC
+  (le CC recoit au plus 14 flux, pas 57).
+- Peut demander l'escalade (renforts, elevation de niveau) au CC.
+- Une daira n'est JAMAIS executante : elle coordonne et rend compte.
+APC (commune) :
+- Superviseur communal notifie si sa commune est dans le perimetre.
+- Confirme ou infirme les signalements de sa commune (passage
+  non verifie -> confirme, avec les agents CAP).
+- Signale les besoins locaux (evacuation, salle, moyens communaux).
+- Poste son point de situation vers SA Wilaya deleguee, pas vers le CC.
+NOTE : les Walis delegues n'ont pas encore de comptes. Le futur module
+"Cockpit Daira" est leur poste de travail en crise. Prevoir au minimum
+un persona Wali delegue de test.
+
+============================================================
+LA BOUCLE OPERATIONNELLE EN 9 TEMPS (VALIDEE PAR HAMID)
+============================================================
+1. DETECTION : afflux anormal de signalements dans une zone ("l'afflux
+   est notre radar"), alerte partenaire, ou instruction Wali/cabinet.
+2. ACTIVATION : un profil CC cree la session selon la gouvernance
+   (voir plus bas) : titre, niveau, perimetre, et designe les
+   ORGANISMES MOBILISES (directions, EPIC, partenaires, APC).
+3. NOTIFICATION CIBLEE : seuls les organismes mobilises et les echelons
+   territoriaux du perimetre recoivent la notification (cloche reelle,
+   mecanisme existant) et voient le bandeau. Aucun bruit ailleurs.
+   Le citoyen ne voit rien (decision separee ulterieure).
+4. ACCUSE D'ENGAGEMENT : chaque responsable notifie repond dans le
+   delai du niveau (Critique 15 min / Majeur 1 h / Vigilance 4 h) en
+   passant son etat : SOLLICITE -> ENGAGE (pris en compte + referent)
+   -> SUR PLACE (equipes agissent). Non-reponse -> relance automatique
+   -> 2e relance -> alerte rouge chez le superviseur CC.
+5. GESTION TERRAIN : signalements du perimetre rattaches a la session,
+   etats de crise : NON VERIFIE -> CONFIRME -> EN INTERVENTION ->
+   MAITRISE. L'APC confirme, les CAP alimentent.
+6. POINTS DE SITUATION a cadence imposee par le niveau (Critique :
+   toutes les heures ; Majeur : matin et soir ; Vigilance : quotidien).
+   Format court : fait / en cours / bloque / besoin. Les APC postent a
+   leur Wilaya deleguee qui consolide vers le CC. Le CC consolide le
+   point global pour le Wali.
+7. RELANCES ET ARBITRAGES : le CC voit les retards et blocages,
+   relance (anti-spam conserve), arbitre les moyens entre organismes
+   et entre crises simultanees.
+8. DESESCALADE : signalements maitrises -> baisse de niveau ->
+   organismes passes a DESENGAGE un par un.
+9. CLOTURE EN 2 TEMPS + RETEX : cloture operationnelle (bandeau
+   retire) puis cloture administrative (session verrouillee). La main
+   courante inviolable produit le dossier PDF pour le Wali :
+   chronologie, delais de reponse de chacun, blocages. Le retour
+   d'experience prepare la crise suivante.
+
+============================================================
+GOUVERNANCE D'ACTIVATION — 3 NIVEAUX (VALIDEE PAR HAMID)
+============================================================
+- CRITIQUE : superviseur Wilaya uniquement (Rachid).
+- MAJEUR : superviseur Wilaya + cabinet (Rachid + Yacine).
+- VIGILANCE : tout profil Salle de Commandement.
+- Non autorises : bouton masque, jamais de clic vers un refus.
+- Toute activation, changement de niveau, cloture : horodatee, tracee
+  avec auteur (alimente la main courante).
+- Escalade/desescalade : memes profils que l'activation du niveau cible.
+- Delais d'accuse d'engagement par niveau : Critique 15 min,
+  Majeur 1 h, Vigilance 4 h (parametrables en base, pas en dur).
+
+============================================================
+ETAPE CRISE-1 — EVENEMENT / SESSION (LIVREE v405)
+============================================================
+- Objet crise_session (migration 061) : titre, titre_ar, type, niveau,
+  statut, perimetre (jointures circonscriptions + communes, lues du
+  referentiel — aucune liste en dur), horodatages, auteurs, notes.
+- Bandeau + chronometre, FR + AR (t() central, heures 24h, chiffres AR
+  isoles dir="ltr"). Cloture provisoire.
+- Indicateur "hors perimetre" pour les signalements hors zone.
+
+============================================================
+ETAPE CRISE-2 — COCKPIT RESSERRE + MOBILISATION
+============================================================
+- Vue de crise PAR SESSION : KPI et carte restreints au perimetre.
+- Selection des ORGANISMES MOBILISES des l'activation (et modifiable
+  ensuite) : directions, EPIC, partenaires, APC — lecture base.
+- Notification ciblee des mobilises + echelons territoriaux du
+  perimetre (mecanisme de notifications reelles existant).
+- Clustering (regroupement) des signalements lies a la crise.
+- Rattachement des signalements a une session : manuel + propose
+  automatiquement si perimetre et type coherents — confirmation
+  humaine obligatoire.
+- Etats de crise des signalements : NON VERIFIE -> CONFIRME ->
+  EN INTERVENTION -> MAITRISE (propres au contexte crise, ne
+  remplacent pas les etats normaux du dossier).
+
+============================================================
+ETAPE CRISE-3 — COORDINATION (COEUR DE LA BOUCLE)
+============================================================
+- Accuses d'engagement avec delais par niveau, relances automatiques,
+  escalade en alerte rouge CC a la 2e non-reponse.
+- Etats de mobilisation par acteur : SOLLICITE -> ENGAGE -> SUR PLACE
+  -> DESENGAGE.
+- Points de situation a cadence imposee, consolidation APC -> Wilaya
+  deleguee -> CC.
+- Tracabilite des contacts : qui, quand, par qui, reponse.
+- Cercle de visibilite restreint (ordre public).
+- Ressources partagees et fusion/scission de sessions.
+- Role Wali delegue (persona de test minimum).
+
+============================================================
+ETAPE CRISE-4 — MAIN COURANTE ET CLOTURE
+============================================================
+- Main courante INVIOLABLE par session : journal horodate de tout
+  (activations, etats, mobilisations, messages, decisions). Ecriture
+  seule — aucune modification ni suppression, meme administrateur.
+- Cloture en 2 temps : operationnelle puis administrative
+  (verrouillage definitif).
+- Dossier PDF de crise pour le Wali : chronologie, perimetre,
+  signalements, mobilisations, delais de reponse, main courante.
+  FR + AR, moteur HTML->PDF existant (bidirectionnel correct).
+
+============================================================
+REGLES TRANSVERSES (RAPPEL — GRAVEES)
+============================================================
+- Aucune liste en dur : organismes, communes, roles, delais — lecture
+  base (delais parametrables).
+- Migrations versionnees au registre uniquement.
+- i18n via t() central + civismart_lang ; noms AR officiels
+  intouchables ; nouvelles traductions AR en liste de relecture
+  arabophone.
+- Aucune donnee ni compte reel pour les tests ; donnees de test
+  supprimees avec preuve.
+- Les captures de Hamid font foi sur tout rapport.
+- Version sw.js + index.html incrementee a chaque livraison frontend.
+- Deux echecs sur un meme point = changement complet d'approche.
+
+FIN DU REFERENTIEL
