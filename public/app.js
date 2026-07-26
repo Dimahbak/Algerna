@@ -14542,7 +14542,7 @@ async function criseVueLoad(criseId) {
         orgsContainer.innerHTML = '<span style="color:#999;font-size:11px;">—</span>';
       } else {
         orgsContainer.innerHTML = data.organismes.map(function(o) {
-          var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : (o.sigle_officiel || o.nom);
+          var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
           var etat = o.etat_mobilisation || 'sollicite';
           var mobLabel = t('cc.crise_mob_' + etat);
           var mobCls = 'cc-crise-mob-badge ' + etat + (o.alerte_rouge ? ' alerte_rouge' : '');

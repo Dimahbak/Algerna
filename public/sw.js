@@ -1,4 +1,4 @@
-const CACHE_NAME = "civismart-v408";
+const CACHE_NAME = "civismart-v409";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
