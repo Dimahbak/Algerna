@@ -879,4 +879,428 @@ router.get('/crises/can-activate', authenticate, async (req, res) => {
   res.json({ ok: true, canActivate: hasAnyCriseAccess(req.user) });
 });
 
+// ══════════════════════════════════════════════
+// ── CRISE-2 — Mobilisation, notifications, rattachement, vue de crise ──
+// ══════════════════════════════════════════════
+
+// GET /organisations — liste des organismes mobilisables (lue en base, jamais en dur)
+router.get('/organisations', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT id, nom, nom_ar, type, sigle_officiel, prioritaire
+      FROM organisations
+      WHERE actif = TRUE AND type IN ('direction','direction_wilaya','epic','operateur_externe','partenaire_institutionnel','apc','daira','service')
+      ORDER BY type, ordre_affichage, nom
+    `);
+    res.json({ ok: true, organisations: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Auto-ajout des échelons territoriaux d'après le périmètre ──
+async function autoAddTerritorialOrgs(criseId, userId) {
+  // Trouver les communes du périmètre (direct + via circonscriptions)
+  const { rows: communeIds } = await query(`
+    SELECT DISTINCT commune_id AS id FROM crise_commune WHERE crise_id = $1
+    UNION
+    SELECT DISTINCT c.id FROM commune c
+    JOIN crise_circonscription cc ON cc.circonscription_id = c.circonscription_id
+    WHERE cc.crise_id = $1
+  `, [criseId]);
+
+  if (!communeIds.length) return [];
+
+  const cids = communeIds.map(r => r.id);
+
+  // Trouver les APC correspondant aux communes du périmètre
+  const { rows: apcOrgs } = await query(`
+    SELECT DISTINCT o.id FROM organisations o
+    JOIN commune c ON o.nom = 'APC de ' || c.nom AND o.type = 'apc'
+    WHERE c.id = ANY($1::int[])
+  `, [cids]);
+
+  // Trouver les daïras correspondantes
+  const { rows: dairaOrgs } = await query(`
+    SELECT DISTINCT d.organisation_id AS id FROM daira d
+    JOIN commune c ON c.daira_id = d.id
+    WHERE c.id = ANY($1::int[])
+    AND d.organisation_id IS NOT NULL
+  `, [cids]);
+
+  const allOrgIds = [...new Set([...apcOrgs.map(r => r.id), ...dairaOrgs.map(r => r.id)])];
+  const added = [];
+
+  for (const orgId of allOrgIds) {
+    try {
+      await query(
+        `INSERT INTO crise_organisme (crise_id, organisation_id, auto_territorial, ajoute_par)
+         VALUES ($1, $2, TRUE, $3) ON CONFLICT (crise_id, organisation_id) DO NOTHING`,
+        [criseId, orgId, userId]
+      );
+      added.push(orgId);
+    } catch (e) { /* ignore duplicates */ }
+  }
+  return added;
+}
+
+// ── Notification ciblée aux organismes mobilisés ──
+async function notifierMobilises(criseId, titre, niveau) {
+  // Trouver les utilisateurs des organismes mobilisés
+  const { rows: users } = await query(`
+    SELECT DISTINCT u.id FROM utilisateur u
+    JOIN crise_organisme co ON co.organisation_id = u.organisation_id
+    WHERE co.crise_id = $1 AND u.actif = TRUE AND u.organisation_id IS NOT NULL
+  `, [criseId]);
+
+  const niveauLabel = niveau === 'critique' ? 'CRITIQUE' : niveau === 'majeur' ? 'MAJEUR' : 'VIGILANCE';
+  const message = 'Session de crise activée : ' + titre + ' — Niveau ' + niveauLabel;
+
+  for (const u of users) {
+    try {
+      await query(
+        `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+         VALUES ($1, 'crise', $2, $3, $4)`,
+        [u.id, 'Mobilisation crise — ' + niveauLabel, message, '/command-center']
+      );
+    } catch (e) { /* anti-spam: ignore if duplicate or error */ }
+  }
+  return users.length;
+}
+
+// ── Modifier POST /crises pour ajouter organismes + auto-territorial + notifications ──
+// (On surcharge la route existante en ajoutant un handler après création)
+
+// POST /crises/:id/organismes — ajouter des organismes mobilisés
+router.post('/crises/:id/organismes', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const { organisation_ids } = req.body;
+    if (!Array.isArray(organisation_ids) || !organisation_ids.length) {
+      return res.status(400).json({ erreur: 'organisation_ids requis (tableau)' });
+    }
+    const { rows: [session] } = await query('SELECT * FROM crise_session WHERE id = $1', [criseId]);
+    if (!session) return res.status(404).json({ erreur: 'Session non trouvée' });
+
+    const added = [];
+    for (const orgId of organisation_ids) {
+      try {
+        const { rows: [row] } = await query(
+          `INSERT INTO crise_organisme (crise_id, organisation_id, auto_territorial, ajoute_par)
+           VALUES ($1, $2, FALSE, $3) ON CONFLICT (crise_id, organisation_id) DO NOTHING RETURNING *`,
+          [criseId, orgId, req.user.id]
+        );
+        if (row) added.push(row);
+      } catch (e) { /* skip invalid org */ }
+    }
+
+    // Notifier les nouveaux mobilisés
+    if (added.length) {
+      const niveauLabel = session.niveau === 'critique' ? 'CRITIQUE' : session.niveau === 'majeur' ? 'MAJEUR' : 'VIGILANCE';
+      for (const org of added) {
+        const { rows: users } = await query(
+          `SELECT id FROM utilisateur WHERE organisation_id = $1 AND actif = TRUE`,
+          [org.organisation_id]
+        );
+        for (const u of users) {
+          try {
+            await query(
+              `INSERT INTO notification (utilisateur_id, type, titre, message, lien)
+               VALUES ($1, 'crise', $2, $3, '/command-center')`,
+              [u.id, 'Mobilisation crise — ' + niveauLabel, 'Votre organisme est mobilisé : ' + session.titre]
+            );
+          } catch (e) { /* ignore */ }
+        }
+      }
+    }
+
+    res.json({ ok: true, added: added.length });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// DELETE /crises/:id/organismes/:orgId — retirer un organisme
+router.delete('/crises/:id/organismes/:orgId', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    await query(
+      'DELETE FROM crise_organisme WHERE crise_id = $1 AND organisation_id = $2',
+      [Number(req.params.id), Number(req.params.orgId)]
+    );
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/organismes — lister les organismes mobilisés d'une session
+router.get('/crises/:id/organismes', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT co.*, o.nom, o.nom_ar, o.type, o.sigle_officiel
+      FROM crise_organisme co
+      JOIN organisations o ON o.id = co.organisation_id
+      WHERE co.crise_id = $1
+      ORDER BY co.auto_territorial DESC, o.type, o.nom
+    `, [Number(req.params.id)]);
+    res.json({ ok: true, organismes: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Enrichir POST /crises pour inclure organismes + auto-territorial + notifications ──
+// On patch la route existante via un middleware post-création
+// NOTE: La route POST /crises existante reste inchangée. On ajoute une route
+// POST /crises/full qui fait création + organismes + auto + notifs en un seul appel.
+router.post('/crises/full', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { titre, titre_ar, type_crise, niveau, notes, circonscription_ids, commune_ids, organisation_ids } = req.body;
+    if (!titre || !type_crise || !niveau) return res.status(400).json({ erreur: 'titre, type_crise et niveau requis' });
+    if (!canActivateCrise(req.user, niveau)) return res.status(403).json({ erreur: 'Niveau d\'activation non autorisé pour ce profil' });
+
+    // 1. Créer la session
+    const { rows: [session] } = await query(
+      `INSERT INTO crise_session (titre, titre_ar, type_crise, niveau, active_par, notes)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [titre, titre_ar || null, type_crise, niveau, req.user.id, notes || null]
+    );
+
+    // 2. Périmètre géographique
+    if (Array.isArray(circonscription_ids) && circonscription_ids.length) {
+      for (const cid of circonscription_ids) {
+        await query('INSERT INTO crise_circonscription (crise_id, circonscription_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, cid]);
+      }
+    }
+    if (Array.isArray(commune_ids) && commune_ids.length) {
+      for (const cid of commune_ids) {
+        await query('INSERT INTO crise_commune (crise_id, commune_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, cid]);
+      }
+    }
+
+    // 3. Organismes mobilisés (sélection manuelle)
+    let manualCount = 0;
+    if (Array.isArray(organisation_ids) && organisation_ids.length) {
+      for (const orgId of organisation_ids) {
+        try {
+          await query(
+            `INSERT INTO crise_organisme (crise_id, organisation_id, auto_territorial, ajoute_par)
+             VALUES ($1, $2, FALSE, $3) ON CONFLICT DO NOTHING`,
+            [session.id, orgId, req.user.id]
+          );
+          manualCount++;
+        } catch (e) { /* skip invalid */ }
+      }
+    }
+
+    // 4. Auto-ajout échelons territoriaux
+    const autoAdded = await autoAddTerritorialOrgs(session.id, req.user.id);
+
+    // 5. Notifications ciblées
+    const notifCount = await notifierMobilises(session.id, titre, niveau);
+
+    res.json({ ok: true, crise: session, organismes_manuels: manualCount, organismes_auto: autoAdded.length, notifications: notifCount });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Rattachement de signalements à une session ──
+
+// POST /crises/:id/signalements/:sigId — rattachement manuel
+router.post('/crises/:id/signalements/:sigId', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const sigId = req.params.sigId;
+    const { rows: [row] } = await query(
+      `INSERT INTO crise_signalement (crise_id, signalement_id, rattache_par, auto_suggere)
+       VALUES ($1, $2, $3, FALSE)
+       ON CONFLICT (crise_id, signalement_id) DO NOTHING
+       RETURNING *`,
+      [criseId, sigId, req.user.id]
+    );
+    if (!row) return res.json({ ok: true, deja_rattache: true });
+    res.json({ ok: true, rattachement: row });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// DELETE /crises/:id/signalements/:sigId — détacher
+router.delete('/crises/:id/signalements/:sigId', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    await query('DELETE FROM crise_signalement WHERE crise_id = $1 AND signalement_id = $2',
+      [Number(req.params.id), req.params.sigId]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// PATCH /crises/:id/signalements/:sigId/etat — changer l'état de crise d'un signalement
+router.patch('/crises/:id/signalements/:sigId/etat', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { etat_crise } = req.body;
+    const validStates = ['non_verifie', 'confirme', 'en_intervention', 'maitrise'];
+    if (!validStates.includes(etat_crise)) return res.status(400).json({ erreur: 'État invalide : ' + validStates.join(', ') });
+
+    const { rows: [updated] } = await query(
+      `UPDATE crise_signalement SET etat_crise = $1, maj_etat_par = $2, maj_etat_le = NOW()
+       WHERE crise_id = $3 AND signalement_id = $4 RETURNING *`,
+      [etat_crise, req.user.id, Number(req.params.id), req.params.sigId]
+    );
+    if (!updated) return res.status(404).json({ erreur: 'Signalement non rattaché à cette session' });
+    res.json({ ok: true, rattachement: updated });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/signalements — signalements rattachés
+router.get('/crises/:id/signalements', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT cs.*, s.reference, s.description, s.etat, s.gravite, s.lat, s.lng,
+             s.cree_le AS sig_cree_le, c.nom AS commune_nom,
+             cat.libelle AS categorie_label
+      FROM crise_signalement cs
+      JOIN signalement s ON s.id = cs.signalement_id
+      LEFT JOIN commune c ON c.id = s.commune_id
+      LEFT JOIN categorie_signal cat ON cat.id = s.categorie_id
+      WHERE cs.crise_id = $1
+      ORDER BY cs.rattache_le DESC
+    `, [Number(req.params.id)]);
+    res.json({ ok: true, signalements: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/suggestions — signalements dans le périmètre non encore rattachés
+router.get('/crises/:id/suggestions', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    // Communes du périmètre
+    const { rows: communeRows } = await query(`
+      SELECT DISTINCT commune_id AS id FROM crise_commune WHERE crise_id = $1
+      UNION
+      SELECT DISTINCT c.id FROM commune c
+      JOIN crise_circonscription cc ON cc.circonscription_id = c.circonscription_id
+      WHERE cc.crise_id = $1
+    `, [criseId]);
+
+    if (!communeRows.length) return res.json({ ok: true, suggestions: [] });
+    const communeIds = communeRows.map(r => r.id);
+
+    const { rows } = await query(`
+      SELECT s.id, s.reference, s.description, s.etat, s.gravite, s.commune_id,
+             c.nom AS commune_nom, s.cree_le, cat.libelle AS categorie_label
+      FROM signalement s
+      LEFT JOIN commune c ON c.id = s.commune_id
+      LEFT JOIN categorie_signal cat ON cat.id = s.categorie_id
+      WHERE s.commune_id = ANY($1::int[])
+        AND s.etat NOT IN ('resolu','clos','rejete')
+        AND s.id NOT IN (SELECT signalement_id FROM crise_signalement WHERE crise_id = $2)
+      ORDER BY s.cree_le DESC
+      LIMIT 30
+    `, [communeIds, criseId]);
+
+    res.json({ ok: true, suggestions: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/vue — vue de crise : KPI + signalements + organismes (tout filtré par périmètre)
+router.get('/crises/:id/vue', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+
+    // Session
+    const { rows: [session] } = await query(`
+      SELECT cs.*, u.prenom || ' ' || u.nom AS active_par_nom
+      FROM crise_session cs LEFT JOIN utilisateur u ON u.id = cs.active_par
+      WHERE cs.id = $1
+    `, [criseId]);
+    if (!session) return res.status(404).json({ erreur: 'Session non trouvée' });
+
+    // Périmètre (communes)
+    const { rows: communeRows } = await query(`
+      SELECT DISTINCT commune_id AS id FROM crise_commune WHERE crise_id = $1
+      UNION
+      SELECT DISTINCT c.id FROM commune c
+      JOIN crise_circonscription cc ON cc.circonscription_id = c.circonscription_id
+      WHERE cc.crise_id = $1
+    `, [criseId]);
+    const communeIds = communeRows.map(r => r.id);
+
+    // KPI filtrés par périmètre
+    let kpi = { total: 0, critiques: 0, en_intervention: 0, resolus: 0 };
+    if (communeIds.length) {
+      const { rows: [k] } = await query(`
+        SELECT
+          COUNT(*) FILTER (WHERE etat NOT IN ('resolu','clos','rejete'))::int AS total,
+          COUNT(*) FILTER (WHERE gravite = 'danger_immediat' AND etat NOT IN ('resolu','clos','rejete'))::int AS critiques,
+          COUNT(*) FILTER (WHERE etat = 'en_intervention')::int AS en_intervention,
+          COUNT(*) FILTER (WHERE etat IN ('resolu','clos'))::int AS resolus
+        FROM signalement WHERE commune_id = ANY($1::int[])
+      `, [communeIds]);
+      kpi = k;
+    }
+
+    // Signalements rattachés avec états de crise
+    const { rows: signalements } = await query(`
+      SELECT cs.etat_crise, cs.auto_suggere, cs.rattache_le,
+             s.id AS signalement_id, s.reference, s.description, s.etat, s.gravite, s.lat, s.lng,
+             s.cree_le AS sig_cree_le, c.nom AS commune_nom,
+             cat.libelle AS categorie_label
+      FROM crise_signalement cs
+      JOIN signalement s ON s.id = cs.signalement_id
+      LEFT JOIN commune c ON c.id = s.commune_id
+      LEFT JOIN categorie_signal cat ON cat.id = s.categorie_id
+      WHERE cs.crise_id = $1
+      ORDER BY cs.rattache_le DESC
+    `, [criseId]);
+
+    // Organismes mobilisés
+    const { rows: organismes } = await query(`
+      SELECT co.organisation_id, co.auto_territorial, co.ajoute_le,
+             o.nom, o.nom_ar, o.type, o.sigle_officiel
+      FROM crise_organisme co
+      JOIN organisations o ON o.id = co.organisation_id
+      WHERE co.crise_id = $1
+      ORDER BY co.auto_territorial DESC, o.type, o.nom
+    `, [criseId]);
+
+    // Communes du périmètre (pour la carte)
+    const { rows: communes } = communeIds.length ? await query(`
+      SELECT id, nom, nom_ar, centre_lat, centre_lng FROM commune WHERE id = ANY($1::int[])
+    `, [communeIds]) : { rows: [] };
+
+    res.json({
+      ok: true,
+      session,
+      kpi,
+      signalements,
+      organismes,
+      communes,
+      perimetre_commune_ids: communeIds
+    });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/active — OVERRIDE: include mobilisation check for banner visibility
+// Un profil non-CC ne voit le bandeau QUE s'il est mobilisé (son organisation est dans crise_organisme)
+router.get('/crises/active/visible', authenticate, async (req, res) => {
+  try {
+    const user = req.user;
+    const isCC = hasAnyCriseAccess(user);
+
+    let rows;
+    if (isCC) {
+      // CC profiles see all active crises
+      const result = await query(`
+        SELECT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
+        FROM crise_session cs WHERE cs.statut = 'active'
+        ORDER BY cs.active_le DESC
+      `);
+      rows = result.rows;
+    } else if (user.organisation_id) {
+      // Non-CC: only see crises where their org is mobilised
+      const result = await query(`
+        SELECT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
+        FROM crise_session cs
+        JOIN crise_organisme co ON co.crise_id = cs.id AND co.organisation_id = $1
+        WHERE cs.statut = 'active'
+        ORDER BY cs.active_le DESC
+      `, [user.organisation_id]);
+      rows = result.rows;
+    } else {
+      rows = [];
+    }
+
+    res.json({ ok: true, crises: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
 module.exports = router;

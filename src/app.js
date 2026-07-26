@@ -32,7 +32,7 @@ app.use(helmet({
 }));
 app.use(cors({ origin: config.corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
 
 // Fichiers statiques (front-end)
 // index.html : no-cache pour que les mises à jour soient immédiates

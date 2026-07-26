@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" onerror="this.disabled=true" />
   <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" onerror="window._leafletDrawFailed=true"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="/app.css?v=405">
+  <link rel="stylesheet" href="/app.css?v=406">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -200,6 +200,9 @@
     </div>
     <button id="bandeau-voir-tout" class="hidden" onclick="showView('infos')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;padding:2px 10px;border-radius:12px;font-size:11px;cursor:pointer;font-family:Poppins,sans-serif;">Voir tout</button>
   </div>
+
+  <!-- Bandeau crise global — visible par tous les profils mobilisés -->
+  <div id="global-crise-banner" class="cc-crise-banner" style="display:none;margin:0;border-radius:0;"></div>
 
   <div class="app-body">
     <!-- SIDEBAR -->
@@ -3998,11 +4001,44 @@
         <div id="crise-circs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
         <label data-i18n="cc.crise_notes">Notes</label>
         <textarea id="crise-notes" rows="2"></textarea>
+        <div class="cc-crise-org-section">
+          <h5 data-i18n="cc.crise_org_select">Sélectionner les organismes</h5>
+          <div id="crise-orgs-directions" class="cc-crise-org-grid"></div>
+          <div id="crise-orgs-epic" class="cc-crise-org-grid" style="margin-top:6px;"></div>
+          <div id="crise-orgs-partenaires" class="cc-crise-org-grid" style="margin-top:6px;"></div>
+        </div>
         <button class="cc-crise-submit" onclick="criseCreate()" data-i18n="cc.crise_activer">Activer la crise</button>
       </div>
       <div class="cc-crise-list">
         <h4 data-i18n="cc.crise_actives">Sessions actives</h4>
         <div id="crise-active-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Vue de crise (overlay plein écran) -->
+<div id="cc-crise-vue" class="cc-crise-vue-overlay" style="display:none;">
+  <div class="cc-crise-vue-panel">
+    <div class="cc-crise-vue-header">
+      <h3 id="crise-vue-titre" data-i18n="cc.crise_vue">Vue de crise</h3>
+      <button onclick="criseVueClose()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;">&times;</button>
+    </div>
+    <div class="cc-crise-vue-body">
+      <div class="cc-crise-vue-section">
+        <h4 data-i18n="cc.crise_vue_kpi">Indicateurs périmètre</h4>
+        <div id="crise-vue-kpi" class="cc-crise-vue-kpi"></div>
+      </div>
+      <div class="cc-crise-vue-section">
+        <h4 data-i18n="cc.crise_organismes">Organismes mobilisés</h4>
+        <div id="crise-vue-orgs" class="cc-crise-org-list"></div>
+      </div>
+      <div class="cc-crise-vue-section full">
+        <h4 data-i18n="cc.crise_signalements">Signalements rattachés</h4>
+        <div id="crise-vue-signalements"></div>
+      </div>
+      <div class="cc-crise-vue-section full">
+        <h4 data-i18n="cc.crise_suggestions">Suggestions (périmètre)</h4>
+        <div id="crise-vue-suggestions"></div>
       </div>
     </div>
   </div>

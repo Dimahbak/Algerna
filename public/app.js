@@ -678,6 +678,8 @@ async function initApp() {
   applyTranslations();
   loadCommuniques();
   loadNotifBadge();
+  // Charger le bandeau de crise global (visible pour tous les profils mobilisés)
+  if (role !== 'citoyen') criseLoadBanner();
   var fab = document.getElementById('saksini-fab');
   if (fab) fab.style.display = (role === 'citoyen') ? 'flex' : 'none';
 }
@@ -14231,7 +14233,7 @@ function criseInitButton() {
 
 async function criseLoadBanner() {
   try {
-    var data = await safeFetchJSON('/api/command-center/crises/active', {}, true);
+    var data = await safeFetchJSON('/api/command-center/crises/active/visible', {}, true);
     if (!data || !data.crises) return;
     _criseActiveSessions = data.crises;
     criseRenderBanner();
@@ -14239,25 +14241,32 @@ async function criseLoadBanner() {
 }
 
 function criseRenderBanner() {
-  var banner = document.getElementById('cc-crise-banner');
-  if (!banner) return;
+  var ccBanner = document.getElementById('cc-crise-banner');
+  var globalBanner = document.getElementById('global-crise-banner');
+
   if (!_criseActiveSessions.length) {
-    banner.style.display = 'none';
+    if (ccBanner) ccBanner.style.display = 'none';
+    if (globalBanner) globalBanner.style.display = 'none';
     if (_criseChronoInterval) { clearInterval(_criseChronoInterval); _criseChronoInterval = null; }
     return;
   }
-  banner.style.display = '';
+
   var html = '';
   _criseActiveSessions.forEach(function(c) {
     var titre = currentLang === 'ar' && c.titre_ar ? c.titre_ar : c.titre;
     var niveauLabel = t('cc.crise_n_' + c.niveau);
-    html += '<div class="cc-crise-banner-item" data-crise-id="' + c.id + '">' +
+    html += '<div class="cc-crise-banner-item" data-crise-id="' + c.id + '" onclick="criseVueOpen(' + c.id + ')" style="cursor:pointer;">' +
       '<span class="crise-niveau">' + escHtml(niveauLabel) + '</span>' +
       '<span class="crise-titre">' + escHtml(titre) + '</span>' +
       '<span class="crise-chrono" dir="ltr" data-crise-start="' + c.active_le + '">--:--:--</span>' +
       '</div>';
   });
-  banner.innerHTML = html;
+
+  // Render in CC-specific banner (if on CC view)
+  if (ccBanner) { ccBanner.innerHTML = html; ccBanner.style.display = ''; }
+  // Render in global banner (visible across all views for mobilised profiles)
+  if (globalBanner) { globalBanner.innerHTML = html; globalBanner.style.display = ''; }
+
   criseUpdateChronos();
   if (_criseChronoInterval) clearInterval(_criseChronoInterval);
   _criseChronoInterval = setInterval(criseUpdateChronos, 1000);
@@ -14281,6 +14290,7 @@ function criseOpenDrawer() {
   if (!drawer) return;
   drawer.classList.remove('hidden');
   criseLoadCirconscriptions();
+  criseLoadOrganismes();
   criseLoadActiveList();
   applyTranslations();
 }
@@ -14317,15 +14327,21 @@ async function criseCreate() {
     type_crise: document.getElementById('crise-type').value,
     niveau: document.getElementById('crise-niveau').value,
     notes: document.getElementById('crise-notes').value.trim() || null,
-    circonscription_ids: Array.from(document.querySelectorAll('.crise-circ-cb:checked')).map(function(cb) { return Number(cb.value); })
+    circonscription_ids: Array.from(document.querySelectorAll('.crise-circ-cb:checked')).map(function(cb) { return Number(cb.value); }),
+    organisation_ids: Array.from(document.querySelectorAll('.crise-org-cb:checked')).map(function(cb) { return Number(cb.value); })
   };
   try {
-    var data = await safeFetchJSON('/api/command-center/crises', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
+    var data = await safeFetchJSON('/api/command-center/crises/full', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
     if (data && data.ok) {
-      showToast(t('cc.crise_creee'), 'success');
+      var msg = t('cc.crise_creee');
+      if (data.organismes_auto) msg += ' — ' + (data.organismes_manuels + data.organismes_auto) + ' ' + t('cc.crise_org_ajoutes');
+      if (data.notifications) msg += ' — ' + data.notifications + ' ' + t('cc.crise_notif_envoyees');
+      showToast(msg, 'success');
       document.getElementById('crise-titre').value = '';
       document.getElementById('crise-titre-ar').value = '';
       document.getElementById('crise-notes').value = '';
+      document.querySelectorAll('.crise-org-cb:checked').forEach(function(cb) { cb.checked = false; });
+      document.querySelectorAll('.crise-circ-cb:checked').forEach(function(cb) { cb.checked = false; });
       criseLoadActiveList();
       criseLoadBanner();
     } else {
@@ -14347,9 +14363,9 @@ async function criseLoadActiveList() {
       var titre = currentLang === 'ar' && c.titre_ar ? c.titre_ar : c.titre;
       var statut = c.statut === 'active' ? '🔴 ' + t('cc.crise_n_' + c.niveau) : '⏸ ' + t('cc.crise_cloturer');
       var dateStr = new Date(c.active_le).toLocaleString(currentLang === 'ar' ? 'ar-DZ' : 'fr-DZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', hour12: false });
-      var actions = '';
+      var actions = '<button class="primary" onclick="criseVueOpen(' + c.id + ')">' + t('cc.crise_vue') + '</button>';
       if (c.statut === 'active') {
-        actions = '<button class="danger" onclick="criseCloturer(' + c.id + ')">' + t('cc.crise_cloturer') + '</button>';
+        actions += '<button class="danger" onclick="criseCloturer(' + c.id + ')">' + t('cc.crise_cloturer') + '</button>';
       }
       return '<div class="cc-crise-card"><h4>' + escHtml(titre) + '</h4>' +
         '<div class="meta">' + escHtml(statut) + ' · ' + t('cc.crise_depuis') + ' <span dir="ltr">' + dateStr + '</span>' +
@@ -14368,6 +14384,169 @@ async function criseCloturer(id) {
       criseLoadBanner();
     } else {
       showToast((data && data.erreur) || 'Erreur', 'error');
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+// ── CRISE-2 : Chargement des organismes mobilisables ──
+async function criseLoadOrganismes() {
+  try {
+    var data = await safeFetchJSON('/api/command-center/organisations', {}, true);
+    if (!data || !data.organisations) return;
+    var orgs = data.organisations;
+    var dirContainer = document.getElementById('crise-orgs-directions');
+    var epicContainer = document.getElementById('crise-orgs-epic');
+    var partContainer = document.getElementById('crise-orgs-partenaires');
+    if (!dirContainer) return;
+
+    var dirHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_directions') + '</strong>';
+    var epicHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_epic') + '</strong>';
+    var partHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_partenaires') + '</strong>';
+
+    orgs.forEach(function(o) {
+      var label = '<label><input type="checkbox" value="' + o.id + '" class="crise-org-cb"> ' +
+        escHtml(currentLang === 'ar' && o.nom_ar ? o.nom_ar : (o.sigle_officiel || o.nom)) + '</label>';
+      if (o.type === 'direction' || o.type === 'direction_wilaya') dirHtml += label;
+      else if (o.type === 'epic') epicHtml += label;
+      else if (o.type === 'operateur_externe' || o.type === 'partenaire_institutionnel') partHtml += label;
+    });
+
+    dirContainer.innerHTML = dirHtml;
+    epicContainer.innerHTML = epicHtml;
+    partContainer.innerHTML = partHtml;
+  } catch (e) { /* silent */ }
+}
+
+// ── CRISE-2 : Vue de crise ──
+var _criseVueCurrentId = null;
+
+async function criseVueOpen(criseId) {
+  _criseVueCurrentId = criseId;
+  var overlay = document.getElementById('cc-crise-vue');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  await criseVueLoad(criseId);
+  applyTranslations();
+}
+
+function criseVueClose() {
+  var overlay = document.getElementById('cc-crise-vue');
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
+  _criseVueCurrentId = null;
+}
+
+async function criseVueLoad(criseId) {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/vue', {}, true);
+    if (!data || !data.ok) return;
+
+    // Titre
+    var titreEl = document.getElementById('crise-vue-titre');
+    if (titreEl) {
+      var titre = currentLang === 'ar' && data.session.titre_ar ? data.session.titre_ar : data.session.titre;
+      titreEl.textContent = t('cc.crise_vue') + ' — ' + titre;
+    }
+
+    // KPI
+    var kpiContainer = document.getElementById('crise-vue-kpi');
+    if (kpiContainer) {
+      kpiContainer.innerHTML =
+        '<div class="cc-crise-vue-kpi-card"><div class="val">' + (data.kpi.total || 0) + '</div><div class="lbl">' + t('cc.crise_vue_total') + '</div></div>' +
+        '<div class="cc-crise-vue-kpi-card"><div class="val" style="color:#dc2626;">' + (data.kpi.critiques || 0) + '</div><div class="lbl">' + t('cc.crise_vue_critiques') + '</div></div>' +
+        '<div class="cc-crise-vue-kpi-card"><div class="val" style="color:#7c3aed;">' + (data.kpi.en_intervention || 0) + '</div><div class="lbl">' + t('cc.crise_vue_intervention') + '</div></div>' +
+        '<div class="cc-crise-vue-kpi-card"><div class="val" style="color:#059669;">' + (data.kpi.resolus || 0) + '</div><div class="lbl">' + t('cc.crise_vue_resolus') + '</div></div>';
+    }
+
+    // Organismes
+    var orgsContainer = document.getElementById('crise-vue-orgs');
+    if (orgsContainer) {
+      if (!data.organismes || !data.organismes.length) {
+        orgsContainer.innerHTML = '<span style="color:#999;font-size:11px;">—</span>';
+      } else {
+        orgsContainer.innerHTML = data.organismes.map(function(o) {
+          var cls = o.auto_territorial ? 'cc-crise-org-tag auto' : 'cc-crise-org-tag';
+          var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : (o.sigle_officiel || o.nom);
+          var badge = o.auto_territorial ? ' <span class="type">' + t('cc.crise_org_auto') + '</span>' : '';
+          return '<span class="' + cls + '">' + escHtml(nom) + badge + '</span>';
+        }).join('');
+      }
+    }
+
+    // Signalements rattachés
+    var sigContainer = document.getElementById('crise-vue-signalements');
+    if (sigContainer) {
+      if (!data.signalements || !data.signalements.length) {
+        sigContainer.innerHTML = '<p style="color:#999;font-size:11px;">' + t('cc.crise_aucun_signalement') + '</p>';
+      } else {
+        sigContainer.innerHTML = data.signalements.map(function(s) {
+          var etatOptions = ['non_verifie','confirme','en_intervention','maitrise'].map(function(e) {
+            var sel = s.etat_crise === e ? ' selected' : '';
+            return '<option value="' + e + '"' + sel + '>' + t('cc.crise_etat_' + e) + '</option>';
+          }).join('');
+          return '<div class="cc-crise-sig-card">' +
+            '<span class="ref">' + escHtml(s.reference) + '</span>' +
+            '<span class="desc">' + escHtml(s.description || '') + '</span>' +
+            '<span class="commune">' + escHtml(s.commune_nom || '') + '</span>' +
+            '<select class="cc-crise-etat-select ' + s.etat_crise + '" onchange="criseChangeEtat(' + criseId + ',\'' + s.signalement_id + '\',this.value)">' + etatOptions + '</select>' +
+            '<button style="font-size:10px;padding:2px 6px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;background:white;color:#dc2626;" onclick="criseDetacher(' + criseId + ',\'' + s.signalement_id + '\')">' + t('cc.crise_detacher') + '</button>' +
+            '</div>';
+        }).join('');
+      }
+    }
+
+    // Suggestions
+    await criseVueLoadSuggestions(criseId);
+
+  } catch (e) { console.error('[criseVueLoad]', e.message); }
+}
+
+async function criseVueLoadSuggestions(criseId) {
+  var container = document.getElementById('crise-vue-suggestions');
+  if (!container) return;
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/suggestions', {}, true);
+    if (!data || !data.suggestions || !data.suggestions.length) {
+      container.innerHTML = '<p style="color:#999;font-size:11px;">—</p>';
+      return;
+    }
+    container.innerHTML = data.suggestions.map(function(s) {
+      return '<div class="cc-crise-suggestion">' +
+        '<span class="ref">' + escHtml(s.reference) + '</span>' +
+        '<span class="desc">' + escHtml(s.description || '') + ' — ' + escHtml(s.commune_nom || '') + '</span>' +
+        '<button onclick="criseRattacher(' + criseId + ',\'' + s.id + '\')">' + t('cc.crise_confirmer_rattachement') + '</button>' +
+        '</div>';
+    }).join('');
+  } catch (e) { container.innerHTML = ''; }
+}
+
+async function criseRattacher(criseId, sigId) {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/signalements/' + sigId, { method: 'POST' }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_rattache'), 'success');
+      criseVueLoad(criseId);
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function criseDetacher(criseId, sigId) {
+  try {
+    await safeFetchJSON('/api/command-center/crises/' + criseId + '/signalements/' + sigId, { method: 'DELETE' }, true);
+    criseVueLoad(criseId);
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function criseChangeEtat(criseId, sigId, nouvelEtat) {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/signalements/' + sigId + '/etat', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ etat_crise: nouvelEtat })
+    }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_etat_change'), 'success');
+      criseVueLoad(criseId);
     }
   } catch (e) { showToast(e.message, 'error'); }
 }
