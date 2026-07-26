@@ -1047,16 +1047,27 @@ router.get('/crises/:id/organismes', authenticate, requireCommandCenter(), async
 // POST /crises/full qui fait création + organismes + auto + notifs en un seul appel.
 router.post('/crises/full', authenticate, requireCommandCenter(), async (req, res) => {
   try {
-    const { titre, titre_ar, type_crise, niveau, notes, circonscription_ids, commune_ids, organisation_ids } = req.body;
+    const { titre, titre_ar, type_crise, niveau, notes, circonscription_ids, commune_ids, organisation_ids, visibilite_restreinte, habilite_ids } = req.body;
     if (!titre || !type_crise || !niveau) return res.status(400).json({ erreur: 'titre, type_crise et niveau requis' });
     if (!canActivateCrise(req.user, niveau)) return res.status(403).json({ erreur: 'Niveau d\'activation non autorisé pour ce profil' });
 
     // 1. Créer la session
     const { rows: [session] } = await query(
-      `INSERT INTO crise_session (titre, titre_ar, type_crise, niveau, active_par, notes)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [titre, titre_ar || null, type_crise, niveau, req.user.id, notes || null]
+      `INSERT INTO crise_session (titre, titre_ar, type_crise, niveau, active_par, notes, visibilite_restreinte)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [titre, titre_ar || null, type_crise, niveau, req.user.id, notes || null, visibilite_restreinte === true]
     );
+
+    // 1b. Habilités (cercle restreint)
+    if (visibilite_restreinte === true) {
+      // L'activateur est toujours habilité
+      await query('INSERT INTO crise_habilite (crise_id, utilisateur_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, req.user.id]);
+      if (Array.isArray(habilite_ids)) {
+        for (const uid of habilite_ids) {
+          await query('INSERT INTO crise_habilite (crise_id, utilisateur_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [session.id, uid]);
+        }
+      }
+    }
 
     // 2. Périmètre géographique
     if (Array.isArray(circonscription_ids) && circonscription_ids.length) {
@@ -1242,9 +1253,13 @@ router.get('/crises/:id/vue', authenticate, requireCommandCenter(), async (req, 
       ORDER BY cs.rattache_le DESC
     `, [criseId]);
 
-    // Organismes mobilisés
+    // Organismes mobilisés avec états de mobilisation
     const { rows: organismes } = await query(`
       SELECT co.organisation_id, co.auto_territorial, co.ajoute_le,
+             co.etat_mobilisation, co.referent_nom, co.referent_tel,
+             co.engage_le, co.sur_place_le, co.desengage_le,
+             co.nb_relances, co.alerte_rouge, co.sans_compte,
+             co.contact_hors_nom, co.contact_hors_quand, co.contact_hors_par, co.contact_hors_reponse,
              o.nom, o.nom_ar, o.type, o.sigle_officiel
       FROM crise_organisme co
       JOIN organisations o ON o.id = co.organisation_id
@@ -1269,37 +1284,363 @@ router.get('/crises/:id/vue', authenticate, requireCommandCenter(), async (req, 
   } catch (e) { res.status(500).json({ erreur: e.message }); }
 });
 
-// GET /crises/active — OVERRIDE: include mobilisation check for banner visibility
-// Un profil non-CC ne voit le bandeau QUE s'il est mobilisé (son organisation est dans crise_organisme)
+// GET /crises/active/visible — banner visibility avec cercle restreint
 router.get('/crises/active/visible', authenticate, async (req, res) => {
   try {
     const user = req.user;
     const isCC = hasAnyCriseAccess(user);
+    const isWaliDelegue = user.fonction === 'wali_delegue';
 
     let rows;
     if (isCC) {
-      // CC profiles see all active crises
       const result = await query(`
         SELECT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
         FROM crise_session cs WHERE cs.statut = 'active'
+          AND (cs.visibilite_restreinte = FALSE
+               OR EXISTS (SELECT 1 FROM crise_habilite ch WHERE ch.crise_id = cs.id AND ch.utilisateur_id = $1))
         ORDER BY cs.active_le DESC
-      `);
+      `, [user.id]);
+      rows = result.rows;
+    } else if (isWaliDelegue && user.organisation_id) {
+      // Wali délégué : voit les crises touchant sa circonscription
+      const result = await query(`
+        SELECT DISTINCT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
+        FROM crise_session cs
+        JOIN crise_circonscription cc ON cc.crise_id = cs.id
+        JOIN commune c ON c.circonscription_id = cc.circonscription_id
+        JOIN daira d ON d.id = c.daira_id AND d.organisation_id = $1
+        WHERE cs.statut = 'active'
+          AND (cs.visibilite_restreinte = FALSE
+               OR EXISTS (SELECT 1 FROM crise_habilite ch WHERE ch.crise_id = cs.id AND ch.utilisateur_id = $2))
+        ORDER BY cs.active_le DESC
+      `, [user.organisation_id, user.id]);
       rows = result.rows;
     } else if (user.organisation_id) {
-      // Non-CC: only see crises where their org is mobilised
       const result = await query(`
         SELECT cs.id, cs.titre, cs.titre_ar, cs.type_crise, cs.niveau, cs.active_le
         FROM crise_session cs
         JOIN crise_organisme co ON co.crise_id = cs.id AND co.organisation_id = $1
         WHERE cs.statut = 'active'
+          AND (cs.visibilite_restreinte = FALSE
+               OR EXISTS (SELECT 1 FROM crise_habilite ch WHERE ch.crise_id = cs.id AND ch.utilisateur_id = $2))
         ORDER BY cs.active_le DESC
-      `, [user.organisation_id]);
+      `, [user.organisation_id, user.id]);
       rows = result.rows;
     } else {
       rows = [];
     }
 
     res.json({ ok: true, crises: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ══════════════════════════════════════════════
+// ── CRISE-3 — Coordination (coeur de la boucle) ──
+// ══════════════════════════════════════════════
+
+// Helper : lire un paramètre de crise_param
+async function getCriseParam(cle) {
+  const { rows } = await query('SELECT valeur FROM crise_param WHERE cle = $1', [cle]);
+  return rows[0] ? rows[0].valeur : null;
+}
+
+// Helper : est-ce un Wali délégué ?
+function isWaliDelegue(user) {
+  return user && user.fonction === 'wali_delegue';
+}
+
+// Helper : le Wali délégué peut-il voir cette crise ?
+async function waliDelegueCanSee(user, criseId) {
+  if (!isWaliDelegue(user) || !user.organisation_id) return false;
+  const { rows } = await query(`
+    SELECT 1 FROM crise_circonscription cc
+    JOIN commune c ON c.circonscription_id = cc.circonscription_id
+    JOIN daira d ON d.id = c.daira_id AND d.organisation_id = $1
+    WHERE cc.crise_id = $2 LIMIT 1
+  `, [user.organisation_id, criseId]);
+  return rows.length > 0;
+}
+
+// Helper : vérifier la visibilité restreinte
+async function canSeeCrise(user, criseId) {
+  const { rows: [session] } = await query('SELECT visibilite_restreinte FROM crise_session WHERE id = $1', [criseId]);
+  if (!session) return false;
+  if (!session.visibilite_restreinte) return true;
+  const { rows } = await query('SELECT 1 FROM crise_habilite WHERE crise_id = $1 AND utilisateur_id = $2', [criseId, user.id]);
+  return rows.length > 0;
+}
+
+// PATCH /crises/:id/organismes/:orgId/mobilisation — changer l'état de mobilisation
+router.patch('/crises/:id/organismes/:orgId/mobilisation', authenticate, async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const orgId = Number(req.params.orgId);
+    const { etat, referent_nom, referent_tel } = req.body;
+    const validStates = ['sollicite', 'engage', 'sur_place', 'desengage'];
+    if (!validStates.includes(etat)) return res.status(400).json({ erreur: 'État invalide : ' + validStates.join(', ') });
+
+    // Vérifier accès (CC ou l'organisme lui-même)
+    const isOrgUser = req.user.organisation_id === orgId;
+    const isCC = hasAnyCriseAccess(req.user);
+    if (!isCC && !isOrgUser) return res.status(403).json({ erreur: 'Non autorisé' });
+
+    const { rows: [current] } = await query(
+      'SELECT etat_mobilisation FROM crise_organisme WHERE crise_id = $1 AND organisation_id = $2',
+      [criseId, orgId]
+    );
+    if (!current) return res.status(404).json({ erreur: 'Organisme non mobilisé dans cette session' });
+
+    // Mise à jour
+    const updates = ['etat_mobilisation = $1'];
+    const params = [etat];
+    let paramIdx = 2;
+
+    if (etat === 'engage') {
+      updates.push('engage_le = NOW()');
+      if (referent_nom) { updates.push('referent_nom = $' + paramIdx); params.push(referent_nom); paramIdx++; }
+      if (referent_tel) { updates.push('referent_tel = $' + paramIdx); params.push(referent_tel); paramIdx++; }
+      updates.push('alerte_rouge = FALSE');
+    } else if (etat === 'sur_place') {
+      updates.push('sur_place_le = NOW()');
+    } else if (etat === 'desengage') {
+      updates.push('desengage_le = NOW()');
+    }
+
+    params.push(criseId, orgId);
+    const { rows: [updated] } = await query(
+      `UPDATE crise_organisme SET ${updates.join(', ')} WHERE crise_id = $${paramIdx} AND organisation_id = $${paramIdx + 1} RETURNING *`,
+      params
+    );
+
+    // Log du changement
+    await query(
+      `INSERT INTO crise_mobilisation_log (crise_id, organisation_id, ancien_etat, nouvel_etat, referent_nom, referent_tel, auteur_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [criseId, orgId, current.etat_mobilisation, etat, referent_nom || null, referent_tel || null, req.user.id]
+    );
+
+    res.json({ ok: true, organisme: updated });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/mobilisation-log — journal des changements d'état
+router.get('/crises/:id/mobilisation-log', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT ml.*, o.nom AS org_nom, u.prenom || ' ' || u.nom AS auteur_nom
+      FROM crise_mobilisation_log ml
+      JOIN organisations o ON o.id = ml.organisation_id
+      LEFT JOIN utilisateur u ON u.id = ml.auteur_id
+      WHERE ml.crise_id = $1 ORDER BY ml.horodatage DESC
+    `, [Number(req.params.id)]);
+    res.json({ ok: true, log: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// POST /crises/:id/organismes/:orgId/contact-hors — traçabilité manuelle
+router.post('/crises/:id/organismes/:orgId/contact-hors', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { contact_nom, reponse } = req.body;
+    const { rows: [updated] } = await query(
+      `UPDATE crise_organisme SET sans_compte = TRUE, contact_hors_nom = $1,
+         contact_hors_quand = NOW(), contact_hors_par = $2, contact_hors_reponse = $3
+       WHERE crise_id = $4 AND organisation_id = $5 RETURNING *`,
+      [contact_nom || null, (req.user.prenom || '') + ' ' + (req.user.nom || ''),
+       reponse || null, Number(req.params.id), Number(req.params.orgId)]
+    );
+    if (!updated) return res.status(404).json({ erreur: 'Organisme non trouvé' });
+
+    // Log
+    await query(
+      `INSERT INTO crise_mobilisation_log (crise_id, organisation_id, ancien_etat, nouvel_etat, auteur_id)
+       VALUES ($1, $2, 'contact_hors', 'contact_hors', $3)`,
+      [Number(req.params.id), Number(req.params.orgId), req.user.id]
+    );
+
+    res.json({ ok: true, organisme: updated });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Points de situation ──
+
+// POST /crises/:id/sitrep — poster un point de situation
+router.post('/crises/:id/sitrep', authenticate, async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const { fait, en_cours, bloque, besoin, destinataire } = req.body;
+
+    // Déterminer le destinataire par défaut selon le profil
+    let dest = destinataire || 'cc';
+    // APC poste vers wilaya_deleguee, pas directement vers CC
+    if (req.user.fonction === 'superviseur' && req.user.niveau_perimetre === 'commune') {
+      dest = 'wilaya_deleguee';
+    }
+
+    const { rows: [sitrep] } = await query(
+      `INSERT INTO crise_point_situation (crise_id, auteur_id, organisation_id, fait, en_cours, bloque, besoin, destinataire)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [criseId, req.user.id, req.user.organisation_id || null,
+       fait || null, en_cours || null, bloque || null, besoin || null, dest]
+    );
+    res.json({ ok: true, sitrep });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/sitreps — lister les points de situation
+router.get('/crises/:id/sitreps', authenticate, async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const { dest } = req.query; // filtre optionnel par destinataire
+    let sql = `
+      SELECT ps.*, u.prenom || ' ' || u.nom AS auteur_nom,
+             o.nom AS org_nom, o.type AS org_type,
+             cu.prenom || ' ' || cu.nom AS consolide_par_nom
+      FROM crise_point_situation ps
+      LEFT JOIN utilisateur u ON u.id = ps.auteur_id
+      LEFT JOIN organisations o ON o.id = ps.organisation_id
+      LEFT JOIN utilisateur cu ON cu.id = ps.consolide_par
+      WHERE ps.crise_id = $1`;
+    const params = [criseId];
+    if (dest) { params.push(dest); sql += ` AND ps.destinataire = $2`; }
+    sql += ' ORDER BY ps.cree_le DESC';
+    const { rows } = await query(sql, params);
+    res.json({ ok: true, sitreps: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// PATCH /crises/:id/sitreps/:sitrepId/consolider — Wali délégué consolide vers CC
+router.patch('/crises/:id/sitreps/:sitrepId/consolider', authenticate, async (req, res) => {
+  try {
+    const { rows: [updated] } = await query(
+      `UPDATE crise_point_situation SET destinataire = 'consolide', consolide_par = $1, consolide_le = NOW()
+       WHERE id = $2 AND crise_id = $3 RETURNING *`,
+      [req.user.id, Number(req.params.sitrepId), Number(req.params.id)]
+    );
+    if (!updated) return res.status(404).json({ erreur: 'Point de situation non trouvé' });
+    res.json({ ok: true, sitrep: updated });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/sitreps/retards — retards de points de situation
+router.get('/crises/:id/sitreps/retards', authenticate, async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const { rows: [session] } = await query('SELECT niveau FROM crise_session WHERE id = $1', [criseId]);
+    if (!session) return res.status(404).json({ erreur: 'Session non trouvée' });
+
+    const cadenceMin = await getCriseParam('cadence_sitrep_' + session.niveau);
+    if (!cadenceMin) return res.json({ ok: true, retards: [], cadence_minutes: null });
+
+    // Trouver les organismes mobilisés dont le dernier sitrep est en retard
+    const { rows } = await query(`
+      SELECT co.organisation_id, o.nom AS org_nom, o.type AS org_type,
+        (SELECT MAX(ps.cree_le) FROM crise_point_situation ps
+         WHERE ps.crise_id = $1 AND ps.organisation_id = co.organisation_id) AS dernier_sitrep,
+        NOW() - INTERVAL '1 minute' * $2 AS echeance
+      FROM crise_organisme co
+      JOIN organisations o ON o.id = co.organisation_id
+      WHERE co.crise_id = $1 AND co.etat_mobilisation IN ('engage','sur_place')
+    `, [criseId, Number(cadenceMin)]);
+
+    const retards = rows.filter(r => {
+      if (!r.dernier_sitrep) return true; // jamais posté
+      return new Date(r.dernier_sitrep) < new Date(r.echeance);
+    });
+
+    res.json({ ok: true, retards, cadence_minutes: Number(cadenceMin) });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Cercle de visibilité restreinte ──
+
+// PATCH /crises/:id/habilites — gérer les profils habilités
+router.patch('/crises/:id/habilites', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    const { utilisateur_ids } = req.body;
+    if (!Array.isArray(utilisateur_ids)) return res.status(400).json({ erreur: 'utilisateur_ids requis' });
+
+    // Supprimer les anciens puis insérer
+    await query('DELETE FROM crise_habilite WHERE crise_id = $1', [criseId]);
+    for (const uid of utilisateur_ids) {
+      await query('INSERT INTO crise_habilite (crise_id, utilisateur_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [criseId, uid]);
+    }
+    // L'activateur est toujours habilité
+    const { rows: [session] } = await query('SELECT active_par FROM crise_session WHERE id = $1', [criseId]);
+    if (session) {
+      await query('INSERT INTO crise_habilite (crise_id, utilisateur_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [criseId, session.active_par]);
+    }
+    res.json({ ok: true, count: utilisateur_ids.length });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// GET /crises/:id/habilites — lister les habilités
+router.get('/crises/:id/habilites', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const { rows } = await query(`
+      SELECT ch.utilisateur_id, u.prenom, u.nom, u.fonction
+      FROM crise_habilite ch JOIN utilisateur u ON u.id = ch.utilisateur_id
+      WHERE ch.crise_id = $1
+    `, [Number(req.params.id)]);
+    res.json({ ok: true, habilites: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Wali délégué : vues filtrées ──
+
+// GET /crises/wali-delegue — crises visibles par le Wali délégué
+router.get('/crises/wali-delegue', authenticate, async (req, res) => {
+  try {
+    if (!isWaliDelegue(req.user)) return res.status(403).json({ erreur: 'Réservé aux Walis délégués' });
+    const { rows } = await query(`
+      SELECT DISTINCT cs.*, u.prenom || ' ' || u.nom AS active_par_nom
+      FROM crise_session cs
+      JOIN crise_circonscription cc ON cc.crise_id = cs.id
+      JOIN commune c ON c.circonscription_id = cc.circonscription_id
+      JOIN daira d ON d.id = c.daira_id AND d.organisation_id = $1
+      LEFT JOIN utilisateur u ON u.id = cs.active_par
+      WHERE cs.statut IN ('active', 'cloture_provisoire')
+        AND (cs.visibilite_restreinte = FALSE
+             OR EXISTS (SELECT 1 FROM crise_habilite ch WHERE ch.crise_id = cs.id AND ch.utilisateur_id = $2))
+      ORDER BY cs.active_le DESC
+    `, [req.user.organisation_id, req.user.id]);
+    res.json({ ok: true, crises: rows });
+  } catch (e) { res.status(500).json({ erreur: e.message }); }
+});
+
+// ── Mise à jour POST /crises/full pour supporter visibilite_restreinte + habilites ──
+// (Patch: ajouter les champs à la route existante)
+
+// GET /crises/:id/alertes — alertes rouges et retards pour la vue CC
+router.get('/crises/:id/alertes', authenticate, requireCommandCenter(), async (req, res) => {
+  try {
+    const criseId = Number(req.params.id);
+    // Organismes en alerte rouge (non-réponse 2e échéance)
+    const { rows: alertesRouges } = await query(`
+      SELECT co.organisation_id, o.nom AS org_nom, co.nb_relances, co.derniere_relance_le
+      FROM crise_organisme co JOIN organisations o ON o.id = co.organisation_id
+      WHERE co.crise_id = $1 AND co.alerte_rouge = TRUE
+    `, [criseId]);
+
+    // Retards de sitrep
+    const { rows: [session] } = await query('SELECT niveau FROM crise_session WHERE id = $1', [criseId]);
+    let retardsSitrep = [];
+    if (session) {
+      const cadence = await getCriseParam('cadence_sitrep_' + session.niveau);
+      if (cadence) {
+        const { rows } = await query(`
+          SELECT co.organisation_id, o.nom AS org_nom,
+            (SELECT MAX(ps.cree_le) FROM crise_point_situation ps
+             WHERE ps.crise_id = $1 AND ps.organisation_id = co.organisation_id) AS dernier_sitrep
+          FROM crise_organisme co JOIN organisations o ON o.id = co.organisation_id
+          WHERE co.crise_id = $1 AND co.etat_mobilisation IN ('engage','sur_place')
+        `, [criseId]);
+        const echeance = new Date(Date.now() - Number(cadence) * 60000);
+        retardsSitrep = rows.filter(r => !r.dernier_sitrep || new Date(r.dernier_sitrep) < echeance);
+      }
+    }
+
+    res.json({ ok: true, alertes_rouges: alertesRouges, retards_sitrep: retardsSitrep });
   } catch (e) { res.status(500).json({ erreur: e.message }); }
 });
 

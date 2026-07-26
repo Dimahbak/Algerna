@@ -582,6 +582,7 @@ async function initApp() {
     entite_responsable:   hasCapacite('civipark') ? ['civipark','mes-chantiers-ccoe'] : hasCapacite('patrimoine') ? ['patrimoine','mes-chantiers-ccoe'] : hasCapacite('collecte_dechets') ? ['bo-agent','collecte-dechets','mes-chantiers-ccoe'] : ['bo-agent','mes-chantiers-ccoe'],
     superviseur:          hasNiveau('wilaya') ? ['command-center','rapports','annuaire','admin-communiques','quartiers','edeval','bo-admin'] : ['bo-executive','rapports','annuaire','admin-communiques','quartiers','edeval'],
     cabinet:              ['ccoe','command-center'],
+    wali_delegue:         ['bo-executive','rapports','annuaire'],
   };
   // Fallback : ancienne table par rôle pour les tokens sans fonction
   var menusByRole = {
@@ -14328,7 +14329,8 @@ async function criseCreate() {
     niveau: document.getElementById('crise-niveau').value,
     notes: document.getElementById('crise-notes').value.trim() || null,
     circonscription_ids: Array.from(document.querySelectorAll('.crise-circ-cb:checked')).map(function(cb) { return Number(cb.value); }),
-    organisation_ids: Array.from(document.querySelectorAll('.crise-org-cb:checked')).map(function(cb) { return Number(cb.value); })
+    organisation_ids: Array.from(document.querySelectorAll('.crise-org-cb:checked')).map(function(cb) { return Number(cb.value); }),
+    visibilite_restreinte: document.getElementById('crise-restreinte') ? document.getElementById('crise-restreinte').checked : false
   };
   try {
     var data = await safeFetchJSON('/api/command-center/crises/full', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, true);
@@ -14459,17 +14461,25 @@ async function criseVueLoad(criseId) {
         '<div class="cc-crise-vue-kpi-card"><div class="val" style="color:#059669;">' + (data.kpi.resolus || 0) + '</div><div class="lbl">' + t('cc.crise_vue_resolus') + '</div></div>';
     }
 
-    // Organismes
+    // Organismes avec états de mobilisation
     var orgsContainer = document.getElementById('crise-vue-orgs');
     if (orgsContainer) {
       if (!data.organismes || !data.organismes.length) {
         orgsContainer.innerHTML = '<span style="color:#999;font-size:11px;">—</span>';
       } else {
         orgsContainer.innerHTML = data.organismes.map(function(o) {
-          var cls = o.auto_territorial ? 'cc-crise-org-tag auto' : 'cc-crise-org-tag';
           var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : (o.sigle_officiel || o.nom);
-          var badge = o.auto_territorial ? ' <span class="type">' + t('cc.crise_org_auto') + '</span>' : '';
-          return '<span class="' + cls + '">' + escHtml(nom) + badge + '</span>';
+          var etat = o.etat_mobilisation || 'sollicite';
+          var mobLabel = t('cc.crise_mob_' + etat);
+          var mobCls = 'cc-crise-mob-badge ' + etat + (o.alerte_rouge ? ' alerte_rouge' : '');
+          var referent = o.referent_nom ? ' <span style="font-size:9px;color:#6b7280;">(' + escHtml(o.referent_nom) + ')</span>' : '';
+          var alerteTag = o.alerte_rouge ? ' <span class="cc-crise-mob-badge alerte_rouge">' + t('cc.crise_alerte_rouge') + '</span>' : '';
+          var relances = o.nb_relances > 0 ? ' <span style="font-size:9px;color:#dc2626;">' + o.nb_relances + ' ' + t('cc.crise_nb_relances') + '</span>' : '';
+          return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">' +
+            '<span class="cc-crise-org-tag' + (o.auto_territorial ? ' auto' : '') + '">' + escHtml(nom) + '</span>' +
+            '<span class="' + mobCls + '">' + escHtml(mobLabel) + '</span>' +
+            referent + alerteTag + relances +
+            '</div>';
         }).join('');
       }
     }
@@ -14498,6 +14508,59 @@ async function criseVueLoad(criseId) {
 
     // Suggestions
     await criseVueLoadSuggestions(criseId);
+
+    // Sitreps
+    try {
+      var sitreps = await safeFetchJSON('/api/command-center/crises/' + criseId + '/sitreps', {}, true);
+      var sitContainer = document.getElementById('crise-vue-sitreps');
+      if (sitContainer && sitreps && sitreps.sitreps) {
+        if (!sitreps.sitreps.length) {
+          sitContainer.innerHTML = '<p style="color:#999;font-size:11px;">' + t('cc.crise_sitrep_aucun') + '</p>';
+        } else {
+          sitContainer.innerHTML = sitreps.sitreps.map(function(s) {
+            var dateStr = new Date(s.cree_le).toLocaleString('fr-DZ', { hour:'2-digit', minute:'2-digit', hour12:false, day:'2-digit', month:'2-digit' });
+            var html = '<div class="cc-crise-sitrep-card">';
+            html += '<div class="meta">' + escHtml(s.auteur_nom || '') + ' · ' + escHtml(s.org_nom || '') + ' · ' + dateStr;
+            if (s.destinataire === 'consolide') html += ' · <strong style="color:#059669;">Consolidé</strong>';
+            if (s.destinataire === 'wilaya_deleguee') html += ' · <em style="color:#7c3aed;">→ Wali délégué</em>';
+            html += '</div>';
+            if (s.fait) html += '<div class="field"><strong>' + t('cc.crise_sitrep_fait') + ' :</strong> ' + escHtml(s.fait) + '</div>';
+            if (s.en_cours) html += '<div class="field"><strong>' + t('cc.crise_sitrep_en_cours') + ' :</strong> ' + escHtml(s.en_cours) + '</div>';
+            if (s.bloque) html += '<div class="field"><strong style="color:#dc2626;">' + t('cc.crise_sitrep_bloque') + ' :</strong> ' + escHtml(s.bloque) + '</div>';
+            if (s.besoin) html += '<div class="field"><strong style="color:#f59e0b;">' + t('cc.crise_sitrep_besoin') + ' :</strong> ' + escHtml(s.besoin) + '</div>';
+            if (s.destinataire === 'wilaya_deleguee' && !s.consolide_par) {
+              html += '<button style="font-size:10px;padding:2px 8px;margin-top:4px;border:1px solid #7c3aed;color:#7c3aed;border-radius:4px;cursor:pointer;background:white;" onclick="criseSitrepConsolider(' + criseId + ',' + s.id + ')">' + t('cc.crise_sitrep_consolider') + '</button>';
+            }
+            html += '</div>';
+            return html;
+          }).join('');
+        }
+      }
+    } catch (e) { /* silent */ }
+
+    // Alertes
+    try {
+      var alertes = await safeFetchJSON('/api/command-center/crises/' + criseId + '/alertes', {}, true);
+      var alertContainer = document.getElementById('crise-vue-alertes');
+      if (alertContainer && alertes && alertes.ok) {
+        var html = '';
+        if (alertes.alertes_rouges && alertes.alertes_rouges.length) {
+          html += alertes.alertes_rouges.map(function(a) {
+            return '<div style="background:#fee2e2;border:1px solid #dc2626;border-radius:6px;padding:8px;margin-bottom:4px;font-size:12px;">' +
+              '<strong style="color:#991b1b;">' + t('cc.crise_alerte_rouge') + '</strong> — ' + escHtml(a.org_nom) +
+              ' (' + a.nb_relances + ' ' + t('cc.crise_nb_relances') + ')</div>';
+          }).join('');
+        }
+        if (alertes.retards_sitrep && alertes.retards_sitrep.length) {
+          html += alertes.retards_sitrep.map(function(r) {
+            return '<div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:6px;padding:8px;margin-bottom:4px;font-size:12px;">' +
+              '<strong style="color:#92400e;">' + t('cc.crise_sitrep_retard') + '</strong> — ' + escHtml(r.org_nom) + '</div>';
+          }).join('');
+        }
+        if (!html) html = '<p style="color:#999;font-size:11px;">—</p>';
+        alertContainer.innerHTML = html;
+      }
+    } catch (e) { /* silent */ }
 
   } catch (e) { console.error('[criseVueLoad]', e.message); }
 }
@@ -14547,6 +14610,81 @@ async function criseChangeEtat(criseId, sigId, nouvelEtat) {
     if (data && data.ok) {
       showToast(t('cc.crise_etat_change'), 'success');
       criseVueLoad(criseId);
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+// ── CRISE-3 : États de mobilisation ──
+async function criseMobChanger(criseId, orgId, etat, referentNom, referentTel) {
+  try {
+    var body = { etat: etat };
+    if (referentNom) body.referent_nom = referentNom;
+    if (referentTel) body.referent_tel = referentTel;
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/organismes/' + orgId + '/mobilisation', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_mob_change'), 'success');
+      if (_criseVueCurrentId) criseVueLoad(_criseVueCurrentId);
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+function criseEngagerPrompt(criseId, orgId) {
+  var nom = prompt(t('cc.crise_referent_nom'));
+  if (!nom) return;
+  var tel = prompt(t('cc.crise_referent_tel'));
+  criseMobChanger(criseId, orgId, 'engage', nom, tel || '');
+}
+
+// ── CRISE-3 : Points de situation ──
+async function criseSitrepPoster(criseId) {
+  var fait = (document.getElementById('sitrep-fait') || {}).value || '';
+  var enCours = (document.getElementById('sitrep-en-cours') || {}).value || '';
+  var bloque = (document.getElementById('sitrep-bloque') || {}).value || '';
+  var besoin = (document.getElementById('sitrep-besoin') || {}).value || '';
+  if (!fait && !enCours && !bloque && !besoin) { showToast('Au moins un champ requis', 'error'); return; }
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/sitrep', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fait: fait, en_cours: enCours, bloque: bloque, besoin: besoin })
+    }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_sitrep_poste'), 'success');
+      ['sitrep-fait','sitrep-en-cours','sitrep-bloque','sitrep-besoin'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      if (_criseVueCurrentId) criseVueLoad(_criseVueCurrentId);
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+async function criseSitrepConsolider(criseId, sitrepId) {
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/sitreps/' + sitrepId + '/consolider', {
+      method: 'PATCH'
+    }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_sitrep_consolide'), 'success');
+      if (_criseVueCurrentId) criseVueLoad(_criseVueCurrentId);
+    }
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+// ── CRISE-3 : Contact hors plateforme ──
+async function criseContactHors(criseId, orgId) {
+  var nom = prompt(t('cc.crise_contact_nom'));
+  if (!nom) return;
+  var reponse = prompt(t('cc.crise_contact_reponse'));
+  try {
+    var data = await safeFetchJSON('/api/command-center/crises/' + criseId + '/organismes/' + orgId + '/contact-hors', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contact_nom: nom, reponse: reponse || '' })
+    }, true);
+    if (data && data.ok) {
+      showToast(t('cc.crise_contact_enregistre'), 'success');
+      if (_criseVueCurrentId) criseVueLoad(_criseVueCurrentId);
     }
   } catch (e) { showToast(e.message, 'error'); }
 }
