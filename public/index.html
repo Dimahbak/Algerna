@@ -4004,8 +4004,14 @@
         <div class="cc-crise-org-section">
           <h5 data-i18n="cc.crise_org_select">Sélectionner les organismes</h5>
           <div id="crise-orgs-directions" class="cc-crise-org-grid"></div>
-          <div id="crise-orgs-epic" class="cc-crise-org-grid" style="margin-top:6px;"></div>
-          <div id="crise-orgs-partenaires" class="cc-crise-org-grid" style="margin-top:6px;"></div>
+          <div id="crise-orgs-epic" class="cc-crise-org-grid" style="margin-top:8px;"></div>
+          <div id="crise-orgs-partenaires" class="cc-crise-org-grid" style="margin-top:8px;"></div>
+          <p style="font-size:10px;color:#9ca3af;margin:6px 0 0;" data-i18n="cc.crise_org_auto_note">Les daïras et APC sont ajoutées automatiquement d'après le périmètre sélectionné.</p>
+          <div id="crise-orgs-expanded" style="display:none;margin-top:8px;">
+            <input type="text" id="crise-orgs-search" placeholder="" data-i18n-placeholder="cc.crise_org_rechercher" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:11px;margin-bottom:6px;">
+            <div id="crise-orgs-all" class="cc-crise-org-grid"></div>
+          </div>
+          <button type="button" id="crise-orgs-voir-tous-btn" onclick="criseOrgsToggleAll()" style="margin-top:6px;padding:4px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;cursor:pointer;background:white;color:#374151;" data-i18n="cc.crise_org_voir_tous">Voir tous les organismes</button>
         </div>
         <label style="display:flex;align-items:center;gap:6px;margin:10px 0 4px;">
           <input type="checkbox" id="crise-restreinte"> <span data-i18n="cc.crise_visibilite_restreinte">Visibilité restreinte (ordre public)</span>

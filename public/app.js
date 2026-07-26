@@ -14390,33 +14390,107 @@ async function criseCloturer(id) {
   } catch (e) { showToast(e.message, 'error'); }
 }
 
-// ── CRISE-2 : Chargement des organismes mobilisables ──
+// ── CRISE-2/v408 : Chargement des organismes mobilisables ──
+var _criseAllOrgs = [];
+
 async function criseLoadOrganismes() {
   try {
     var data = await safeFetchJSON('/api/command-center/organisations', {}, true);
     if (!data || !data.organisations) return;
+    _criseAllOrgs = data.organisations;
     var orgs = data.organisations;
     var dirContainer = document.getElementById('crise-orgs-directions');
     var epicContainer = document.getElementById('crise-orgs-epic');
     var partContainer = document.getElementById('crise-orgs-partenaires');
     if (!dirContainer) return;
 
-    var dirHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_directions') + '</strong>';
-    var epicHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_epic') + '</strong>';
-    var partHtml = '<strong style="font-size:10px;width:100%;color:#6b7280;">' + t('cc.crise_org_partenaires') + '</strong>';
+    function orgLabel(o) {
+      var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
+      return '<label style="min-width:140px;"><input type="checkbox" value="' + o.id + '" class="crise-org-cb"> ' + escHtml(nom) + '</label>';
+    }
 
-    orgs.forEach(function(o) {
-      var label = '<label><input type="checkbox" value="' + o.id + '" class="crise-org-cb"> ' +
-        escHtml(currentLang === 'ar' && o.nom_ar ? o.nom_ar : (o.sigle_officiel || o.nom)) + '</label>';
-      if (o.type === 'direction' || o.type === 'direction_wilaya') dirHtml += label;
-      else if (o.type === 'epic') epicHtml += label;
-      else if (o.type === 'operateur_externe' || o.type === 'partenaire_institutionnel') partHtml += label;
-    });
+    // Section 1 : Directions (type direction + direction_wilaya), tri alpha
+    var dirs = orgs.filter(function(o) { return o.type === 'direction' || o.type === 'direction_wilaya'; })
+      .sort(function(a, b) { return a.nom.localeCompare(b.nom); });
+    dirContainer.innerHTML = '<strong style="font-size:11px;width:100%;color:#374151;margin-bottom:4px;display:block;">' + t('cc.crise_org_directions') + ' (' + dirs.length + ')</strong>' +
+      dirs.map(orgLabel).join('');
 
-    dirContainer.innerHTML = dirHtml;
-    epicContainer.innerHTML = epicHtml;
-    partContainer.innerHTML = partHtml;
+    // Section 2 : EPIC, prioritaires d'abord puis alpha
+    var epics = orgs.filter(function(o) { return o.type === 'epic' || o.type === 'cet_site'; })
+      .sort(function(a, b) {
+        if (a.prioritaire !== b.prioritaire) return a.prioritaire ? -1 : 1;
+        return a.nom.localeCompare(b.nom);
+      });
+    epicContainer.innerHTML = '<strong style="font-size:11px;width:100%;color:#374151;margin-bottom:4px;display:block;">' + t('cc.crise_org_epic') + ' (' + epics.length + ')</strong>' +
+      epics.map(orgLabel).join('');
+
+    // Section 3 : Partenaires / Opérateurs
+    var parts = orgs.filter(function(o) { return o.type === 'operateur_externe' || o.type === 'partenaire_institutionnel'; })
+      .sort(function(a, b) { return a.nom.localeCompare(b.nom); });
+    partContainer.innerHTML = '<strong style="font-size:11px;width:100%;color:#374151;margin-bottom:4px;display:block;">' + t('cc.crise_org_partenaires') + ' (' + parts.length + ')</strong>' +
+      parts.map(orgLabel).join('');
+
+    // Setup search on expanded list
+    var searchInput = document.getElementById('crise-orgs-search');
+    if (searchInput) {
+      searchInput.oninput = function() { criseOrgsFilter(this.value); };
+    }
   } catch (e) { /* silent */ }
+}
+
+function criseOrgsToggleAll() {
+  var expanded = document.getElementById('crise-orgs-expanded');
+  var btn = document.getElementById('crise-orgs-voir-tous-btn');
+  if (!expanded) return;
+  if (expanded.style.display === 'none') {
+    expanded.style.display = 'block';
+    if (btn) btn.textContent = t('cc.crise_org_masquer');
+    criseOrgsRenderAll('');
+  } else {
+    expanded.style.display = 'none';
+    if (btn) btn.textContent = t('cc.crise_org_voir_tous');
+  }
+}
+
+function criseOrgsRenderAll(filter) {
+  var container = document.getElementById('crise-orgs-all');
+  if (!container) return;
+  var orgs = _criseAllOrgs;
+  if (filter) {
+    var f = filter.toLowerCase();
+    orgs = orgs.filter(function(o) {
+      return o.nom.toLowerCase().includes(f) || (o.nom_ar && o.nom_ar.includes(filter)) || (o.sigle_officiel && o.sigle_officiel.toLowerCase().includes(f));
+    });
+  }
+  // Group by type
+  var groups = {};
+  orgs.forEach(function(o) {
+    var g = o.type;
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(o);
+  });
+  var typeLabels = {
+    direction: t('cc.crise_org_directions'), direction_wilaya: t('cc.crise_org_directions'),
+    epic: t('cc.crise_org_epic'), cet_site: t('cc.crise_org_epic'),
+    operateur_externe: t('cc.crise_org_partenaires'), partenaire_institutionnel: t('cc.crise_org_partenaires'),
+    service: 'Services', cabinet: 'Cabinet', wilaya: 'Wilaya'
+  };
+  var html = '';
+  var typeOrder = ['direction','direction_wilaya','epic','cet_site','operateur_externe','partenaire_institutionnel','service','cabinet','wilaya'];
+  typeOrder.forEach(function(typ) {
+    if (!groups[typ] || !groups[typ].length) return;
+    var label = typeLabels[typ] || t('cc.crise_org_autres');
+    html += '<strong style="font-size:10px;width:100%;color:#6b7280;margin-top:6px;display:block;">' + escHtml(label) + '</strong>';
+    groups[typ].sort(function(a, b) { return a.nom.localeCompare(b.nom); }).forEach(function(o) {
+      var nom = currentLang === 'ar' && o.nom_ar ? o.nom_ar : o.nom;
+      html += '<label style="min-width:140px;"><input type="checkbox" value="' + o.id + '" class="crise-org-cb"> ' + escHtml(nom) + '</label>';
+    });
+  });
+  container.innerHTML = html || '<span style="color:#999;font-size:11px;">—</span>';
+}
+
+function criseOrgsFilter(val) {
+  criseOrgsRenderAll(val);
 }
 
 // ── CRISE-2 : Vue de crise ──

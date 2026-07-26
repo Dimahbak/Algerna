@@ -884,13 +884,14 @@ router.get('/crises/can-activate', authenticate, async (req, res) => {
 // ══════════════════════════════════════════════
 
 // GET /organisations — liste des organismes mobilisables (lue en base, jamais en dur)
+// Exclut apc et daira (ajout automatique par périmètre)
 router.get('/organisations', authenticate, requireCommandCenter(), async (req, res) => {
   try {
     const { rows } = await query(`
       SELECT id, nom, nom_ar, type, sigle_officiel, prioritaire
       FROM organisations
-      WHERE actif = TRUE AND type IN ('direction','direction_wilaya','epic','operateur_externe','partenaire_institutionnel','apc','daira','service')
-      ORDER BY type, ordre_affichage, nom
+      WHERE actif = TRUE AND type NOT IN ('apc','daira')
+      ORDER BY type, prioritaire DESC, ordre_affichage, nom
     `);
     res.json({ ok: true, organisations: rows });
   } catch (e) { res.status(500).json({ erreur: e.message }); }
